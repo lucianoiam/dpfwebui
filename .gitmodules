@@ -1,0 +1,4 @@
+[submodule "lib/dpf"]
+	path = lib/dpf
+	url = https://github.com/DISTRHO/DPF.git
+	branch = develop
