@@ -11,7 +11,7 @@ minimalistic DISTRHO Plugin Framework
 This is early work in progress...
 
 
-Architecture
+Proposed implementation
 
 * On Linux launch a separate process running WebKitGTK then reparent window
 * On macOS embed a Cocoa web view
