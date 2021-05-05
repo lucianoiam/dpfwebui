@@ -29,6 +29,11 @@
 
 #include <syslog.h>
 
+// TODO 2: move linux specific code to separate file
+#include <spawn.h>
+extern char **environ;
+// ------
+
 USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
@@ -45,7 +50,18 @@ WebUI::WebUI()
     //        the plugin UI is opened
 
     // UI and DSP code are completely isolated, pass opaque pointer as the owner
-    uintptr_t parentWindowId = getParentWindow().getWindowId();
+    uintptr_t windowId = getParentWindow().getWindowId();
+
+
+    // TODO 2 - proof of concept
+    char strWindowId[sizeof(uintptr_t) + /* 0x + \0 */ 3];
+    sprintf(strWindowId, "%lx", (long)windowId);
+    pid_t pid;
+    const char *argv[] = {"helper", strWindowId, "https://distrho.sourceforge.io/images/screenshots/distrho-kars.png", NULL};
+    const char* fixmeHardcodedPath = "/home/user/src/dpf-webui/bin/helper";
+    int status = posix_spawn(&pid, fixmeHardcodedPath, NULL, NULL, (char* const*)argv, environ);
+    syslog(LOG_INFO, "posix_spawn() status %d\n", status);
+
 }
 
 WebUI::~WebUI()

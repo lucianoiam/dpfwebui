@@ -110,7 +110,7 @@ void createBrowser(Display *display, Window pluginWindow, const char *url)
     /*
        TODO
      - Create a Makefile for the helper, meanwhile
-       gcc helper.c -lX11 `pkg-config --cflags --libs gtk+-3.0` `pkg-config --cflags --libs webkit2gtk-4.0` 
+       gcc helper.c -o ../../bin/helper -lX11 `pkg-config --cflags --libs gtk+-3.0` `pkg-config --cflags --libs webkit2gtk-4.0` 
      - Keep browser size in sync with plugin window size
      - Inter process communication
      - Ability to receive a close command for graceful shutdown,
