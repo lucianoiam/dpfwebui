@@ -19,7 +19,7 @@
 
 #include "WebPlugin.hpp"
 
-#include <syslog.h>
+//#include <syslog.h>
 
 USE_NAMESPACE_DISTRHO
 
@@ -31,12 +31,12 @@ Plugin* DISTRHO::createPlugin()
 WebPlugin::WebPlugin()
     : Plugin(0, 0, 0)
 {
-    syslog(LOG_INFO, "%p WebPlugin::WebPlugin()", this);
+    //syslog(LOG_INFO, "%p WebPlugin::WebPlugin()", this);
 }
 
 WebPlugin::~WebPlugin()
 {
-    syslog(LOG_INFO, "%p WebPlugin::~WebPlugin()", this);
+    //syslog(LOG_INFO, "%p WebPlugin::~WebPlugin()", this);
 }
 
 void WebPlugin::initParameter(uint32_t index, Parameter& parameter)
