@@ -1,5 +1,7 @@
 build
 bin
 
+.DS_Store
 a.out
 nohup.out
+

@@ -10,6 +10,8 @@ DPF_CUSTOM_BUILD_DIR = build
 
 # Keep debug symbols (DPF Makefile.base.mk@148)
 SKIP_STRIPPING = true
+# For debug purposes
+VERBOSE = true
 
 # --------------------------------------------------------------
 # DISTRHO project name, used for binaries
@@ -24,6 +26,12 @@ SRC_FILES_DSP = \
 
 SRC_FILES_UI  = \
 	WebUI.cpp
+
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S),Darwin)
+SRC_FILES_UI += macos/WebView.mm
+endif
 
 FILES_DSP = $(SRC_FILES_DSP:%=src/%)
 FILES_UI = $(SRC_FILES_UI:%=src/%)
@@ -59,9 +67,22 @@ endif
 
 TARGETS += vst
 
-BASE_FLAGS += -Isrc -lX11 \
+BASE_FLAGS += -Isrc
+
+ifneq ($(MACOS_OR_WINDOWS),true)
+BASE_FLAGS += -lX11 \
 				`pkg-config --cflags --libs gtk+-3.0` \
 				`pkg-config --cflags --libs webkit2gtk-4.0`
+endif
+
+ifeq ($(MACOS),true)
+LINK_FLAGS += -framework WebKit 
+
+$(BUILD_DIR)/%.mm.o: %.mm
+	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	@echo "Compiling $<"
+	$(SILENT)$(CXX) $< -ObjC++ -c -o $@
+endif
 
 all: $(TARGETS)
 
