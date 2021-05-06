@@ -41,7 +41,7 @@ extern char **environ;
 #include "macos/WebView.h"
 #endif
 
-#include <syslog.h>
+//#include <syslog.h>
 
 #define CONTENT_URL "https://distrho.sourceforge.io/images/screenshots/distrho-kars.png"
 
@@ -55,7 +55,7 @@ UI* DISTRHO::createUI()
 WebUI::WebUI()
     : UI(800, 600)
 {
-    syslog(LOG_INFO, "%p WebUI::WebUI()", this);
+    //syslog(LOG_INFO, "%p WebUI::WebUI()", this);
 
     // TODO : some hosts like REAPER recreate the parent window every time
     //        the plugin UI is opened
@@ -80,12 +80,12 @@ WebUI::WebUI()
 
 WebUI::~WebUI()
 {
-    syslog(LOG_INFO, "%p WebUI::~WebUI()", this);
+    //syslog(LOG_INFO, "%p WebUI::~WebUI()", this);
 }
 
 void WebUI::onDisplay()
 {
-    syslog(LOG_INFO, "%p WebUI::onDisplay()", this);
+    //syslog(LOG_INFO, "%p WebUI::onDisplay()", this);
 
 
     uintptr_t windowId = getParentWindow().getWindowId();

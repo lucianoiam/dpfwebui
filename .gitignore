@@ -1,7 +1,8 @@
 build
 bin
+lib/windows/ImplementationLibrary
+lib/windows/WebView2
 
 .DS_Store
 a.out
 nohup.out
-
