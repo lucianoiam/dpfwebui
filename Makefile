@@ -62,7 +62,6 @@ FILES_UI = $(SRC_FILES_UI:%=src/%)
 # --------------------------------------------------------------
 # Do some magic
 
-# TODO: check why this is needed for windows
 ifneq ($(WINDOWS),true)
 UI_TYPE = cairo
 endif

@@ -22,7 +22,8 @@
 
 void createWebView(uintptr_t windowPtr, const char *cUrl)
 {
-	// windowPtr -> PuglCairoView* -> NSView* , see pugl_osx.m@550
+	// windowPtr = PuglCairoView* -> NSView* , see pugl_osx.m@550
+	// Commenting out UI_TYPE=cairo line in Makefile makes windowPtr = PuglOpenGLViewDGL* -> NSView*
 	NSView *rootView = (NSView *)windowPtr;
 	WKWebView *webView = [[WKWebView alloc] initWithFrame:rootView.frame];
 	[rootView addSubview:webView];
