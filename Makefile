@@ -49,7 +49,8 @@ endif
 endif
 
 ifeq ($(WINDOWS),true)
-	SRC_FILES_UI += windows/WebView.cpp
+	SRC_FILES_UI += windows/WebView.cpp \
+					windows/event.cpp
 endif
 ifeq ($(MACOS),true)
 	SRC_FILES_UI += macos/WebView.mm
@@ -109,19 +110,28 @@ $(BUILD_DIR)/%.mm.o: %.mm
 	$(SILENT)$(CXX) $< -ObjC++ -c -o $@
 endif
 
+
+# Download MSYS2
+# https://www.msys2.org/
+# Follow website instructions to install the mingw-64 GCC
+
 # Install the WebView2 SDK
 # https://docs.microsoft.com/en-us/microsoft-edge/webview2/gettingstarted/win32
 # Create Visual Studio Project
 # Right click on solution
 # Manage NuGet packages
 # Install Microsoft.Web.WebView2
-# Copy < solution dir >/packages/Microsoft.Web.WebView2.< version > to lib/WebView2
-# Install Microsoft.Windows.ImplementationLibrary
-# Copy < solution dir >/packages/Microsoft.Windows.ImplementationLibrary.< version > to lib/ImplementationLibrary
+# Copy < solution dir >/packages/Microsoft.Web.WebView2.< version > -> lib/WebView2
+
+# For now WebView2Loader.dll should be copied to the host .exe directory or c:/windows/system32
+# There is no rpath equivalent for Windows, possible solution is to set search path
+# during runtime
+# https://stackoverflow.com/questions/3272383/linking-with-r-and-rpath-switches-on-windows
+
 ifeq ($(WINDOWS),true)
-BASE_FLAGS += -Ilib/windows/ImplementationLibrary/include
-BASE_FLAGS += -Ilib/windows/WebView2/build/native/include
-LINK_FLAGS += -Llib/windows/WebView2/build/native/x64 -lWebView2LoaderStatic
+BASE_FLAGS += -I./lib/windows/WebView2/build/native/include
+LINK_FLAGS += -L./lib/windows/WebView2/build/native/x64 -lWebView2Loader.dll \
+				-static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
 endif
 
 all: $(TARGETS)
