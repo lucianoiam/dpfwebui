@@ -73,14 +73,14 @@ endif
 
 TARGETS += vst
 
+# A helper binary is required on Linux
+ifeq ($(LINUX),true)
+TARGETS += helper
+endif
+
 BASE_FLAGS += -Isrc
 
 # Add platform-specific build flags
-ifeq ($(LINUX),true)
-BASE_FLAGS += -lX11 \
-               `pkg-config --cflags --libs gtk+-3.0` \
-               `pkg-config --cflags --libs webkit2gtk-4.0`
-endif
 ifeq ($(MACOS),true)
 LINK_FLAGS += -framework WebKit 
 endif
@@ -90,15 +90,33 @@ LINK_FLAGS += -L./lib/windows/WebView2/build/native/x64 -lWebView2Loader.dll \
               -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
 endif
 
-# Target for building Objective-C++ files, only apply to macOS
+# Target for building DPF's graphics library
+$(DPF_CUSTOM_PATH)/build/libdgl-opengl.a:
+	make -C $(DPF_CUSTOM_PATH) dgl
+
+# Linux helper
+ifeq ($(LINUX),true)
+HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_helper
+
+helper: src/linux/helper.c
+	@echo "Creating helper"
+	$(SILENT)$(CC) $^ -o $(HELPER_BIN) -lX11 \
+		`pkg-config --cflags --libs gtk+-3.0` \
+		`pkg-config --cflags --libs webkit2gtk-4.0`
+
+clean: clean_helper
+
+clean_helper:
+	rm -rf $(HELPER_BIN)
+endif
+
+# Target for building Objective-C++ files, only applies to macOS
+ifeq ($(MACOS),true)
 $(BUILD_DIR)/%.mm.o: %.mm
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< -ObjC++ -c -o $@
-
-# Target for building DPF's graphics library
-$(DPF_CUSTOM_PATH)/build/libdgl-opengl.a:
-	make -C $(DPF_CUSTOM_PATH) dgl
+endif
 
 all: $(TARGETS)
 

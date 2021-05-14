@@ -7,22 +7,17 @@ GENERAL BUILD INSTRUCTIONS
 2. make
 
 
-LINUX ONLY
-----------
-
-1. The plugin depends on a helper binary and its recipe still has not been
-   integrated into the Makefile.
-
-   cd src/linux && \
-   gcc helper.c -o ../../bin/helper -lX11 `pkg-config --cflags --libs gtk+-3.0`\
-   `pkg-config --cflags --libs webkit2gtk-4.0`
-
-
 MACOS ONLY
 ----------
 
 1. The generated VST plugin extension is .dylib, it needs to be changed to .vst
    otherwise REAPER will not find it. Is this true for any host?
+
+
+LINUX ONLY
+----------
+
+1. There is a hardcoded path in WebUI.cpp: const char* fixmeHardcodedPath = ...
 
 
 WINDOWS ONLY
