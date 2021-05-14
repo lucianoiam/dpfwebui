@@ -22,10 +22,10 @@ NAME = d_dpf_webui
 # Files to build
 
 SRC_FILES_DSP = \
-	WebPlugin.cpp
+    WebPlugin.cpp
 
 SRC_FILES_UI  = \
-	WebUI.cpp
+    WebUI.cpp
 
 # Note this is not DPF's Makefile.base.mk
 include Makefile.base.mk
@@ -33,7 +33,7 @@ include Makefile.base.mk
 # Add platform-specific source files
 ifeq ($(WINDOWS),true)
 SRC_FILES_UI += windows/WebView.cpp \
-				windows/event.cpp
+                windows/event.cpp
 endif
 ifeq ($(MACOS),true)
 SRC_FILES_UI += macos/WebView.mm
@@ -78,8 +78,8 @@ BASE_FLAGS += -Isrc
 # Add platform-specific build flags
 ifeq ($(LINUX),true)
 BASE_FLAGS += -lX11 \
-				`pkg-config --cflags --libs gtk+-3.0` \
-				`pkg-config --cflags --libs webkit2gtk-4.0`
+               `pkg-config --cflags --libs gtk+-3.0` \
+               `pkg-config --cflags --libs webkit2gtk-4.0`
 endif
 ifeq ($(MACOS),true)
 LINK_FLAGS += -framework WebKit 
@@ -87,7 +87,7 @@ endif
 ifeq ($(WINDOWS),true)
 BASE_FLAGS += -I./lib/windows/WebView2/build/native/include
 LINK_FLAGS += -L./lib/windows/WebView2/build/native/x64 -lWebView2Loader.dll \
-				-static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
+              -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
 endif
 
 # Target for building Objective-C++ files, only apply to macOS
