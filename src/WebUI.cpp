@@ -32,6 +32,7 @@
 
 #ifdef DISTRHO_OS_LINUX
 // TODO 2: move linux specific code to separate file
+#include <syslog.h>
 #include <spawn.h>
 extern char **environ;
 #endif
@@ -46,8 +47,6 @@ extern char **environ;
 #include "macos/WebView.h"
 bool _displayed = false;
 #endif
-
-//#include <syslog.h>
 
 #define CONTENT_URL "https://distrho.sourceforge.io/images/screenshots/distrho-kars.png"
 
