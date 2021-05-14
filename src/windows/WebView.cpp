@@ -17,7 +17,7 @@
 #include "WebView.h"
 
 /*
-	The "right" way to work with WebView2 requires WIL which provided by the NuGet package
+	The "right" way to work with WebView2 requires WIL which is provided by the NuGet package
 	Microsoft.Windows.ImplementationLibrary
 	But WIL is not compatible with MinGW, see https://github.com/microsoft/wil/issues/117
 	Use this solution instead https://github.com/jchv/webview2-in-mingw
