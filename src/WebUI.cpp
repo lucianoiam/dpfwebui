@@ -45,7 +45,6 @@ extern char **environ;
 #ifdef DISTRHO_OS_WINDOWS
 // TODO 4: move win specific code to separate file
 #include "macos/WebView.h"
-bool _displayed = false;
 #endif
 
 #define CONTENT_URL "https://distrho.sourceforge.io/images/screenshots/distrho-kars.png"
@@ -59,6 +58,7 @@ UI* DISTRHO::createUI()
 
 WebUI::WebUI()
     : UI(800, 600)
+    , _fixme_displayed(false)
 {
     //syslog(LOG_INFO, "%p WebUI::WebUI()", this);
 
@@ -99,8 +99,8 @@ void WebUI::onDisplay()
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS
-    if (!_displayed) {
-        _displayed = true;
+    if (!_fixme_displayed) {
+        _fixme_displayed = true;
         createWebView(windowId, CONTENT_URL);
     }
 #endif
