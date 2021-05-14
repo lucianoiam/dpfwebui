@@ -58,7 +58,6 @@ UI* DISTRHO::createUI()
 
 WebUI::WebUI()
     : UI(800, 600)
-    , _fixme_displayed(false)
 {
     //syslog(LOG_INFO, "%p WebUI::WebUI()", this);
 
@@ -99,10 +98,7 @@ void WebUI::onDisplay()
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS
-    if (!_fixme_displayed) {
-        _fixme_displayed = true;
-        createWebView(windowId, CONTENT_URL);
-    }
+    createWebView(windowId, CONTENT_URL);
 #endif
 
 }

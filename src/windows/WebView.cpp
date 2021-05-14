@@ -83,43 +83,56 @@ void MessagePopup(LPCTSTR format, ...)
 }
 
 
+EventHandler handler{};
+wchar_t* wUrl = new wchar_t[4096];
+
 
 void createWebView(uintptr_t windowPtr, const char * cUrl)
 {
 	HWND hWnd = (HWND)windowPtr;
+
+	if (controller != nullptr) {
+		return;
+	}
 
 	// Get data path.
 	TCHAR szDataPath[MAX_PATH];
 	GetDataPath(szDataPath, _countof(szDataPath));
 
 	// Set up some event handlers.
-	EventHandler handler{};
+
 
 	handler.EnvironmentCompleted = [&](HRESULT result, ICoreWebView2Environment* created_environment)
 	{
 		if (FAILED(result))
 		{
-			MessagePopup(TEXT("Failed to create environment?"));
+			MessagePopup(TEXT("Failed to create environment"));
 		}
 		created_environment->lpVtbl->CreateCoreWebView2Controller(created_environment, hWnd, &handler);
-		// FIXME - removing the following popup makes host crash (!?)
-		//         some call is missing here
-		MessagePopup(TEXT("Created controller"));
 		return S_OK;
 	};
+
+	MultiByteToWideChar(CP_ACP, 0, cUrl, -1, wUrl, 4096);
 
 	handler.ControllerCompleted = [&](HRESULT result, ICoreWebView2Controller* new_controller)
 	{
 		if (FAILED(result))
 		{
-			MessagePopup(TEXT("Failed to create controller?"));
+			MessagePopup(TEXT("Failed to create controller"));
 		}
 		controller = new_controller;
 		controller->lpVtbl->AddRef(controller);
 		controller->lpVtbl->get_CoreWebView2(controller, &webview2);
 		webview2->lpVtbl->AddRef(webview2);
-		webview2->lpVtbl->Navigate(webview2, TStrToWStr(cUrl).c_str());
-		ResizeBrowser(hWnd);
+		webview2->lpVtbl->Navigate(webview2, wUrl);
+		//webview2->lpVtbl->Navigate(webview2, TStrToWStr(cUrl).c_str());	crashes
+		//ResizeBrowser(hWnd);	//does not work as expected (wrong rect?)
+		RECT bounds;
+		bounds.top = 0;
+		bounds.left = 0;
+		bounds.right = 800;
+		bounds.bottom = 600;
+		controller->lpVtbl->put_Bounds(controller, bounds);
 		return S_OK;
 	};
 

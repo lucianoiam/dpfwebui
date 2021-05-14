@@ -36,8 +36,6 @@ public:
 
     void parameterChanged(uint32_t index, float value);
 
-private:
-	bool _fixme_displayed;
 };
 
 END_NAMESPACE_DISTRHO
