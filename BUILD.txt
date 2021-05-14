@@ -1,0 +1,41 @@
+GENERAL BUILD INSTRUCTIONS
+--------------------------
+
+1. DPF is linked as a git submodule. Make sure it was cloned to lib/dpf and
+   the selected branch is develop.
+
+2. make
+
+
+BUILD INSTRUCTIONS FOR WINDOWS
+------------------------------
+
+Native binaries for Windows can be built by cross-compiling on Linux or by
+installing the MinGW toolchain on Windows:
+
+1. Download MSYS2 from https://www.msys2.org/ then follow website instructions
+   to install the mingw-64 GCC
+
+2. Install WebView2 SDK from Microsoft, this can be done using their free IDE
+   Visual Studio Community:
+
+   - Create Project
+   - Right click on solution
+   - Manage NuGet packages
+   - Find and install Microsoft.Web.WebView2
+   - Copy < solution dir >/packages/Microsoft.Web.WebView2.< version > to
+     < plugin dir >/lib/WebView2
+
+   SDK documentation at
+   https://docs.microsoft.com/en-us/microsoft-edge/webview2/gettingstarted/win32
+
+   TODO:
+
+   - Does the SDK license already allow to redistribute DLLs?
+   - Is there a way to get the files without installing Visual Studio?
+
+3. For now WebView2Loader.dll must be copied to the host's .exe directory or
+   C:\Windows\system32 as there is no rpath equivalent on Windows. A possible
+   solution is to set search path during runtime (WIP)
+   
+   https://stackoverflow.com/questions/3272383/linking-with-r-and-rpath-switches-on-windows
