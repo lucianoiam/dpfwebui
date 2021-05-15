@@ -23,6 +23,9 @@
 #define WEBUI_HPP
 
 #include "DistrhoUI.hpp"
+#ifdef DISTRHO_OS_WINDOWS
+#include "windows/EdgeWebView.hpp"
+#endif
 
 START_NAMESPACE_DISTRHO
 
@@ -35,6 +38,13 @@ public:
     void onDisplay();
 
     void parameterChanged(uint32_t index, float value);
+
+private:
+	uintptr_t fParentWindowId;
+
+#ifdef DISTRHO_OS_WINDOWS
+    EdgeWebView fWebView;
+#endif
 
 };
 

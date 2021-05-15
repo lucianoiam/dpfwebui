@@ -32,7 +32,7 @@ include Makefile.base.mk
 
 # Add platform-specific source files
 ifeq ($(WINDOWS),true)
-SRC_FILES_UI += windows/WebView.cpp \
+SRC_FILES_UI += windows/EdgeWebView.cpp \
                 windows/event.cpp
 endif
 ifeq ($(MACOS),true)

@@ -19,35 +19,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// TO DO approach:
-// Linux: launch process with GTK+WebKit to avoiding host GTK issues, then reparent
-// macOS: use system webview
-// Windows: use system webview
-
-// TODO 4: there should be an interface to abstract the web views
-
 #include "WebUI.hpp"
 #include "Window.hpp"
-#include "src/DistrhoDefines.h"
-
-#ifdef DISTRHO_OS_LINUX
-// TODO 2: move linux specific code to separate file
-#include <syslog.h>
-#include <spawn.h>
-extern char **environ;
-#endif
-
-#ifdef DISTRHO_OS_MAC
-// TODO 3: move mac specific code to separate file
-#include "macos/WebView.h"
-#endif
-
-#ifdef DISTRHO_OS_WINDOWS
-// TODO 4: move win specific code to separate file
-#include "macos/WebView.h"
-#endif
-
-#define CONTENT_URL "https://distrho.sourceforge.io/images/screenshots/distrho-kars.png"
 
 USE_NAMESPACE_DISTRHO
 
@@ -58,28 +31,9 @@ UI* DISTRHO::createUI()
 
 WebUI::WebUI()
     : UI(800, 600)
+    , fParentWindowId(0)
 {
-    //syslog(LOG_INFO, "%p WebUI::WebUI()", this);
-
-    // TODO : some hosts like REAPER recreate the parent window every time
-    //        the plugin UI is opened
-
-    // UI and DSP code are completely isolated, pass opaque pointer as the owner
-    uintptr_t windowId = getParentWindow().getWindowId();
-
-
-#ifdef DISTRHO_OS_LINUX
-    // TODO 2 - proof of concept
-    char strWindowId[sizeof(uintptr_t) + /* 0x + \0 */ 3];
-    sprintf(strWindowId, "%lx", (long)windowId);
-    pid_t pid;
-    const char *argv[] = {"helper", strWindowId, CONTENT_URL, NULL};
-    const char* fixmeHardcodedPath = "/home/user/src/dpf-webui/bin/d_dpf_webui_helper";
-    int status = posix_spawn(&pid, fixmeHardcodedPath, NULL, NULL, (char* const*)argv, environ);
-    syslog(LOG_INFO, "posix_spawn() status %d\n", status);
-#endif
-
-
+	// empty
 }
 
 WebUI::~WebUI()
@@ -89,18 +43,12 @@ WebUI::~WebUI()
 
 void WebUI::onDisplay()
 {
-    //syslog(LOG_INFO, "%p WebUI::onDisplay()", this);
-
-
-    uintptr_t windowId = getParentWindow().getWindowId();
-#ifdef DISTRHO_OS_MAC
-    createWebView(windowId, CONTENT_URL);
-#endif
-
-#ifdef DISTRHO_OS_WINDOWS
-    createWebView(windowId, CONTENT_URL);
-#endif
-
+	uintptr_t newParentWindowId = getParentWindow().getWindowId();
+	
+	if (fParentWindowId != newParentWindowId) {
+		fParentWindowId = newParentWindowId;
+		fWebView.reparent(fParentWindowId);
+	}
 }
 
 void WebUI::parameterChanged(uint32_t index, float value)
