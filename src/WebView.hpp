@@ -32,10 +32,11 @@ public:
     virtual void reparent(uintptr_t parentWindowId) = 0;
 
 protected:
-	std::string getContentUrl()
-	{
-		return "https://distrho.sourceforge.io/images/screenshots/distrho-kars.png";
-	}
+    std::string getContentUrl()
+    {
+        // TODO
+        return "https://distrho.sourceforge.io/images/screenshots/distrho-kars.png";
+    }
 
 };
 

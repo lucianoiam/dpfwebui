@@ -38,7 +38,7 @@ public:
     void parameterChanged(uint32_t index, float value);
 
 private:
-	uintptr_t fParentWindowId;
+    uintptr_t fParentWindowId;
 
 #ifdef DISTRHO_OS_WINDOWS
     EdgeWebView fWebView;
