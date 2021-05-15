@@ -16,6 +16,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <stdint.h>
+// Keep this header file pure C++
+#ifndef COCOAWEBVIEW_HPP
+#define COCOAWEBVIEW_HPP
 
-void createWebView(uintptr_t, const char *);
+#include "../WebView.hpp"
+#include "DistrhoDefines.h"
+
+START_NAMESPACE_DISTRHO
+
+class CocoaWebView : public WebView
+{
+public:
+    CocoaWebView();
+    ~CocoaWebView();
+    
+    void reparent(uintptr_t parentWindowId);
+
+private:
+    // Cannot import ObjC headers here, thus the generic pointer type
+    uintptr_t fView;
+
+};
+
+END_NAMESPACE_DISTRHO
+
+#endif  // COCOAWEBVIEW_HPP

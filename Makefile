@@ -31,12 +31,12 @@ SRC_FILES_UI  = \
 include Makefile.base.mk
 
 # Add platform-specific source files
+ifeq ($(MACOS),true)
+SRC_FILES_UI += macos/CocoaWebView.mm
+endif
 ifeq ($(WINDOWS),true)
 SRC_FILES_UI += windows/EdgeWebView.cpp \
                 windows/event.cpp
-endif
-ifeq ($(MACOS),true)
-SRC_FILES_UI += macos/WebView.mm
 endif
 
 FILES_DSP = $(SRC_FILES_DSP:%=src/%)
@@ -78,7 +78,7 @@ ifeq ($(LINUX),true)
 TARGETS += helper
 endif
 
-BASE_FLAGS += -Isrc
+BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH)/distrho/src
 
 # Add platform-specific build flags
 ifeq ($(MACOS),true)
@@ -115,7 +115,7 @@ ifeq ($(MACOS),true)
 $(BUILD_DIR)/%.mm.o: %.mm
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
-	$(SILENT)$(CXX) $< -ObjC++ -c -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 endif
 
 all: $(TARGETS)

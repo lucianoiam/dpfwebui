@@ -23,7 +23,7 @@
 
 #include "../WebView.hpp"
 #include <string>
-#include "src/DistrhoDefines.h"
+#include "DistrhoDefines.h"
 
 /*
   The "right" way to work with WebView2 requires WIL which is provided by the

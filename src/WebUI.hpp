@@ -23,6 +23,9 @@
 #define WEBUI_HPP
 
 #include "DistrhoUI.hpp"
+#ifdef DISTRHO_OS_MAC
+#include "macos/CocoaWebView.hpp"
+#endif
 #ifdef DISTRHO_OS_WINDOWS
 #include "windows/EdgeWebView.hpp"
 #endif
@@ -42,8 +45,11 @@ public:
 private:
     uintptr_t fParentWindowId;
 
+#ifdef DISTRHO_OS_MAC
+    CocoaWebView fWebView;
+#endif
 #ifdef DISTRHO_OS_WINDOWS
-    EdgeWebView fWebView;
+    EdgeWebView	fWebView;
 #endif
 
 };
