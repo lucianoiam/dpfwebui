@@ -14,6 +14,31 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef WEBVIEW_HPP
+#define WEBVIEW_HPP
 
-void createWebView(uintptr_t, const char *);
+#include <cstdint>
+#include <string>
+
+#include "src/DistrhoDefines.h"
+
+START_NAMESPACE_DISTRHO
+
+class WebView
+{
+public:
+    virtual ~WebView() {};
+    
+    virtual void reparent(uintptr_t parentWindowId) = 0;
+
+protected:
+	std::string getContentUrl()
+	{
+		return "https://distrho.sourceforge.io/images/screenshots/distrho-kars.png";
+	}
+
+};
+
+END_NAMESPACE_DISTRHO
+
+#endif  // WEBVIEW_HPP
