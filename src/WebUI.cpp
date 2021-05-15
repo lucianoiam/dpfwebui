@@ -30,25 +30,25 @@ UI* DISTRHO::createUI()
 }
 
 WebUI::WebUI()
-    : UI(800, 600)
+    : UI(800, 600)  // TODO: avoid arbitrary size, plugin should be resizable
     , fParentWindowId(0)
 {
-	// empty
+    // empty
 }
 
 WebUI::~WebUI()
 {
-    //syslog(LOG_INFO, "%p WebUI::~WebUI()", this);
+    // empty
 }
 
 void WebUI::onDisplay()
 {
-	uintptr_t newParentWindowId = getParentWindow().getWindowId();
-	
-	if (fParentWindowId != newParentWindowId) {
-		fParentWindowId = newParentWindowId;
-		fWebView.reparent(fParentWindowId);
-	}
+    uintptr_t newParentWindowId = getParentWindow().getWindowId();
+    
+    if (fParentWindowId != newParentWindowId) {
+        fParentWindowId = newParentWindowId;
+        fWebView.reparent(fParentWindowId);
+    }
 }
 
 void WebUI::parameterChanged(uint32_t index, float value)
