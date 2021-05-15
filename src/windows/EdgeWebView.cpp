@@ -19,7 +19,9 @@
 #include <codecvt>
 #include <locale>
 #include <sstream>
-#include <tchar.h>
+#include <pathcch.h>
+#include <shlobj.h>
+#include <shlwapi.h>
 
 #include "../DistrhoPluginInfo.h"
 
@@ -34,7 +36,7 @@ EdgeWebView::EdgeWebView()
 
 EdgeWebView::~EdgeWebView()
 {
-    close();
+    cleanup();
 }
 
 void EdgeWebView::reparent(uintptr_t parentWindowId)
@@ -44,11 +46,11 @@ void EdgeWebView::reparent(uintptr_t parentWindowId)
 
     HWND hWnd = (HWND)parentWindowId;
 
-    close();
+    cleanup();
 
     fHandler.EnvironmentCompleted = [&](HRESULT result, ICoreWebView2Environment* createdEnv) {
         if (FAILED(result)) {
-            errorMessageBox("Failed to create WebView2 environment", result);
+            errorMessageBox(L"Failed to create WebView2 environment", result);
             return result;
         }
 
@@ -59,7 +61,7 @@ void EdgeWebView::reparent(uintptr_t parentWindowId)
 
     fHandler.ControllerCompleted = [&](HRESULT result, ICoreWebView2Controller* createdController) {
         if (FAILED(result)) {
-            errorMessageBox("Failed to create WebView2 controller", result);
+            errorMessageBox(L"Failed to create WebView2 controller", result);
             return result;
         }
 
@@ -77,32 +79,24 @@ void EdgeWebView::reparent(uintptr_t parentWindowId)
         return S_OK;
     };
 
-    // Need to set files location, calling CreateCoreWebView2Environment()
-    // fails with HRESULT 0x80070005 E_ACCESSDENIED
-
-    TCHAR szDataPath[MAX_PATH];
-    getDataPath(szDataPath, _countof(szDataPath));
-
-    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(
-        nullptr,
-        //TStrToWStr(szDataPath).c_str(),   // comment out for now
-        L"C:\\tmp",     // works
-        nullptr,
-        &fHandler
-    );
+    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(nullptr, getTempPath().c_str(),
+        nullptr, &fHandler);
 
     if (FAILED(result)) {
-        errorMessageBox("Failed to create WebView2 environment options", result);
+        errorMessageBox(L"Failed to create WebView2 environment options", result);
     }
 }
 
-void EdgeWebView::close()
+void EdgeWebView::cleanup()
 {
-    if (fController == nullptr) {
-        return;
+    if (fController != nullptr) {
+        fController->lpVtbl->Close(fController);
     }
 
-    fController->lpVtbl->Close(fController);
+    fController = nullptr;
+    fView = nullptr;
+    fHandler.EnvironmentCompleted = nullptr;
+    fHandler.ControllerCompleted = nullptr;
 }
 
 void EdgeWebView::resize(HWND hWnd)
@@ -123,26 +117,27 @@ void EdgeWebView::resize(HWND hWnd)
     fController->lpVtbl->put_Bounds(fController, bounds);
 }
 
-void EdgeWebView::errorMessageBox(std::string message, HRESULT result)
+void EdgeWebView::errorMessageBox(std::wstring message, HRESULT result)
 {
-    std::stringstream ss;
-    ss << message << ", code 0x" << std::hex << result;
-    MessageBox(nullptr, ss.str().c_str(), DISTRHO_PLUGIN_NAME, MB_OK | MB_ICONSTOP);
+    std::wstringstream ss;
+    ss << message << ", HRESULT 0x" << std::hex << result;
+    MessageBox(nullptr, ss.str().c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
 }
 
-void EdgeWebView::getDataPath(LPTSTR szOut, DWORD nSize)
+std::wstring EdgeWebView::getTempPath()
 {
-    // TODO -- check this
-    TCHAR szExePath[MAX_PATH];
-    GetModuleFileName(nullptr, szExePath, _countof(szExePath));
+    // C:\Users\< USERNAME >\AppData\Local\DPFTemp
+    WCHAR tempPath[MAX_PATH + 1];
+    SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_DEFAULT, tempPath);
+    wcscat(tempPath, L"\\DPFTemp\\");
 
-    LPTSTR szExeName = _tcsrchr(szExePath, TEXT('\\'));
-    szExeName = szExeName ? szExeName + 1 : szExePath;
+    // Append host executable name to the temp path otherwise WebView2 controller initialization
+    // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
+    // simultaneously. C:\Users\< USERNAME >\AppData\Local\DPFTemp\< BIN >
+    WCHAR exePath[MAX_PATH + 1];
+    GetModuleFileName(NULL, exePath, MAX_PATH);
+    PathCchRemoveExtension(exePath, MAX_PATH);
+    wcscat(tempPath, PathFindFileName(exePath));
 
-    TCHAR szAppData[MAX_PATH];
-    GetEnvironmentVariable(TEXT("AppData"), szAppData, _countof(szAppData));
-
-    _tcsncpy(szOut, szAppData, nSize);
-    _tcsncat(szOut, TEXT("\\"), nSize);
-    _tcsncat(szOut, szExeName, nSize);
+    return static_cast<const wchar_t *>(tempPath);
 }

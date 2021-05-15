@@ -17,6 +17,8 @@
 #ifndef EDGEWEBVIEW_HPP
 #define EDGEWEBVIEW_HPP
 
+#define UNICODE
+
 #include "../WebView.hpp"
 #include <string>
 #include "src/DistrhoDefines.h"
@@ -48,10 +50,10 @@ public:
     void reparent(uintptr_t parentWindowId);
 
 private:
-    void close();
+    void cleanup();
     void resize(HWND hWnd);
-    void errorMessageBox(std::string message, HRESULT result);
-    void getDataPath(LPTSTR szOut, DWORD nSize);
+    void errorMessageBox(std::wstring message, HRESULT result);
+    std::wstring getTempPath();
 
     EventHandler             fHandler;
     ICoreWebView2Controller* fController;

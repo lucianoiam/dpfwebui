@@ -86,7 +86,7 @@ LINK_FLAGS += -framework WebKit
 endif
 ifeq ($(WINDOWS),true)
 BASE_FLAGS += -I./lib/windows/WebView2/build/native/include
-LINK_FLAGS += -L./lib/windows/WebView2/build/native/x64 -lWebView2Loader.dll \
+LINK_FLAGS += -L./lib/windows/WebView2/build/native/x64 -lPathcch -lShlwapi -lWebView2Loader.dll \
               -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
 endif
 
