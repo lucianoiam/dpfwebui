@@ -7,17 +7,10 @@ GENERAL BUILD INSTRUCTIONS
 2. make
 
 
-MACOS ONLY
-----------
-
-1. The generated VST plugin extension is .dylib, it needs to be changed to .vst
-   otherwise REAPER will not find it. Is this true for any host?
-
-
 LINUX ONLY
 ----------
 
-1. There is a hardcoded path in WebUI.cpp: const char* fixmeHardcodedPath = ...
+1. There is a hardcoded path: const char* fixmeHardcodedPath = ...
 
 
 WINDOWS ONLY

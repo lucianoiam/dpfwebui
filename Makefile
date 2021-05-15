@@ -90,10 +90,6 @@ LINK_FLAGS += -L./lib/windows/WebView2/build/native/x64 -lPathcch -lShlwapi -lWe
               -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
 endif
 
-# Target for building DPF's graphics library
-$(DPF_CUSTOM_PATH)/build/libdgl-opengl.a:
-	make -C $(DPF_CUSTOM_PATH) dgl
-
 # Linux helper
 ifeq ($(LINUX),true)
 HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_helper
@@ -110,14 +106,40 @@ clean_helper:
 	rm -rf $(HELPER_BIN)
 endif
 
-# Target for building Objective-C++ files, only applies to macOS
+# Target for building Objective-C++ files and VST bundle, only applies to macOS
 ifeq ($(MACOS),true)
+TARGETS += macvst
+
+macvst:
+	@$(CURDIR)/utils/generate-vst-bundles.sh
+
 $(BUILD_DIR)/%.mm.o: %.mm
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 endif
 
-all: $(TARGETS)
+# Target for generating LV2 TTL files
+ifneq ($(CROSS_COMPILING),true)
+CAN_GENERATE_TTL = true
+else ifneq ($(EXE_WRAPPER),)
+CAN_GENERATE_TTL = true
+endif
+
+ifeq ($(CAN_GENERATE_TTL),true)
+TARGETS += lv2ttl
+
+lv2ttl: utils/lv2_ttl_generator
+	@$(CURDIR)/utils/generate-ttl.sh
+
+utils/lv2_ttl_generator:
+	$(MAKE) -C utils/lv2-ttl-generator
+endif
+
+# Target for building DPF's graphics library
+dgl:
+	make -C $(DPF_CUSTOM_PATH) dgl
+
+all: dgl $(TARGETS)
 
 # --------------------------------------------------------------
