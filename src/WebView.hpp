@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <string>
 
-#include "src/DistrhoDefines.h"
+#include "DistrhoDefines.h"
 
 START_NAMESPACE_DISTRHO
 
