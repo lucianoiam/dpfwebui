@@ -125,10 +125,13 @@ $(BUILD_DIR)/%.mm.o: %.mm
 endif
 
 # Target for generating LV2 TTL files
+# Currently does not work on Windows because utils/ is a symlink
+ifneq ($(WINDOWS),true)
 ifneq ($(CROSS_COMPILING),true)
 CAN_GENERATE_TTL = true
 else ifneq ($(EXE_WRAPPER),)
 CAN_GENERATE_TTL = true
+endif
 endif
 
 ifeq ($(CAN_GENERATE_TTL),true)
