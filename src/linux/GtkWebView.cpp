@@ -20,6 +20,11 @@
 #include <spawn.h>
 #include <signal.h> // TODO: needed for kill(), remove after IPC implemented
 
+/*
+  Need to launch a separate process hosting the GTK web view because linking
+  plugins to UI toolkit libraries like GTK or QT is known to be problematic.
+*/
+
 USE_NAMESPACE_DISTRHO
 
 extern char **environ;
