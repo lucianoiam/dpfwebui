@@ -16,4 +16,4 @@ Proposed implementation
 * On Windows embed a Chromium-based WebView2 provided by the OS
 
 
-![](https://user-images.githubusercontent.com/930494/117108530-9e1db480-ad83-11eb-94f3-c40579fcbc2f.png)
+![](https://user-images.githubusercontent.com/930494/118394103-eae67280-b642-11eb-8e98-66267542adc0.png)
