@@ -10,7 +10,7 @@ GENERAL BUILD INSTRUCTIONS
 LINUX ONLY
 ----------
 
-1. There is a hardcoded path: const char* fixmeHardcodedPath = ...
+1. There is a hardcoded path in GtkWebView.cpp, const char* fixmeHardcodedPath
 
 
 WINDOWS ONLY

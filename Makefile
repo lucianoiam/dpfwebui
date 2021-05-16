@@ -4,13 +4,14 @@
 # Created by falkTX
 # Web UI example by lucianoiam
 
+# Allow placing DPF in a random directory and include its Makefiles
+# These variables are not supported by the official release as of 16 May 2021
 DPF_CUSTOM_PATH = lib/dpf
 DPF_CUSTOM_TARGET_DIR = bin
 DPF_CUSTOM_BUILD_DIR = build
 
-# Keep debug symbols (DPF Makefile.base.mk@148)
+# Keep debug symbols (DPF Makefile.base.mk@148) and print full compiler output
 SKIP_STRIPPING = true
-# For debug purposes
 VERBOSE = true
 
 # --------------------------------------------------------------
@@ -31,6 +32,9 @@ SRC_FILES_UI  = \
 include Makefile.base.mk
 
 # Add platform-specific source files
+ifeq ($(LINUX),true)
+SRC_FILES_UI += linux/GtkWebView.cpp
+endif
 ifeq ($(MACOS),true)
 SRC_FILES_UI += macos/CocoaWebView.mm
 endif
@@ -44,8 +48,9 @@ FILES_UI = $(SRC_FILES_UI:%=src/%)
 
 # --------------------------------------------------------------
 # Do some magic
-
-# Setting cairo for Windows disables the UI, is that expected?
+ifneq ($(WINDOWS),true)
+UI_TYPE = cairo
+endif
 include $(DPF_CUSTOM_PATH)/Makefile.plugins.mk
 
 # --------------------------------------------------------------
@@ -90,7 +95,7 @@ LINK_FLAGS += -L./lib/windows/WebView2/build/native/x64 -lPathcch -lShlwapi -lWe
               -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
 endif
 
-# Linux helper
+# Target for Linux helper
 ifeq ($(LINUX),true)
 HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_helper
 
@@ -106,7 +111,7 @@ clean_helper:
 	rm -rf $(HELPER_BIN)
 endif
 
-# Target for building Objective-C++ files and VST bundle, only applies to macOS
+# Target for building Objective-C++ files and macOS VST bundle
 ifeq ($(MACOS),true)
 TARGETS += macvst
 

@@ -2,9 +2,6 @@
  * dpf-webui
  * Copyright (C) 2021 Luciano Iam <lucianoiam@protonmail.com>
  *
- * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
- *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
  * permission notice appear in all copies.
@@ -17,47 +14,31 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WEBUI_HPP
-#define WEBUI_HPP
+#ifndef GTKWEBVIEW_HPP
+#define GTKWEBVIEW_HPP
 
-#include "DistrhoUI.hpp"
-#ifdef DISTRHO_OS_LINUX
-#include "linux/GtkWebView.hpp"
-#endif
-#ifdef DISTRHO_OS_MAC
-#include "macos/CocoaWebView.hpp"
-#endif
-#ifdef DISTRHO_OS_WINDOWS
-#include "windows/EdgeWebView.hpp"
-#endif
+#include <sys/types.h>
+
+#include "../WebView.hpp"
+#include "DistrhoDefines.h"
 
 START_NAMESPACE_DISTRHO
 
-class WebUI : public UI
+class GtkWebView : public WebView
 {
 public:
-    WebUI();
-    ~WebUI();
-
-    void onDisplay();
-
-    void parameterChanged(uint32_t index, float value);
+    GtkWebView();
+    ~GtkWebView();
+    
+    void reparent(uintptr_t parentWindowId);
 
 private:
-    uintptr_t fParentWindowId;
-
-#ifdef DISTRHO_OS_LINUX
-    GtkWebView fWebView;
-#endif
-#ifdef DISTRHO_OS_MAC
-    CocoaWebView fWebView;
-#endif
-#ifdef DISTRHO_OS_WINDOWS
-    EdgeWebView	fWebView;
-#endif
+    void cleanup();
+    
+	pid_t fView;	// naming it view for coherence, the helper is the view
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBUI_HPP
+#endif  // GTKWEBVIEW_HPP

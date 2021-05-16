@@ -32,8 +32,7 @@ public:
     void reparent(uintptr_t parentWindowId);
 
 private:
-    // Cannot import ObjC headers here, thus the generic pointer type
-    uintptr_t fView;
+    uintptr_t fView;    // No ObjC headers here, thus the generic pointer type
 
 };
 
