@@ -43,8 +43,8 @@ EdgeWebView::~EdgeWebView()
 
 void EdgeWebView::reparent(uintptr_t parentWindowId)
 {
-    // FIXME: Trying to reparent WebView2 calling put_ParentWindow() results in flicker.
-    //        Need to recreate all WebView2 objects.
+    // FIXME: Trying to reparent WebView2 calling controller.put_ParentWindow() results in heavy
+    //        flicker to the point the view is unusable. Need to reinitialize everything (@#!)
 
     HWND hWnd = (HWND)parentWindowId;
 
@@ -128,7 +128,7 @@ void EdgeWebView::errorMessageBox(std::wstring message, HRESULT result)
 
 std::wstring EdgeWebView::getTempPath()
 {
-    // C:\Users\< USERNAME >\AppData\Local\DPFTemp
+    // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPFTemp
     WCHAR tempPath[MAX_PATH + 1];
     SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_DEFAULT, tempPath);
     wcscat(tempPath, L"\\DPFTemp\\");
@@ -138,6 +138,9 @@ std::wstring EdgeWebView::getTempPath()
     // simultaneously. C:\Users\< USERNAME >\AppData\Local\DPFTemp\< BIN >
     WCHAR exePath[MAX_PATH + 1];
     GetModuleFileName(NULL, exePath, MAX_PATH);
+
+    // The following call relies on a further Windows library called Pathcch, maybe it should be
+    // replaced with something else.
     PathCchRemoveExtension(exePath, MAX_PATH);
     wcscat(tempPath, PathFindFileName(exePath));
 
