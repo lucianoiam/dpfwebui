@@ -1,10 +1,10 @@
-Very rough code for embedding a web view in a DPF plugin
---------------------------------------------------------
+Early code for embedding a web view in a DPF plugin
+---------------------------------------------------
 
 Supersedes https://github.com/lucianoiam/dpf-cef
 
-Goal is to develop multiplatform audio plugins with web-based UIs based on the
-lightweight and libre DISTRHO Plugin Framework https://github.com/DISTRHO/DPF
+Goal is to enable developing multiplatform audio plugins with web-based UIs
+based on the lightweight and libre DISTRHO Plugin Framework https://github.com/DISTRHO/DPF
 
 This is early work in progress...
 

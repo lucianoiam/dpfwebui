@@ -27,9 +27,9 @@
 #include "DistrhoDefines.h"
 
 /*
-  The "right" way to work with WebView2 requires WIL which is provided by the
+  The official way to work with WebView2 requires WIL which is provided by the
   NuGet package Microsoft.Windows.ImplementationLibrary, but WIL is not
-  compatible with MinGW, see https://github.com/microsoft/wil/issues/117
+  compatible with MinGW. See https://github.com/microsoft/wil/issues/117
   
   A working solution was copied from here:
   https://github.com/jchv/webview2-in-mingw/blob/master/Src/main.cpp
