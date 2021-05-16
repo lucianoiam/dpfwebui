@@ -21,8 +21,9 @@
 
 #define UNICODE
 
-#include "../WebView.hpp"
 #include <string>
+
+#include "../WebView.hpp"
 #include "DistrhoDefines.h"
 
 /*

@@ -16,28 +16,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Keep this header file pure C++
-#ifndef COCOAWEBVIEW_HPP
-#define COCOAWEBVIEW_HPP
+#ifndef GTKWEBVIEW_HPP
+#define GTKWEBVIEW_HPP
+
+#include <sys/types.h>
 
 #include "../WebView.hpp"
 #include "DistrhoDefines.h"
 
 START_NAMESPACE_DISTRHO
 
-class CocoaWebView : public WebView
+class GtkWebView : public WebView
 {
 public:
-    CocoaWebView();
-    ~CocoaWebView();
+    GtkWebView();
+    ~GtkWebView();
     
     void reparent(uintptr_t parentWindowId);
 
 private:
-    uintptr_t fView;    // No ObjC headers here, thus the generic pointer type
+    void cleanup();
+    
+	pid_t fView;	// naming it view for coherence, the helper is the view
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // COCOAWEBVIEW_HPP
+#endif  // GTKWEBVIEW_HPP

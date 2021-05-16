@@ -23,6 +23,9 @@
 #define WEBUI_HPP
 
 #include "DistrhoUI.hpp"
+#ifdef DISTRHO_OS_LINUX
+#include "linux/GtkWebView.hpp"
+#endif
 #ifdef DISTRHO_OS_MAC
 #include "macos/CocoaWebView.hpp"
 #endif
@@ -45,6 +48,9 @@ public:
 private:
     uintptr_t fParentWindowId;
 
+#ifdef DISTRHO_OS_LINUX
+    GtkWebView fWebView;
+#endif
 #ifdef DISTRHO_OS_MAC
     CocoaWebView fWebView;
 #endif
