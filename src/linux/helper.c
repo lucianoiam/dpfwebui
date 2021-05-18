@@ -20,28 +20,39 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <X11/Xlib.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-
-static void destroyWindowCb(GtkWidget* widget, GtkWidget* window);
-static gboolean closeWebViewCb(WebKitWebView* webView, GtkWidget* window);
-
-void createBrowser();
+static void create_browser();
+static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
+static gboolean ipc_write_cb(GIOChannel *source, GIOCondition condition, gpointer data);
+static gboolean close_webview_cb(WebKitWebView* webView, GtkWidget* window);
+static void destroy_window_cb(GtkWidget* widget, GtkWidget* window);
 
 
 int main(int argc, char* argv[])
 {
     unsigned int pluginWindow;
     Display* display;
+    char zendp[32];
 
+    // TODO: the only required argument should be a numeric ipc channel identifier
     if (argc < 3) {
         fprintf(stderr, "Invalid argument count\n");
         return -1;
-    } 
+    }
 
+    /*
+        TODO: receive commands via IPC:
+        - Set content, arg = url
+        - Reparent window, arg = window id
+        - Shutdown
+    */
     if (sscanf(argv[1], "%x", &pluginWindow) == 0) {
         fprintf(stderr, "Invalid parent window ID\n");
         return -1;
@@ -63,24 +74,44 @@ int main(int argc, char* argv[])
       For debug purposes, how to get a window id given its title
       wmctrl -l | grep -i < title > | awk '{print $1}'
     */
-    createBrowser(display, pluginWindow, argv[2]);
+
+    // Initialize GTK+
+    gtk_init(0, NULL);
+    
+    create_browser(display, pluginWindow, argv[2]);
+
+    // Setup the IPC channel
+    int fd1 = open("/tmp/helper2", O_RDWR);
+    int fd2 = open("/tmp/helper1", O_RDWR);
+    GIOChannel* channel1 = g_io_channel_unix_new(fd1);    
+    g_io_add_watch(channel1, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, NULL);
+
+
+    int opcode = 0;
+    const char *payload = "Hello world";
+    int size = 1 + strlen(payload);
+    write(fd2, &opcode, sizeof(opcode));
+    write(fd2, &size, sizeof(size));
+    write(fd2, payload, size);
+
 
     // Run the main GTK+ event loop
     gtk_main();
+
+    // Cleanup
+    close(fd1);
+    close(fd2);
 }
 
-void createBrowser(Display *display, Window pluginWindow, const char *url)
+static void create_browser(Display *display, Window pluginWindow, const char *url)
 {
-    // Initialize GTK+
-    gtk_init(0, NULL);
-
     // Query plugin window attributes
-    XWindowAttributes *attr;
-    XGetWindowAttributes(display, pluginWindow, attr);
+    XWindowAttributes attr;
+    XGetWindowAttributes(display, pluginWindow, &attr);
 
     // Create a window that will contain the browser instance
     GtkWidget *gtkHelperWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(gtkHelperWindow), attr->width, attr->height);
+    gtk_window_set_default_size(GTK_WINDOW(gtkHelperWindow), attr.width, attr.height);
 
     // Create a browser instance
     WebKitWebView *webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
@@ -90,8 +121,8 @@ void createBrowser(Display *display, Window pluginWindow, const char *url)
 
     // Set up callbacks so that if either the main window or the browser instance is
     // closed, the program will exit
-    g_signal_connect(gtkHelperWindow, "destroy", G_CALLBACK(destroyWindowCb), NULL);
-    g_signal_connect(webView, "close", G_CALLBACK(closeWebViewCb), gtkHelperWindow);
+    g_signal_connect(gtkHelperWindow, "destroy", G_CALLBACK(destroy_window_cb), NULL);
+    g_signal_connect(webView, "close", G_CALLBACK(close_webview_cb), gtkHelperWindow);
 
     // Load a web page into the browser instance
     webkit_web_view_load_uri(webView, url);
@@ -118,15 +149,33 @@ void createBrowser(Display *display, Window pluginWindow, const char *url)
     XFlush(display);
 }
 
-static void destroyWindowCb(GtkWidget* widget, GtkWidget* window)
+static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
 {
-    fprintf(stderr, "destroyWindowCb()\n");
-    gtk_main_quit();
+    //printf("ipc_read_cb()\n");
+
+    if (condition == G_IO_IN) {
+        int fd = g_io_channel_unix_get_fd(source);
+        int opcode, size;
+        read(fd, &opcode, sizeof(opcode));
+        read(fd, &size, sizeof(size));
+        void *payload = malloc(size);
+        read(fd, payload, size);
+        printf("Helper Rx: %s\n", (char*)payload);
+        free(payload);
+    }
+
+    return TRUE;
 }
 
-static gboolean closeWebViewCb(WebKitWebView* webView, GtkWidget* window)
+static gboolean close_webview_cb(WebKitWebView* webView, GtkWidget* window)
 {
-    fprintf(stderr, "closeWebViewCb()\n");
+    fprintf(stderr, "close_webview_cb()\n");
     gtk_widget_destroy(window);
     return TRUE;
+}
+
+static void destroy_window_cb(GtkWidget* widget, GtkWidget* window)
+{
+    fprintf(stderr, "destroy_window_cb()\n");
+    gtk_main_quit();
 }

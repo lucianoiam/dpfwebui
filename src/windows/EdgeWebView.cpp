@@ -30,8 +30,8 @@
 USE_NAMESPACE_DISTRHO
 
 EdgeWebView::EdgeWebView()
-    : fController(nullptr)
-    , fView(nullptr)
+    : fController(0)
+    , fView(0)
 {
     // empty
 }
@@ -81,8 +81,7 @@ void EdgeWebView::reparent(uintptr_t parentWindowId)
         return S_OK;
     };
 
-    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(nullptr, getTempPath().c_str(),
-        nullptr, &fHandler);
+    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0, getTempPath().c_str(), 0, &fHandler);
 
     if (FAILED(result)) {
         errorMessageBox(L"Failed to create WebView2 environment options", result);
@@ -91,19 +90,19 @@ void EdgeWebView::reparent(uintptr_t parentWindowId)
 
 void EdgeWebView::cleanup()
 {
-    if (fController != nullptr) {
+    if (fController != 0) {
         fController->lpVtbl->Close(fController);
     }
 
-    fController = nullptr;
-    fView = nullptr;
-    fHandler.EnvironmentCompleted = nullptr;
-    fHandler.ControllerCompleted = nullptr;
+    fController = 0;
+    fView = 0;
+    fHandler.EnvironmentCompleted = 0;
+    fHandler.ControllerCompleted = 0;
 }
 
 void EdgeWebView::resize(HWND hWnd)
 {
-    if (fController == nullptr) {
+    if (fController == 0) {
         return;
     }
 
@@ -123,7 +122,7 @@ void EdgeWebView::errorMessageBox(std::wstring message, HRESULT result)
 {
     std::wstringstream ss;
     ss << message << ", HRESULT 0x" << std::hex << result;
-    MessageBox(nullptr, ss.str().c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
+    MessageBox(0, ss.str().c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
 }
 
 std::wstring EdgeWebView::getTempPath()

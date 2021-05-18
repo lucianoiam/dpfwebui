@@ -33,7 +33,8 @@ include Makefile.base.mk
 
 # Add platform-specific source files
 ifeq ($(LINUX),true)
-SRC_FILES_UI += linux/GtkWebView.cpp
+SRC_FILES_UI += linux/GtkWebView.cpp \
+                linux/HelperIpc.cpp
 endif
 ifeq ($(MACOS),true)
 SRC_FILES_UI += macos/CocoaWebView.mm
@@ -86,6 +87,9 @@ endif
 BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH)/distrho/src
 
 # Add platform-specific build flags
+ifeq ($(LINUX),true)
+LINK_FLAGS += -lpthread
+endif
 ifeq ($(MACOS),true)
 LINK_FLAGS += -framework WebKit 
 endif

@@ -28,7 +28,7 @@ CocoaWebView::CocoaWebView()
     : fView(0)
 {
     // ARC is off
-    NSString *urlStr = [[NSString alloc] initWithCString:getContentUrl().c_str()
+    NSString *urlStr = [[NSString alloc] initWithCString:getContentUrl()
                         encoding:NSUTF8StringEncoding];
     NSURL *url = [[NSURL alloc] initWithString:urlStr];
     WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero];

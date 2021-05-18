@@ -22,6 +22,8 @@
 #include <spawn.h>
 #include <signal.h> // TODO: needed for kill(), remove after IPC implemented
 
+#include "opcode.h"
+
 /*
   Need to launch a separate process hosting the GTK web view because linking
   plugins to UI toolkit libraries like GTK or QT is known to be problematic.
@@ -34,11 +36,13 @@ extern char **environ;
 GtkWebView::GtkWebView()
     : fView(0)
 {
-    // empty
+    fIpc.startThread();
 }
 
 GtkWebView::~GtkWebView()
 {
+    fIpc.stopThread(-1);
+
     cleanup();
 }
 
@@ -54,7 +58,7 @@ void GtkWebView::reparent(uintptr_t parentWindowId)
     sprintf(xid, "%lx", (long)parentWindowId);
 
     char url[1024];
-    strncpy(url, getContentUrl().c_str(), sizeof(url) - 1);
+    strncpy(url, getContentUrl(), sizeof(url) - 1);
 
     const char *argv[] = {"helper", xid, url, NULL};
     const char* fixmeHardcodedPath = "/home/user/src/dpf-webui/bin/d_dpf_webui_helper";
@@ -64,6 +68,10 @@ void GtkWebView::reparent(uintptr_t parentWindowId)
     if (status != 0) {
         // TO DO
     }
+
+
+    fIpc.sendString(OPCODE_URL, String(url));
+
 }
 
 void GtkWebView::cleanup()
