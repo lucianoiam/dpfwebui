@@ -18,9 +18,9 @@
 #define WEBVIEW_HPP
 
 #include <cstdint>
-#include <string>
 
 #include "DistrhoDefines.h"
+#include "extra/String.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -32,10 +32,10 @@ public:
     virtual void reparent(uintptr_t parentWindowId) = 0;
 
 protected:
-    std::string getContentUrl()
+    String getContentUrl()
     {
         // TODO
-        return "https://distrho.sourceforge.io/images/screenshots/distrho-kars.png";
+        return String("https://distrho.sourceforge.io/images/screenshots/distrho-kars.png");
     }
 
 };

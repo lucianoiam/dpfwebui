@@ -14,34 +14,37 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GTKWEBVIEW_HPP
-#define GTKWEBVIEW_HPP
+#ifndef HELPERIPC_HPP
+#define HELPERIPC_HPP
 
 #include <sys/types.h>
+#include <sys/stat.h>
 
-#include "../WebView.hpp"
-#include "DistrhoDefines.h"
-
-#include "HelperIpc.hpp"
+#include "extra/Thread.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class GtkWebView : public WebView
+class HelperIpc : public Thread
 {
 public:
-    GtkWebView();
-    ~GtkWebView();
-    
-    void reparent(uintptr_t parentWindowId);
+    HelperIpc();
+    virtual ~HelperIpc() override;
+
+    // TO DO: receive callback
+
+    void sendString(int opcode, const String &s);
+
+protected:
+    virtual void run() override;
 
 private:
-    void cleanup();
-    
-    pid_t     fView;    // naming it view for coherence, the helper is the view
-    HelperIpc fIpc;
+    void send(int opcode, const void *payload, int size);
+
+    int fReadPipe;
+    int fWritePipe;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // GTKWEBVIEW_HPP
+#endif  // HELPERIPC_HPP

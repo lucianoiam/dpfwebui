@@ -14,34 +14,12 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GTKWEBVIEW_HPP
-#define GTKWEBVIEW_HPP
+#ifndef OPCODE_H
+#define OPCODE_H
 
-#include <sys/types.h>
-
-#include "../WebView.hpp"
-#include "DistrhoDefines.h"
-
-#include "HelperIpc.hpp"
-
-START_NAMESPACE_DISTRHO
-
-class GtkWebView : public WebView
-{
-public:
-    GtkWebView();
-    ~GtkWebView();
-    
-    void reparent(uintptr_t parentWindowId);
-
-private:
-    void cleanup();
-    
-    pid_t     fView;    // naming it view for coherence, the helper is the view
-    HelperIpc fIpc;
-
+enum {
+	OPCODE_URL,
+	OPCODE_REPARENT
 };
 
-END_NAMESPACE_DISTRHO
-
-#endif  // GTKWEBVIEW_HPP
+#endif  // OPCODE_H
