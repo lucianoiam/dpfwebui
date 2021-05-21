@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBVIEW_HPP
-#define WEBVIEW_HPP
+#ifndef WEBVIEWINTERFACE_HPP
+#define WEBVIEWINTERFACE_HPP
 
 #include <cstdint>
 
@@ -26,10 +26,10 @@
 
 START_NAMESPACE_DISTRHO
 
-class WebView
+class WebViewInterface
 {
 public:
-    virtual ~WebView() {};
+    virtual ~WebViewInterface() {};
     
     virtual void reparent(uintptr_t parentWindowId) = 0;
 
@@ -44,4 +44,4 @@ protected:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBVIEW_HPP
+#endif  // WEBVIEWINTERFACE_HPP

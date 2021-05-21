@@ -20,12 +20,12 @@
 #ifndef COCOAWEBVIEW_HPP
 #define COCOAWEBVIEW_HPP
 
-#include "../WebView.hpp"
+#include "../WebViewInterface.hpp"
 #include "DistrhoDefines.h"
 
 START_NAMESPACE_DISTRHO
 
-class CocoaWebView : public WebView
+class CocoaWebView : public WebViewInterface
 {
 public:
     CocoaWebView();
