@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include "../WebView.hpp"
+#include "../WebViewInterface.hpp"
 #include "DistrhoDefines.h"
 
 /*
@@ -42,7 +42,7 @@
 
 START_NAMESPACE_DISTRHO
 
-class EdgeWebView : public WebView
+class EdgeWebView : public WebViewInterface
 {
 public:
     EdgeWebView();

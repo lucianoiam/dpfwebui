@@ -19,14 +19,14 @@
 
 #include <sys/types.h>
 
-#include "../WebView.hpp"
+#include "../WebViewInterface.hpp"
 #include "DistrhoDefines.h"
 
 #include "HelperIpc.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class GtkWebView : public WebView
+class GtkWebView : public WebViewInterface
 {
 public:
     GtkWebView();
