@@ -39,8 +39,12 @@ installing the MinGW toolchain on Windows:
    - Does the SDK license already allow to redistribute DLLs?
    - Is there a way to get the files without installing Visual Studio?
 
-3. For now WebView2Loader.dll must be copied to the host's .exe directory or
-   C:\Windows\system32 as there is no rpath equivalent on Windows. A possible
-   solution is to set search path during runtime (WIP)
-   
-   https://stackoverflow.com/questions/3272383/linking-with-r-and-rpath-switches-on-windows
+3. For testing and distribution
+
+   - Download and install the Microsoft Edge Webview2 Runtime
+     https://developer.microsoft.com/microsoft-edge/webview2
+
+   - For now WebView2Loader.dll must be copied to the host's .exe directory or
+     C:\Windows\system32 as there is no rpath equivalent on Windows. A possible
+     solution is to set search path during runtime (WIP)
+     https://stackoverflow.com/questions/3272383/linking-with-r-and-rpath-switches-on-windows

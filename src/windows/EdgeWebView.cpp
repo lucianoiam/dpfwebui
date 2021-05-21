@@ -21,7 +21,6 @@
 #include <codecvt>
 #include <locale>
 #include <sstream>
-#include <pathcch.h>
 #include <shlobj.h>
 #include <shlwapi.h>
 
@@ -139,8 +138,9 @@ std::wstring EdgeWebView::getTempPath()
     GetModuleFileName(NULL, exePath, MAX_PATH);
 
     // The following call relies on a further Windows library called Pathcch, maybe it should be
-    // replaced with something else.
-    PathCchRemoveExtension(exePath, MAX_PATH);
+    // replaced with something else. Implemented in api-ms-win-core-path-l1-1-0.dll which requires
+    // Windows 8
+    //PathCchRemoveExtension(exePath, MAX_PATH);
     wcscat(tempPath, PathFindFileName(exePath));
 
     return static_cast<const wchar_t *>(tempPath);
