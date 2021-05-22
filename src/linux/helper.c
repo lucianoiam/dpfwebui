@@ -25,21 +25,19 @@
 #include <fcntl.h>
 #include <X11/Xlib.h>
 #include <gdk/gdkx.h>
+#include <gdk/gdkwayland.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-static void create_browser();
+static int create_browser(unsigned int nativeParentWindow, const char *url);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 static gboolean ipc_write_cb(GIOChannel *source, GIOCondition condition, gpointer data);
-static gboolean close_webview_cb(WebKitWebView* webView, GtkWidget* window);
 static void destroy_window_cb(GtkWidget* widget, GtkWidget* window);
 
 
 int main(int argc, char* argv[])
 {
-    unsigned int pluginWindow;
-    Display* display;
-    char zendp[32];
+    unsigned int nativeParentWindow;
 
     // TODO: the only required argument should be a numeric ipc channel identifier
     if (argc < 3) {
@@ -53,7 +51,7 @@ int main(int argc, char* argv[])
         - Reparent window, arg = window id
         - Shutdown
     */
-    if (sscanf(argv[1], "%x", &pluginWindow) == 0) {
+    if (sscanf(argv[1], "%x", &nativeParentWindow) == 0) {
         fprintf(stderr, "Invalid parent window ID\n");
         return -1;
     }
@@ -63,13 +61,6 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    if ((display = XOpenDisplay(NULL)) == NULL)  {
-        fprintf(stderr, "Cannot open display\n");
-        return -1;
-    }
-
-    fprintf(stderr, "Plugin window at %x\n", pluginWindow);
-
     /*
       For debug purposes, how to get a window id given its title
       wmctrl -l | grep -i < title > | awk '{print $1}'
@@ -78,7 +69,9 @@ int main(int argc, char* argv[])
     // Initialize GTK+
     gtk_init(0, NULL);
     
-    create_browser(display, pluginWindow, argv[2]);
+    if (create_browser(nativeParentWindow, argv[2]) == -1) {
+        return -1;
+    }
 
     // Setup the IPC channel
     int fd1 = open("/tmp/helper2", O_RDWR);
@@ -103,15 +96,30 @@ int main(int argc, char* argv[])
     close(fd2);
 }
 
-static void create_browser(Display *display, Window pluginWindow, const char *url)
+static int create_browser(unsigned int nativeParentWindow, const char *url)
 {
-    // Query plugin window attributes
-    XWindowAttributes attr;
-    XGetWindowAttributes(display, pluginWindow, &attr);
+    Display *xDisplay;
+    GdkDisplay *gdkDisplay = gdk_display_get_default();
 
     // Create a window that will contain the browser instance
-    GtkWidget *gtkHelperWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(gtkHelperWindow), attr.width, attr.height);
+    GtkWindow *gtkHelperWindow = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+
+    // Set up callback so that if the main window is closed, the program will exit
+    g_signal_connect(gtkHelperWindow, "destroy", G_CALLBACK(destroy_window_cb), NULL);
+
+    if (GDK_IS_X11_DISPLAY(gdkDisplay)) {
+        if ((xDisplay = XOpenDisplay(NULL)) == NULL) {
+            // Should never happen
+            gtk_widget_destroy(GTK_WIDGET(gtkHelperWindow));
+            fprintf(stderr, "Cannot open display\n");
+            return -1;
+        }
+
+        // Set plugin window size
+        XWindowAttributes attr;
+        XGetWindowAttributes(xDisplay, nativeParentWindow, &attr);
+        gtk_window_set_default_size(gtkHelperWindow, attr.width, attr.height);
+    }
 
     // Create a browser instance
     WebKitWebView *webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
@@ -119,24 +127,26 @@ static void create_browser(Display *display, Window pluginWindow, const char *ur
     // Put the browser area into the main window
     gtk_container_add(GTK_CONTAINER(gtkHelperWindow), GTK_WIDGET(webView));
 
-    // Set up callbacks so that if either the main window or the browser instance is
-    // closed, the program will exit
-    g_signal_connect(gtkHelperWindow, "destroy", G_CALLBACK(destroy_window_cb), NULL);
-    g_signal_connect(webView, "close", G_CALLBACK(close_webview_cb), gtkHelperWindow);
+    // Make sure the main window and all its contents are visible
+    gtk_widget_show_all(GTK_WIDGET(gtkHelperWindow));
+
+    // Make sure that when the browser area becomes visible, it will get mouse and keyboard events
+    gtk_widget_grab_focus(GTK_WIDGET(webView));
+
+    if (GDK_IS_X11_DISPLAY(gdkDisplay)) {
+        // Embed helper window in plugin window
+        GdkWindow *gdkHelperWindow = gtk_widget_get_window(GTK_WIDGET(gtkHelperWindow));
+        XReparentWindow(xDisplay, gdk_x11_window_get_xid(gdkHelperWindow), nativeParentWindow, 0, 0);
+        XFlush(xDisplay);
+    } else if (GDK_IS_WAYLAND_DISPLAY(gdkDisplay)) {
+        // TODO: show a message in parent plugin window explaining that Wayland is not supported
+        //       yet and because of that the plugin web user interface will be displayed in a
+        //       floating window. Ideally include a button to focus that floating window.
+        fprintf(stderr, "Running Wayland, cannot reparent browser window\n");
+    }
 
     // Load a web page into the browser instance
     webkit_web_view_load_uri(webView, url);
-
-    // Make sure that when the browser area becomes visible, it will get mouse
-    // and keyboard events
-    gtk_widget_grab_focus(GTK_WIDGET(webView));
-
-    // Make sure the main window and all its contents are visible
-    gtk_widget_show_all(gtkHelperWindow);
-
-    // Move helper window into plugin window
-    Window xHelperWindow = gdk_x11_window_get_xid(gtk_widget_get_window(gtkHelperWindow));
-    XReparentWindow(display, xHelperWindow, pluginWindow, 0, 0);
 
     /*
        TODO
@@ -145,8 +155,6 @@ static void create_browser(Display *display, Window pluginWindow, const char *ur
      - Ability to receive a close command for graceful shutdown,
        ie. prevent Gdk-WARNING **: GdkWindow unexpectedly destroyed
     */
-
-    XFlush(display);
 }
 
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
@@ -167,12 +175,6 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     return TRUE;
 }
 
-static gboolean close_webview_cb(WebKitWebView* webView, GtkWidget* window)
-{
-    fprintf(stderr, "close_webview_cb()\n");
-    gtk_widget_destroy(window);
-    return TRUE;
-}
 
 static void destroy_window_cb(GtkWidget* widget, GtkWidget* window)
 {
