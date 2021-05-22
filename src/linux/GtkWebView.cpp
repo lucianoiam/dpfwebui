@@ -18,12 +18,6 @@
 
 #include "GtkWebView.hpp"
 
-#include <cstring>
-#include <spawn.h>
-#include <signal.h> // TODO: needed for kill(), remove after IPC implemented
-
-#include "opcode.h"
-
 /*
   Need to launch a separate process hosting the GTK web view because linking
   plugins to UI toolkit libraries like GTK or QT is known to be problematic.
@@ -31,54 +25,23 @@
 
 USE_NAMESPACE_DISTRHO
 
-extern char **environ;
-
 GtkWebView::GtkWebView()
-    : fView(0)
 {
-    fIpc.startThread();
+    // Do not start subprocess here, some hosts like REAPER can trigger repeated
+    // creation-destruction cycles of this class before settling.
 }
 
 GtkWebView::~GtkWebView()
 {
-    fIpc.stopThread(-1);
-
-    cleanup();
+    fView.terminate();
 }
 
 void GtkWebView::reparent(uintptr_t parentWindowId)
 {
-    // TODO: In contrast to Windows WebView2, the GTK web view can be reparented at any time thanks
-    //       to XEMBED. But that first needs the plugin->helper IPC channel to be implemented.
-    //       So for now the helper process is launched on every reparent() call.
-
-    cleanup();
-
-    char xid[sizeof(uintptr_t) + /* 0x + \0 */ 3];
-    sprintf(xid, "%lx", (long)parentWindowId);
-
-    char url[1024];
-    strncpy(url, getContentUrl(), sizeof(url) - 1);
-
-    const char *argv[] = {"helper", xid, url, NULL};
-    const char* fixmeHardcodedPath = "/home/user/dpf-webui/bin/d_dpf_webui_helper";
-    
-    int status = posix_spawn(&fView, fixmeHardcodedPath, NULL, NULL, (char* const*)argv, environ);
-
-    if (status != 0) {
-        // TO DO
+    if (!fView.isRunning()) {
+        fView.spawn();
+        fView.navigate(getContentUrl());
     }
 
-
-    fIpc.sendString(OPCODE_URL, String(url));
-
-}
-
-void GtkWebView::cleanup()
-{
-    // TODO: send a message instead of applying brute force
-    if (fView != 0) {
-        kill(fView, SIGKILL);
-        fView = 0;
-    }
+    fView.reparent(parentWindowId);
 }

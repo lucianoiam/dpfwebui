@@ -16,168 +16,164 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <X11/Xlib.h>
 #include <gdk/gdkx.h>
 #include <gdk/gdkwayland.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-static int create_browser(unsigned int nativeParentWindow, const char *url);
-static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
-static gboolean ipc_write_cb(GIOChannel *source, GIOCondition condition, gpointer data);
-static void destroy_window_cb(GtkWidget* widget, GtkWidget* window);
+#include "ipc.h"
+#include "opcode.h"
 
+typedef struct {
+    ipc_t*         ipc;
+    Display*       display;
+    GtkWindow*     window;
+    WebKitWebView* webView;
+} context_t;
+
+static int create_webview(context_t *ctx);
+static void dispatch(const context_t *ctx, const ipc_msg_t *message);
+static void navigate(const context_t *ctx, const char *url);
+static void reparent(const context_t *ctx, uintptr_t parentId);
+static void destroy_window_cb(GtkWidget* widget, GtkWidget* window);
+static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 
 int main(int argc, char* argv[])
 {
-    unsigned int nativeParentWindow;
+    context_t ctx;
+    int r_fd, w_fd;
+    GIOChannel* channel;
 
-    // TODO: the only required argument should be a numeric ipc channel identifier
     if (argc < 3) {
         fprintf(stderr, "Invalid argument count\n");
         return -1;
     }
 
-    /*
-        TODO: receive commands via IPC:
-        - Set content, arg = url
-        - Reparent window, arg = window id
-        - Shutdown
-    */
-    if (sscanf(argv[1], "%x", &nativeParentWindow) == 0) {
-        fprintf(stderr, "Invalid parent window ID\n");
+    if ((sscanf(argv[1], "%d", &r_fd) == 0) || (sscanf(argv[2], "%d", &w_fd) == 0)) {
+        fprintf(stderr, "Invalid file descriptor\n");
         return -1;
     }
 
-    if (strlen(argv[2]) == 0) {
-        fprintf(stderr, "Invalid URL\n");
-        return -1;
-    }
+    ctx.ipc = ipc_init(r_fd, w_fd);
+    channel = g_io_channel_unix_new(r_fd);    
+    g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
 
-    /*
-      For debug purposes, how to get a window id given its title
-      wmctrl -l | grep -i < title > | awk '{print $1}'
-    */
+    // FIXME
+    ipc_msg_t msg;
+    msg.opcode = 0;
+    msg.payload = "hello world";
+    msg.payload_sz = 12;
+    ipc_write(ctx.ipc, &msg);
 
-    // Initialize GTK+
     gtk_init(0, NULL);
-    
-    if (create_browser(nativeParentWindow, argv[2]) == -1) {
-        return -1;
-    }
-
-    // Setup the IPC channel
-    int fd1 = open("/tmp/helper2", O_RDWR);
-    int fd2 = open("/tmp/helper1", O_RDWR);
-    GIOChannel* channel1 = g_io_channel_unix_new(fd1);    
-    g_io_add_watch(channel1, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, NULL);
-
-
-    int opcode = 0;
-    const char *payload = "Hello world";
-    int size = 1 + strlen(payload);
-    write(fd2, &opcode, sizeof(opcode));
-    write(fd2, &size, sizeof(size));
-    write(fd2, payload, size);
-
-
-    // Run the main GTK+ event loop
+    create_webview(&ctx);
     gtk_main();
 
-    // Cleanup
-    close(fd1);
-    close(fd2);
+    ipc_destroy(ctx.ipc);
+
+    return 0;
 }
 
-static int create_browser(unsigned int nativeParentWindow, const char *url)
+static int create_webview(context_t *ctx)
 {
-    Display *xDisplay;
-    GdkDisplay *gdkDisplay = gdk_display_get_default();
-
     // Create a window that will contain the browser instance
-    GtkWindow *gtkHelperWindow = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
     // Set up callback so that if the main window is closed, the program will exit
-    g_signal_connect(gtkHelperWindow, "destroy", G_CALLBACK(destroy_window_cb), NULL);
+    g_signal_connect(ctx->window, "destroy", G_CALLBACK(destroy_window_cb), NULL);
 
-    if (GDK_IS_X11_DISPLAY(gdkDisplay)) {
-        if ((xDisplay = XOpenDisplay(NULL)) == NULL) {
+    if (GDK_IS_X11_DISPLAY(gdk_display_get_default())) {
+        if ((ctx->display = XOpenDisplay(NULL)) == NULL) {
             // Should never happen
-            gtk_widget_destroy(GTK_WIDGET(gtkHelperWindow));
+            gtk_widget_destroy(GTK_WIDGET(ctx->window));
             fprintf(stderr, "Cannot open display\n");
             return -1;
         }
 
         // Set plugin window size
-        XWindowAttributes attr;
+        /*XWindowAttributes attr;
         XGetWindowAttributes(xDisplay, nativeParentWindow, &attr);
-        gtk_window_set_default_size(gtkHelperWindow, attr.width, attr.height);
+        gtk_window_set_default_size(ctx->window, attr.width, attr.height);
+        */
     }
 
+    // FIXME
+    gtk_window_set_default_size(ctx->window, 800, 600);
+
     // Create a browser instance
-    WebKitWebView *webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
+    ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
 
     // Put the browser area into the main window
-    gtk_container_add(GTK_CONTAINER(gtkHelperWindow), GTK_WIDGET(webView));
+    gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
 
     // Make sure the main window and all its contents are visible
-    gtk_widget_show_all(GTK_WIDGET(gtkHelperWindow));
+    gtk_widget_show_all(GTK_WIDGET(ctx->window));
 
     // Make sure that when the browser area becomes visible, it will get mouse and keyboard events
-    gtk_widget_grab_focus(GTK_WIDGET(webView));
+    gtk_widget_grab_focus(GTK_WIDGET(ctx->webView));
 
-    if (GDK_IS_X11_DISPLAY(gdkDisplay)) {
-        // Embed helper window in plugin window
-        GdkWindow *gdkHelperWindow = gtk_widget_get_window(GTK_WIDGET(gtkHelperWindow));
-        XReparentWindow(xDisplay, gdk_x11_window_get_xid(gdkHelperWindow), nativeParentWindow, 0, 0);
-        XFlush(xDisplay);
-    } else if (GDK_IS_WAYLAND_DISPLAY(gdkDisplay)) {
+    return 0;
+}
+
+static void dispatch(const context_t *ctx, const ipc_msg_t *message)
+{
+    switch (message->opcode) {
+        case OPCODE_NAVIGATE:
+            navigate(ctx, (const char *)message->payload);
+            break;
+        case OPCODE_REPARENT:
+            reparent(ctx, *((uintptr_t *)message->payload));
+            break;
+        case OPCODE_TERMINATE:
+            gtk_main_quit();
+            break;
+        default:
+            break;
+    }
+}
+
+static void navigate(const context_t *ctx, const char *url)
+{
+    webkit_web_view_load_uri(ctx->webView, url);
+}
+
+static void reparent(const context_t *ctx, uintptr_t parentId)
+{
+    GdkDisplay *gdkDisplay = gdk_display_get_default();
+    if (GDK_IS_X11_DISPLAY(gdk_display_get_default())) {
+        Window childId = gdk_x11_window_get_xid(gtk_widget_get_window(GTK_WIDGET(ctx->window)));
+        XReparentWindow(ctx->display, childId, parentId, 0, 0);
+        XFlush(ctx->display);
+    } else if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) {
         // TODO: show a message in parent plugin window explaining that Wayland is not supported
         //       yet and because of that the plugin web user interface will be displayed in a
         //       floating window. Ideally include a button to focus that floating window.
         fprintf(stderr, "Running Wayland, cannot reparent browser window\n");
     }
+}
 
-    // Load a web page into the browser instance
-    webkit_web_view_load_uri(webView, url);
-
-    /*
-       TODO
-     - Keep browser size in sync with plugin window size
-     - Inter process communication
-     - Ability to receive a close command for graceful shutdown,
-       ie. prevent Gdk-WARNING **: GdkWindow unexpectedly destroyed
-    */
+static void destroy_window_cb(GtkWidget* widget, GtkWidget* window)
+{
+    gtk_main_quit();
 }
 
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
 {
     //printf("ipc_read_cb()\n");
+    context_t *ctx = (context_t *)data;
+    ipc_msg_t message;
 
     if (condition == G_IO_IN) {
-        int fd = g_io_channel_unix_get_fd(source);
-        int opcode, size;
-        read(fd, &opcode, sizeof(opcode));
-        read(fd, &size, sizeof(size));
-        void *payload = malloc(size);
-        read(fd, payload, size);
-        printf("Helper Rx: %s\n", (char*)payload);
-        free(payload);
+        if (ipc_read(ctx->ipc, &message) == -1) {
+            fprintf(stderr, "Could not read pipe");
+            return FALSE;
+        }
+
+        dispatch(ctx, &message);
     }
 
     return TRUE;
-}
-
-
-static void destroy_window_cb(GtkWidget* widget, GtkWidget* window)
-{
-    fprintf(stderr, "destroy_window_cb()\n");
-    gtk_main_quit();
 }

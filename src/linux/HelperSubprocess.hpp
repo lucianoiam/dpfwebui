@@ -16,30 +16,58 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef GTKWEBVIEW_HPP
-#define GTKWEBVIEW_HPP
-
-#include "../WebViewInterface.hpp"
+#ifndef HELPERSUBPROCESS_HPP
+#define HELPERSUBPROCESS_HPP
 
 #include <cstdint>
+#include <sys/types.h>
 
-#include "HelperSubprocess.hpp"
+#include "extra/String.hpp"
+#include "extra/Thread.hpp"
+
+#include "ipc.h"
 
 START_NAMESPACE_DISTRHO
 
-class GtkWebView : public WebViewInterface
+class HelperIpcReader : public Thread
 {
 public:
-    GtkWebView();
-    ~GtkWebView();
-    
-    void reparent(uintptr_t parentWindowId);
+    HelperIpcReader() : Thread("ipc_reader") {}
+
+    void setIpc(ipc_t *ipc) { fIpc = ipc; };
+
+    virtual void run() override;
+
+    // TODO: callback function
 
 private:
-    HelperSubprocess fView;
+    ipc_t* fIpc;
+
+};
+
+class HelperSubprocess
+{
+public:
+    HelperSubprocess();
+    ~HelperSubprocess();
+
+    bool isRunning() { return fPid != 0; }
+    int  spawn();
+    void terminate();
+
+    int navigate(String url);
+    int reparent(uintptr_t windowId);
+
+private:
+    int send(char opcode, const void *data, int size);
+
+    int             fPipeFd[2][2];
+    pid_t           fPid;
+    ipc_t*          fIpc;
+    HelperIpcReader fIpcReader;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // GTKWEBVIEW_HPP
+#endif  // HELPERSUBPROCESS_HPP

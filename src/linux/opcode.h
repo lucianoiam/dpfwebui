@@ -19,9 +19,8 @@
 #ifndef OPCODE_H
 #define OPCODE_H
 
-enum {
-	OPCODE_URL,
-	OPCODE_REPARENT
-};
+#define OPCODE_NAVIGATE   0
+#define OPCODE_REPARENT   1
+#define OPCODE_TERMINATE  2
 
 #endif  // OPCODE_H
