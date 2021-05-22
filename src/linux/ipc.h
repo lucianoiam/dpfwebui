@@ -14,37 +14,29 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef HELPERIPC_HPP
-#define HELPERIPC_HPP
+#ifndef IPC_H
+#define IPC_H
 
-#include <sys/types.h>
-#include <sys/stat.h>
+typedef struct private_ipc_t ipc_t;
 
-#include "extra/Thread.hpp"
+typedef struct {
+    char        opcode;
+    int         payload_sz;
+    const void* payload;
+} ipc_msg_t;
 
-START_NAMESPACE_DISTRHO
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class HelperIpc : public Thread
-{
-public:
-    HelperIpc();
-    virtual ~HelperIpc() override;
+ipc_t* ipc_init(int r_fd, int w_fd);
+void   ipc_destroy(ipc_t *ipc);
+int    ipc_get_read_fd(ipc_t *ipc);
+int    ipc_read(ipc_t *ipc, ipc_msg_t *msg);
+int    ipc_write(const ipc_t *ipc, const ipc_msg_t *msg);
 
-    // TO DO: receive callback
+#ifdef __cplusplus
+}
+#endif
 
-    void sendString(int opcode, const String &s);
-
-protected:
-    virtual void run() override;
-
-private:
-    void send(int opcode, const void *payload, int size);
-
-    int fReadPipe;
-    int fWritePipe;
-
-};
-
-END_NAMESPACE_DISTRHO
-
-#endif  // HELPERIPC_HPP
+#endif  // IPC_H

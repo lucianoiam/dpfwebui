@@ -34,7 +34,8 @@ include Makefile.base.mk
 # Add platform-specific source files
 ifeq ($(LINUX),true)
 SRC_FILES_UI += linux/GtkWebView.cpp \
-                linux/HelperIpc.cpp
+                linux/HelperSubprocess.cpp \
+                linux/ipc.c
 endif
 ifeq ($(MACOS),true)
 SRC_FILES_UI += macos/CocoaWebView.mm
@@ -103,7 +104,7 @@ endif
 ifeq ($(LINUX),true)
 HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_helper
 
-helper: src/linux/helper.c
+helper: src/linux/helper.c src/linux/ipc.c
 	@echo "Creating helper"
 	$(SILENT)$(CC) $^ -o $(HELPER_BIN) -lX11 \
 		`pkg-config --cflags --libs gtk+-3.0` \
