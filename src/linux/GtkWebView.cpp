@@ -59,7 +59,7 @@ void GtkWebView::reparent(uintptr_t parentWindowId)
     strncpy(url, getContentUrl(), sizeof(url) - 1);
 
     const char *argv[] = {"helper", xid, url, NULL};
-    const char* fixmeHardcodedPath = "/home/user/src/dpf-webui/bin/d_dpf_webui_helper";
+    const char* fixmeHardcodedPath = "/home/user/dpf-webui/bin/d_dpf_webui_helper";
     
     int status = posix_spawn(&fView, fixmeHardcodedPath, NULL, NULL, (char* const*)argv, environ);
 
