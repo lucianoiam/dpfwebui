@@ -22,52 +22,51 @@
 #include <cstdint>
 #include <sys/types.h>
 
-#include "extra/String.hpp"
 #include "extra/Thread.hpp"
 
 #include "ipc.h"
 
 START_NAMESPACE_DISTRHO
 
-class HelperIpcReadThread : public Thread
-{
-public:
-    HelperIpcReadThread() : Thread("ipc_read") {}
-
-    void setIpc(ipc_t *ipc) { fIpc = ipc; };
-
-    virtual void run() override;
-
-    // TODO: callback function
-
-private:
-    ipc_t* fIpc;
-
-};
-
 class ExternalGtkWebView : public WebViewInterface
 {
+friend class IpcReadThread;
+
 public:
-    ExternalGtkWebView() : fPipeFd(), fPid(0), fIpc(0) {}
+    ExternalGtkWebView();
     ~ExternalGtkWebView();
-    
+
     virtual void reparent(uintptr_t parentWindowId) override;
 
 private:
-    bool isRunning() { return fPid != 0; }
+    bool isRunning() { return fPid != -1; }
     int  spawn();
     void terminate();
 
-    int send(char opcode, const void *data, int size);
+    ipc_t* ipc() const { return fIpc; }
+    int    send(char opcode, const void *data, int size); 
+    void   readCallback(const ipc_msg_t& message) const;
 
-    int                 fPipeFd[2][2];
-    pid_t               fPid;
-    ipc_t*              fIpc;
-    HelperIpcReadThread fIpcThread;
+    int     fPipeFd[2][2];
+    pid_t   fPid;
+    ipc_t*  fIpc;
+    Thread* fIpcThread;
 
 };
 
 typedef ExternalGtkWebView PlatformWebView;
+
+class IpcReadThread : public Thread
+{
+public:
+    IpcReadThread(const ExternalGtkWebView& view) : Thread("ipc_read"), fView(view) {}
+
+    void run() override;
+
+private:
+    const ExternalGtkWebView& fView;
+
+};
 
 END_NAMESPACE_DISTRHO
 

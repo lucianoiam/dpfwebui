@@ -22,7 +22,7 @@
 #include <spawn.h>
 #include <unistd.h>
 
-#include "opcode.h"
+#include "helper.h"
 
 /*
   Need to launch a separate process hosting the GTK web view because linking
@@ -32,6 +32,14 @@
 extern char **environ;
 
 USE_NAMESPACE_DISTRHO
+
+ExternalGtkWebView::ExternalGtkWebView()
+    : fPid(-1)
+    , fIpc(nullptr)
+    , fIpcThread(nullptr)
+{
+    fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
+}
 
 ExternalGtkWebView::~ExternalGtkWebView()
 {
@@ -60,8 +68,8 @@ int ExternalGtkWebView::spawn()
 
     fIpc = ipc_init(fPipeFd[1][0], fPipeFd[0][1]);
 
-    fIpcThread.setIpc(fIpc);
-    fIpcThread.startThread();
+    fIpcThread = new IpcReadThread(*this);
+    fIpcThread->startThread();
 
     char rfd[10];
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
@@ -86,27 +94,29 @@ int ExternalGtkWebView::spawn()
 
 void ExternalGtkWebView::terminate()
 {
-    fIpcThread.stopThread(-1);
-
-    if (fPid != 0) {
+    if (fPid != -1) {
         if (send(OPCODE_TERMINATE, NULL, 0) == -1) {
             kill(fPid, SIGKILL);
         }
-    
-        fPid = 0;
+        fPid = -1;
     }
 
-    if (fIpc != 0) {
+    if (fIpcThread != nullptr) {
+        fIpcThread->stopThread(-1);
+        fIpcThread = nullptr;
+    }
+
+    if (fIpc != nullptr) {
         ipc_destroy(fIpc);
-        fIpc = 0;
+        fIpc = nullptr;
     }
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
-            if ((fPipeFd[i][j] != 0) && (close(fPipeFd[i][j]) == -1)) {
+            if ((fPipeFd[i][j] != -1) && (close(fPipeFd[i][j]) == -1)) {
                 perror("Could not close pipe");
             }
-            fPipeFd[i][j] = 0;
+            fPipeFd[i][j] = -1;
         }
     }
 }
@@ -127,12 +137,19 @@ int ExternalGtkWebView::send(char opcode, const void *payload, int size)
     return retval;
 }
 
-void HelperIpcReadThread::run()
+void ExternalGtkWebView::readCallback(const ipc_msg_t& message) const
 {
-    int fd = ipc_get_read_fd(fIpc);
+    // TODO
+    fprintf(stderr, "Plugin got message opcode = %d payload_sz = %d\n",
+        message.opcode, message.payload_sz);
+}
+
+void IpcReadThread::run()
+{
+    int fd = ipc_get_read_fd(fView.ipc());
     fd_set rfds;
     struct timeval tv;
-    ipc_msg_t msg;
+    ipc_msg_t message;
 
     while (true) {
         FD_ZERO(&rfds);
@@ -149,13 +166,11 @@ void HelperIpcReadThread::run()
             continue;   // select() timeout
         }
 
-        if (ipc_read(fIpc, &msg) == -1) {
+        if (ipc_read(fView.ipc(), &message) == -1) {
             perror("Could not read pipe");
             break;
         }
 
-        // FIXME
-        fprintf(stderr, "Plugin Rx: %s\n", (const char*)msg.payload);
+        fView.readCallback(message);
     }
-
 }

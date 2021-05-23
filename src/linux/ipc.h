@@ -17,7 +17,7 @@
 #ifndef IPC_H
 #define IPC_H
 
-typedef struct private_ipc_t ipc_t;
+typedef struct priv_ipc_t ipc_t;
 
 typedef struct {
     char        opcode;

@@ -19,7 +19,7 @@
 
 #include "ipc.h"
 
-struct private_ipc_t {
+struct priv_ipc_t {
     int   r_fd;
     int   w_fd;
     void* buf;

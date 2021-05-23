@@ -30,7 +30,7 @@ public:
     CocoaWebView();
     ~CocoaWebView();
     
-    virtual void reparent(uintptr_t parentWindowId) override;
+    void reparent(uintptr_t parentWindowId) override;
 
 private:
     uintptr_t fView;    // No ObjC headers here, thus the generic pointer type

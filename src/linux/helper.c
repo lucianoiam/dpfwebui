@@ -14,6 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "helper.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <X11/Xlib.h>
@@ -23,7 +25,6 @@
 #include <webkit2/webkit2.h>
 
 #include "ipc.h"
-#include "opcode.h"
 
 typedef struct {
     ipc_t*         ipc;
@@ -59,13 +60,6 @@ int main(int argc, char* argv[])
     ctx.ipc = ipc_init(r_fd, w_fd);
     channel = g_io_channel_unix_new(r_fd);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
-
-    // FIXME
-    ipc_msg_t msg;
-    msg.opcode = 0;
-    msg.payload = "hello world";
-    msg.payload_sz = 12;
-    ipc_write(ctx.ipc, &msg);
 
     gtk_init(0, NULL);
     create_webview(&ctx);
