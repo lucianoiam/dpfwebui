@@ -19,13 +19,13 @@
 #include "helper.h"
 
 #include <stdint.h>
-#include <stdio.h>
 #include <X11/Xlib.h>
 #include <gdk/gdkx.h>
 #include <gdk/gdkwayland.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
+#include "../log.h"
 #include "ipc.h"
 
 typedef struct {
@@ -36,6 +36,7 @@ typedef struct {
 } context_t;
 
 static int create_webview(context_t *ctx);
+static int ipc_write_simple(context_t *ctx, char opcode, const void *payload, int size);
 static void dispatch(const context_t *ctx, const ipc_msg_t *message);
 static void navigate(const context_t *ctx, const char *url);
 static void reparent(const context_t *ctx, uintptr_t parentId);
@@ -50,12 +51,12 @@ int main(int argc, char* argv[])
     GIOChannel* channel;
 
     if (argc < 3) {
-        fprintf(stderr, "Invalid argument count\n");
+        LOG_STDERR("Invalid argument count");
         return -1;
     }
 
     if ((sscanf(argv[1], "%d", &r_fd) == 0) || (sscanf(argv[2], "%d", &w_fd) == 0)) {
-        fprintf(stderr, "Invalid file descriptor\n");
+        LOG_STDERR("Invalid file descriptor");
         return -1;
     }
 
@@ -63,13 +64,37 @@ int main(int argc, char* argv[])
     channel = g_io_channel_unix_new(r_fd);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
 
-    gtk_init(0, NULL);
-    create_webview(&ctx);
-    gtk_main();
 
+    // FIXME
+    ipc_write_simple(&ctx, 0, "Hello plugin!", 14);
+
+
+    gtk_init(0, NULL);
+    
+    if (create_webview(&ctx) == 0) {
+        gtk_main();
+    }
+
+    g_io_channel_shutdown(channel, TRUE, NULL);
     ipc_destroy(ctx.ipc);
 
     return 0;
+}
+
+static int ipc_write_simple(context_t *ctx, char opcode, const void *payload, int size)
+{
+    int retval;
+    ipc_msg_t msg;
+
+    msg.opcode = opcode;
+    msg.payload_sz = size;
+    msg.payload = payload;
+
+    if ((retval = ipc_write(ctx->ipc, &msg)) == -1) {
+        LOG_STDERR_ERRNO_INT("Failed ipc_write(), opcode", opcode);
+    }
+
+    return retval;
 }
 
 static int create_webview(context_t *ctx)
@@ -84,7 +109,7 @@ static int create_webview(context_t *ctx)
         if ((ctx->display = XOpenDisplay(NULL)) == NULL) {
             // Should never happen
             gtk_widget_destroy(GTK_WIDGET(ctx->window));
-            fprintf(stderr, "Cannot open display\n");
+            LOG_STDERR("Cannot open display");
             return -1;
         }
 
@@ -146,7 +171,7 @@ static void reparent(const context_t *ctx, uintptr_t parentId)
         // TODO: show a message in parent plugin window explaining that Wayland is not supported
         //       yet and because of that the plugin web user interface will be displayed in a
         //       floating window. Ideally include a button to focus that floating window.
-        fprintf(stderr, "Running Wayland, cannot reparent browser window\n");
+        LOG_STDERR_COLOR("Running Wayland, plugin will be displayed in a floating window");
     }
 }
 
@@ -168,7 +193,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
 
     if (condition == G_IO_IN) {
         if (ipc_read(ctx->ipc, &message) == -1) {
-            fprintf(stderr, "Could not read pipe");
+            LOG_STDERR_ERRNO("Failed ipc_read()");
             terminate(ctx);
             return FALSE;
         }

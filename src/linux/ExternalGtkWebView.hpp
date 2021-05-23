@@ -46,8 +46,8 @@ private:
     void terminate();
 
     ipc_t* ipc() const { return fIpc; }
-    int    send(char opcode, const void *data, int size); 
-    void   readCallback(const ipc_msg_t& message) const;
+    int    ipcWrite(char opcode, const void *data, int size); 
+    void   ipcReadCallback(const ipc_msg_t& message) const;
 
     int     fPipeFd[2][2];
     pid_t   fPid;
@@ -61,8 +61,8 @@ typedef ExternalGtkWebView PlatformWebView;
 class IpcReadThread : public Thread
 {
 public:
-    IpcReadThread(const ExternalGtkWebView& view) : Thread("ipc_read"), fView(view) {}
-
+    IpcReadThread(const ExternalGtkWebView& view);
+    
     void run() override;
 
 private:
