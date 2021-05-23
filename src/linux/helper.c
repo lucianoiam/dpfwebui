@@ -145,9 +145,6 @@ static void dispatch(const context_t *ctx, const ipc_msg_t *message)
         case OPCODE_REPARENT:
             reparent(ctx, *((uintptr_t *)message->payload));
             break;
-        case OPCODE_TERMINATE:
-            terminate(ctx);
-            break;
         default:
             break;
     }

@@ -19,6 +19,5 @@
 
 #define OPCODE_NAVIGATE   0
 #define OPCODE_REPARENT   1
-#define OPCODE_TERMINATE  2
 
 #endif  // HELPER_H
