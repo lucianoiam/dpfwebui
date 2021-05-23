@@ -17,8 +17,16 @@
 #ifndef HELPER_H
 #define HELPER_H
 
+#include <stdint.h>
+
 #define OPCODE_NAVIGATE   0
 #define OPCODE_REPARENT   1
 #define OPCODE_TERMINATE  2
+#define OPCODE_PARAMETER  3
+
+typedef struct {
+    uint32_t index;
+    float    value;
+} param_state_t;
 
 #endif  // HELPER_H
