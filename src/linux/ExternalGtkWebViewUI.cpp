@@ -47,38 +47,15 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
     , fIpcThread(nullptr)
 {
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
-}
 
-ExternalGtkWebViewUI::~ExternalGtkWebViewUI()
-{
-    terminate();
-}
-
-void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
-{
-    if (!isRunning() && (spawn() == -1)) {
-        return;
-    }
-
-    ipcWrite(OPCODE_REPARENT, &windowId, sizeof(windowId));
-}
-
-void ExternalGtkWebViewUI::parameterChanged(uint32_t index, float value)
-{
-    param_state_t param = {index, value};
-    ipcWrite(OPCODE_PARAMETER, &param, sizeof(param));
-}
-
-int ExternalGtkWebViewUI::spawn()
-{
     if (pipe(fPipeFd[0]) == -1) {
         LOG_STDERR_ERRNO("Could not create plugin->helper pipe");
-        return -1;
+        return;
     }
 
     if (pipe(fPipeFd[1]) == -1) {
         LOG_STDERR_ERRNO("Could not create helper->plugin pipe");
-        return -1;
+        return;
     }
 
     fIpc = ipc_init(fPipeFd[1][0], fPipeFd[0][1]);
@@ -96,17 +73,15 @@ int ExternalGtkWebViewUI::spawn()
     int status = posix_spawn(&fPid, fixmeHardcodedPath, NULL, NULL, (char* const*)argv, environ);
     if (status != 0) {
         LOG_STDERR_ERRNO("Could not spawn helper subprocess");
-        return -1;
+        return;
     }
 
     String url = getContentUrl();
     const char *cUrl = static_cast<const char *>(url);
     ipcWrite(OPCODE_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
-
-    return 0;
 }
 
-void ExternalGtkWebViewUI::terminate()
+ExternalGtkWebViewUI::~ExternalGtkWebViewUI()
 {
     if (fPid != -1) {
         if (kill(fPid, SIGTERM) == 0) {
@@ -136,6 +111,17 @@ void ExternalGtkWebViewUI::terminate()
             fPipeFd[i][j] = -1;
         }
     }
+}
+
+void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
+{
+    ipcWrite(OPCODE_REPARENT, &windowId, sizeof(windowId));
+}
+
+void ExternalGtkWebViewUI::parameterChanged(uint32_t index, float value)
+{
+    param_state_t param = {index, value};
+    ipcWrite(OPCODE_PARAMETER, &param, sizeof(param));
 }
 
 int ExternalGtkWebViewUI::ipcWrite(char opcode, const void *payload, int size)
