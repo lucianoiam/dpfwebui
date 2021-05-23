@@ -111,13 +111,11 @@ int ExternalGtkWebViewUI::spawn()
 void ExternalGtkWebViewUI::terminate()
 {
     if (fPid != -1) {
-        if (ipcWrite(OPCODE_TERMINATE, NULL, 0) == -1) {
-            if (kill(fPid, SIGTERM) == 0) {
-                int stat;
-                waitpid(fPid, &stat, 0); // avoid zombie
-            } else {
-                LOG_STDERR_ERRNO("Could not terminate helper subprocess");
-            }
+        if (kill(fPid, SIGTERM) == 0) {
+            int stat;
+            waitpid(fPid, &stat, 0);
+        } else {
+            LOG_STDERR_ERRNO("Could not terminate helper subprocess");
         }
         fPid = -1;
     }
@@ -152,7 +150,7 @@ int ExternalGtkWebViewUI::ipcWrite(char opcode, const void *payload, int size)
     int retval;
 
     if ((retval = ipc_write(fIpc, &msg)) == -1) {
-        LOG_STDERR_ERRNO_INT("Failed ipc_write(), opcode", opcode);
+        LOG_STDERR_ERRNO_INT("Failed ipc_write() for opcode", opcode);
     }
 
     return retval;
