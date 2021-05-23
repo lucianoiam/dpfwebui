@@ -14,11 +14,13 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "CocoaWebView.hpp"
+#include "CocoaWebViewUI.hpp"
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <WebKit/WebKit.h>
+
+#include "../log.h"
 
 #define fWkView ((WKWebView *)fView)
 
@@ -26,10 +28,10 @@ USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
 {
-    return new CocoaWebView;
+    return new CocoaWebViewUI;
 }
 
-CocoaWebView::CocoaWebView()
+CocoaWebViewUI::CocoaWebViewUI()
     : fView(0)
 {
     // ARC is off
@@ -43,24 +45,24 @@ CocoaWebView::CocoaWebView()
     fView = (uintptr_t)webView;
 }
 
-CocoaWebView::~CocoaWebView()
+CocoaWebViewUI::~CocoaWebViewUI()
 {
     [fWkView removeFromSuperview];
     [fWkView release];
 }
 
-void CocoaWebView::reparent(uintptr_t parentWindowId)
+void CocoaWebViewUI::reparent(uintptr_t windowId)
 {
-    // parentWindowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
+    // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
     // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
-    NSView *parentView = (NSView *)parentWindowId;
+    NSView *parentView = (NSView *)windowId;
     CGSize parentSize = parentView.frame.size;
     [fWkView removeFromSuperview];
     fWkView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
     [parentView addSubview:fWkView];
 }
 
-void CocoaWebView::parameterChanged(uint32_t index, float value)
+void CocoaWebViewUI::parameterChanged(uint32_t index, float value)
 {
     // unused
     (void)index;

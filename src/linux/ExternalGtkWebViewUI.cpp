@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "ExternalGtkWebView.hpp"
+#include "ExternalGtkWebViewUI.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -24,6 +24,7 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 
+#include "../log.h"
 #include "helper.h"
 
 /*
@@ -37,10 +38,10 @@ USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
 {
-    return new ExternalGtkWebView;
+    return new ExternalGtkWebViewUI;
 }
 
-ExternalGtkWebView::ExternalGtkWebView()
+ExternalGtkWebViewUI::ExternalGtkWebViewUI()
     : fPid(-1)
     , fIpc(nullptr)
     , fIpcThread(nullptr)
@@ -48,28 +49,28 @@ ExternalGtkWebView::ExternalGtkWebView()
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
 }
 
-ExternalGtkWebView::~ExternalGtkWebView()
+ExternalGtkWebViewUI::~ExternalGtkWebViewUI()
 {
     terminate();
 }
 
-void ExternalGtkWebView::reparent(uintptr_t parentWindowId)
+void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
 {
     if (!isRunning() && (spawn() == -1)) {
         return;
     }
 
-    ipcWrite(OPCODE_REPARENT, &parentWindowId, sizeof(parentWindowId));
+    ipcWrite(OPCODE_REPARENT, &windowId, sizeof(windowId));
 }
 
-void ExternalGtkWebView::parameterChanged(uint32_t index, float value)
+void ExternalGtkWebViewUI::parameterChanged(uint32_t index, float value)
 {
     // unused
     (void)index;
     (void)value;
 }
 
-int ExternalGtkWebView::spawn()
+int ExternalGtkWebViewUI::spawn()
 {
     if (pipe(fPipeFd[0]) == -1) {
         LOG_STDERR_ERRNO("Could not create plugin->helper pipe");
@@ -106,7 +107,7 @@ int ExternalGtkWebView::spawn()
     return 0;
 }
 
-void ExternalGtkWebView::terminate()
+void ExternalGtkWebViewUI::terminate()
 {
     if (fPid != -1) {
         if (ipcWrite(OPCODE_TERMINATE, NULL, 0) == -1) {
@@ -140,7 +141,7 @@ void ExternalGtkWebView::terminate()
     }
 }
 
-int ExternalGtkWebView::ipcWrite(char opcode, const void *payload, int size)
+int ExternalGtkWebViewUI::ipcWrite(char opcode, const void *payload, int size)
 {
     ipc_msg_t msg;
     msg.opcode = opcode;
@@ -156,12 +157,12 @@ int ExternalGtkWebView::ipcWrite(char opcode, const void *payload, int size)
     return retval;
 }
 
-void ExternalGtkWebView::ipcReadCallback(const ipc_msg_t& message) const
+void ExternalGtkWebViewUI::ipcReadCallback(const ipc_msg_t& message) const
 {
     ::fprintf(stderr, "FIXME - Message from helper: %s\n", (const char*)message.payload);
 }
 
-IpcReadThread::IpcReadThread(const ExternalGtkWebView& view)
+IpcReadThread::IpcReadThread(const ExternalGtkWebViewUI& view)
     : Thread("ipc_read"), fView(view) {}
 
 void IpcReadThread::run()

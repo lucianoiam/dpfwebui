@@ -14,8 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef EDGEWEBVIEW_HPP
-#define EDGEWEBVIEW_HPP
+#ifndef EDGEWEBVIEWUI_HPP
+#define EDGEWEBVIEWUI_HPP
 
 #define UNICODE
 
@@ -43,11 +43,11 @@
 
 START_NAMESPACE_DISTRHO
 
-class EdgeWebView : public WebUI
+class EdgeWebViewUI : public WebUI
 {
 public:
-    EdgeWebView();
-    ~EdgeWebView();
+    EdgeWebViewUI();
+    ~EdgeWebViewUI();
     
     void reparent(uintptr_t parentWindowId) override;
     
@@ -67,4 +67,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // EDGEWEBVIEW_HPP
+#endif  // EDGEWEBVIEWUI_HPP
