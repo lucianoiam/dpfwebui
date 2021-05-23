@@ -22,11 +22,6 @@
 
 USE_NAMESPACE_DISTRHO
 
-UI* DISTRHO::createUI()
-{
-    return new WebUI;
-}
-
 WebUI::WebUI()
     : UI(800, 600)  // TODO: avoid arbitrary size, plugin should be resizable
     , fParentWindowId(0)
@@ -46,13 +41,12 @@ void WebUI::onDisplay()
     
     if (fParentWindowId != newParentWindowId) {
         fParentWindowId = newParentWindowId;
-        fWebView.reparent(fParentWindowId);
+        reparent(fParentWindowId);
     }
 }
 
-void WebUI::parameterChanged(uint32_t index, float value)
+String WebUI::getContentUrl()
 {
-    // unused
-    (void)index;
-    (void)value;
+    // TODO
+    return String("https://distrho.sourceforge.io/images/screenshots/distrho-kars.png");
 }

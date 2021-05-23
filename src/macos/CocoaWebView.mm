@@ -24,6 +24,11 @@
 
 USE_NAMESPACE_DISTRHO
 
+UI* DISTRHO::createUI()
+{
+    return new CocoaWebView;
+}
+
 CocoaWebView::CocoaWebView()
     : fView(0)
 {
@@ -53,4 +58,11 @@ void CocoaWebView::reparent(uintptr_t parentWindowId)
     [fWkView removeFromSuperview];
     fWkView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
     [parentView addSubview:fWkView];
+}
+
+void CocoaWebView::parameterChanged(uint32_t index, float value)
+{
+    // unused
+    (void)index;
+    (void)value;
 }

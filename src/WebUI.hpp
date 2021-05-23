@@ -20,16 +20,12 @@
 #ifndef WEBUI_HPP
 #define WEBUI_HPP
 
+#include <cstdint>
+
 #include "DistrhoUI.hpp"
-#ifdef DISTRHO_OS_LINUX
-#include "linux/ExternalGtkWebView.hpp"
-#endif
-#ifdef DISTRHO_OS_MAC
-#include "macos/CocoaWebView.hpp"
-#endif
-#ifdef DISTRHO_OS_WINDOWS
-#include "windows/EdgeWebView.hpp"
-#endif
+#include "extra/String.hpp"
+
+#include "log.h"
 
 START_NAMESPACE_DISTRHO
 
@@ -39,13 +35,15 @@ public:
     WebUI();
     ~WebUI();
 
-    void onDisplay();
+    void onDisplay() override;
 
-    void parameterChanged(uint32_t index, float value);
+protected:
+    virtual void reparent(uintptr_t parentWindowId) = 0;
+
+    String getContentUrl();
 
 private:
-    uintptr_t       fParentWindowId;
-    PlatformWebView fWebView;
+    uintptr_t fParentWindowId;
 
 };
 

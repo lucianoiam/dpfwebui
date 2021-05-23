@@ -17,18 +17,17 @@
 #ifndef EXTERNALGTKWEBVIEW_HPP
 #define EXTERNALGTKWEBVIEW_HPP
 
-#include "../WebViewInterface.hpp"
-
 #include <cstdint>
 #include <sys/types.h>
 
 #include "extra/Thread.hpp"
 
+#include "../WebUI.hpp"
 #include "ipc.h"
 
 START_NAMESPACE_DISTRHO
 
-class ExternalGtkWebView : public WebViewInterface
+class ExternalGtkWebView : public WebUI
 {
 friend class IpcReadThread;
 
@@ -36,7 +35,9 @@ public:
     ExternalGtkWebView();
     ~ExternalGtkWebView();
 
-    virtual void reparent(uintptr_t parentWindowId) override;
+    void reparent(uintptr_t parentWindowId) override;
+
+    void parameterChanged(uint32_t index, float value) override;
 
 private:
     bool isRunning() { return fPid != -1; }
@@ -53,8 +54,6 @@ private:
     Thread* fIpcThread;
 
 };
-
-typedef ExternalGtkWebView PlatformWebView;
 
 class IpcReadThread : public Thread
 {

@@ -19,25 +19,26 @@
 
 // Keep this header file pure C++
 
-#include "../WebViewInterface.hpp"
 #include "DistrhoDefines.h"
+
+#include "../WebUI.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class CocoaWebView : public WebViewInterface
+class CocoaWebView : public WebUI
 {
 public:
     CocoaWebView();
     ~CocoaWebView();
     
     void reparent(uintptr_t parentWindowId) override;
+    
+    void parameterChanged(uint32_t index, float value) override;
 
 private:
     uintptr_t fView;    // No ObjC headers here, thus the generic pointer type
 
 };
-
-typedef CocoaWebView PlatformWebView;
 
 END_NAMESPACE_DISTRHO
 

@@ -26,6 +26,11 @@
 
 USE_NAMESPACE_DISTRHO
 
+UI* DISTRHO::createUI()
+{
+    return new EdgeWebView;
+}
+
 EdgeWebView::EdgeWebView()
     : fController(0)
     , fView(0)
@@ -83,6 +88,13 @@ void EdgeWebView::reparent(uintptr_t parentWindowId)
     if (FAILED(result)) {
         errorMessageBox(L"Failed to create WebView2 environment options", result);
     }
+}
+
+void EdgeWebView::parameterChanged(uint32_t index, float value)
+{
+    // unused
+    (void)index;
+    (void)value;
 }
 
 void EdgeWebView::cleanup()
