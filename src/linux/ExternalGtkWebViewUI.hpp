@@ -42,10 +42,6 @@ public:
     void parameterChanged(uint32_t index, float value) override;
 
 private:
-    bool isRunning() { return fPid != -1; }
-    int  spawn();
-    void terminate();
-
     ipc_t* ipc() const { return fIpc; }
     int    ipcWrite(char opcode, const void *data, int size); 
     void   ipcReadCallback(const ipc_msg_t& message);
