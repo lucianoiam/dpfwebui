@@ -7,8 +7,8 @@
 # Allow placing DPF in a random directory and include its Makefiles
 # These variables are not supported by the official release as of 16 May 2021
 DPF_CUSTOM_PATH = lib/dpf
-DPF_CUSTOM_TARGET_DIR = bin
-DPF_CUSTOM_BUILD_DIR = build
+DPF_CUSTOM_TARGET_DIR = ./bin
+DPF_CUSTOM_BUILD_DIR = ./build
 
 # Keep debug symbols (DPF Makefile.base.mk@148) and print full compiler output
 SKIP_STRIPPING = true

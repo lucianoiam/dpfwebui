@@ -136,7 +136,7 @@ int ExternalGtkWebView::ipcWrite(char opcode, const void *payload, int size)
     int retval;
 
     if ((retval = ipc_write(fIpc, &msg)) == -1) {
-        LOG_STDERR_ERRNO_INT("Failed ipc_write(), opcode", opcode);
+        LOG_STDERR_ERRNO_INT("Failed ipc_write() for opcode", opcode);
     }
 
     return retval;
