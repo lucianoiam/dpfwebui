@@ -33,14 +33,14 @@ include Makefile.base.mk
 
 # Add platform-specific source files
 ifeq ($(LINUX),true)
-SRC_FILES_UI += linux/ExternalGtkWebView.cpp \
+SRC_FILES_UI += linux/ExternalGtkWebViewUI.cpp \
                 linux/ipc.c
 endif
 ifeq ($(MACOS),true)
-SRC_FILES_UI += macos/CocoaWebView.mm
+SRC_FILES_UI += macos/CocoaWebViewUI.mm
 endif
 ifeq ($(WINDOWS),true)
-SRC_FILES_UI += windows/EdgeWebView.cpp \
+SRC_FILES_UI += windows/EdgeWebViewUI.cpp \
                 windows/event.cpp
 endif
 

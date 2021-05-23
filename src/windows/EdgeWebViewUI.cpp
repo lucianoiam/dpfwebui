@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "EdgeWebView.hpp"
+#include "EdgeWebViewUI.hpp"
 
 #include <codecvt>
 #include <locale>
@@ -25,32 +25,33 @@
 #include <shlwapi.h>
 
 #include "../DistrhoPluginInfo.h"
+#include "../log.h"
 
 USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
 {
-    return new EdgeWebView;
+    return new EdgeWebViewUI;
 }
 
-EdgeWebView::EdgeWebView()
+EdgeWebViewUI::EdgeWebViewUI()
     : fController(0)
     , fView(0)
 {
     // empty
 }
 
-EdgeWebView::~EdgeWebView()
+EdgeWebViewUI::~EdgeWebViewUI()
 {
     cleanup();
 }
 
-void EdgeWebView::reparent(uintptr_t parentWindowId)
+void EdgeWebViewUI::reparent(uintptr_t windowId)
 {
     // FIXME: Trying to reparent WebView2 calling controller.put_ParentWindow() results in heavy
     //        flicker to the point the view is unusable. Need to reinitialize everything (@#!)
 
-    HWND hWnd = (HWND)parentWindowId;
+    HWND hWnd = (HWND)windowId;
 
     cleanup();
 
@@ -92,14 +93,14 @@ void EdgeWebView::reparent(uintptr_t parentWindowId)
     }
 }
 
-void EdgeWebView::parameterChanged(uint32_t index, float value)
+void EdgeWebViewUI::parameterChanged(uint32_t index, float value)
 {
     // unused
     (void)index;
     (void)value;
 }
 
-void EdgeWebView::cleanup()
+void EdgeWebViewUI::cleanup()
 {
     if (fController != 0) {
         fController->lpVtbl->Close(fController);
@@ -111,7 +112,7 @@ void EdgeWebView::cleanup()
     fHandler.ControllerCompleted = 0;
 }
 
-void EdgeWebView::resize(HWND hWnd)
+void EdgeWebViewUI::resize(HWND hWnd)
 {
     if (fController == 0) {
         return;
@@ -129,14 +130,14 @@ void EdgeWebView::resize(HWND hWnd)
     fController->lpVtbl->put_Bounds(fController, bounds);
 }
 
-void EdgeWebView::errorMessageBox(std::wstring message, HRESULT result)
+void EdgeWebViewUI::errorMessageBox(std::wstring message, HRESULT result)
 {
     std::wstringstream ss;
     ss << message << ", HRESULT 0x" << std::hex << result;
     MessageBox(0, ss.str().c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
 }
 
-std::wstring EdgeWebView::getTempPath()
+std::wstring EdgeWebViewUI::getTempPath()
 {
     // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPFTemp
     WCHAR tempPath[MAX_PATH + 1];

@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef COCOAWEBVIEW_HPP
-#define COCOAWEBVIEW_HPP
+#ifndef COCOAWEBVIEWUI_HPP
+#define COCOAWEBVIEWUI_HPP
 
 // Keep this header file pure C++
 
@@ -27,13 +27,13 @@
 
 START_NAMESPACE_DISTRHO
 
-class CocoaWebView : public WebUI
+class CocoaWebViewUI : public WebUI
 {
 public:
-    CocoaWebView();
-    ~CocoaWebView();
+    CocoaWebViewUI();
+    ~CocoaWebViewUI();
     
-    void reparent(uintptr_t parentWindowId) override;
+    void reparent(uintptr_t windowId) override;
     
     void parameterChanged(uint32_t index, float value) override;
 
@@ -44,4 +44,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // COCOAWEBVIEW_HPP
+#endif  // COCOAWEBVIEWUI_HPP
