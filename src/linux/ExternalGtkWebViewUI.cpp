@@ -67,9 +67,8 @@ void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
 
 void ExternalGtkWebViewUI::parameterChanged(uint32_t index, float value)
 {
-    // unused
-    (void)index;
-    (void)value;
+    param_state_t param = {index, value};
+    ipcWrite(OPCODE_PARAMETER, &param, sizeof(param));
 }
 
 int ExternalGtkWebViewUI::spawn()
@@ -159,13 +158,20 @@ int ExternalGtkWebViewUI::ipcWrite(char opcode, const void *payload, int size)
     return retval;
 }
 
-void ExternalGtkWebViewUI::ipcReadCallback(const ipc_msg_t& message) const
+void ExternalGtkWebViewUI::ipcReadCallback(const ipc_msg_t& message)
 {
-    ::fprintf(stderr, "FIXME - Message from helper: %s\n", (const char*)message.payload);
+    switch (message.opcode) {
+        case OPCODE_PARAMETER: {
+            const param_state_t *param = static_cast<const param_state_t *>(message.payload);
+            setParameterValue(param->index, param->value);
+            break;
+        }
+        default:
+            break;
+    }
 }
 
-IpcReadThread::IpcReadThread(const ExternalGtkWebViewUI& view)
-    : Thread("ipc_read"), fView(view) {}
+IpcReadThread::IpcReadThread(ExternalGtkWebViewUI& view) : Thread("ipc_read"), fView(view) {}
 
 void IpcReadThread::run()
 {

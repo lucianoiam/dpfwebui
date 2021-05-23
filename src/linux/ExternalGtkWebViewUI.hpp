@@ -48,7 +48,7 @@ private:
 
     ipc_t* ipc() const { return fIpc; }
     int    ipcWrite(char opcode, const void *data, int size); 
-    void   ipcReadCallback(const ipc_msg_t& message) const;
+    void   ipcReadCallback(const ipc_msg_t& message);
 
     int     fPipeFd[2][2];
     pid_t   fPid;
@@ -60,12 +60,12 @@ private:
 class IpcReadThread : public Thread
 {
 public:
-    IpcReadThread(const ExternalGtkWebViewUI& view);
+    IpcReadThread(ExternalGtkWebViewUI& view);
     
     void run() override;
 
 private:
-    const ExternalGtkWebViewUI& fView;
+    ExternalGtkWebViewUI& fView;
 
 };
 
