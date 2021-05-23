@@ -22,6 +22,8 @@
 #include "DistrhoDefines.h"
 #include "extra/String.hpp"
 
+#include "log.h"
+
 START_NAMESPACE_DISTRHO
 
 class WebViewInterface

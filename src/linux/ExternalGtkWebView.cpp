@@ -21,6 +21,8 @@
 #include <signal.h>
 #include <spawn.h>
 #include <unistd.h>
+#include <sys/select.h>
+#include <sys/wait.h>
 
 #include "helper.h"
 
@@ -48,21 +50,22 @@ ExternalGtkWebView::~ExternalGtkWebView()
 
 void ExternalGtkWebView::reparent(uintptr_t parentWindowId)
 {
-    if (!isRunning()) {
-        spawn();
+    if (!isRunning() && (spawn() == -1)) {
+        return;
     }
 
-    send(OPCODE_REPARENT, &parentWindowId, sizeof(parentWindowId));
+    ipcWrite(OPCODE_REPARENT, &parentWindowId, sizeof(parentWindowId));
 }
 
 int ExternalGtkWebView::spawn()
 {
-    if (isRunning()) {
+    if (pipe(fPipeFd[0]) == -1) {
+        LOG_STDERR_ERRNO("Could not create plugin->helper pipe");
         return -1;
     }
 
-    if ((pipe(fPipeFd[0]) == -1) /*plugin->helper*/ || (pipe(fPipeFd[1]) == -1) /*p<-h*/) {
-        perror("Could not create pipe");
+    if (pipe(fPipeFd[1]) == -1) {
+        LOG_STDERR_ERRNO("Could not create helper->plugin pipe");
         return -1;
     }
 
@@ -75,19 +78,18 @@ int ExternalGtkWebView::spawn()
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
     char wfd[10];
     ::sprintf(wfd, "%d", fPipeFd[1][1]);
-    const char *argv[] = {"d_dpf_webui_helper", rfd, wfd, NULL};
     const char* fixmeHardcodedPath = "/home/user/dpf-webui/bin/d_dpf_webui_helper";
-    
-    int status = posix_spawn(&fPid, fixmeHardcodedPath, NULL, NULL, (char* const*)argv, environ);
+    const char *argv[] = {fixmeHardcodedPath, rfd, wfd, NULL};
 
+    int status = posix_spawn(&fPid, fixmeHardcodedPath, NULL, NULL, (char* const*)argv, environ);
     if (status != 0) {
-        perror("Could not spawn subprocess");
+        LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return -1;
     }
 
     String url = getContentUrl();
     const char *cUrl = static_cast<const char *>(url);
-    send(OPCODE_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
+    ipcWrite(OPCODE_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
 
     return 0;
 }
@@ -95,8 +97,13 @@ int ExternalGtkWebView::spawn()
 void ExternalGtkWebView::terminate()
 {
     if (fPid != -1) {
-        if (send(OPCODE_TERMINATE, NULL, 0) == -1) {
-            kill(fPid, SIGKILL);
+        if (ipcWrite(OPCODE_TERMINATE, NULL, 0) == -1) {
+            if (kill(fPid, SIGTERM) == 0) {
+                int stat;
+                waitpid(fPid, &stat, 0); // avoid zombie
+            } else {
+                LOG_STDERR_ERRNO("Could not terminate helper subprocess");
+            }
         }
         fPid = -1;
     }
@@ -114,14 +121,14 @@ void ExternalGtkWebView::terminate()
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             if ((fPipeFd[i][j] != -1) && (close(fPipeFd[i][j]) == -1)) {
-                perror("Could not close pipe");
+                LOG_STDERR_ERRNO("Could not close pipe");
             }
             fPipeFd[i][j] = -1;
         }
     }
 }
 
-int ExternalGtkWebView::send(char opcode, const void *payload, int size)
+int ExternalGtkWebView::ipcWrite(char opcode, const void *payload, int size)
 {
     ipc_msg_t msg;
     msg.opcode = opcode;
@@ -131,18 +138,19 @@ int ExternalGtkWebView::send(char opcode, const void *payload, int size)
     int retval;
 
     if ((retval = ipc_write(fIpc, &msg)) == -1) {
-        perror("Could not write pipe");
+        LOG_STDERR_ERRNO_INT("Failed ipc_write(), opcode", opcode);
     }
 
     return retval;
 }
 
-void ExternalGtkWebView::readCallback(const ipc_msg_t& message) const
+void ExternalGtkWebView::ipcReadCallback(const ipc_msg_t& message) const
 {
-    // TODO
-    fprintf(stderr, "Plugin got message opcode = %d payload_sz = %d\n",
-        message.opcode, message.payload_sz);
+    ::fprintf(stderr, "FIXME - Message from helper: %s\n", (const char*)message.payload);
 }
+
+IpcReadThread::IpcReadThread(const ExternalGtkWebView& view)
+    : Thread("ipc_read"), fView(view) {}
 
 void IpcReadThread::run()
 {
@@ -158,6 +166,11 @@ void IpcReadThread::run()
         tv.tv_usec = 100000;
         int retval = select(fd + 1, &rfds, NULL, NULL, &tv);
 
+        if (retval == -1) {
+            LOG_STDERR_ERRNO("Failed select() on IPC channel");
+            break;
+        }
+
         if (shouldThreadExit()) {
             break;
         }
@@ -167,10 +180,10 @@ void IpcReadThread::run()
         }
 
         if (ipc_read(fView.ipc(), &message) == -1) {
-            perror("Could not read pipe");
+            LOG_STDERR_ERRNO("Failed ipc_read()");
             break;
         }
 
-        fView.readCallback(message);
+        fView.ipcReadCallback(message);
     }
 }
