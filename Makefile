@@ -33,8 +33,7 @@ include Makefile.base.mk
 
 # Add platform-specific source files
 ifeq ($(LINUX),true)
-SRC_FILES_UI += linux/GtkWebView.cpp \
-                linux/HelperSubprocess.cpp \
+SRC_FILES_UI += linux/ExternalGtkWebView.cpp \
                 linux/ipc.c
 endif
 ifeq ($(MACOS),true)

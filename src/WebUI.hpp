@@ -22,7 +22,7 @@
 
 #include "DistrhoUI.hpp"
 #ifdef DISTRHO_OS_LINUX
-#include "linux/GtkWebView.hpp"
+#include "linux/ExternalGtkWebView.hpp"
 #endif
 #ifdef DISTRHO_OS_MAC
 #include "macos/CocoaWebView.hpp"
@@ -47,7 +47,7 @@ private:
     uintptr_t fParentWindowId;
 
 #ifdef DISTRHO_OS_LINUX
-    GtkWebView fWebView;
+    ExternalGtkWebView fWebView;
 #endif
 #ifdef DISTRHO_OS_MAC
     CocoaWebView fWebView;

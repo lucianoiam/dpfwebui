@@ -14,30 +14,59 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef GTKWEBVIEW_HPP
-#define GTKWEBVIEW_HPP
+#ifndef EXTERNALGTKWEBVIEW_HPP
+#define EXTERNALGTKWEBVIEW_HPP
 
 #include "../WebViewInterface.hpp"
 
 #include <cstdint>
+#include <sys/types.h>
 
-#include "HelperSubprocess.hpp"
+#include "extra/String.hpp"
+#include "extra/Thread.hpp"
+
+#include "ipc.h"
 
 START_NAMESPACE_DISTRHO
 
-class GtkWebView : public WebViewInterface
+class HelperIpcReadThread : public Thread
 {
 public:
-    GtkWebView();
-    ~GtkWebView();
-    
-    void reparent(uintptr_t parentWindowId);
+    HelperIpcReadThread() : Thread("ipc_read") {}
+
+    void setIpc(ipc_t *ipc) { fIpc = ipc; };
+
+    virtual void run() override;
+
+    // TODO: callback function
 
 private:
-    HelperSubprocess fView;
+    ipc_t* fIpc;
+
+};
+
+class ExternalGtkWebView : public WebViewInterface
+{
+public:
+    ExternalGtkWebView() : fPipeFd(), fPid(0), fIpc(0) {}
+    ~ExternalGtkWebView();
+    
+    virtual void reparent(uintptr_t parentWindowId) override;
+
+private:
+    bool isRunning() { return fPid != 0; }
+    int  spawn();
+    void terminate();
+
+    int send(char opcode, const void *data, int size);
+
+    int                 fPipeFd[2][2];
+    pid_t               fPid;
+    ipc_t*              fIpc;
+    HelperIpcReadThread fIpcThread;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // GTKWEBVIEW_HPP
+#endif  // EXTERNALGTKWEBVIEW_HPP

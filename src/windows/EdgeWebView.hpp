@@ -48,7 +48,7 @@ public:
     EdgeWebView();
     ~EdgeWebView();
     
-    void reparent(uintptr_t parentWindowId);
+    virtual void reparent(uintptr_t parentWindowId) override;
 
 private:
     void cleanup();
