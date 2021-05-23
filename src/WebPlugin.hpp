@@ -30,22 +30,22 @@ public:
     WebPlugin();
     ~WebPlugin();
 
-    const char* getLabel() const
+    const char* getLabel() const override
     {
         return "Web UI Example";
     }
 
-    const char* getMaker() const
+    const char* getMaker() const override
     {
         return "Luciano Iam";
     }
 
-    const char* getLicense() const
+    const char* getLicense() const override
     {
         return "ISC";
     }
 
-    uint32_t getVersion() const
+    uint32_t getVersion() const override
     {
         return 0;
     }
@@ -55,11 +55,11 @@ public:
         return d_cconst('d', 'W', 'e', 'b');
     }
 
-    void  initParameter(uint32_t index, Parameter& parameter);
-    float getParameterValue(uint32_t index) const;
-    void  setParameterValue(uint32_t index, float value);
+    void  initParameter(uint32_t index, Parameter& parameter) override;
+    float getParameterValue(uint32_t index) const override;
+    void  setParameterValue(uint32_t index, float value) override;
 
-    void run(const float** inputs, float** outputs, uint32_t frames);
+    void run(const float** inputs, float** outputs, uint32_t frames) override;
 
 };
 
