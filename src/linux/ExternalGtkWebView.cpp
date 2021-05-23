@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "HelperSubprocess.hpp"
+#include "ExternalGtkWebView.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -26,38 +26,44 @@
 
 #include "opcode.h"
 
+/*
+  Need to launch a separate process hosting the GTK web view because linking
+  plugins to UI toolkit libraries like GTK or QT is known to be problematic.
+*/
+
 extern char **environ;
 
 USE_NAMESPACE_DISTRHO
 
-HelperSubprocess::HelperSubprocess()
-    : fPipeFd()
-    , fPid(0)
-    , fIpc(0)
-{
-    // empty
-}
-
-HelperSubprocess::~HelperSubprocess()
+ExternalGtkWebView::~ExternalGtkWebView()
 {
     terminate();
 }
 
-int HelperSubprocess::spawn()
+void ExternalGtkWebView::reparent(uintptr_t parentWindowId)
+{
+    if (!isRunning()) {
+        spawn();
+    }
+
+    send(OPCODE_REPARENT, &parentWindowId, sizeof(parentWindowId));
+}
+
+int ExternalGtkWebView::spawn()
 {
     if (isRunning()) {
         return -1;
     }
 
-    if ((pipe(fPipeFd[0]) == -1) /*pp->sp*/ || (pipe(fPipeFd[1]) == -1) /*pp<-sp*/) {
+    if ((pipe(fPipeFd[0]) == -1) /*plugin->helper*/ || (pipe(fPipeFd[1]) == -1) /*p<-h*/) {
         perror("Could not create pipe");
         return -1;
     }
 
     fIpc = ipc_init(fPipeFd[1][0], fPipeFd[0][1]);
 
-    fIpcReader.setIpc(fIpc);
-    fIpcReader.startThread();
+    fIpcThread.setIpc(fIpc);
+    fIpcThread.startThread();
 
     char rfd[10];
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
@@ -73,12 +79,16 @@ int HelperSubprocess::spawn()
         return -1;
     }
 
+    String url = getContentUrl();
+    const char *cUrl = static_cast<const char *>(url);
+    send(OPCODE_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
+
     return 0;
 }
 
-void HelperSubprocess::terminate()
+void ExternalGtkWebView::terminate()
 {
-    fIpcReader.stopThread(-1);
+    fIpcThread.stopThread(-1);
 
     if (fPid != 0) {
         if (send(OPCODE_TERMINATE, NULL, 0) == -1) {
@@ -103,17 +113,7 @@ void HelperSubprocess::terminate()
     }
 }
 
-int HelperSubprocess::navigate(String url)
-{
-    return send(OPCODE_NAVIGATE, static_cast<const char*>(url), url.length() + 1);
-}
-
-int HelperSubprocess::reparent(uintptr_t windowId)
-{
-    return send(OPCODE_REPARENT, &windowId, sizeof(windowId));
-}
-
-int HelperSubprocess::send(char opcode, const void *payload, int size)
+int ExternalGtkWebView::send(char opcode, const void *payload, int size)
 {
     ipc_msg_t msg;
     msg.opcode = opcode;
@@ -129,7 +129,7 @@ int HelperSubprocess::send(char opcode, const void *payload, int size)
     return retval;
 }
 
-void HelperIpcReader::run()
+void HelperIpcReadThread::run()
 {
     int fd = ipc_get_read_fd(fIpc);
     fd_set rfds;

@@ -38,6 +38,7 @@ static int create_webview(context_t *ctx);
 static void dispatch(const context_t *ctx, const ipc_msg_t *message);
 static void navigate(const context_t *ctx, const char *url);
 static void reparent(const context_t *ctx, uintptr_t parentId);
+static void terminate(const context_t *ctx);
 static void destroy_window_cb(GtkWidget* widget, GtkWidget* window);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 
@@ -128,7 +129,7 @@ static void dispatch(const context_t *ctx, const ipc_msg_t *message)
             reparent(ctx, *((uintptr_t *)message->payload));
             break;
         case OPCODE_TERMINATE:
-            gtk_main_quit();
+            terminate(ctx);
             break;
         default:
             break;
@@ -155,9 +156,14 @@ static void reparent(const context_t *ctx, uintptr_t parentId)
     }
 }
 
-static void destroy_window_cb(GtkWidget* widget, GtkWidget* window)
+static void terminate(const context_t *ctx)
 {
     gtk_main_quit();
+}
+
+static void destroy_window_cb(GtkWidget* widget, GtkWidget* window)
+{
+    terminate(NULL);
 }
 
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
@@ -169,6 +175,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     if (condition == G_IO_IN) {
         if (ipc_read(ctx->ipc, &message) == -1) {
             fprintf(stderr, "Could not read pipe");
+            terminate(ctx);
             return FALSE;
         }
 

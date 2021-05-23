@@ -16,9 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Keep this header file pure C++
 #ifndef COCOAWEBVIEW_HPP
 #define COCOAWEBVIEW_HPP
+
+// Keep this header file pure C++
 
 #include "../WebViewInterface.hpp"
 #include "DistrhoDefines.h"
@@ -31,7 +32,7 @@ public:
     CocoaWebView();
     ~CocoaWebView();
     
-    void reparent(uintptr_t parentWindowId);
+    virtual void reparent(uintptr_t parentWindowId) override;
 
 private:
     uintptr_t fView;    // No ObjC headers here, thus the generic pointer type

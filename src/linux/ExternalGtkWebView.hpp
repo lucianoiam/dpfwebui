@@ -16,8 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HELPERSUBPROCESS_HPP
-#define HELPERSUBPROCESS_HPP
+#ifndef EXTERNALGTKWEBVIEW_HPP
+#define EXTERNALGTKWEBVIEW_HPP
+
+#include "../WebViewInterface.hpp"
 
 #include <cstdint>
 #include <sys/types.h>
@@ -29,10 +31,10 @@
 
 START_NAMESPACE_DISTRHO
 
-class HelperIpcReader : public Thread
+class HelperIpcReadThread : public Thread
 {
 public:
-    HelperIpcReader() : Thread("ipc_reader") {}
+    HelperIpcReadThread() : Thread("ipc_read") {}
 
     void setIpc(ipc_t *ipc) { fIpc = ipc; };
 
@@ -45,29 +47,28 @@ private:
 
 };
 
-class HelperSubprocess
+class ExternalGtkWebView : public WebViewInterface
 {
 public:
-    HelperSubprocess();
-    ~HelperSubprocess();
+    ExternalGtkWebView() : fPipeFd(), fPid(0), fIpc(0) {}
+    ~ExternalGtkWebView();
+    
+    virtual void reparent(uintptr_t parentWindowId) override;
 
+private:
     bool isRunning() { return fPid != 0; }
     int  spawn();
     void terminate();
 
-    int navigate(String url);
-    int reparent(uintptr_t windowId);
-
-private:
     int send(char opcode, const void *data, int size);
 
-    int             fPipeFd[2][2];
-    pid_t           fPid;
-    ipc_t*          fIpc;
-    HelperIpcReader fIpcReader;
+    int                 fPipeFd[2][2];
+    pid_t               fPid;
+    ipc_t*              fIpc;
+    HelperIpcReadThread fIpcThread;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // HELPERSUBPROCESS_HPP
+#endif  // EXTERNALGTKWEBVIEW_HPP
