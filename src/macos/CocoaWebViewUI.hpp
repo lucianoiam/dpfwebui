@@ -19,11 +19,9 @@
 #ifndef COCOAWEBVIEWUI_HPP
 #define COCOAWEBVIEWUI_HPP
 
-// Keep this header file pure C++
-
-#include "DistrhoDefines.h"
-
 #include "../WebUI.hpp"
+
+#import <WebKit/WebKit.h>
 
 START_NAMESPACE_DISTRHO
 
@@ -38,7 +36,7 @@ public:
     void parameterChanged(uint32_t index, float value) override;
 
 private:
-    uintptr_t fView;    // No ObjC headers here, thus the generic pointer type
+    WKWebView *fView;
 
 };
 

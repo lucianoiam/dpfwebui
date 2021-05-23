@@ -14,15 +14,12 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "CocoaWebViewUI.hpp"
-
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
-#import <WebKit/WebKit.h>
+
+#include "CocoaWebViewUI.hpp"
 
 #include "../log.h"
-
-#define fWkView ((WKWebView *)fView)
 
 USE_NAMESPACE_DISTRHO
 
@@ -38,17 +35,16 @@ CocoaWebViewUI::CocoaWebViewUI()
     NSString *urlStr = [[NSString alloc] initWithCString:getContentUrl()
                         encoding:NSUTF8StringEncoding];
     NSURL *url = [[NSURL alloc] initWithString:urlStr];
-    WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero];
-    [webView loadRequest:[NSURLRequest requestWithURL:url]];
+    fView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    [fView loadRequest:[NSURLRequest requestWithURL:url]];
     [url release];
     [urlStr release];
-    fView = (uintptr_t)webView;
 }
 
 CocoaWebViewUI::~CocoaWebViewUI()
 {
-    [fWkView removeFromSuperview];
-    [fWkView release];
+    [fView removeFromSuperview];
+    [fView release];
 }
 
 void CocoaWebViewUI::reparent(uintptr_t windowId)
@@ -57,9 +53,9 @@ void CocoaWebViewUI::reparent(uintptr_t windowId)
     // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
     NSView *parentView = (NSView *)windowId;
     CGSize parentSize = parentView.frame.size;
-    [fWkView removeFromSuperview];
-    fWkView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
-    [parentView addSubview:fWkView];
+    [fView removeFromSuperview];
+    fView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
+    [parentView addSubview:fView];
 }
 
 void CocoaWebViewUI::parameterChanged(uint32_t index, float value)
