@@ -64,6 +64,8 @@ private:
 
 };
 
+typedef EdgeWebView PlatformWebView;
+
 END_NAMESPACE_DISTRHO
 
 #endif  // EDGEWEBVIEW_HPP

@@ -43,6 +43,7 @@ WebUI::~WebUI()
 
 void WebUI::onDisplay()
 {
+    // onDisplay() can be called multiple times during lifetime of instance
     uintptr_t newParentWindowId = getParentWindow().getWindowId();
     
     if (fParentWindowId != newParentWindowId) {

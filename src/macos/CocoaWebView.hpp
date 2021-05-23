@@ -39,6 +39,8 @@ private:
 
 };
 
+typedef CocoaWebView PlatformWebView;
+
 END_NAMESPACE_DISTRHO
 
 #endif  // COCOAWEBVIEW_HPP

@@ -46,17 +46,8 @@ public:
     void parameterChanged(uint32_t index, float value);
 
 private:
-    uintptr_t fParentWindowId;
-
-#ifdef DISTRHO_OS_LINUX
-    ExternalGtkWebView fWebView;
-#endif
-#ifdef DISTRHO_OS_MAC
-    CocoaWebView fWebView;
-#endif
-#ifdef DISTRHO_OS_WINDOWS
-    EdgeWebView	fWebView;
-#endif
+    uintptr_t       fParentWindowId;
+    PlatformWebView fWebView;
 
 };
 
