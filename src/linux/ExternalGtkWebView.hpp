@@ -67,6 +67,8 @@ private:
 
 };
 
+typedef ExternalGtkWebView PlatformWebView;
+
 END_NAMESPACE_DISTRHO
 
 #endif  // EXTERNALGTKWEBVIEW_HPP
