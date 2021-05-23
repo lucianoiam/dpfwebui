@@ -145,9 +145,6 @@ static void dispatch(const context_t *ctx, const ipc_msg_t *message)
         case OPCODE_REPARENT:
             reparent(ctx, *((uintptr_t *)message->payload));
             break;
-        case OPCODE_TERMINATE:
-            terminate(ctx);
-            break;
         default:
             break;
     }
@@ -168,8 +165,8 @@ static void reparent(const context_t *ctx, uintptr_t parentId)
     } else if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) {
         // TODO: show a message in parent plugin window explaining that Wayland is not supported
         //       yet and because of that the plugin web user interface will be displayed in a
-        //       floating window. Ideally include a button to focus that floating window.
-        LOG_STDERR_COLOR("Running Wayland, plugin will be displayed in a floating window");
+        //       separate window. Ideally include a button to focus such separate window.
+        LOG_STDERR_COLOR("Running Wayland, plugin will be displayed in a separate window");
     }
 }
 
