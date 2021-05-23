@@ -99,13 +99,11 @@ int ExternalGtkWebView::spawn()
 void ExternalGtkWebView::terminate()
 {
     if (fPid != -1) {
-        if (ipcWrite(OPCODE_TERMINATE, NULL, 0) == -1) {
-            if (kill(fPid, SIGTERM) == 0) {
-                int stat;
-                waitpid(fPid, &stat, 0); // avoid zombie
-            } else {
-                LOG_STDERR_ERRNO("Could not terminate helper subprocess");
-            }
+        if (kill(fPid, SIGTERM) == 0) {
+            int stat;
+            waitpid(fPid, &stat, 0);
+        } else {
+            LOG_STDERR_ERRNO("Could not terminate helper subprocess");
         }
         fPid = -1;
     }
