@@ -16,11 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OPCODE_H
-#define OPCODE_H
+#ifndef HELPER_H
+#define HELPER_H
 
 #define OPCODE_NAVIGATE   0
 #define OPCODE_REPARENT   1
 #define OPCODE_TERMINATE  2
 
-#endif  // OPCODE_H
+#endif  // HELPER_H
