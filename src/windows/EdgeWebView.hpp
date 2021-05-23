@@ -23,7 +23,6 @@
 
 #include <string>
 
-#include "../WebViewInterface.hpp"
 #include "DistrhoDefines.h"
 
 /*
@@ -42,15 +41,19 @@
 #include "WebView2.h"   // from microsoft sdk
 #include "event.h"      // from example
 
+#include "../WebUI.hpp"
+
 START_NAMESPACE_DISTRHO
 
-class EdgeWebView : public WebViewInterface
+class EdgeWebView : public WebUI
 {
 public:
     EdgeWebView();
     ~EdgeWebView();
     
     void reparent(uintptr_t parentWindowId) override;
+    
+    void parameterChanged(uint32_t index, float value) override;
 
 private:
     void cleanup();
@@ -63,8 +66,6 @@ private:
     ICoreWebView2*           fView;
 
 };
-
-typedef EdgeWebView PlatformWebView;
 
 END_NAMESPACE_DISTRHO
 

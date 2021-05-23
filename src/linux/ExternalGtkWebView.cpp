@@ -37,6 +37,11 @@ extern char **environ;
 
 USE_NAMESPACE_DISTRHO
 
+UI* DISTRHO::createUI()
+{
+    return new ExternalGtkWebView;
+}
+
 ExternalGtkWebView::ExternalGtkWebView()
     : fPid(-1)
     , fIpc(nullptr)
@@ -57,6 +62,13 @@ void ExternalGtkWebView::reparent(uintptr_t parentWindowId)
     }
 
     ipcWrite(OPCODE_REPARENT, &parentWindowId, sizeof(parentWindowId));
+}
+
+void ExternalGtkWebView::parameterChanged(uint32_t index, float value)
+{
+    // unused
+    (void)index;
+    (void)value;
 }
 
 int ExternalGtkWebView::spawn()
