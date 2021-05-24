@@ -37,10 +37,8 @@ typedef struct {
 
 static int create_webview(context_t *ctx);
 static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload, int payload_sz);
-static void dispatch(const context_t *ctx, const tlv_t *packet);
 static void navigate(const context_t *ctx, const char *url);
 static void reparent(const context_t *ctx, uintptr_t parentId);
-static void terminate(const context_t *ctx);
 static void destroy_window_cb(GtkWidget* widget, GtkWidget* window);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 
@@ -139,20 +137,6 @@ static int create_webview(context_t *ctx)
     return 0;
 }
 
-static void dispatch(const context_t *ctx, const tlv_t *packet)
-{
-    switch (packet->t) {
-        case OPC_NAVIGATE:
-            navigate(ctx, (const char *)packet->v);
-            break;
-        case OPC_REPARENT:
-            reparent(ctx, *((uintptr_t *)packet->v));
-            break;
-        default:
-            break;
-    }
-}
-
 static void navigate(const context_t *ctx, const char *url)
 {
     webkit_web_view_load_uri(ctx->webView, url);
@@ -173,14 +157,9 @@ static void reparent(const context_t *ctx, uintptr_t parentId)
     }
 }
 
-static void terminate(const context_t *ctx)
-{
-    gtk_main_quit();
-}
-
 static void destroy_window_cb(GtkWidget* widget, GtkWidget* window)
 {
-    terminate(NULL);
+    gtk_main_quit();
 }
 
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
@@ -188,14 +167,24 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     context_t *ctx = (context_t *)data;
     tlv_t packet;
 
-    if (condition == G_IO_IN) {
-        if (ipc_read(ctx->ipc, &packet) == -1) {
-            LOG_STDERR_ERRNO("Failed ipc_read()");
-            terminate(ctx);
-            return FALSE;
-        }
+    if ((condition & G_IO_IN) == 0) {
+        return TRUE;
+    }
 
-        dispatch(ctx, &packet);
+    if (ipc_read(ctx->ipc, &packet) == -1) {
+        LOG_STDERR_ERRNO("Failed ipc_read()");
+        return TRUE;
+    }
+
+    switch (packet.t) {
+        case OPC_NAVIGATE:
+            navigate(ctx, (const char *)packet.v);
+            break;
+        case OPC_REPARENT:
+            reparent(ctx, *((uintptr_t *)packet.v));
+            break;
+        default:
+            break;
     }
 
     return TRUE;

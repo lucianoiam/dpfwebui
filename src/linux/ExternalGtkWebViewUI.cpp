@@ -71,6 +71,7 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
     char wfd[10];
     ::sprintf(wfd, "%d", fPipeFd[1][1]);
+    // TODO: use getSharedLibraryPath() when implementation is finished
     const char* fixmeHardcodedPath = "/home/user/dpf-webui/bin/d_dpf_webui_helper";
     const char *argv[] = {fixmeHardcodedPath, rfd, wfd, NULL};
 
