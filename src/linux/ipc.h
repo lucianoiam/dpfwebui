@@ -22,10 +22,10 @@
 typedef struct priv_ipc_t ipc_t;
 
 typedef struct {
-    char        opcode;
-    int         payload_sz;
-    const void* payload;
-} ipc_msg_t;
+    char        t;
+    int         l;
+    const void* v;
+} tlv_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,8 +34,8 @@ extern "C" {
 ipc_t* ipc_init(int r_fd, int w_fd);
 void   ipc_destroy(ipc_t *ipc);
 int    ipc_get_read_fd(ipc_t *ipc);
-int    ipc_read(ipc_t *ipc, ipc_msg_t *msg);
-int    ipc_write(const ipc_t *ipc, const ipc_msg_t *msg);
+int    ipc_read(ipc_t *ipc, tlv_t *packet);
+int    ipc_write(const ipc_t *ipc, const tlv_t *packet);
 
 #ifdef __cplusplus
 }

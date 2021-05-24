@@ -27,7 +27,6 @@
 #include <sys/wait.h>
 
 #include "../log.h"
-#include "helper.h"
 
 /*
   Need to launch a separate process hosting the GTK web view because linking
@@ -80,7 +79,7 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
 
     String url = getContentUrl();
     const char *cUrl = static_cast<const char *>(url);
-    ipcWrite(OPCODE_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
+    ipcWrite(OPC_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
 }
 
 ExternalGtkWebViewUI::~ExternalGtkWebViewUI()
@@ -117,36 +116,36 @@ ExternalGtkWebViewUI::~ExternalGtkWebViewUI()
 
 void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
 {
-    ipcWrite(OPCODE_REPARENT, &windowId, sizeof(windowId));
+    ipcWrite(OPC_REPARENT, &windowId, sizeof(windowId));
 }
 
 void ExternalGtkWebViewUI::parameterChanged(uint32_t index, float value)
 {
-    param_state_t param = {index, value};
-    ipcWrite(OPCODE_PARAMETER, &param, sizeof(param));
+    parameter_t param = {index, value};
+    ipcWrite(OPC_SET_PARAMETER, &param, sizeof(param));
 }
 
-int ExternalGtkWebViewUI::ipcWrite(char opcode, const void *payload, int size)
+int ExternalGtkWebViewUI::ipcWrite(opcode_t opcode, const void *payload, int payloadSize)
 {
-    ipc_msg_t msg;
-    msg.opcode = opcode;
-    msg.payload_sz = size;
-    msg.payload = payload;
+    tlv_t packet;
+    packet.t = static_cast<char>(opcode);
+    packet.l = payloadSize;
+    packet.v = payload;
 
     int retval;
 
-    if ((retval = ipc_write(fIpc, &msg)) == -1) {
+    if ((retval = ipc_write(fIpc, &packet)) == -1) {
         LOG_STDERR_ERRNO_INT("Failed ipc_write() for opcode", opcode);
     }
 
     return retval;
 }
 
-void ExternalGtkWebViewUI::ipcReadCallback(const ipc_msg_t& message)
+void ExternalGtkWebViewUI::ipcReadCallback(const tlv_t& packet)
 {
-    switch (message.opcode) {
-        case OPCODE_PARAMETER: {
-            const param_state_t *param = static_cast<const param_state_t *>(message.payload);
+    switch (static_cast<opcode_t>(packet.t)) {
+        case OPC_SET_PARAMETER: {
+            const parameter_t *param = static_cast<const parameter_t *>(packet.v);
             setParameterValue(param->index, param->value);
             break;
         }
@@ -162,7 +161,7 @@ void IpcReadThread::run()
     int fd = ipc_get_read_fd(fView.ipc());
     fd_set rfds;
     struct timeval tv;
-    ipc_msg_t message;
+    tlv_t packet;
 
     while (true) {
         FD_ZERO(&rfds);
@@ -184,11 +183,11 @@ void IpcReadThread::run()
             continue;   // select() timeout
         }
 
-        if (ipc_read(fView.ipc(), &message) == -1) {
+        if (ipc_read(fView.ipc(), &packet) == -1) {
             LOG_STDERR_ERRNO("Failed ipc_read()");
             break;
         }
 
-        fView.ipcReadCallback(message);
+        fView.ipcReadCallback(packet);
     }
 }

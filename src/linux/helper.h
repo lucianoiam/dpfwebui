@@ -21,14 +21,16 @@
 
 #include <stdint.h>
 
-#define OPCODE_NAVIGATE   0
-#define OPCODE_REPARENT   1
-#define OPCODE_TERMINATE  2
-#define OPCODE_PARAMETER  3
+typedef enum {
+    OPC_NAVIGATE,
+    OPC_REPARENT,
+    OPC_TERMINATE,
+    OPC_SET_PARAMETER
+} opcode_t;
 
 typedef struct {
     uint32_t index;
     float    value;
-} param_state_t;
+} parameter_t;
 
 #endif  // HELPER_H

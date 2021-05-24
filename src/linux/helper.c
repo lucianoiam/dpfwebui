@@ -36,8 +36,8 @@ typedef struct {
 } context_t;
 
 static int create_webview(context_t *ctx);
-static int ipc_write_simple(context_t *ctx, char opcode, const void *payload, int size);
-static void dispatch(const context_t *ctx, const ipc_msg_t *message);
+static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload, int payload_sz);
+static void dispatch(const context_t *ctx, const tlv_t *packet);
 static void navigate(const context_t *ctx, const char *url);
 static void reparent(const context_t *ctx, uintptr_t parentId);
 static void terminate(const context_t *ctx);
@@ -81,17 +81,17 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-static int ipc_write_simple(context_t *ctx, char opcode, const void *payload, int size)
+static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload, int payload_sz)
 {
     int retval;
-    ipc_msg_t msg;
+    tlv_t packet;
 
-    msg.opcode = opcode;
-    msg.payload_sz = size;
-    msg.payload = payload;
+    packet.t = (char)opcode;
+    packet.l = payload_sz;
+    packet.v = payload;
 
-    if ((retval = ipc_write(ctx->ipc, &msg)) == -1) {
-        LOG_STDERR_ERRNO_INT("Failed ipc_write(), opcode", opcode);
+    if ((retval = ipc_write(ctx->ipc, &packet)) == -1) {
+        LOG_STDERR_ERRNO_INT("Failed ipc_write() for opcode", opcode);
     }
 
     return retval;
@@ -138,14 +138,14 @@ static int create_webview(context_t *ctx)
     return 0;
 }
 
-static void dispatch(const context_t *ctx, const ipc_msg_t *message)
+static void dispatch(const context_t *ctx, const tlv_t *packet)
 {
-    switch (message->opcode) {
-        case OPCODE_NAVIGATE:
-            navigate(ctx, (const char *)message->payload);
+    switch (packet->t) {
+        case OPC_NAVIGATE:
+            navigate(ctx, (const char *)packet->v);
             break;
-        case OPCODE_REPARENT:
-            reparent(ctx, *((uintptr_t *)message->payload));
+        case OPC_REPARENT:
+            reparent(ctx, *((uintptr_t *)packet->v));
             break;
         default:
             break;
@@ -184,18 +184,17 @@ static void destroy_window_cb(GtkWidget* widget, GtkWidget* window)
 
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
 {
-    //printf("ipc_read_cb()\n");
     context_t *ctx = (context_t *)data;
-    ipc_msg_t message;
+    tlv_t packet;
 
     if (condition == G_IO_IN) {
-        if (ipc_read(ctx->ipc, &message) == -1) {
+        if (ipc_read(ctx->ipc, &packet) == -1) {
             LOG_STDERR_ERRNO("Failed ipc_read()");
             terminate(ctx);
             return FALSE;
         }
 
-        dispatch(ctx, &message);
+        dispatch(ctx, &packet);
     }
 
     return TRUE;
