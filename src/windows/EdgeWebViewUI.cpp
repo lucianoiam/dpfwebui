@@ -44,6 +44,13 @@ EdgeWebViewUI::~EdgeWebViewUI()
     cleanup();
 }
 
+void EdgeWebViewUI::parameterChanged(uint32_t index, float value)
+{
+    // unused
+    (void)index;
+    (void)value;
+}
+
 void EdgeWebViewUI::reparent(uintptr_t windowId)
 {
     // FIXME: Trying to reparent WebView2 calling controller.put_ParentWindow() results in heavy
@@ -91,11 +98,10 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
     }
 }
 
-void EdgeWebViewUI::parameterChanged(uint32_t index, float value)
+String EdgeWebViewUI::getSharedLibraryPath()
 {
-    // unused
-    (void)index;
-    (void)value;
+	// https://stackoverflow.com/questions/6924195/get-dll-path-at-runtime
+    return String();  // TODO
 }
 
 void EdgeWebViewUI::cleanup()

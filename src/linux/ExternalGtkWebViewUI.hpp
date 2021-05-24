@@ -35,10 +35,11 @@ friend class IpcReadThread;
 public:
     ExternalGtkWebViewUI();
     ~ExternalGtkWebViewUI();
+    
+    void   parameterChanged(uint32_t index, float value) override;
 
-    void reparent(uintptr_t windowId) override;
-
-    void parameterChanged(uint32_t index, float value) override;
+    void   reparent(uintptr_t windowId) override;
+    String getSharedLibraryPath() override;
 
 private:
     ipc_t* ipc() const { return fIpc; }

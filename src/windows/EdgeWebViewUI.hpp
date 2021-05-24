@@ -49,9 +49,10 @@ public:
     EdgeWebViewUI();
     ~EdgeWebViewUI();
     
-    void reparent(uintptr_t parentWindowId) override;
-    
-    void parameterChanged(uint32_t index, float value) override;
+    void   parameterChanged(uint32_t index, float value) override;
+
+    void   reparent(uintptr_t windowId) override;
+    String getSharedLibraryPath() override;
 
 private:
     void cleanup();
