@@ -22,6 +22,11 @@
 typedef struct priv_ipc_t ipc_t;
 
 typedef struct {
+    int fd_r;
+    int fd_w;
+} ipc_conf_t;
+
+typedef struct {
     char        t;
     int         l;
     const void* v;
@@ -31,11 +36,11 @@ typedef struct {
 extern "C" {
 #endif
 
-ipc_t* ipc_init(int r_fd, int w_fd);
-void   ipc_destroy(ipc_t *ipc);
-int    ipc_get_read_fd(ipc_t *ipc);
-int    ipc_read(ipc_t *ipc, tlv_t *packet);
-int    ipc_write(const ipc_t *ipc, const tlv_t *packet);
+ipc_t*            ipc_init(const ipc_conf_t *conf);
+void              ipc_destroy(ipc_t *ipc);
+int               ipc_read(ipc_t *ipc, tlv_t *packet);
+int               ipc_write(const ipc_t *ipc, const tlv_t *packet);
+const ipc_conf_t* ipc_get_config(const ipc_t *ipc);
 
 #ifdef __cplusplus
 }
