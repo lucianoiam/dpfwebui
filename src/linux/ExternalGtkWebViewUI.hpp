@@ -24,6 +24,7 @@
 
 #include "../WebUI.hpp"
 #include "ipc.h"
+#include "helper.h"
 
 START_NAMESPACE_DISTRHO
 
@@ -41,8 +42,8 @@ public:
 
 private:
     ipc_t* ipc() const { return fIpc; }
-    int    ipcWrite(char opcode, const void *data, int size); 
-    void   ipcReadCallback(const ipc_msg_t& message);
+    int    ipcWrite(opcode_t opcode, const void *payload, int payloadSize); 
+    void   ipcReadCallback(const tlv_t& message);
 
     int     fPipeFd[2][2];
     pid_t   fPid;

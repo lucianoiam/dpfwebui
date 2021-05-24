@@ -53,42 +53,42 @@ int ipc_get_read_fd(ipc_t *ipc)
     return ipc->r_fd;
 }
 
-int ipc_read(ipc_t *ipc, ipc_msg_t *msg)
+int ipc_read(ipc_t *ipc, tlv_t *packet)
 {
-    if (read(ipc->r_fd, &msg->opcode, sizeof(msg->opcode)) == -1) {
+    if (read(ipc->r_fd, &packet->t, sizeof(packet->t)) == -1) {
         return -1;
     }
 
-    if (read(ipc->r_fd, &msg->payload_sz, sizeof(msg->payload_sz)) == -1) {
+    if (read(ipc->r_fd, &packet->l, sizeof(packet->l)) == -1) {
         return -1;
     }
 
     ipc_free_buf(ipc);
     
-    if (msg->payload_sz > 0) {
-        ipc->buf = malloc(msg->payload_sz);
+    if (packet->l > 0) {
+        ipc->buf = malloc(packet->l);
 
-        if (read(ipc->r_fd, ipc->buf, msg->payload_sz) == -1) {
+        if (read(ipc->r_fd, ipc->buf, packet->l) == -1) {
             return -1;
         }
         
-        msg->payload = ipc->buf;
+        packet->v = ipc->buf;
     }
 
     return 0;
 }
 
-int ipc_write(const ipc_t *ipc, const ipc_msg_t *msg)
+int ipc_write(const ipc_t *ipc, const tlv_t *packet)
 {
-    if (write(ipc->w_fd, &msg->opcode, sizeof(msg->opcode)) == -1) {
+    if (write(ipc->w_fd, &packet->t, sizeof(packet->t)) == -1) {
         return -1;
     }
 
-    if (write(ipc->w_fd, &msg->payload_sz, sizeof(msg->payload_sz)) == -1) {
+    if (write(ipc->w_fd, &packet->l, sizeof(packet->l)) == -1) {
         return -1;
     }
     
-    if ((msg->payload_sz > 0) && (write(ipc->w_fd, msg->payload, msg->payload_sz) == -1)) {
+    if ((packet->l > 0) && (write(ipc->w_fd, packet->v, packet->l) == -1)) {
         return -1;
     }
 
