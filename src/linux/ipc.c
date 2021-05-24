@@ -20,9 +20,8 @@
 #include "ipc.h"
 
 struct priv_ipc_t {
-    int   r_fd;
-    int   w_fd;
-    void* buf;
+    ipc_conf_t conf;
+    void*      buf;
 };
 
 static void ipc_free_buf(ipc_t *ipc)
@@ -33,11 +32,11 @@ static void ipc_free_buf(ipc_t *ipc)
     }
 }
 
-ipc_t* ipc_init(int r_fd, int w_fd)
+ipc_t* ipc_init(const ipc_conf_t *conf)
 {
     ipc_t *ipc = malloc(sizeof(ipc_t));
-    ipc->r_fd = r_fd;
-    ipc->w_fd = w_fd;
+    ipc->conf.fd_r = conf->fd_r;
+    ipc->conf.fd_w = conf->fd_w;
     ipc->buf = NULL;
     return ipc;
 }
@@ -48,18 +47,13 @@ void ipc_destroy(ipc_t *ipc)
     free(ipc);
 }
 
-int ipc_get_read_fd(ipc_t *ipc)
-{
-    return ipc->r_fd;
-}
-
 int ipc_read(ipc_t *ipc, tlv_t *packet)
 {
-    if (read(ipc->r_fd, &packet->t, sizeof(packet->t)) == -1) {
+    if (read(ipc->conf.fd_r, &packet->t, sizeof(packet->t)) == -1) {
         return -1;
     }
 
-    if (read(ipc->r_fd, &packet->l, sizeof(packet->l)) == -1) {
+    if (read(ipc->conf.fd_r, &packet->l, sizeof(packet->l)) == -1) {
         return -1;
     }
 
@@ -68,7 +62,7 @@ int ipc_read(ipc_t *ipc, tlv_t *packet)
     if (packet->l > 0) {
         ipc->buf = malloc(packet->l);
 
-        if (read(ipc->r_fd, ipc->buf, packet->l) == -1) {
+        if (read(ipc->conf.fd_r, ipc->buf, packet->l) == -1) {
             return -1;
         }
         
@@ -80,17 +74,22 @@ int ipc_read(ipc_t *ipc, tlv_t *packet)
 
 int ipc_write(const ipc_t *ipc, const tlv_t *packet)
 {
-    if (write(ipc->w_fd, &packet->t, sizeof(packet->t)) == -1) {
+    if (write(ipc->conf.fd_w, &packet->t, sizeof(packet->t)) == -1) {
         return -1;
     }
 
-    if (write(ipc->w_fd, &packet->l, sizeof(packet->l)) == -1) {
+    if (write(ipc->conf.fd_w, &packet->l, sizeof(packet->l)) == -1) {
         return -1;
     }
     
-    if ((packet->l > 0) && (write(ipc->w_fd, packet->v, packet->l) == -1)) {
+    if ((packet->l > 0) && (write(ipc->conf.fd_w, packet->v, packet->l) == -1)) {
         return -1;
     }
 
     return 0;
+}
+
+const ipc_conf_t* ipc_get_config(const ipc_t *ipc)
+{
+    return &ipc->conf;
 }

@@ -45,7 +45,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
 int main(int argc, char* argv[])
 {
     context_t ctx;
-    int r_fd, w_fd;
+    ipc_conf_t conf;
     GIOChannel* channel;
 
     if (argc < 3) {
@@ -53,13 +53,14 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    if ((sscanf(argv[1], "%d", &r_fd) == 0) || (sscanf(argv[2], "%d", &w_fd) == 0)) {
+    if ((sscanf(argv[1], "%d", &conf.fd_r) == 0) || (sscanf(argv[2], "%d", &conf.fd_w) == 0)) {
         LOG_STDERR("Invalid file descriptor");
         return -1;
     }
 
-    ctx.ipc = ipc_init(r_fd, w_fd);
-    channel = g_io_channel_unix_new(r_fd);    
+
+    ctx.ipc = ipc_init(&conf);
+    channel = g_io_channel_unix_new(conf.fd_r);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
 
 

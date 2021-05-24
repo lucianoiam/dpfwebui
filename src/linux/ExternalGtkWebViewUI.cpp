@@ -57,7 +57,10 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
         return;
     }
 
-    fIpc = ipc_init(fPipeFd[1][0], fPipeFd[0][1]);
+    ipc_conf_t conf;
+    conf.fd_r = fPipeFd[1][0];
+    conf.fd_w = fPipeFd[0][1];
+    fIpc = ipc_init(&conf);
 
     fIpcThread = new IpcReadThread(*this);
     fIpcThread->startThread();
@@ -156,7 +159,7 @@ IpcReadThread::IpcReadThread(ExternalGtkWebViewUI& view) : Thread("ipc_read"), f
 
 void IpcReadThread::run()
 {
-    int fd = ipc_get_read_fd(fView.ipc());
+    int fd = ipc_get_config(fView.ipc())->fd_r;
     fd_set rfds;
     struct timeval tv;
     tlv_t packet;
