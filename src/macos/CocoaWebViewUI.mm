@@ -47,6 +47,13 @@ CocoaWebViewUI::~CocoaWebViewUI()
     [fView release];
 }
 
+void CocoaWebViewUI::parameterChanged(uint32_t index, float value)
+{
+    // unused
+    (void)index;
+    (void)value;
+}
+
 void CocoaWebViewUI::reparent(uintptr_t windowId)
 {
     // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
@@ -58,9 +65,8 @@ void CocoaWebViewUI::reparent(uintptr_t windowId)
     [parentView addSubview:fView];
 }
 
-void CocoaWebViewUI::parameterChanged(uint32_t index, float value)
+String CocoaWebViewUI::getSharedLibraryPath()
 {
-    // unused
-    (void)index;
-    (void)value;
+    // https://stackoverflow.com/questions/7583163/how-do-i-retrieve-the-path-to-my-dylib-at-runtime
+    return String();  // TODO
 }

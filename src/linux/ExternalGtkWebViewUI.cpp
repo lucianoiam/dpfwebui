@@ -117,15 +117,21 @@ ExternalGtkWebViewUI::~ExternalGtkWebViewUI()
     }
 }
 
+void ExternalGtkWebViewUI::parameterChanged(uint32_t index, float value)
+{
+    parameter_t param = {index, value};
+    ipcWrite(OPC_SET_PARAMETER, &param, sizeof(param));
+}
+
 void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
 {
     ipcWrite(OPC_REPARENT, &windowId, sizeof(windowId));
 }
 
-void ExternalGtkWebViewUI::parameterChanged(uint32_t index, float value)
+String ExternalGtkWebViewUI::getSharedLibraryPath()
 {
-    parameter_t param = {index, value};
-    ipcWrite(OPC_SET_PARAMETER, &param, sizeof(param));
+    // https://stackoverflow.com/questions/43607115/how-to-get-current-library-path
+    return String();  // TODO
 }
 
 int ExternalGtkWebViewUI::ipcWrite(opcode_t opcode, const void *payload, int payloadSize)

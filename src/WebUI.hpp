@@ -38,7 +38,8 @@ public:
     void onDisplay() override;
 
 protected:
-    virtual void reparent(uintptr_t parentWindowId) = 0;
+    virtual void   reparent(uintptr_t parentWindowId) = 0;
+    virtual String getSharedLibraryPath() = 0;
 
     String getContentUrl();
 
