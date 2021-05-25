@@ -27,6 +27,10 @@
 #include "DistrhoUI.hpp"
 #include "extra/String.hpp"
 
+// https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html
+#define XSTR(s) STR(s)
+#define STR(s) #s
+
 START_NAMESPACE_DISTRHO
 
 class WebUI : public UI

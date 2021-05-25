@@ -84,11 +84,11 @@ ifeq ($(LINUX),true)
 TARGETS += helper
 endif
 
-BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH)/distrho/src
+BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH)/distrho/src -DBIN_NAME=$(NAME)
 
 # Add platform-specific build flags
 ifeq ($(LINUX),true)
-LINK_FLAGS += -lpthread
+LINK_FLAGS += -lpthread -ldl
 endif
 ifeq ($(MACOS),true)
 LINK_FLAGS += -framework WebKit 
