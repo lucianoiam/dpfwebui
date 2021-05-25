@@ -49,7 +49,6 @@ void WebUI::onDisplay()
 
 String WebUI::getContentUrl()
 {
-    // TODO - will depend on getSharedLibraryPath() which is platform specific
-    String a = getSharedLibraryPath();
+    // TODO - will depend on getPluginBundlePath() which is platform specific
     return String("https://distrho.sourceforge.io/images/screenshots/distrho-kars.png");
 }
