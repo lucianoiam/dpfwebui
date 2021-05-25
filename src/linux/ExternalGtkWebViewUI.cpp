@@ -18,6 +18,8 @@
 
 #include <cstdio>
 #include <cstring>
+#include <dlfcn.h>
+#include <libgen.h>
 #include <signal.h>
 #include <spawn.h>
 #include <unistd.h>
@@ -32,6 +34,8 @@
 */
 
 extern char **environ;
+
+static void _dummy() {}; // for dladdr()
 
 USE_NAMESPACE_DISTRHO
 
@@ -69,11 +73,9 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
     char wfd[10];
     ::sprintf(wfd, "%d", fPipeFd[1][1]);
-    // TODO: use getSharedLibraryPath() when implementation is finished
-    const char* fixmeHardcodedPath = "/home/user/dpf-webui/bin/d_dpf_webui_helper";
-    const char *argv[] = {fixmeHardcodedPath, rfd, wfd, NULL};
-
-    int status = posix_spawn(&fPid, fixmeHardcodedPath, NULL, NULL, (char* const*)argv, environ);
+    String helperPath = getSharedLibraryPath() + "/" XSTR(/* see Makefile */ BIN_NAME) "_helper";
+    const char *argv[] = {helperPath, rfd, wfd, NULL};
+    int status = posix_spawn(&fPid, helperPath, NULL, NULL, (char* const*)argv, environ);
     if (status != 0) {
         LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
@@ -129,8 +131,11 @@ void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
 
 String ExternalGtkWebViewUI::getSharedLibraryPath()
 {
-    // https://stackoverflow.com/questions/43607115/how-to-get-current-library-path
-    return String();  // TODO
+    Dl_info dl_info;
+    dladdr((const void *)_dummy, &dl_info);
+    char path[1 + ::strlen(dl_info.dli_fname)];
+    ::strcpy(path, dl_info.dli_fname);
+    return String(dirname(path));
 }
 
 int ExternalGtkWebViewUI::ipcWrite(opcode_t opcode, const void *payload, int payloadSize)
