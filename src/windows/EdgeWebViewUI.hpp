@@ -53,7 +53,8 @@ public:
 
     void   reparent(uintptr_t windowId) override;
     String getSharedLibraryPath() override;
-
+    String getPluginBundlePath() override;
+    
 private:
     void cleanup();
     void resize(HWND hWnd);

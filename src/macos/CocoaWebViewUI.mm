@@ -17,9 +17,14 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
+#include <dlfcn.h>
+#include <libgen.h>
+#include <iostream>
 #include "CocoaWebViewUI.hpp"
 
 #include "../log.h"
+
+static void _dummy() {}; // for dladdr()
 
 USE_NAMESPACE_DISTRHO
 
@@ -39,6 +44,8 @@ CocoaWebViewUI::CocoaWebViewUI()
     [fView loadRequest:[NSURLRequest requestWithURL:url]];
     [url release];
     [urlStr release];
+
+    std::cout << getSharedLibraryPath() <<std::endl;
 }
 
 CocoaWebViewUI::~CocoaWebViewUI()
@@ -67,6 +74,15 @@ void CocoaWebViewUI::reparent(uintptr_t windowId)
 
 String CocoaWebViewUI::getSharedLibraryPath()
 {
-    // https://stackoverflow.com/questions/7583163/how-do-i-retrieve-the-path-to-my-dylib-at-runtime
-    return String();  // TODO
+    Dl_info dl_info;
+    dladdr((const void *)_dummy, &dl_info);
+    char path[1 + ::strlen(dl_info.dli_fname)];
+    ::strcpy(path, dl_info.dli_fname);
+    return String(dirname(path));
+}
+
+String CocoaWebViewUI::getPluginBundlePath()
+{
+    // FIXME
+    return getSharedLibraryPath();
 }

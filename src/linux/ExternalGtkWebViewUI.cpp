@@ -138,6 +138,12 @@ String ExternalGtkWebViewUI::getSharedLibraryPath()
     return String(dirname(path));
 }
 
+String ExternalGtkWebViewUI::getPluginBundlePath()
+{
+    // FIXME
+    return getSharedLibraryPath();
+}
+
 int ExternalGtkWebViewUI::ipcWrite(opcode_t opcode, const void *payload, int payloadSize)
 {
     tlv_t packet;
