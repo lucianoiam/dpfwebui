@@ -27,7 +27,7 @@ typedef struct {
 } ipc_conf_t;
 
 typedef struct {
-    char        t;
+    short       t;
     int         l;
     const void* v;
 } tlv_t;

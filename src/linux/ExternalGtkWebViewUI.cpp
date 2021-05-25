@@ -138,7 +138,7 @@ String ExternalGtkWebViewUI::getSharedLibraryPath()
 int ExternalGtkWebViewUI::ipcWrite(opcode_t opcode, const void *payload, int payloadSize)
 {
     tlv_t packet;
-    packet.t = static_cast<char>(opcode);
+    packet.t = static_cast<short>(opcode);
     packet.l = payloadSize;
     packet.v = payload;
 

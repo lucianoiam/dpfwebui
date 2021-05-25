@@ -85,7 +85,7 @@ static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload
     int retval;
     tlv_t packet;
 
-    packet.t = (char)opcode;
+    packet.t = (short)opcode;
     packet.l = payload_sz;
     packet.v = payload;
 
