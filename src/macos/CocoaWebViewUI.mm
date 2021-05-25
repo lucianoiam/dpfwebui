@@ -76,7 +76,7 @@ String CocoaWebViewUI::getSharedLibraryPath()
 {
     Dl_info dl_info;
     dladdr((const void *)_dummy, &dl_info);
-    char path[1 + ::strlen(dl_info.dli_fname)];
+    char path[::strlen(dl_info.dli_fname) + 1];
     ::strcpy(path, dl_info.dli_fname);
     return String(dirname(path));
 }
