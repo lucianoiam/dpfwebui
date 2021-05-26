@@ -47,11 +47,11 @@ void WebUI::onDisplay()
 
 String WebUI::getPluginResourcePath()
 {
-    // Same as shared library path unless overriden, like on Mac VST
-    return getSharedLibraryPath();
+    // Valid for all platform/format combinations except Mac VST
+    return getSharedLibraryPath() + "/" XSTR(BIN_BASENAME) "_resources";
 }
 
 String WebUI::getContentUrl()
 {
-    return "file://" + getPluginResourcePath() + "/ui/index.html";
+    return "file://" + getPluginResourcePath() + "/index.html";
 }
