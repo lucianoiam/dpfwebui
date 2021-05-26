@@ -42,7 +42,8 @@ public:
 
     void   reparent(uintptr_t windowId) override;
     String getSharedLibraryPath() override;
-
+    String getSharedLibraryDirectoryPath() override;
+    
 private:
     ipc_t* ipc() const { return fIpc; }
     int    ipcWrite(opcode_t opcode, const void *payload, int payloadSize); 
