@@ -40,7 +40,6 @@ public:
 
     void   reparent(uintptr_t windowId) override;
     String getSharedLibraryPath() override;
-    String getPluginBundlePath() override;
 
 private:
     ipc_t* ipc() const { return fIpc; }
