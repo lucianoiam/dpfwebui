@@ -23,7 +23,7 @@
 
 #include "../log.h"
 
-static void _dummy() {}; // for dladdr()
+static char _dummy; // for dladdr()
 
 USE_NAMESPACE_DISTRHO
 
@@ -72,7 +72,7 @@ void CocoaWebViewUI::reparent(uintptr_t windowId)
 String CocoaWebViewUI::getSharedLibraryPath()
 {
     Dl_info dl_info;
-    dladdr((const void *)_dummy, &dl_info);
+    dladdr((void *)&_dummy, &dl_info);
     return String(dl_info.dli_fname);
 }
 
