@@ -21,7 +21,7 @@
 
 #include "WebUI.hpp"
 #include "Window.hpp"
-#include <iostream>
+
 USE_NAMESPACE_DISTRHO
 
 WebUI::WebUI()
@@ -50,7 +50,6 @@ void WebUI::onDisplay()
 String WebUI::getPluginResourcePath()
 {
     // Valid for all platform/format combinations except Mac VST
-    std::cout << getSharedLibraryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_resources"<<std::endl;
     return getSharedLibraryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_resources";
 }
 
