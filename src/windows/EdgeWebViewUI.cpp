@@ -106,6 +106,11 @@ String EdgeWebViewUI::getSharedLibraryPath()
     return String();  // TODO
 }
 
+String EdgeWebViewUI::getSharedLibraryDirectoryPath()
+{
+    return String();  // TODO
+}
+
 void EdgeWebViewUI::cleanup()
 {
     if (fController != 0) {

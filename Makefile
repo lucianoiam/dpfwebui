@@ -78,6 +78,7 @@ TARGETS += lv2_dsp
 endif
 
 TARGETS += vst
+TARGETS += resources
 
 # A helper binary is required on Linux
 ifeq ($(LINUX),true)
@@ -147,6 +148,9 @@ lv2ttl: utils/lv2_ttl_generator
 utils/lv2_ttl_generator:
 	$(MAKE) -C utils/lv2-ttl-generator
 endif
+
+resources:
+	# TO DO - copy resource files
 
 # Target for building DPF's graphics library
 dgl:
