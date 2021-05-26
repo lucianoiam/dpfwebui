@@ -84,7 +84,7 @@ ifeq ($(LINUX),true)
 TARGETS += helper
 endif
 
-BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH)/distrho/src -DBIN_NAME=$(NAME)
+BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH)/distrho/src -DBIN_BASENAME=$(NAME)
 
 # Add platform-specific build flags
 ifeq ($(LINUX),true)

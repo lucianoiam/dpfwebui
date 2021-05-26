@@ -106,12 +106,6 @@ String EdgeWebViewUI::getSharedLibraryPath()
     return String();  // TODO
 }
 
-String EdgeWebViewUI::getPluginBundlePath()
-{
-    // FIXME
-    return getSharedLibraryPath();
-}
-
 void EdgeWebViewUI::cleanup()
 {
     if (fController != 0) {

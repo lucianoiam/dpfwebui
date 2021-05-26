@@ -75,7 +75,7 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
     char wfd[10];
     ::sprintf(wfd, "%d", fPipeFd[1][1]);
-    String helperPath = getSharedLibraryPath() + "/" XSTR(/* see Makefile */ BIN_NAME) "_helper";
+    String helperPath = getSharedLibraryPath() + "/" XSTR(/* see Makefile */ BIN_BASENAME) "_helper";
     const char *argv[] = {helperPath, rfd, wfd, NULL};
     int status = posix_spawn(&fPid, helperPath, NULL, NULL, (char* const*)argv, environ);
     if (status != 0) {
@@ -138,12 +138,6 @@ String ExternalGtkWebViewUI::getSharedLibraryPath()
     char path[::strlen(dl_info.dli_fname) + 1];
     ::strcpy(path, dl_info.dli_fname);
     return String(dirname(path));
-}
-
-String ExternalGtkWebViewUI::getPluginBundlePath()
-{
-    // FIXME
-    return getSharedLibraryPath();
 }
 
 int ExternalGtkWebViewUI::ipcWrite(opcode_t opcode, const void *payload, int payloadSize)

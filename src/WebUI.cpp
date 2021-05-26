@@ -47,8 +47,13 @@ void WebUI::onDisplay()
     }
 }
 
+String WebUI::getPluginResourcePath()
+{
+    // Same as shared library path unless overriden, like on Mac VST
+    return getSharedLibraryPath();
+}
+
 String WebUI::getContentUrl()
 {
-    // TODO - will depend on getPluginBundlePath() which is platform specific
-    return String("https://distrho.sourceforge.io/images/screenshots/distrho-kars.png");
+    return "file://" + getPluginResourcePath() + "/ui/index.html";
 }

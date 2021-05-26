@@ -81,8 +81,8 @@ String CocoaWebViewUI::getSharedLibraryPath()
     return String(dirname(path));
 }
 
-String CocoaWebViewUI::getPluginBundlePath()
+String CocoaWebViewUI::getPluginResourcePath()
 {
-    // FIXME
+    // FIXME - handle VST bundle case: append /../Resources/
     return getSharedLibraryPath();
 }

@@ -35,7 +35,7 @@ public:
 
     void   reparent(uintptr_t windowId) override;
     String getSharedLibraryPath() override;
-    String getPluginBundlePath() override;
+    String getPluginResourcePath() override;
     
 private:
     WKWebView *fView;
