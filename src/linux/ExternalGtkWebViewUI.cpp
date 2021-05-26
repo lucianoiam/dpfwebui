@@ -35,7 +35,7 @@
 
 extern char **environ;
 
-static void _dummy() {}; // for dladdr()
+static char _dummy; // for dladdr()
 
 USE_NAMESPACE_DISTRHO
 
