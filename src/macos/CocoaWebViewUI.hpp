@@ -33,6 +33,7 @@ public:
 
     void   reparent(uintptr_t windowId) override;
     String getSharedLibraryPath() override;
+    String getSharedLibraryDirectoryPath() override;
     String getPluginResourcePath() override;
     
 private:

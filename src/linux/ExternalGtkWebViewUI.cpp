@@ -133,8 +133,14 @@ String ExternalGtkWebViewUI::getSharedLibraryPath()
 {
     Dl_info dl_info;
     dladdr((const void *)_dummy, &dl_info);
-    char path[::strlen(dl_info.dli_fname) + 1];
-    ::strcpy(path, dl_info.dli_fname);
+    return String(dl_info.dli_fname);
+}
+
+String ExternalGtkWebViewUI::getSharedLibraryDirectoryPath()
+{
+    const char *tmp = getSharedLibraryPath();
+    char path[::strlen(tmp) + 1];
+    ::strcpy(path, tmp);
     return String(dirname(path));
 }
 
