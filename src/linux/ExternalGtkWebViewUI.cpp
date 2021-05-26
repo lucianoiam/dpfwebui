@@ -73,7 +73,8 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
     char wfd[10];
     ::sprintf(wfd, "%d", fPipeFd[1][1]);
-    String helperPath = getSharedLibraryPath() + "/" XSTR(/* see Makefile */ BIN_BASENAME) "_helper";
+    String helperPath = getSharedLibraryDirectoryPath() + "/" XSTR(/* see Makefile */ BIN_BASENAME) "_helper";
+
     const char *argv[] = {helperPath, rfd, wfd, NULL};
     int status = posix_spawn(&fPid, helperPath, NULL, NULL, (char* const*)argv, environ);
     if (status != 0) {
@@ -132,13 +133,14 @@ void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
 String ExternalGtkWebViewUI::getSharedLibraryPath()
 {
     Dl_info dl_info;
-    dladdr((const void *)_dummy, &dl_info);
+    dladdr((void *)&_dummy, &dl_info);
     return String(dl_info.dli_fname);
 }
 
 String ExternalGtkWebViewUI::getSharedLibraryDirectoryPath()
 {
-    const char *tmp = getSharedLibraryPath();
+    String slp = getSharedLibraryPath();
+    const char *tmp = slp.buffer();
     char path[::strlen(tmp) + 1];
     ::strcpy(path, tmp);
     return String(dirname(path));
