@@ -69,34 +69,39 @@ void CocoaWebViewUI::reparent(uintptr_t windowId)
     [parentView addSubview:fView];
 }
 
-String CocoaWebViewUI::getSharedLibraryPath()
-{
-    Dl_info dl_info;
-    dladdr((void *)&_dummy, &dl_info);
-    return String(dl_info.dli_fname);
-}
-
 String CocoaWebViewUI::getSharedLibraryDirectoryPath()
 {
-    const char *tmp = getSharedLibraryPath();
-    char path[::strlen(tmp) + 1];
-    ::strcpy(path, tmp);
+    Dl_info dl_info;
+    if (dladdr((void *)&_dummy, &dl_info) == 0) {
+        LOG_STDERR("Failed dladdr() call");
+        return String();
+    }
+    char path[::strlen(dl_info.dli_fname) + 1];
+    ::strcpy(path, dl_info.dli_fname);
     return String(dirname(path));
 }
 
 String CocoaWebViewUI::getPluginResourcePath()
 {
     // There is no DISTRHO method for querying the current plugin format
-    String tmp = getSharedLibraryPath();
-    void *handle = dlopen(tmp, RTLD_NOLOAD);
-    if (handle != NULL) {
-        void *addr = dlsym(handle, "VSTPluginMain");
-        dlclose(handle);
-        if (addr != NULL) {
-            char path[::strlen(tmp) + 1];
-            ::strcpy(path, tmp);
-            return String(dirname(path)) + "/../Resources";
+    Dl_info dl_info;
+    if (dladdr((void *)&_dummy, &dl_info) != 0) {
+        char path[::strlen(dl_info.dli_fname) + 1];
+        ::strcpy(path, dl_info.dli_fname);
+        void *handle = dlopen(path, RTLD_NOLOAD);
+        if (handle != NULL) {
+            void *addr = dlsym(handle, "VSTPluginMain");
+            dlclose(handle);
+            if (addr != NULL) {
+                return String(dirname(path)) + "/../Resources";
+            } else {
+                LOG_STDERR("Failed dlsym() call");
+            }
+        } else {
+            LOG_STDERR("Failed dlopen() call");
         }
+    } else {
+        LOG_STDERR("Failed dladdr() call");
     }
     return WebUI::getPluginResourcePath();
 }

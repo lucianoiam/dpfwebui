@@ -54,7 +54,7 @@ public:
     void   parameterChanged(uint32_t index, float value) override;
 
     void   reparent(uintptr_t windowId) override;
-    String getSharedLibraryPath() override;
+    
     String getSharedLibraryDirectoryPath() override;
 
 private:

@@ -44,7 +44,6 @@ public:
 protected:
     virtual void   reparent(uintptr_t parentWindowId) = 0;
     virtual String getPluginResourcePath();
-    virtual String getSharedLibraryPath() = 0;
     virtual String getSharedLibraryDirectoryPath() = 0;
 
     String getContentUrl();
