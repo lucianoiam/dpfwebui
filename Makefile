@@ -109,6 +109,7 @@ helper: src/linux/helper.c src/linux/ipc.c
 		`pkg-config --cflags --libs gtk+-3.0` \
 		`pkg-config --cflags --libs webkit2gtk-4.0`
 	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
+	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi
 
 clean: clean_helper
 
@@ -159,6 +160,10 @@ resources:
 ifeq ($(CAN_GENERATE_TTL),true)
 	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
 	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
+endif
+ifeq ($(LINUX),true)
+	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
+	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
 endif
 ifeq ($(MACOS),true)
 	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst/Contents/Resources
