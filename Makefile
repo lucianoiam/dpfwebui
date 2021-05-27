@@ -153,8 +153,14 @@ TARGETS += resources
 
 resources:
 	@echo "Copying resource files"
-	@cp -r res $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
+	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
+	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
+ifeq ($(CAN_GENERATE_TTL),true)
+	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
+	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
+endif
 ifeq ($(MACOS),true)
+	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst/Contents/Resources
 endif
 
 # Target for building DPF's graphics library
