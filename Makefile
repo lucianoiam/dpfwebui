@@ -41,7 +41,8 @@ SRC_FILES_UI += macos/CocoaWebViewUI.mm
 endif
 ifeq ($(WINDOWS),true)
 SRC_FILES_UI += windows/EdgeWebViewUI.cpp \
-                windows/event.cpp
+                windows/event.cpp \
+                windows/dllmain.c
 endif
 
 FILES_DSP = $(SRC_FILES_DSP:%=src/%)
@@ -148,6 +149,16 @@ lv2ttl: utils/lv2_ttl_generator
 
 utils/lv2_ttl_generator:
 	$(MAKE) -C utils/lv2-ttl-generator
+endif
+
+TARGETS += libraries
+
+libraries:
+# The WebView2 runtime library is required on Windows, currently hardcoded to 64-bit
+ifeq ($(WINDOWS),true)
+	$(eval WEBVIEW_DLL=lib/windows/WebView2/runtimes/win-x64/native/WebView2Loader.dll)
+	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)
+	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
 endif
 
 # Resources must be copied after Mac VST bundle creation
