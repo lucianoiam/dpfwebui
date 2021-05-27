@@ -130,19 +130,15 @@ void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
     ipcWrite(OPC_REPARENT, &windowId, sizeof(windowId));
 }
 
-String ExternalGtkWebViewUI::getSharedLibraryPath()
-{
-    Dl_info dl_info;
-    dladdr((void *)&_dummy, &dl_info);
-    return String(dl_info.dli_fname);
-}
-
 String ExternalGtkWebViewUI::getSharedLibraryDirectoryPath()
 {
-    String slp = getSharedLibraryPath();
-    const char *tmp = slp.buffer();
-    char path[::strlen(tmp) + 1];
-    ::strcpy(path, tmp);
+    Dl_info dl_info;
+    if (dladdr((void *)&_dummy, &dl_info) == 0) {
+        LOG_STDERR("Failed dladdr() call");
+        return String();
+    }
+    char path[::strlen(dl_info.dli_fname) + 1];
+    ::strcpy(path, dl_info.dli_fname);
     return String(dirname(path));
 }
 

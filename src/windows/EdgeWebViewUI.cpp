@@ -98,14 +98,9 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
     }
 }
 
-String EdgeWebViewUI::getSharedLibraryPath()
-{
-    // https://stackoverflow.com/questions/6924195/get-dll-path-at-runtime
-    return String();  // TODO
-}
-
 String EdgeWebViewUI::getSharedLibraryDirectoryPath()
 {
+    // https://stackoverflow.com/questions/6924195/get-dll-path-at-runtime
     return String();  // TODO
 }
 
