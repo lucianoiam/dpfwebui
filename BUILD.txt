@@ -38,7 +38,8 @@ installing the MinGW toolchain on Windows:
    - Download and install the Microsoft Edge Webview2 Runtime
      https://developer.microsoft.com/microsoft-edge/webview2
 
-   - For now WebView2Loader.dll must be copied to the host's .exe directory or
-     C:\Windows\system32 as there is no rpath equivalent on Windows. A possible
-     solution is to set search path during runtime (WIP)
-     https://stackoverflow.com/questions/3272383/linking-with-r-and-rpath-switches-on-windows
+   - Plugin links to WebView2Loader.dll. Since there is no rpath equivalent on
+     Windows, the plugin DLL path is added to the libraries search path during
+     runtime at DllMain(). This hack works for Carla but it is currently failing
+     on REAPER. To avoid the missing library issue, WebView2Loader.dll can be
+     placed alongside the host .exe or copied to C:\Windows\system32
