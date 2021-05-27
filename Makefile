@@ -78,7 +78,6 @@ TARGETS += lv2_dsp
 endif
 
 TARGETS += vst
-TARGETS += resources
 
 # A helper binary is required on Linux
 ifeq ($(LINUX),true)
@@ -149,8 +148,14 @@ utils/lv2_ttl_generator:
 	$(MAKE) -C utils/lv2-ttl-generator
 endif
 
+# Resources must be copied after Mac VST bundle creation
+TARGETS += resources
+
 resources:
-	# TO DO - copy resource files
+	@echo "Copying resource files"
+	@cp -r res $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
+ifeq ($(MACOS),true)
+endif
 
 # Target for building DPF's graphics library
 dgl:
