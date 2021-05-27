@@ -21,11 +21,14 @@
 #include <codecvt>
 #include <locale>
 #include <sstream>
+#include <libloaderapi.h>
 #include <shlobj.h>
 #include <shlwapi.h>
 
 #include "../DistrhoPluginInfo.h"
 #include "../log.h"
+
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 USE_NAMESPACE_DISTRHO
 
@@ -84,7 +87,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
         fController->lpVtbl->get_CoreWebView2(fController, &fView);
         fView->lpVtbl->AddRef(fView);
 
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
         std::wstring url = converter.from_bytes(getContentUrl());
         fView->lpVtbl->Navigate(fView, url.c_str());
 
@@ -102,8 +105,19 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
 
 String EdgeWebViewUI::getSharedLibraryDirectoryPath()
 {
-    // https://stackoverflow.com/questions/6924195/get-dll-path-at-runtime
-    return String();  // TODO
+    WCHAR dllPath[MAX_PATH];
+
+    if (GetModuleFileName((HINSTANCE)&__ImageBase, dllPath, sizeof(dllPath)) == 0) {
+        LOG_STDERR_INT("Failed GetModuleFileName() call", GetLastError());
+        return String();
+    }
+
+    PathRemoveFileSpec(dllPath);
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::string path = converter.to_bytes(dllPath); 
+    std::replace(path.begin(), path.end(), '\\', '/');
+
+    return String(path.c_str());
 }
 
 void EdgeWebViewUI::cleanup()
@@ -146,20 +160,27 @@ void EdgeWebViewUI::errorMessageBox(std::wstring message, HRESULT result)
 std::wstring EdgeWebViewUI::getTempPath()
 {
     // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPFTemp
-    WCHAR tempPath[MAX_PATH + 1];
-    SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_DEFAULT, tempPath);
-    wcscat(tempPath, L"\\DPFTemp\\");
+    WCHAR tempPath[MAX_PATH];
+    HRESULT result = SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_DEFAULT, tempPath);
+    if (FAILED(result)) {
+        LOG_STDERR_INT("Failed SHGetFolderPath() call", result);
+        return {};
+    }
 
     // Append host executable name to the temp path otherwise WebView2 controller initialization
     // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
-    // simultaneously. C:\Users\< USERNAME >\AppData\Local\DPFTemp\< BIN >
-    WCHAR exePath[MAX_PATH + 1];
-    GetModuleFileName(NULL, exePath, MAX_PATH);
+    // simultaneously. C:\Users\< USERNAME >\AppData\Local\DPFTemp\< HOST_BIN >
+    WCHAR exePath[MAX_PATH];
+    if (GetModuleFileName(NULL, exePath, sizeof(exePath)) == 0) {
+        LOG_STDERR_INT("Failed GetModuleFileName() call", GetLastError());
+        return {};
+    }
 
-    // The following call relies on a further Windows library called Pathcch, maybe it should be
-    // replaced with something else. Implemented in api-ms-win-core-path-l1-1-0.dll which requires
-    // Windows 8
-    //PathCchRemoveExtension(exePath, MAX_PATH);
+    wcscat(tempPath, L"\\DPFTemp\\");
+
+    // The following call relies on a further Windows library called Pathcch, which is implemented
+    // in in api-ms-win-core-path-l1-1-0.dll and requires Windows 8. Min plugin target is Windows 7.
+    //PathCchRemoveExtension(exePath, sizeof(exePath));
     wcscat(tempPath, PathFindFileName(exePath));
 
     return static_cast<const wchar_t *>(tempPath);
