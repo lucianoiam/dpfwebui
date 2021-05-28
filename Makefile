@@ -80,14 +80,11 @@ endif
 
 TARGETS += vst
 
-# A helper binary is required on Linux
-ifeq ($(LINUX),true)
-TARGETS += helper
-endif
-
+# Up to here follow example DISTRHO plugin Makefile
+# Now begin dpf-webui secret sauce
 BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH)/distrho/src -DBIN_BASENAME=$(NAME)
 
-# Add platform-specific build flags
+# Platform-specific build flags
 ifeq ($(LINUX),true)
 LINK_FLAGS += -lpthread -ldl
 endif
@@ -100,11 +97,27 @@ LINK_FLAGS += -L./lib/windows/WebView2/build/native/x64 -lShlwapi -lWebView2Load
               -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
 endif
 
-# Target for Linux helper
+# Target for building DPF's graphics library comes first (see 'all' below)
+dgl:
+	make -C $(DPF_CUSTOM_PATH) dgl
+
+# Reuse DISTRHO post-build scripts
+# No symlinks on Windows/MinGW, just copy. It does not hurt even if cross-compiling.
+TARGETS += utils
+
+utils:
+ifneq ($(WINDOWS),true)
+	@ln -s $(DPF_CUSTOM_PATH)/utils .
+else
+	@cp -r $(DPF_CUSTOM_PATH)/utils .
+endif
+
+# Linux requires a helper binary
 ifeq ($(LINUX),true)
+TARGETS += lxhelper
 HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_helper
 
-helper: src/linux/helper.c src/linux/ipc.c
+lxhelper: src/linux/helper.c src/linux/ipc.c
 	@echo "Creating helper"
 	$(SILENT)$(CC) $^ -o $(HELPER_BIN) -lX11 \
 		`pkg-config --cflags --libs gtk+-3.0` \
@@ -112,13 +125,13 @@ helper: src/linux/helper.c src/linux/ipc.c
 	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
 	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi
 
-clean: clean_helper
+clean: clean_lxhelper
 
-clean_helper:
+clean_lxhelper:
 	rm -rf $(HELPER_BIN)
 endif
 
-# Target for building Objective-C++ files and macOS VST bundle
+# Mac requires Objective-C++ and creating a VST bundle
 ifeq ($(MACOS),true)
 TARGETS += macvst
 
@@ -131,14 +144,23 @@ $(BUILD_DIR)/%.mm.o: %.mm
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 endif
 
+# Windows requires the WebView2 runtime library, currently hardcoded to 64-bit
+ifeq ($(WINDOWS),true)
+TARGETS += winlibs
+WEBVIEW_DLL = lib/windows/WebView2/runtimes/win-x64/native/WebView2Loader.dll
+
+winlibs:
+	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)
+	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
+endif
+
 # Target for generating LV2 TTL files
-# Currently does not work on Windows because utils/ is a symlink
+# Currently broken on Windows
 ifneq ($(WINDOWS),true)
 ifneq ($(CROSS_COMPILING),true)
 CAN_GENERATE_TTL = true
 else ifneq ($(EXE_WRAPPER),)
 CAN_GENERATE_TTL = true
-endif
 endif
 
 ifeq ($(CAN_GENERATE_TTL),true)
@@ -150,18 +172,9 @@ lv2ttl: utils/lv2_ttl_generator
 utils/lv2_ttl_generator:
 	$(MAKE) -C utils/lv2-ttl-generator
 endif
-
-TARGETS += libraries
-
-libraries:
-# The WebView2 runtime library is required on Windows, currently hardcoded to 64-bit
-ifeq ($(WINDOWS),true)
-	$(eval WEBVIEW_DLL=lib/windows/WebView2/runtimes/win-x64/native/WebView2Loader.dll)
-	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)
-	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
 endif
 
-# Resources must be copied after Mac VST bundle creation
+# Target for copying web UI files comes last
 TARGETS += resources
 
 resources:
@@ -179,10 +192,6 @@ endif
 ifeq ($(MACOS),true)
 	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst/Contents/Resources
 endif
-
-# Target for building DPF's graphics library
-dgl:
-	make -C $(DPF_CUSTOM_PATH) dgl
 
 all: dgl $(TARGETS)
 
