@@ -43,3 +43,5 @@ installing the MinGW toolchain on Windows:
      runtime at DllMain(). This hack works for Carla but it is currently failing
      on REAPER. To avoid the missing library issue, WebView2Loader.dll can be
      placed alongside the host .exe or copied to C:\Windows\system32
+
+4. LV2 is currently broken, binary builds but TTL creation fails
