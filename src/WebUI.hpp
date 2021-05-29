@@ -27,12 +27,7 @@
 #include "DistrhoUI.hpp"
 #include "extra/String.hpp"
 
-/**
-   A default background color in RGBA format for painting the window before the
-   web view is ready, in order to avoid visual glitches when the UI is being opened.
-   Could be moved to DistrhoPluginfo.h if web view becomes an official UI backend someday.
- */
-#define DISTRHO_DEFAULT_BACKGROUND_COLOR 0xffffffff; // solid white
+#include "constant.h"
 
 START_NAMESPACE_DISTRHO
 
