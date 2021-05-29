@@ -17,17 +17,17 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef RUNTIME_HPP
-#define RUNTIME_HPP
+#ifndef RUNTIME_PATH_HPP
+#define RUNTIME_PATH_HPP
 
 #include "extra/String.hpp"
 
-// This class is needed for determining the disk location of web resource files
-// during runtime. Resource files location is relative to the binary location.
+// These functions' main goal is to determine the location of web resource files
+// on disk during runtime. Resources location is relative to the binary location.
 
 START_NAMESPACE_DISTRHO
 
-namespace runtime {
+namespace rtpath {
 
     String getExecutablePath();
     String getSharedLibraryPath();
@@ -39,4 +39,4 @@ namespace runtime {
 
 END_NAMESPACE_DISTRHO
 
-#endif  // RUNTIME_HPP
+#endif  // RUNTIME_PATH_HPP

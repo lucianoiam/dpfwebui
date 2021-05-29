@@ -17,7 +17,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Runtime.hpp"
+#include "RuntimePath.hpp"
 #include "log.h"
 #include "macro.h"
 
@@ -36,7 +36,7 @@ char _dummy; // for dladdr()
 
 #include <linux/limits.h>
 
-String runtime::getExecutablePath()
+String rtpath::getExecutablePath()
 {
     char path[PATH_MAX];
     ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path) - 1);
@@ -51,14 +51,14 @@ String runtime::getExecutablePath()
 
 #include <sys/syslimits.h>
 
-String runtime::getExecutablePath()
+String rtpath::getExecutablePath()
 {
     return getSharedLibraryPath();  // does the trick on macOS
 }
 
 #endif
 
-String runtime::getSharedLibraryPath()
+String rtpath::getSharedLibraryPath()
 {
     Dl_info dl_info;
     if (::dladdr((void *)&_dummy, &dl_info) == 0) {
@@ -68,7 +68,7 @@ String runtime::getSharedLibraryPath()
     return String(dl_info.dli_fname);
 }
 
-String runtime::getBinaryPath()
+String rtpath::getBinaryPath()
 {
     // DISTRHO_PLUGIN_TARGET_* macros are not available here
     // Is there a better way to differentiate we are being called from library or executable?
@@ -81,7 +81,7 @@ String runtime::getBinaryPath()
     return getExecutablePath();
 }
 
-String runtime::getBinaryDirectoryPath()
+String rtpath::getBinaryDirectoryPath()
 {
     char path[PATH_MAX];
     ::strcpy(path, getBinaryPath());
@@ -106,7 +106,7 @@ String getExecutablePath()
     return String();
 }
 
-String runtime::getSharedLibraryPath()
+String rtpath::getSharedLibraryPath()
 {
     char path[MAX_PATH];
     if (::GetModuleFileName((HINSTANCE)&__ImageBase, path, sizeof(path)) == 0) {
@@ -116,12 +116,12 @@ String runtime::getSharedLibraryPath()
     return String(path);
 }
 
-String runtime::getBinaryPath()
+String rtpath::getBinaryPath()
 {
     return getSharedLibraryPath();
 }
 
-String runtime::getBinaryDirectoryPath()
+String rtpath::getBinaryDirectoryPath()
 {
     char path[MAX_PATH];
     ::strcpy(path, getBinaryPath());
@@ -132,7 +132,7 @@ String runtime::getBinaryDirectoryPath()
 #endif // DISTRHO_OS_WINDOWS
 
 
-String runtime::getResourcePath()
+String rtpath::getResourcePath()
 {
 #ifdef DISTRHO_OS_MAC
     // There is no DISTRHO method for querying plugin format during runtime
