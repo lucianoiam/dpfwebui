@@ -29,11 +29,11 @@ START_NAMESPACE_DISTRHO
 
 namespace runtime {
 
-    String getResourcePath();
-    String getBinaryDirectoryPath();
-    String getBinaryPath();
-    String getSharedLibraryPath();
     String getExecutablePath();
+    String getSharedLibraryPath();
+    String getBinaryPath();
+    String getBinaryDirectoryPath();
+    String getResourcePath();
 
 }
 
