@@ -30,7 +30,7 @@ class WebPlugin : public Plugin
 {
 public:
     WebPlugin();
-    ~WebPlugin();
+    ~WebPlugin() {};
 
     const char* getLabel() const override
     {

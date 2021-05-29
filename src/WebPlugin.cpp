@@ -30,14 +30,7 @@ Plugin* DISTRHO::createPlugin()
 
 WebPlugin::WebPlugin()
     : Plugin(0, 0, 0)
-{
-    // empty
-}
-
-WebPlugin::~WebPlugin()
-{
-    // empty
-}
+{}
 
 void WebPlugin::initParameter(uint32_t index, Parameter& parameter)
 {

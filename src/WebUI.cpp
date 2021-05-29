@@ -30,7 +30,12 @@ WebUI::WebUI()
     : UI(800, 600)  // TODO: avoid arbitrary size, plugin should be resizable
     , fParentWindowId(0)
 {
-    // empty
+    // Avoid black glitch on start
+    uint rgba = getBackgroundColor();
+    glClearColor((rgba >> 24) / 255.f,
+                ((rgba & 0x00ff0000) >> 16) / 255.f,
+                ((rgba & 0x0000ff00) >> 8) / 255.f,
+                (rgba & 0x000000ff) / 255.f);
 }
 
 void WebUI::onDisplay()
