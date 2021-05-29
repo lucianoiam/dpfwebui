@@ -67,7 +67,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
             return result;
         }
 
-        createdEnv->lpVtbl->CreateCoreWebView2Controller(createdEnv, hWnd, &fHandler);
+        ICoreWebView2Environment_CreateCoreWebView2Controller(createdEnv, hWnd, &fHandler);
 
         return S_OK;
     };
@@ -79,13 +79,13 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
         }
 
         fController = createdController;
-        fController->lpVtbl->AddRef(fController);
-        fController->lpVtbl->get_CoreWebView2(fController, &fView);
-        fView->lpVtbl->AddRef(fView);
+        ICoreWebView2Controller2_AddRef(fController);
+        ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
+        ICoreWebView2_AddRef(fView);
 
         std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
         std::wstring url = converter.from_bytes(getContentUrl());
-        fView->lpVtbl->Navigate(fView, url.c_str());
+        ICoreWebView2_Navigate(fView, url.c_str());
 
         resize(hWnd);
 
@@ -104,7 +104,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
 void EdgeWebViewUI::cleanup()
 {
     if (fController != 0) {
-        fController->lpVtbl->Close(fController);
+        ICoreWebView2Controller2_Close(fController);
     }
 
     fController = 0;
@@ -128,7 +128,7 @@ void EdgeWebViewUI::resize(HWND hWnd)
     bounds.right = 800;
     bounds.bottom = 600;
 
-    fController->lpVtbl->put_Bounds(fController, bounds);
+    ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
 void EdgeWebViewUI::errorMessageBox(std::wstring message, HRESULT result)
