@@ -1,5 +1,12 @@
-// Avoid having to copy WebView2Loader.dll to the host's .exe directory or C:\Windows\system32
-// https://cournape.wordpress.com/2008/09/02/how-to-embed-a-manifest-into-a-dll-with-mingw-tools-only/
-// https://github.com/mesonbuild/meson/issues/2064
+/*
+  Avoid having to copy WebView2Loader.dll to the host's .exe directory or C:\Windows\system32
+
+  Reference:
+  
+  https://cournape.wordpress.com/2008/09/02/how-to-embed-a-manifest-into-a-dll-with-mingw-tools-only/
+  https://github.com/mesonbuild/meson/issues/2064
+*/
+
 #include "winuser.h"
+
 2 RT_MANIFEST plugin.manifest
