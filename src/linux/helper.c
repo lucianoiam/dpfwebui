@@ -88,7 +88,7 @@ static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload
     packet.v = payload;
 
     if ((retval = ipc_write(ctx->ipc, &packet)) == -1) {
-        LOG_STDERR_ERRNO_INT("Failed ipc_write() for opcode", opcode);
+        LOG_STDERR_ERRNO("Could not write to IPC channel");
     }
 
     return retval;
@@ -170,7 +170,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     }
 
     if (ipc_read(ctx->ipc, &packet) == -1) {
-        LOG_STDERR_ERRNO("Failed ipc_read()");
+        LOG_STDERR_ERRNO("Could not read from IPC channel");
         return TRUE;
     }
 

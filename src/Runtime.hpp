@@ -17,44 +17,22 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "WebUI.hpp"
-#include "Window.hpp"
+#ifndef RUNTIME_HPP
+#define RUNTIME_HPP
 
-#include "Runtime.hpp"
-#include "macro.h"
+#include "extra/String.hpp"
 
-USE_NAMESPACE_DISTRHO
+START_NAMESPACE_DISTRHO
 
-WebUI::WebUI()
-    : UI(800, 600)  // TODO: avoid arbitrary size, plugin should be resizable
-    , fParentWindowId(0)
-{
-    // empty
+namespace runtime {
+
+    String getBinaryDirectoryPath();
+    String getBinaryPath();
+    String getSharedLibraryPath();
+    String getExecutablePath();
+
 }
 
-WebUI::~WebUI()
-{
-    // empty
-}
+END_NAMESPACE_DISTRHO
 
-void WebUI::onDisplay()
-{
-    // onDisplay() can be called multiple times during lifetime of instance
-    uintptr_t newParentWindowId = getParentWindow().getWindowId();
-    
-    if (fParentWindowId != newParentWindowId) {
-        fParentWindowId = newParentWindowId;
-        reparent(fParentWindowId);
-    }
-}
-
-// Mac VST needs special treatment, this method is overriden on that platform
-String WebUI::getPluginResourcePath()
-{
-    return runtime::getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_resources";
-}
-
-String WebUI::getContentUrl()
-{
-    return "file://" + getPluginResourcePath() + "/index.html";
-}
+#endif  // RUNTIME_HPP

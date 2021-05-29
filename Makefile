@@ -26,7 +26,8 @@ SRC_FILES_DSP = \
     WebPlugin.cpp
 
 SRC_FILES_UI  = \
-    WebUI.cpp
+    WebUI.cpp \
+    Runtime.cpp
 
 # Note this is not DPF's Makefile.base.mk
 include Makefile.base.mk
@@ -81,7 +82,7 @@ endif
 TARGETS += vst
 
 # Up to here follow example DISTRHO plugin Makefile, now begin dpf-webui secret sauce
-BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH)/distrho/src -DBIN_BASENAME=$(NAME)
+BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH) -DBIN_BASENAME=$(NAME)
 
 # Platform-specific build flags
 ifeq ($(LINUX),true)

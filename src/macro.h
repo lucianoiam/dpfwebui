@@ -2,9 +2,6 @@
  * dpf-webui
  * Copyright (C) 2021 Luciano Iam <lucianoiam@protonmail.com>
  *
- * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
- *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
  * permission notice appear in all copies.
@@ -17,35 +14,11 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WEBUI_HPP
-#define WEBUI_HPP
+#ifndef MACRO_H
+#define MACRO_H
 
-#include <cstdint>
+// https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html
+#define XSTR(s) STR(s)
+#define STR(s) #s
 
-#include "DistrhoUI.hpp"
-#include "extra/String.hpp"
-
-START_NAMESPACE_DISTRHO
-
-class WebUI : public UI
-{
-public:
-    WebUI();
-    ~WebUI();
-
-    void onDisplay() override;
-
-protected:
-    virtual void   reparent(uintptr_t parentWindowId) = 0;
-    virtual String getPluginResourcePath();
-
-    String getContentUrl();
-
-private:
-    uintptr_t fParentWindowId;
-
-};
-
-END_NAMESPACE_DISTRHO
-
-#endif  // WEBUI_HPP
+#endif	// MACRO_H

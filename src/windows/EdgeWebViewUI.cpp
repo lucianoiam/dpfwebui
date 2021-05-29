@@ -101,23 +101,6 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
     }
 }
 
-String EdgeWebViewUI::getSharedLibraryDirectoryPath()
-{
-    WCHAR dllPath[MAX_PATH];
-
-    if (GetModuleFileName((HINSTANCE)&__ImageBase, dllPath, sizeof(dllPath)) == 0) {
-        LOG_STDERR_INT("Failed GetModuleFileName() call", GetLastError());
-        return String();
-    }
-
-    PathRemoveFileSpec(dllPath);
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-    std::string path = converter.to_bytes(dllPath); 
-    std::replace(path.begin(), path.end(), '\\', '/');
-
-    return String(path.c_str());
-}
-
 void EdgeWebViewUI::cleanup()
 {
     if (fController != 0) {

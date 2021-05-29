@@ -69,21 +69,10 @@ void CocoaWebViewUI::reparent(uintptr_t windowId)
     [parentView addSubview:fView];
 }
 
-String CocoaWebViewUI::getSharedLibraryDirectoryPath()
-{
-    Dl_info dl_info;
-    if (dladdr((void *)&_dummy, &dl_info) == 0) {
-        LOG_STDERR("Failed dladdr() call");
-        return String();
-    }
-    char path[::strlen(dl_info.dli_fname) + 1];
-    ::strcpy(path, dl_info.dli_fname);
-    return String(dirname(path));
-}
-
 String CocoaWebViewUI::getPluginResourcePath()
 {
     // There is no DISTRHO method for querying the current plugin format
+    // Another solution would require modying the Makefile and relying on macros
     Dl_info dl_info;
     if (dladdr((void *)&_dummy, &dl_info) != 0) {
         char path[::strlen(dl_info.dli_fname) + 1];

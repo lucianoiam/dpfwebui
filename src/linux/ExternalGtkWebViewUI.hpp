@@ -22,7 +22,7 @@
 
 #include "extra/Thread.hpp"
 
-#include "../WebUI.hpp"
+#include "WebUI.hpp"
 #include "ipc.h"
 #include "helper.h"
 
@@ -39,9 +39,7 @@ public:
     void   parameterChanged(uint32_t index, float value) override;
 
     void   reparent(uintptr_t windowId) override;
-    
-    String getSharedLibraryDirectoryPath() override;
-    
+
 private:
     ipc_t* ipc() const { return fIpc; }
     int    ipcWrite(opcode_t opcode, const void *payload, int payloadSize); 

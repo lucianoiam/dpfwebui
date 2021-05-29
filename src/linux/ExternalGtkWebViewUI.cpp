@@ -17,16 +17,15 @@
 #include "ExternalGtkWebViewUI.hpp"
 
 #include <cstdio>
-#include <cstring>
-#include <dlfcn.h>
-#include <libgen.h>
 #include <signal.h>
 #include <spawn.h>
 #include <unistd.h>
 #include <sys/select.h>
 #include <sys/wait.h>
 
-#include "../log.h"
+#include "Runtime.hpp"
+#include "log.h"
+#include "macro.h"
 
 /*
   Need to launch a separate process hosting the GTK web view because linking
@@ -34,8 +33,6 @@
 */
 
 extern char **environ;
-
-static char _dummy; // for dladdr()
 
 USE_NAMESPACE_DISTRHO
 
@@ -51,12 +48,12 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
 {
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
 
-    if (pipe(fPipeFd[0]) == -1) {
+    if (::pipe(fPipeFd[0]) == -1) {
         LOG_STDERR_ERRNO("Could not create plugin->helper pipe");
         return;
     }
 
-    if (pipe(fPipeFd[1]) == -1) {
+    if (::pipe(fPipeFd[1]) == -1) {
         LOG_STDERR_ERRNO("Could not create helper->plugin pipe");
         return;
     }
@@ -73,10 +70,11 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
     char wfd[10];
     ::sprintf(wfd, "%d", fPipeFd[1][1]);
-    String helperPath = getSharedLibraryDirectoryPath() + "/" XSTR(/* see Makefile */ BIN_BASENAME) "_helper";
+    // BIN_BASENAME is defined in Makefile
+    String helperPath = runtime::getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_helper";
 
     const char *argv[] = {helperPath, rfd, wfd, NULL};
-    int status = posix_spawn(&fPid, helperPath, NULL, NULL, (char* const*)argv, environ);
+    int status = ::posix_spawn(&fPid, helperPath, NULL, NULL, (char* const*)argv, environ);
     if (status != 0) {
         LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
@@ -92,7 +90,7 @@ ExternalGtkWebViewUI::~ExternalGtkWebViewUI()
     if (fPid != -1) {
         if (kill(fPid, SIGTERM) == 0) {
             int stat;
-            waitpid(fPid, &stat, 0);
+            ::waitpid(fPid, &stat, 0);
         } else {
             LOG_STDERR_ERRNO("Could not terminate helper subprocess");
         }
@@ -130,18 +128,6 @@ void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
     ipcWrite(OPC_REPARENT, &windowId, sizeof(windowId));
 }
 
-String ExternalGtkWebViewUI::getSharedLibraryDirectoryPath()
-{
-    Dl_info dl_info;
-    if (dladdr((void *)&_dummy, &dl_info) == 0) {
-        LOG_STDERR("Failed dladdr() call");
-        return String();
-    }
-    char path[::strlen(dl_info.dli_fname) + 1];
-    ::strcpy(path, dl_info.dli_fname);
-    return String(dirname(path));
-}
-
 int ExternalGtkWebViewUI::ipcWrite(opcode_t opcode, const void *payload, int payloadSize)
 {
     tlv_t packet;
@@ -152,7 +138,7 @@ int ExternalGtkWebViewUI::ipcWrite(opcode_t opcode, const void *payload, int pay
     int retval;
 
     if ((retval = ipc_write(fIpc, &packet)) == -1) {
-        LOG_STDERR_ERRNO_INT("Failed ipc_write() for opcode", opcode);
+        LOG_STDERR_ERRNO("Could not write to IPC channel");
     }
 
     return retval;
@@ -185,7 +171,7 @@ void IpcReadThread::run()
         FD_SET(fd, &rfds);
         tv.tv_sec = 0;
         tv.tv_usec = 100000;
-        int retval = select(fd + 1, &rfds, NULL, NULL, &tv);
+        int retval = ::select(fd + 1, &rfds, NULL, NULL, &tv);
 
         if (retval == -1) {
             LOG_STDERR_ERRNO("Failed select() on IPC channel");
@@ -201,7 +187,7 @@ void IpcReadThread::run()
         }
 
         if (ipc_read(fView.ipc(), &packet) == -1) {
-            LOG_STDERR_ERRNO("Failed ipc_read()");
+            LOG_STDERR_ERRNO("Could not read from IPC channel");
             break;
         }
 
