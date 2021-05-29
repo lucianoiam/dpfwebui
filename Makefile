@@ -42,8 +42,7 @@ SRC_FILES_UI += macos/CocoaWebViewUI.mm
 endif
 ifeq ($(WINDOWS),true)
 SRC_FILES_UI += windows/EdgeWebViewUI.cpp \
-                windows/event.cpp \
-                windows/dllmain.c
+                windows/event.cpp
 endif
 
 FILES_DSP = $(SRC_FILES_DSP:%=src/%)
