@@ -36,8 +36,7 @@ public:
     void onDisplay() override;
 
 protected:
-    virtual void   reparent(uintptr_t parentWindowId) = 0;
-    virtual String getPluginResourcePath();
+    virtual void reparent(uintptr_t parentWindowId) = 0;
 
     String getContentUrl();
 

@@ -22,10 +22,14 @@
 
 #include "extra/String.hpp"
 
+// This class is needed for determining the disk location of web resource files
+// during runtime. Resource files location is relative to the binary location.
+
 START_NAMESPACE_DISTRHO
 
 namespace runtime {
 
+    String getResourcePath();
     String getBinaryDirectoryPath();
     String getBinaryPath();
     String getSharedLibraryPath();

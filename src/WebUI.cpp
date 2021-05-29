@@ -21,7 +21,6 @@
 #include "Window.hpp"
 
 #include "Runtime.hpp"
-#include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
@@ -48,13 +47,7 @@ void WebUI::onDisplay()
     }
 }
 
-// Mac VST needs special treatment, this method is overriden on that platform
-String WebUI::getPluginResourcePath()
-{
-    return runtime::getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_resources";
-}
-
 String WebUI::getContentUrl()
 {
-    return "file://" + getPluginResourcePath() + "/index.html";
+    return "file://" + runtime::getResourcePath() + "/index.html";
 }

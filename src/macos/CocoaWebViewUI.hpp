@@ -17,7 +17,7 @@
 #ifndef COCOAWEBVIEWUI_HPP
 #define COCOAWEBVIEWUI_HPP
 
-#include "../WebUI.hpp"
+#include "WebUI.hpp"
 
 #import <WebKit/WebKit.h>
 
@@ -29,11 +29,9 @@ public:
     CocoaWebViewUI();
     ~CocoaWebViewUI();
     
-    void   parameterChanged(uint32_t index, float value) override;
+    void parameterChanged(uint32_t index, float value) override;
 
-    void   reparent(uintptr_t windowId) override;
-    
-    String getPluginResourcePath() override;
+    void reparent(uintptr_t windowId) override;
     
 private:
     WKWebView *fView;

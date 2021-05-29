@@ -19,6 +19,7 @@
 
 #include "Runtime.hpp"
 #include "log.h"
+#include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
@@ -33,15 +34,34 @@ USE_NAMESPACE_DISTRHO
 #elif DISTRHO_OS_MAC
 #include <sys/syslimits.h>
 #endif
-#include <iostream>
 
 char _dummy; // for dladdr()
+
+String runtime::getResourcePath()
+{
+#ifdef DISTRHO_OS_MAC
+    // There is no DISTRHO method for querying plugin format during runtime
+    // Anyways the ideal solution is to modify the Makefile and rely on macros
+    // Mac VST is the only special case
+    char path[PATH_MAX];
+    ::strcpy(path, getSharedLibraryPath());
+    void *handle = ::dlopen(path, RTLD_NOLOAD);
+    if (handle != NULL) {
+        void *addr = ::dlsym(handle, "VSTPluginMain");
+        ::dlclose(handle);
+        if (addr != NULL) {
+            return String(::dirname(path)) + "/../Resources";
+        }
+    }
+#endif
+    return getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_resources";
+}
 
 String runtime::getBinaryDirectoryPath()
 {
     char path[PATH_MAX];
     ::strcpy(path, getBinaryPath());
-    return String(dirname(path));
+    return String(::dirname(path));
 }
 
 String runtime::getBinaryPath()
@@ -52,7 +72,6 @@ String runtime::getBinaryPath()
     void *handle = ::dlopen(libPath, RTLD_LAZY); // returns non-null on macOS also for standalone
     if (handle) {
         ::dlclose(handle);
-        std::cout << libPath << std::endl;
         return libPath;
     }
     return getExecutablePath();
