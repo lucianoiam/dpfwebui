@@ -81,6 +81,7 @@ endif
 
 TARGETS += vst
 
+# --------------------------------------------------------------
 # Up to here follow example DISTRHO plugin Makefile, now begin dpf-webui secret sauce
 BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH) -DBIN_BASENAME=$(NAME)
 
@@ -96,10 +97,6 @@ BASE_FLAGS += -I./lib/windows/WebView2/build/native/include
 LINK_FLAGS += -L./lib/windows/WebView2/build/native/x64 -lShlwapi -lWebView2Loader.dll \
               -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
 endif
-
-# Target for building DPF's graphics library inserted first, see 'all' below
-dgl:
-	make -C $(DPF_CUSTOM_PATH) dgl
 
 # Reuse DISTRHO post-build scripts
 ifneq ($(WINDOWS),true)
@@ -131,7 +128,7 @@ clean_lxhelper:
 	rm -rf $(HELPER_BIN)
 endif
 
-# Mac requires Objective-C++ and creating a VST bundle
+# Mac requires compiling Objective-C++ and creating a VST bundle
 ifeq ($(MACOS),true)
 TARGETS += macvst
 
@@ -144,7 +141,7 @@ $(BUILD_DIR)/%.mm.o: %.mm
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 endif
 
-# Windows requires resource files and linking to WebView2, currently hardcoded to 64-bit
+# Windows requires compiling resource files and linking to WebView2, currently only 64-bit
 # https://cournape.wordpress.com/2008/09/02/how-to-embed-a-manifest-into-a-dll-with-mingw-tools-only/
 # https://github.com/mesonbuild/meson/issues/2064
 ifeq ($(WINDOWS),true)
@@ -152,10 +149,10 @@ TARGETS += winlibs
 WEBVIEW_DLL = lib/windows/WebView2/runtimes/win-x64/native/WebView2Loader.dll
 
 winlibs:
-	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
 	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
 	@cp src/windows/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
-	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
+	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
 	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
 	@cp src/windows/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
 
@@ -186,12 +183,12 @@ TARGETS += resources
 
 resources:
 	@echo "Copying resource files"
-	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
+	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
 	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
-	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
+	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
 	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
 ifeq ($(LINUX),true)
-	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
+	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
 	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
 endif
 ifeq ($(MACOS),true)
@@ -202,6 +199,10 @@ clean: clean_resources
 
 clean_resources:
 	@rm -rf $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
+
+# Target for building DPF's graphics library goes firstmost
+dgl:
+	make -C $(DPF_CUSTOM_PATH) dgl
 
 all: dgl $(TARGETS)
 
