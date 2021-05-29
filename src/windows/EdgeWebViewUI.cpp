@@ -81,15 +81,21 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
         ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
         ICoreWebView2_AddRef(fView);
 
+        // Not sure about the legality of the cast below
+        uint rgba = getBackgroundColor();
+        COREWEBVIEW2_COLOR color;
+        color.R = rgba >> 24;
+        color.G = (rgba & 0x00ff0000) >> 16;
+        color.B = (rgba & 0x0000ff00) >> 8;
+        color.A = rgba & 0x000000ff;
+        ICoreWebView2Controller2_put_DefaultBackgroundColor(
+        	reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
+
         std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
         std::wstring url = converter.from_bytes(getContentUrl());
         ICoreWebView2_Navigate(fView, url.c_str());
 
         resize(hWnd);
-
-        // More controller methods are available but not sure about the legality of the cast below
-        //ICoreWebView2Controller2_put_DefaultBackgroundColor(
-        //  reinterpret_cast<ICoreWebView2Controller2 *>(fController), ...);
 
         return S_OK;
     };
