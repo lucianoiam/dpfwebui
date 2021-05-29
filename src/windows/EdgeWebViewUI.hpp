@@ -34,8 +34,8 @@
 */
 
 #define CINTERFACE
-#include "WebView2.h"   // from microsoft sdk
-#include "event.h"      // from example
+#include "WebView2.h"
+#include "event.h"
 
 #include "WebUI.hpp"
 
@@ -55,7 +55,6 @@ private:
     void cleanup();
     void resize(HWND hWnd);
     void errorMessageBox(std::wstring message, HRESULT result);
-    std::wstring getTempPath();
 
     EventHandler             fHandler;
     ICoreWebView2Controller* fController;

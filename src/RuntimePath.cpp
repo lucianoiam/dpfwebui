@@ -2,9 +2,6 @@
  * dpf-webui
  * Copyright (C) 2021 Luciano Iam <lucianoiam@protonmail.com>
  *
- * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
- *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
  * permission notice appear in all copies.
@@ -35,6 +32,12 @@ char _dummy; // for dladdr()
 #ifdef DISTRHO_OS_LINUX
 
 #include <linux/limits.h>
+
+String rtpath::getTemporaryPath()
+{
+	// Currently not needed
+	return String();
+}
 
 String rtpath::getExecutablePath()
 {
@@ -96,11 +99,44 @@ String rtpath::getBinaryDirectoryPath()
 #include <cstring>
 #include <errhandlingapi.h>
 #include <libloaderapi.h>
+#include <shlobj.h>
 #include <shlwapi.h>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-String getExecutablePath()
+String rtpath::getTemporaryPath()
+{
+    // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPFTemp
+    char tempPath[MAX_PATH];
+    HRESULT result = ::SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_DEFAULT, tempPath);
+    if (FAILED(result)) {
+        LOG_STDERR_INT("Could not determine user app data folder", result);
+        return String();
+    }
+
+    // Append host executable name to the temp path otherwise WebView2 controller initialization
+    // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
+    // simultaneously due to permissions. C:\Users\< USERNAME >\AppData\Local\DPFTemp\< HOST_BIN >
+    char exePath[MAX_PATH];
+    if (::GetModuleFileName(NULL, exePath, sizeof(exePath)) == 0) {
+        LOG_STDERR_INT("Could not determine host executable path", ::GetLastError());
+        return String();
+    }
+
+    LPSTR exeFilename = ::PathFindFileName(exePath);
+    // The following call relies on a further Windows library called Pathcch, which is implemented
+    // in in api-ms-win-core-path-l1-1-0.dll and requires Windows 8.
+    // Since the minimum plugin target is Windows 7 it is acceptable to use a deprecated function.
+    //::PathCchRemoveExtension(exeFilename, sizeof(exeFilename));
+    ::PathRemoveExtension(exeFilename);
+
+    ::strcat(tempPath, "\\DPFTemp\\");
+    ::strcat(tempPath, exeFilename);
+    
+    return String(tempPath);
+}
+
+String rtpath::getExecutablePath()
 {
     // Standalone JACK app on Windows is not currently implemented
     return String();
