@@ -85,6 +85,10 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
 
         resize(hWnd);
 
+        // More controller methods are available but not sure about the legality of the cast below
+        //ICoreWebView2Controller2_put_DefaultBackgroundColor(
+        //  reinterpret_cast<ICoreWebView2Controller2 *>(fController), ...);
+
         return S_OK;
     };
 
