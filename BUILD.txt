@@ -7,6 +7,14 @@ GENERAL BUILD INSTRUCTIONS
 2. make
 
 
+
+LINUX ONLY
+----------
+
+DSSI plugin currently builds but fails to start
+
+
+
 WINDOWS ONLY
 ------------
 
