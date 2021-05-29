@@ -135,6 +135,11 @@ TARGETS += macvst
 macvst:
 	@$(CURDIR)/utils/generate-vst-bundles.sh
 
+clean: clean_macvst
+
+clean_macvst:
+	@rm -rf $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst
+
 $(BUILD_DIR)/%.mm.o: %.mm
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
