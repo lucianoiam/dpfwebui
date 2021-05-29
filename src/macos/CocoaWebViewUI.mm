@@ -34,6 +34,7 @@ CocoaWebViewUI::CocoaWebViewUI()
                         encoding:NSUTF8StringEncoding];
     NSURL *url = [[NSURL alloc] initWithString:urlStr];
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    [fView setValue:[NSNumber numberWithBool:YES] forKey:@"drawsTransparentBackground"];
     [fView loadRequest:[NSURLRequest requestWithURL:url]];
     [url release];
     [urlStr release];
