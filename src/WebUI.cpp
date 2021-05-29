@@ -33,18 +33,9 @@ WebUI::WebUI()
 
 void WebUI::onDisplay()
 {
-#ifdef DGL_CAIRO
-    //cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
-    // TO DO
-#endif
-#ifdef DGL_OPENGL
-    uint rgba = getBackgroundColor();
-    glClearColor((rgba >> 24) / 255.f,
-                ((rgba & 0x00ff0000) >> 16) / 255.f,
-                ((rgba & 0x0000ff00) >> 8) / 255.f,
-                (rgba & 0x000000ff) / 255.f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#endif
+    // Avoid glitches while the web view initializes
+    clearBackground();
+    
     // onDisplay() can be called multiple times during lifetime of instance
     uintptr_t newParentWindowId = getParentWindow().getWindowId();
     if (fParentWindowId != newParentWindowId) {
@@ -56,4 +47,22 @@ void WebUI::onDisplay()
 String WebUI::getContentUrl()
 {
     return "file://" + rtpath::getResourcePath() + "/index.html";
+}
+
+void WebUI::clearBackground()
+{
+    uint rgba = getBackgroundColor();
+    float r = (rgba >> 24) / 255.f;
+    float g = ((rgba & 0x00ff0000) >> 16) / 255.f;
+    float b = ((rgba & 0x0000ff00) >> 8) / 255.f;
+    float a = (rgba & 0x000000ff) / 255.f;
+#ifdef DGL_CAIRO
+    cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
+    cairo_set_source_rgba(cr, r, g, b, a);
+    cairo_paint(cr);
+#endif
+#ifdef DGL_OPENGL
+    glClearColor(r, g, b, a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
 }
