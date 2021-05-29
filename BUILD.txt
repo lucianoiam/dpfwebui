@@ -46,8 +46,4 @@ installing the MinGW toolchain on Windows:
    - Download and install the Microsoft Edge Webview2 Runtime
      https://developer.microsoft.com/microsoft-edge/webview2
 
-   - Plugin links to WebView2Loader.dll. Since there is no rpath equivalent on
-     Windows, that DLL needs to be placed alongside the host .exe or copied to
-     C:\Windows\system32. This is not needed for the Carla host. (WIP)
-
 4. LV2 is currently broken, binary builds but TTL creation fails

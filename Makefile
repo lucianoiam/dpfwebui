@@ -42,7 +42,8 @@ SRC_FILES_UI += macos/CocoaWebViewUI.mm
 endif
 ifeq ($(WINDOWS),true)
 SRC_FILES_UI += windows/EdgeWebViewUI.cpp \
-                windows/event.cpp
+                windows/event.cpp \
+                windows/plugin.rc
 endif
 
 FILES_DSP = $(SRC_FILES_DSP:%=src/%)
@@ -143,14 +144,30 @@ $(BUILD_DIR)/%.mm.o: %.mm
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 endif
 
-# Windows binary loads the WebView2 runtime library, currently hardcoded to 64-bit
+# Windows requires resource files and linking to WebView2, currently hardcoded to 64-bit
+# https://cournape.wordpress.com/2008/09/02/how-to-embed-a-manifest-into-a-dll-with-mingw-tools-only/
+# https://github.com/mesonbuild/meson/issues/2064
 ifeq ($(WINDOWS),true)
 TARGETS += winlibs
 WEBVIEW_DLL = lib/windows/WebView2/runtimes/win-x64/native/WebView2Loader.dll
 
 winlibs:
-	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)
-	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
+	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+	@cp src/windows/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
+	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
+	@cp src/windows/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
+
+clean: clean_winlibs
+
+clean_winlibs:
+	@rm -rf $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+
+$(BUILD_DIR)/%.rc.o: %.rc
+	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	@echo "Compiling $<"
+	@windres --input $< --output $@ --output-format=coff
 endif
 
 # Target for generating LV2 TTL files
@@ -171,10 +188,8 @@ resources:
 	@echo "Copying resource files"
 	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
 	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
-ifeq ($(CAN_GENERATE_TTL),true)
 	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
 	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
-endif
 ifeq ($(LINUX),true)
 	@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
 	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
@@ -182,6 +197,11 @@ endif
 ifeq ($(MACOS),true)
 	@cp -r res/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst/Contents/Resources
 endif
+
+clean: clean_resources
+
+clean_resources:
+	@rm -rf $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
 
 all: dgl $(TARGETS)
 
