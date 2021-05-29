@@ -65,7 +65,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
 
     fHandler.EnvironmentCompleted = [&](HRESULT result, ICoreWebView2Environment* createdEnv) {
         if (FAILED(result)) {
-            errorMessageBox(L"Failed to create WebView2 environment", result);
+            errorMessageBox(L"Could not create WebView2 environment", result);
             return result;
         }
 
@@ -76,7 +76,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
 
     fHandler.ControllerCompleted = [&](HRESULT result, ICoreWebView2Controller* createdController) {
         if (FAILED(result)) {
-            errorMessageBox(L"Failed to create WebView2 controller", result);
+            errorMessageBox(L"Could not create WebView2 controller", result);
             return result;
         }
 
@@ -97,7 +97,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, getTempPath().c_str(), 0, &fHandler);
 
     if (FAILED(result)) {
-        errorMessageBox(L"Failed to create WebView2 environment options", result);
+        errorMessageBox(L"Could not create WebView2 environment options", result);
     }
 }
 
@@ -144,7 +144,7 @@ std::wstring EdgeWebViewUI::getTempPath()
     WCHAR tempPath[MAX_PATH];
     HRESULT result = ::SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_DEFAULT, tempPath);
     if (FAILED(result)) {
-        LOG_STDERR_INT("Failed SHGetFolderPath() call", result);
+        LOG_STDERR_INT("Could not determine user app data folder", result);
         return {};
     }
 
@@ -153,7 +153,7 @@ std::wstring EdgeWebViewUI::getTempPath()
     // simultaneously. C:\Users\< USERNAME >\AppData\Local\DPFTemp\< HOST_BIN >
     WCHAR exePath[MAX_PATH];
     if (::GetModuleFileName(NULL, exePath, sizeof(exePath)) == 0) {
-        LOG_STDERR_INT("Failed GetModuleFileName() call", ::GetLastError());
+        LOG_STDERR_INT("Could not determine host executable path", ::GetLastError());
         return {};
     }
 
