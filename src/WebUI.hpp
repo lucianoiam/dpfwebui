@@ -49,8 +49,6 @@ protected:
 
     String getContentUrl();
 
-    void clearBackground();
-
 private:
     uintptr_t fParentWindowId;
 

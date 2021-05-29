@@ -29,15 +29,33 @@ USE_NAMESPACE_DISTRHO
 WebUI::WebUI()
     : UI(800, 600)  // TODO: avoid arbitrary size, plugin should be resizable
     , fParentWindowId(0)
-{}
+{
+#ifdef DGL_OPENGL
+    uint rgba = getBackgroundColor();
+    GLfloat r = (rgba >> 24) / 255.f;
+    GLfloat g = ((rgba & 0x00ff0000) >> 16) / 255.f;
+    GLfloat b = ((rgba & 0x0000ff00) >> 8) / 255.f;
+    GLfloat a = (rgba & 0x000000ff) / 255.f;
+    glClearColor(r, g, b, a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
+}
 
 void WebUI::onDisplay()
 {
-    // Avoid glitches while the web view initializes
-    clearBackground();
-    
+    const Window& window = getParentWindow();
+#ifdef DGL_CAIRO
+    uint rgba = getBackgroundColor();
+    double r = (rgba >> 24) / 255.f;
+    double g = ((rgba & 0x00ff0000) >> 16) / 255.0;
+    double b = ((rgba & 0x0000ff00) >> 8) / 255.0;
+    double a = (rgba & 0x000000ff) / 255.0;
+    cairo_t* cr = window.getGraphicsContext().cairo;
+    cairo_set_source_rgba(cr, r, g, b, a);
+    cairo_paint(cr);
+#endif
     // onDisplay() can be called multiple times during lifetime of instance
-    uintptr_t newParentWindowId = getParentWindow().getWindowId();
+    uintptr_t newParentWindowId = window.getWindowId();
     if (fParentWindowId != newParentWindowId) {
         fParentWindowId = newParentWindowId;
         reparent(fParentWindowId);
@@ -47,22 +65,4 @@ void WebUI::onDisplay()
 String WebUI::getContentUrl()
 {
     return "file://" + rtpath::getResourcePath() + "/index.html";
-}
-
-void WebUI::clearBackground()
-{
-    uint rgba = getBackgroundColor();
-    float r = (rgba >> 24) / 255.f;
-    float g = ((rgba & 0x00ff0000) >> 16) / 255.f;
-    float b = ((rgba & 0x0000ff00) >> 8) / 255.f;
-    float a = (rgba & 0x000000ff) / 255.f;
-#ifdef DGL_CAIRO
-    cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
-    cairo_set_source_rgba(cr, r, g, b, a);
-    cairo_paint(cr);
-#endif
-#ifdef DGL_OPENGL
-    glClearColor(r, g, b, a);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#endif
 }
