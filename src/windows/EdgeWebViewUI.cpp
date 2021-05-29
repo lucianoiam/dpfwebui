@@ -25,8 +25,8 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 
-#include "../DistrhoPluginInfo.h"
-#include "../log.h"
+#include "DistrhoPluginInfo.h"
+#include "log.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 

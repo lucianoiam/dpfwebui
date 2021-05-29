@@ -41,7 +41,7 @@
 #include "WebView2.h"   // from microsoft sdk
 #include "event.h"      // from example
 
-#include "../WebUI.hpp"
+#include "WebUI.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -51,9 +51,9 @@ public:
     EdgeWebViewUI();
     ~EdgeWebViewUI();
     
-    void   parameterChanged(uint32_t index, float value) override;
+    void parameterChanged(uint32_t index, float value) override;
 
-    void   reparent(uintptr_t windowId) override;
+    void reparent(uintptr_t windowId) override;
     
 private:
     void cleanup();

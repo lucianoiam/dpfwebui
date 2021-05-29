@@ -19,11 +19,10 @@
 
 #include <dlfcn.h>
 #include <libgen.h>
+
 #include "CocoaWebViewUI.hpp"
-
-#include "../log.h"
-
-static char _dummy; // for dladdr()
+#include "Runtime.hpp"
+#include "log.h"
 
 USE_NAMESPACE_DISTRHO
 
@@ -67,30 +66,4 @@ void CocoaWebViewUI::reparent(uintptr_t windowId)
     [fView removeFromSuperview];
     fView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
     [parentView addSubview:fView];
-}
-
-String CocoaWebViewUI::getPluginResourcePath()
-{
-    // There is no DISTRHO method for querying the current plugin format
-    // Another solution would require modying the Makefile and relying on macros
-    Dl_info dl_info;
-    if (dladdr((void *)&_dummy, &dl_info) != 0) {
-        char path[::strlen(dl_info.dli_fname) + 1];
-        ::strcpy(path, dl_info.dli_fname);
-        void *handle = dlopen(path, RTLD_NOLOAD);
-        if (handle != NULL) {
-            void *addr = dlsym(handle, "VSTPluginMain");
-            dlclose(handle);
-            if (addr != NULL) {
-                return String(dirname(path)) + "/../Resources";
-            } else {
-                LOG_STDERR("Failed dlsym() call");
-            }
-        } else {
-            LOG_STDERR("Failed dlopen() call");
-        }
-    } else {
-        LOG_STDERR("Failed dladdr() call");
-    }
-    return WebUI::getPluginResourcePath();
 }

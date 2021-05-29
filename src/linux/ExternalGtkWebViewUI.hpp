@@ -38,9 +38,9 @@ public:
     ExternalGtkWebViewUI();
     ~ExternalGtkWebViewUI();
     
-    void   parameterChanged(uint32_t index, float value) override;
+    void parameterChanged(uint32_t index, float value) override;
 
-    void   reparent(uintptr_t windowId) override;
+    void reparent(uintptr_t windowId) override;
 
 private:
     ipc_t* ipc() const { return fIpc; }
