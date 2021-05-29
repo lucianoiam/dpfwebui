@@ -23,8 +23,6 @@
 
 #include <string>
 
-#include "DistrhoDefines.h"
-
 /*
   The official way to work with WebView2 requires WIL which is provided by the
   NuGet package Microsoft.Windows.ImplementationLibrary, but WIL is not

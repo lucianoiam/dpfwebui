@@ -28,8 +28,6 @@
 #include "DistrhoPluginInfo.h"
 #include "log.h"
 
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-
 USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
@@ -96,7 +94,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
         return S_OK;
     };
 
-    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0, getTempPath().c_str(), 0, &fHandler);
+    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, getTempPath().c_str(), 0, &fHandler);
 
     if (FAILED(result)) {
         errorMessageBox(L"Failed to create WebView2 environment options", result);
@@ -122,7 +120,7 @@ void EdgeWebViewUI::resize(HWND hWnd)
     }
 
     RECT bounds;
-    GetClientRect(hWnd, &bounds);
+    ::GetClientRect(hWnd, &bounds);
     
     // FIXME hWnd bounds seem to be incorrect for example 0;31;-1670580753;32767
     bounds.top = 0;
@@ -137,14 +135,14 @@ void EdgeWebViewUI::errorMessageBox(std::wstring message, HRESULT result)
 {
     std::wstringstream ss;
     ss << message << ", HRESULT 0x" << std::hex << result;
-    MessageBox(0, ss.str().c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
+    ::MessageBox(0, ss.str().c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
 }
 
 std::wstring EdgeWebViewUI::getTempPath()
 {
     // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPFTemp
     WCHAR tempPath[MAX_PATH];
-    HRESULT result = SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_DEFAULT, tempPath);
+    HRESULT result = ::SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_DEFAULT, tempPath);
     if (FAILED(result)) {
         LOG_STDERR_INT("Failed SHGetFolderPath() call", result);
         return {};
@@ -154,17 +152,17 @@ std::wstring EdgeWebViewUI::getTempPath()
     // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
     // simultaneously. C:\Users\< USERNAME >\AppData\Local\DPFTemp\< HOST_BIN >
     WCHAR exePath[MAX_PATH];
-    if (GetModuleFileName(NULL, exePath, sizeof(exePath)) == 0) {
-        LOG_STDERR_INT("Failed GetModuleFileName() call", GetLastError());
+    if (::GetModuleFileName(NULL, exePath, sizeof(exePath)) == 0) {
+        LOG_STDERR_INT("Failed GetModuleFileName() call", ::GetLastError());
         return {};
     }
 
-    wcscat(tempPath, L"\\DPFTemp\\");
+    ::wcscat(tempPath, L"\\DPFTemp\\");
 
     // The following call relies on a further Windows library called Pathcch, which is implemented
     // in in api-ms-win-core-path-l1-1-0.dll and requires Windows 8. Min plugin target is Windows 7.
     //PathCchRemoveExtension(exePath, sizeof(exePath));
-    wcscat(tempPath, PathFindFileName(exePath));
+    ::wcscat(tempPath, ::PathFindFileName(exePath));
 
     return static_cast<const wchar_t *>(tempPath);
 }

@@ -16,11 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#define UNICODE
 #include <libloaderapi.h>
 #include <shlwapi.h>
 
-#include "../log.h"
+#include "log.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -28,15 +27,15 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 BOOLEAN WINAPI DllMain(HINSTANCE hDllHandle, DWORD nReason, LPVOID Reserved)
 {
-    WCHAR dllPath[MAX_PATH];
+    char path[MAX_PATH];
 
-    if (GetModuleFileName((HINSTANCE)&__ImageBase, dllPath, sizeof(dllPath)) == 0) {
-        LOG_STDERR_INT("Failed GetModuleFileName() call", GetLastError());
+    if (GetModuleFileName((HINSTANCE)&__ImageBase, path, sizeof(path)) == 0) {
+        LOG_STDERR_INT("Could not determine DLL path", GetLastError());
         return FALSE;
     }
 
-    PathRemoveFileSpec(dllPath);
-    AddDllDirectory(dllPath);
+    PathRemoveFileSpec(path);
+    AddDllDirectory(path);
 
     return TRUE;
 }
