@@ -102,21 +102,20 @@ dgl:
 	make -C $(DPF_CUSTOM_PATH) dgl
 
 # Reuse DISTRHO post-build scripts
-# No symlinks on Windows/MinGW, just copy. It does not hurt even if cross-compiling.
 TARGETS += utils
 
 utils:
-ifneq ($(WINDOWS),true)
-	@ln -s $(DPF_CUSTOM_PATH)/utils .
-else
-	@cp -r $(DPF_CUSTOM_PATH)/utils .
+ifneq ($(MSYS_MINGW),true)
+	@MSYS=winsymlinks:nativestrict
 endif
+	@ln -s $(DPF_CUSTOM_PATH)/utils .
 
 # Linux requires a helper binary
 ifeq ($(LINUX),true)
 TARGETS += lxhelper
 HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_helper
 
+# FIXME - better user $(shell $(PKG_CONFIG) --cflags x11)
 lxhelper: src/linux/helper.c src/linux/ipc.c
 	@echo "Creating helper"
 	$(SILENT)$(CC) $^ -o $(HELPER_BIN) -lX11 \
@@ -155,8 +154,6 @@ winlibs:
 endif
 
 # Target for generating LV2 TTL files
-# Currently broken on Windows
-ifneq ($(WINDOWS),true)
 ifneq ($(CROSS_COMPILING),true)
 CAN_GENERATE_TTL = true
 else ifneq ($(EXE_WRAPPER),)
@@ -171,7 +168,6 @@ lv2ttl: utils/lv2_ttl_generator
 
 utils/lv2_ttl_generator:
 	$(MAKE) -C utils/lv2-ttl-generator
-endif
 endif
 
 # Target for copying web UI files comes last

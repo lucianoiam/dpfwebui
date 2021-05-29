@@ -27,3 +27,13 @@ ifeq (,$(wildcard ./lib/windows/WebView2))
 $(error WebView2 SDK not found, please have a look at BUILD.txt)
 endif
 endif
+
+ifneq (,$(findstring MINGW,$(MSYSTEM)))
+MSYS_MINGW=true
+endif
+
+ifeq ($(MSYS_MINGW),true)
+ifeq ($(shell cmd /c "net.exe session 1>NUL 2>NUL || exit /b 1"; echo $$?),1)
+$(error Need to create symlinks, please run MSYS as administrator)
+endif
+endif
