@@ -26,14 +26,12 @@
   NuGet package Microsoft.Windows.ImplementationLibrary, but WIL is not
   compatible with MinGW. See https://github.com/microsoft/wil/issues/117
   
-  A working solution was copied from here:
+  Solution is to use the C interface to WebView2 as exemplified here:
   https://github.com/jchv/webview2-in-mingw/blob/master/Src/main.cpp
-
-  The C++ example linked above defines CINTERFACE, ie. it calls the web view
-  through a C interface, why?. Not defining CINTEFACE makes lpVtbl unavailable
 */
 
 #define CINTERFACE
+#define COBJMACROS
 #include "WebView2.h"
 #include "event.h"
 
