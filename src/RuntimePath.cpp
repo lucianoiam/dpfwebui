@@ -27,8 +27,6 @@ USE_NAMESPACE_DISTRHO
 #include <libgen.h>
 #include <unistd.h>
 
-char _dummy; // for dladdr()
-
 #ifdef DISTRHO_OS_LINUX
 
 #include <linux/limits.h>
@@ -64,7 +62,7 @@ String rtpath::getExecutablePath()
 String rtpath::getSharedLibraryPath()
 {
     Dl_info dl_info;
-    if (::dladdr((void *)&_dummy, &dl_info) == 0) {
+    if (::dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
         LOG_STDERR(::dlerror());
         return String();
     }
