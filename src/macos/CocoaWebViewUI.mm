@@ -30,14 +30,17 @@ CocoaWebViewUI::CocoaWebViewUI()
     : fView(0)
 {
     // ARC is off
-    NSString *urlStr = [[NSString alloc] initWithCString:getContentUrl()
-                        encoding:NSUTF8StringEncoding];
-    NSURL *url = [[NSURL alloc] initWithString:urlStr];
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];
-    [fView setValue:[NSNumber numberWithBool:YES] forKey:@"drawsTransparentBackground"];
-    [fView loadRequest:[NSURLRequest requestWithURL:url]];
+    NSNumber *yes = [[NSNumber alloc] initWithBool:YES];
+    [fView setValue:yes forKey:@"drawsTransparentBackground"];
+    NSString *urlStr = [[NSString alloc] initWithCString:getContentUrl() encoding:NSUTF8StringEncoding];
+    NSURL *url = [[NSURL alloc] initWithString:urlStr];
+    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
+    [fView loadRequest:request];
+    [request release];
     [url release];
     [urlStr release];
+    [yes release];
 }
 
 CocoaWebViewUI::~CocoaWebViewUI()
