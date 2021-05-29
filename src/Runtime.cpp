@@ -24,13 +24,18 @@
 
 USE_NAMESPACE_DISTRHO
 
-#ifdef DISTRHO_OS_LINUX
+#if defined(DISTRHO_OS_LINUX) || defined(DISTRHO_OS_MAC)
 
 #include <cstring>
 #include <dlfcn.h>
 #include <libgen.h>
 #include <unistd.h>
+#ifdef DISTRHO_OS_LINUX
 #include <linux/limits.h>
+#elif DISTRHO_OS_MAC
+#include <sys/syslimits.h>
+#endif
+#include <iostream>
 
 char _dummy; // for dladdr()
 
@@ -45,10 +50,11 @@ String runtime::getBinaryPath()
 {
     // DISTRHO_PLUGIN_TARGET_* macros are not available here
     // Is there a better way to differentiate we are being called from library or executable?
-    String libPath = getSharedLibraryPath();    // non-empty even if running standalone
-    void *handle = ::dlopen(libPath, RTLD_LAZY);
+    String libPath = getSharedLibraryPath();     // path never empty even if running standalone
+    void *handle = ::dlopen(libPath, RTLD_LAZY); // returns non-null on macOS also for standalone
     if (handle) {
         ::dlclose(handle);
+        std::cout << libPath << std::endl;
         return libPath;
     }
     return getExecutablePath();
@@ -64,6 +70,8 @@ String runtime::getSharedLibraryPath()
     return String(dl_info.dli_fname);
 }
 
+#ifdef DISTRHO_OS_LINUX
+
 String runtime::getExecutablePath()
 {
     char path[PATH_MAX];
@@ -75,35 +83,20 @@ String runtime::getExecutablePath()
     return String(path);
 }
 
-#endif // DISTRHO_OS_LINUX
+#elif DISTRHO_OS_MAC
 
+String runtime::getExecutablePath()
+{
+    return getSharedLibraryPath();  // does the trick on macOS
+}
+
+#endif
+
+#endif // DISTRHO_OS_LINUX || DISTRHO_OS_MAC
 
 
 
 /*
-
-
-
-String CocoaWebViewUI::getSharedLibraryDirectoryPath()
-{
-    Dl_info dl_info;
-    if (dladdr((void *)&_dummy, &dl_info) == 0) {
-        LOG_STDERR("Failed dladdr() call");
-        return String();
-    }
-    char path[::strlen(dl_info.dli_fname) + 1];
-    ::strcpy(path, dl_info.dli_fname);
-    return String(dirname(path));
-}
-
-String CocoaWebViewUI::getStandaloneBinaryDirectoryPath()
-{
-    return String();    // TODO
-}
-
-
-
-
 String EdgeWebViewUI::getSharedLibraryDirectoryPath()
 {
     WCHAR dllPath[MAX_PATH];
@@ -120,10 +113,4 @@ String EdgeWebViewUI::getSharedLibraryDirectoryPath()
 
     return String(path.c_str());
 }
-
-String EdgeWebViewUI::getStandaloneBinaryDirectoryPath()
-{
-    return String();    // TODO
-}
-
 */
