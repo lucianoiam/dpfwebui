@@ -23,8 +23,9 @@
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-#include "log.h"
+#include "constant.h"
 #include "ipc.h"
+#include "log.h"
 
 typedef struct {
     ipc_t*         ipc;
@@ -98,6 +99,17 @@ static int create_webview(context_t *ctx)
 {
     // Create a window that will contain the browser instance
     ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+
+    // TODO: gtk_widget_modify_bg() is deprecated
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    int rgba = DISTRHO_DEFAULT_BACKGROUND_COLOR;
+    GdkColor color = {0,
+                      0x101 * (rgba >> 24),
+                      0x101 * ((rgba & 0x00ff0000) >> 16),
+                      0x101 * ((rgba & 0x0000ff00) >> 8)};
+    gtk_widget_modify_bg(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
+    #pragma GCC diagnostic pop
 
     // Set up callback so that if the main window is closed, the program will exit
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(destroy_window_cb), NULL);

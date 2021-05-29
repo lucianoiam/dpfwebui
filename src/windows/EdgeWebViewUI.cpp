@@ -85,7 +85,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
         color.R = rgba >> 24;
         color.G = (rgba & 0x00ff0000) >> 16;
         color.B = (rgba & 0x0000ff00) >> 8;
-        color.A = rgba & 0x000000ff;
+        color.A = 0xff; // alpha does not seem to work
         ICoreWebView2Controller2_put_DefaultBackgroundColor(
         	reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 

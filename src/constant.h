@@ -2,9 +2,6 @@
  * dpf-webui
  * Copyright (C) 2021 Luciano Iam <lucianoiam@protonmail.com>
  *
- * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
- *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
  * permission notice appear in all copies.
@@ -17,43 +14,14 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WEBUI_HPP
-#define WEBUI_HPP
+#ifndef CONSTANT_H
+#define CONSTANT_H
 
-#include <cstdint>
+/**
+   A default background color in RGBA format for painting the window before the
+   web view is ready, in order to avoid visual glitches when the UI is being opened.
+   Could be moved to DistrhoPluginfo.h if web becomes an official UI backend someday.
+ */
+#define DISTRHO_DEFAULT_BACKGROUND_COLOR 0xffffffff; // solid white
 
-#include "DistrhoUI.hpp"
-#include "extra/String.hpp"
-
-#include "constant.h"
-
-START_NAMESPACE_DISTRHO
-
-class WebUI : public UI
-{
-public:
-    WebUI();
-    virtual ~WebUI() {};
-
-    void onDisplay() override;
-
-#ifdef DISTRHO_DEFAULT_BACKGROUND_COLOR
-    // Hides UI method that attempts to query host
-    uint getBackgroundColor() const noexcept { return DISTRHO_DEFAULT_BACKGROUND_COLOR; };
-#endif
-
-protected:
-    virtual void reparent(uintptr_t parentWindowId) = 0;
-
-    String getContentUrl();
-
-    void clearBackground();
-
-private:
-    uintptr_t fParentWindowId;
-
-};
-
-END_NAMESPACE_DISTRHO
-
-#endif  // WEBUI_HPP
+#endif // CONSTANT_H
