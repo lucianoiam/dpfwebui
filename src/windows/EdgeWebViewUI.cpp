@@ -34,9 +34,7 @@ UI* DISTRHO::createUI()
 EdgeWebViewUI::EdgeWebViewUI()
     : fController(0)
     , fView(0)
-{
-    // empty
-}
+{}
 
 EdgeWebViewUI::~EdgeWebViewUI()
 {
