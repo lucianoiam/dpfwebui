@@ -151,9 +151,9 @@ String runtime::getResourcePath()
         }
     }
 #endif
-    String path = getBinaryDirectoryPath();
+    String binPath = getBinaryDirectoryPath();
 #ifdef DISTRHO_OS_WINDOWS
-	path.replace('\\', '/');
+	binPath.replace('\\', '/');
 #endif
-    return path + "/" XSTR(BIN_BASENAME) "_resources";
+    return binPath + "/" XSTR(BIN_BASENAME) "_resources";
 }
