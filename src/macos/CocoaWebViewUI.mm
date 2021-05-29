@@ -17,12 +17,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
-#include <dlfcn.h>
-#include <libgen.h>
-
 #include "CocoaWebViewUI.hpp"
-#include "Runtime.hpp"
-#include "log.h"
 
 USE_NAMESPACE_DISTRHO
 

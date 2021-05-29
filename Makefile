@@ -27,7 +27,7 @@ SRC_FILES_DSP = \
 
 SRC_FILES_UI  = \
     WebUI.cpp \
-    Runtime.cpp
+    RuntimePath.cpp
 
 # Note this is not DPF's Makefile.base.mk
 include Makefile.base.mk
@@ -147,8 +147,6 @@ $(BUILD_DIR)/%.mm.o: %.mm
 endif
 
 # Windows requires compiling resource files and linking to WebView2, currently only 64-bit
-# https://cournape.wordpress.com/2008/09/02/how-to-embed-a-manifest-into-a-dll-with-mingw-tools-only/
-# https://github.com/mesonbuild/meson/issues/2064
 ifeq ($(WINDOWS),true)
 TARGETS += winlibs
 WEBVIEW_DLL = lib/windows/WebView2/runtimes/win-x64/native/WebView2Loader.dll

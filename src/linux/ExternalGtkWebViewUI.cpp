@@ -25,7 +25,7 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 
-#include "Runtime.hpp"
+#include "RuntimePath.hpp"
 #include "log.h"
 #include "macro.h"
 
@@ -73,7 +73,7 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
     char wfd[10];
     ::sprintf(wfd, "%d", fPipeFd[1][1]);
     // BIN_BASENAME is defined in Makefile
-    String helperPath = runtime::getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_helper";
+    String helperPath = rtpath::getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_helper";
 
     const char *argv[] = {helperPath, rfd, wfd, NULL};
     int status = ::posix_spawn(&fPid, helperPath, NULL, NULL, (char* const*)argv, environ);
