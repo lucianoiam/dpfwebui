@@ -119,7 +119,7 @@ HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_helper
 
 lxhelper: src/linux/helper.c src/linux/ipc.c
 	@echo "Creating helper"
-	$(SILENT)$(CC) $^ -o $(HELPER_BIN) -lX11 \
+	$(SILENT)$(CC) $^ -Isrc -o $(HELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
 	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
