@@ -47,9 +47,7 @@ installing the MinGW toolchain on Windows:
      https://developer.microsoft.com/microsoft-edge/webview2
 
    - Plugin links to WebView2Loader.dll. Since there is no rpath equivalent on
-     Windows, the plugin DLL path is added to the libraries search path during
-     runtime at DllMain(). This hack works for Carla but it is currently failing
-     on REAPER. To avoid the missing library issue, WebView2Loader.dll can be
-     placed alongside the host .exe or copied to C:\Windows\system32
+     Windows, that DLL needs to be placed alongside the host .exe or copied to
+     C:\Windows\system32. This is not needed for the Carla host. (WIP)
 
 4. LV2 is currently broken, binary builds but TTL creation fails
