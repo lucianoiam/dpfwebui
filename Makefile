@@ -80,8 +80,7 @@ endif
 
 TARGETS += vst
 
-# Up to here follow example DISTRHO plugin Makefile
-# Now begin dpf-webui secret sauce
+# Up to here follow example DISTRHO plugin Makefile, now begin dpf-webui secret sauce
 BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH)/distrho/src -DBIN_BASENAME=$(NAME)
 
 # Platform-specific build flags
@@ -97,11 +96,12 @@ LINK_FLAGS += -L./lib/windows/WebView2/build/native/x64 -lShlwapi -lWebView2Load
               -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
 endif
 
-# Target for building DPF's graphics library comes first (see 'all' below)
+# Target for building DPF's graphics library inserted first, see 'all' below
 dgl:
 	make -C $(DPF_CUSTOM_PATH) dgl
 
 # Reuse DISTRHO post-build scripts
+ifneq ($(WINDOWS),true)
 TARGETS += utils
 
 utils:
@@ -109,18 +109,18 @@ ifneq ($(MSYS_MINGW),true)
 	@MSYS=winsymlinks:nativestrict
 endif
 	@ln -s $(DPF_CUSTOM_PATH)/utils .
+endif
 
 # Linux requires a helper binary
 ifeq ($(LINUX),true)
 TARGETS += lxhelper
 HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_helper
 
-# FIXME - better user $(shell $(PKG_CONFIG) --cflags x11)
 lxhelper: src/linux/helper.c src/linux/ipc.c
 	@echo "Creating helper"
 	$(SILENT)$(CC) $^ -o $(HELPER_BIN) -lX11 \
-		`pkg-config --cflags --libs gtk+-3.0` \
-		`pkg-config --cflags --libs webkit2gtk-4.0`
+		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
+		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
 	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
 	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi
 
@@ -143,7 +143,7 @@ $(BUILD_DIR)/%.mm.o: %.mm
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 endif
 
-# Windows requires the WebView2 runtime library, currently hardcoded to 64-bit
+# Windows binary loads the WebView2 runtime library, currently hardcoded to 64-bit
 ifeq ($(WINDOWS),true)
 TARGETS += winlibs
 WEBVIEW_DLL = lib/windows/WebView2/runtimes/win-x64/native/WebView2Loader.dll
@@ -154,12 +154,6 @@ winlibs:
 endif
 
 # Target for generating LV2 TTL files
-ifneq ($(CROSS_COMPILING),true)
-CAN_GENERATE_TTL = true
-else ifneq ($(EXE_WRAPPER),)
-CAN_GENERATE_TTL = true
-endif
-
 ifeq ($(CAN_GENERATE_TTL),true)
 TARGETS += lv2ttl
 

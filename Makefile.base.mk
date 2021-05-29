@@ -34,6 +34,14 @@ endif
 
 ifeq ($(MSYS_MINGW),true)
 ifeq ($(shell cmd /c "net.exe session 1>NUL 2>NUL || exit /b 1"; echo $$?),1)
-$(error Need to create symlinks, please run MSYS as administrator)
+#$(error Need to create symlinks, please run MSYS as administrator)
+endif
+endif
+
+ifneq ($(MSYS_MINGW),true)
+ifneq ($(CROSS_COMPILING),true)
+CAN_GENERATE_TTL = true
+else ifneq ($(EXE_WRAPPER),)
+CAN_GENERATE_TTL = true
 endif
 endif
