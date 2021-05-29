@@ -16,32 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef COCOAWEBVIEWUI_HPP
-#define COCOAWEBVIEWUI_HPP
+#ifndef MACRO_H
+#define MACRO_H
 
-#include "../WebUI.hpp"
+// https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html
+#define XSTR(s) STR(s)
+#define STR(s) #s
 
-#import <WebKit/WebKit.h>
-
-START_NAMESPACE_DISTRHO
-
-class CocoaWebViewUI : public WebUI
-{
-public:
-    CocoaWebViewUI();
-    ~CocoaWebViewUI();
-    
-    void   parameterChanged(uint32_t index, float value) override;
-
-    void   reparent(uintptr_t windowId) override;
-    
-    String getPluginResourcePath() override;
-    
-private:
-    WKWebView *fView;
-
-};
-
-END_NAMESPACE_DISTRHO
-
-#endif  // COCOAWEBVIEWUI_HPP
+#endif	// MACRO_H

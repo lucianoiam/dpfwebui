@@ -15,33 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+ * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
 
-#ifndef COCOAWEBVIEWUI_HPP
-#define COCOAWEBVIEWUI_HPP
+#ifndef RUNTIME_HPP
+#define RUNTIME_HPP
 
-#include "../WebUI.hpp"
-
-#import <WebKit/WebKit.h>
+#include "extra/String.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class CocoaWebViewUI : public WebUI
-{
-public:
-    CocoaWebViewUI();
-    ~CocoaWebViewUI();
-    
-    void   parameterChanged(uint32_t index, float value) override;
+namespace runtime {
 
-    void   reparent(uintptr_t windowId) override;
-    
-    String getPluginResourcePath() override;
-    
-private:
-    WKWebView *fView;
+    String getBinaryDirectoryPath();
+    String getBinaryPath();
+    String getSharedLibraryPath();
+    String getExecutablePath();
 
-};
+}
 
 END_NAMESPACE_DISTRHO
 
-#endif  // COCOAWEBVIEWUI_HPP
+#endif  // RUNTIME_HPP

@@ -55,8 +55,6 @@ public:
 
     void   reparent(uintptr_t windowId) override;
     
-    String getSharedLibraryDirectoryPath() override;
-
 private:
     void cleanup();
     void resize(HWND hWnd);
