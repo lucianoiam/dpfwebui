@@ -33,11 +33,6 @@ WebUI::WebUI()
     // empty
 }
 
-WebUI::~WebUI()
-{
-    // empty
-}
-
 void WebUI::onDisplay()
 {
     // onDisplay() can be called multiple times during lifetime of instance

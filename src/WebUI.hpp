@@ -33,7 +33,7 @@ class WebUI : public UI
 {
 public:
     WebUI();
-    ~WebUI();
+    virtual ~WebUI() {};
 
     void onDisplay() override;
 

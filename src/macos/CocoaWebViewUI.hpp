@@ -29,7 +29,7 @@ class CocoaWebViewUI : public WebUI
 {
 public:
     CocoaWebViewUI();
-    ~CocoaWebViewUI();
+    virtual ~CocoaWebViewUI();
     
     void parameterChanged(uint32_t index, float value) override;
 
