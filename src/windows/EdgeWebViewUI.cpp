@@ -21,11 +21,9 @@
 #include <codecvt>
 #include <locale>
 #include <sstream>
-#include <libloaderapi.h>
-#include <shlobj.h>
-#include <shlwapi.h>
 
 #include "DistrhoPluginInfo.h"
+#include "RuntimePath.hpp"
 #include "log.h"
 
 USE_NAMESPACE_DISTRHO
@@ -94,7 +92,9 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
         return S_OK;
     };
 
-    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, getTempPath().c_str(), 0, &fHandler);
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::wstring temp = converter.from_bytes(rtpath::getTemporaryPath());
+    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, temp.c_str(), 0, &fHandler);
 
     if (FAILED(result)) {
         errorMessageBox(L"Could not create WebView2 environment options", result);
@@ -136,33 +136,4 @@ void EdgeWebViewUI::errorMessageBox(std::wstring message, HRESULT result)
     std::wstringstream ss;
     ss << message << ", HRESULT 0x" << std::hex << result;
     ::MessageBox(0, ss.str().c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
-}
-
-std::wstring EdgeWebViewUI::getTempPath()
-{
-    // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPFTemp
-    WCHAR tempPath[MAX_PATH];
-    HRESULT result = ::SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_DEFAULT, tempPath);
-    if (FAILED(result)) {
-        LOG_STDERR_INT("Could not determine user app data folder", result);
-        return {};
-    }
-
-    // Append host executable name to the temp path otherwise WebView2 controller initialization
-    // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
-    // simultaneously. C:\Users\< USERNAME >\AppData\Local\DPFTemp\< HOST_BIN >
-    WCHAR exePath[MAX_PATH];
-    if (::GetModuleFileName(NULL, exePath, sizeof(exePath)) == 0) {
-        LOG_STDERR_INT("Could not determine host executable path", ::GetLastError());
-        return {};
-    }
-
-    ::wcscat(tempPath, L"\\DPFTemp\\");
-
-    // The following call relies on a further Windows library called Pathcch, which is implemented
-    // in in api-ms-win-core-path-l1-1-0.dll and requires Windows 8. Min plugin target is Windows 7.
-    //PathCchRemoveExtension(exePath, sizeof(exePath));
-    ::wcscat(tempPath, ::PathFindFileName(exePath));
-
-    return static_cast<const wchar_t *>(tempPath);
 }

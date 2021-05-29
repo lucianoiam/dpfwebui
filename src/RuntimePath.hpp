@@ -15,9 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
 
 #ifndef RUNTIME_PATH_HPP
 #define RUNTIME_PATH_HPP
@@ -31,6 +28,7 @@ START_NAMESPACE_DISTRHO
 
 namespace rtpath {
 
+    String getTemporaryPath();
     String getExecutablePath();
     String getSharedLibraryPath();
     String getBinaryPath();
