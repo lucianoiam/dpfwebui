@@ -34,7 +34,7 @@ friend class IpcReadThread;
 
 public:
     ExternalGtkWebViewUI();
-    ~ExternalGtkWebViewUI();
+    virtual ~ExternalGtkWebViewUI();
     
     void parameterChanged(uint32_t index, float value) override;
 

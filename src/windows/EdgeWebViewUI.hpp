@@ -45,7 +45,7 @@ class EdgeWebViewUI : public WebUI
 {
 public:
     EdgeWebViewUI();
-    ~EdgeWebViewUI();
+    virtual ~EdgeWebViewUI();
     
     void parameterChanged(uint32_t index, float value) override;
 
