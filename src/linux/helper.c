@@ -37,8 +37,8 @@ typedef struct {
 static void create_webview(context_t *ctx);
 static void navigate(const context_t *ctx, const char *url);
 static void reparent(const context_t *ctx, uintptr_t parentId);
-static void destroy_window_cb(GtkWidget* widget, GtkWidget* window);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
+static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload, int payload_sz);
 
@@ -99,7 +99,7 @@ static void create_webview(context_t *ctx)
     #pragma GCC diagnostic pop
 
     // Set up callback so that if the main window is closed, the program will exit
-    g_signal_connect(ctx->window, "destroy", G_CALLBACK(destroy_window_cb), NULL);
+    g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), NULL);
 
     // Create a browser instance and put the browser area into the main window
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
@@ -136,11 +136,6 @@ static void reparent(const context_t *ctx, uintptr_t parentId)
     }
 }
 
-static void destroy_window_cb(GtkWidget* widget, GtkWidget* window)
-{
-    gtk_main_quit();
-}
-
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
 {
     switch (event) {
@@ -152,6 +147,11 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
         default:
             break;
     }
+}
+
+static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)
+{
+    gtk_main_quit();
 }
 
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)

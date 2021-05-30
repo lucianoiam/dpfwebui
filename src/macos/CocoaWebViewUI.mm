@@ -19,6 +19,10 @@
 
 #include "CocoaWebViewUI.hpp"
 
+@interface WebViewDelegate: NSObject<WKNavigationDelegate>
+{}
+@end
+
 USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
@@ -27,13 +31,12 @@ UI* DISTRHO::createUI()
 }
 
 CocoaWebViewUI::CocoaWebViewUI()
-    : fView(0)
 {
-    // ARC is off
+    // No ARC here
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];
     [fView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-    NSNumber *yes = [[NSNumber alloc] initWithBool:YES];
-    [fView setValue:yes forKey:@"drawsTransparentBackground"];
+    fView.hidden = YES;
+    fView.navigationDelegate = [[WebViewDelegate alloc] init];
     NSString *urlStr = [[NSString alloc] initWithCString:getContentUrl() encoding:NSUTF8StringEncoding];
     NSURL *url = [[NSURL alloc] initWithString:urlStr];
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
@@ -41,11 +44,11 @@ CocoaWebViewUI::CocoaWebViewUI()
     [request release];
     [url release];
     [urlStr release];
-    [yes release];
 }
 
 CocoaWebViewUI::~CocoaWebViewUI()
 {
+    [fView.navigationDelegate release];
     [fView removeFromSuperview];
     [fView release];
 }
@@ -67,3 +70,12 @@ void CocoaWebViewUI::reparent(uintptr_t windowId)
     fView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
     [parentView addSubview:fView];
 }
+
+@implementation WebViewDelegate
+
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
+{
+    webView.hidden = NO;
+}
+
+@end
