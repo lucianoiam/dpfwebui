@@ -17,4 +17,5 @@ WINDOWS
 
 - Adapt webview to parent window size changes
 - Find out if it is possible to get the WebView2 SDK files without Visual Studio
+  https://stackoverflow.com/questions/38118548/how-to-install-nuget-from-command-line-on-linux
 - LV2 is currently broken, binary builds but TTL creation fails
