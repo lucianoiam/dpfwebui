@@ -1,0 +1,20 @@
+ALL PLATFORMS
+-------------
+
+- Host <-> JavaScript parameter bridge
+- Persistent state handling
+
+
+LINUX
+-----
+
+- Resizable window
+- DSSI plugin currently builds but fails to start
+
+
+WINDOWS
+-------
+
+- Resizable window
+- Find out if it is possible to get the WebView2 SDK files without Visual Studio
+- LV2 is currently broken, binary builds but TTL creation fails
