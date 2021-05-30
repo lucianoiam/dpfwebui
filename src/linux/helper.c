@@ -111,7 +111,7 @@ static void create_webview(context_t *ctx)
     // Make sure that when the browser area becomes visible, it will get mouse and keyboard events
     gtk_widget_grab_focus(GTK_WIDGET(ctx->webView));
 
-    // Hide webview until it finishes loading to avoid visual glitches
+    // Hide webview until it finishes loading to avoid some flicker
     gtk_widget_hide(GTK_WIDGET(ctx->webView));
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), NULL);
 }
