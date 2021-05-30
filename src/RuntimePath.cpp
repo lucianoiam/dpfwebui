@@ -106,7 +106,7 @@ String rtpath::getTemporaryPath()
 {
     // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPFTemp
     char tempPath[MAX_PATH];
-    HRESULT result = ::SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_DEFAULT, tempPath);
+    HRESULT result = ::SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, 0, SHGFP_TYPE_DEFAULT, tempPath);
     if (FAILED(result)) {
         LOG_STDERR_INT("Could not determine user app data folder", result);
         return String();
@@ -116,7 +116,7 @@ String rtpath::getTemporaryPath()
     // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
     // simultaneously due to permissions. C:\Users\< USERNAME >\AppData\Local\DPFTemp\< HOST_BIN >
     char exePath[MAX_PATH];
-    if (::GetModuleFileName(NULL, exePath, sizeof(exePath)) == 0) {
+    if (::GetModuleFileName(0, exePath, sizeof(exePath)) == 0) {
         LOG_STDERR_INT("Could not determine host executable path", ::GetLastError());
         return String();
     }
@@ -175,10 +175,10 @@ String rtpath::getResourcePath()
     char path[PATH_MAX];
     ::strcpy(path, getSharedLibraryPath());
     void *handle = ::dlopen(path, RTLD_NOLOAD);
-    if (handle != NULL) {
+    if (handle != 0) {
         void *addr = ::dlsym(handle, "VSTPluginMain");
         ::dlclose(handle);
-        if (addr != NULL) {
+        if (addr != 0) {
             return String(::dirname(path)) + "/../Resources";
         }
     }

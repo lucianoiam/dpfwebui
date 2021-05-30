@@ -42,7 +42,7 @@ START_NAMESPACE_DISTRHO
 class EdgeWebViewUI : public WebUI
 {
 public:
-    EdgeWebViewUI(uint width, uint height);
+    EdgeWebViewUI(float scale);
     virtual ~EdgeWebViewUI();
     
     void parameterChanged(uint32_t index, float value) override;

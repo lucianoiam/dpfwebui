@@ -73,8 +73,8 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
     // BIN_BASENAME is defined in Makefile
     String helperPath = rtpath::getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_helper";
 
-    const char *argv[] = {helperPath, rfd, wfd, NULL};
-    int status = ::posix_spawn(&fPid, helperPath, NULL, NULL, (char* const*)argv, environ);
+    const char *argv[] = {helperPath, rfd, wfd, 0};
+    int status = ::posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
     if (status != 0) {
         LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
@@ -171,7 +171,7 @@ void IpcReadThread::run()
         FD_SET(fd, &rfds);
         tv.tv_sec = 0;
         tv.tv_usec = 100000;
-        int retval = ::select(fd + 1, &rfds, NULL, NULL, &tv);
+        int retval = ::select(fd + 1, &rfds, 0, 0, &tv);
 
         if (retval == -1) {
             LOG_STDERR_ERRNO("Failed select() on IPC channel");
