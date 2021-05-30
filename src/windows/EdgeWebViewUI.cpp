@@ -38,23 +38,20 @@ UI* DISTRHO::createUI()
 {
     // GetProcessDpiAwareness() and GetScaleFactorForMonitor() are not available on Windows 7
     // Also not currently compiling on MinGW despite #include <shellscalingapi.h> (May '21)
-    uint width = DISTRHO_UI_INITIAL_WIDTH;
-    uint height = DISTRHO_UI_INITIAL_HEIGHT;
-
+    float scale = 1.f;
     HMODULE hDll = ::LoadLibrary(L"Shcore.dll");
 
     if (hDll) {
         GETPROCESSDPIAWARENESS *pf1 = (GETPROCESSDPIAWARENESS*)::GetProcAddress(hDll, "GetProcessDpiAwareness");
         GETSCALEFACTORFORMONITOR* pf2 = (GETSCALEFACTORFORMONITOR*)::GetProcAddress(hDll, "GetScaleFactorForMonitor");
         if (pf1 && pf2) {
-            PROCESS_DPI_AWARENESS value;
-            if (SUCCEEDED((*pf1)(NULL, &value))) {  // GetProcessDpiAwareness(NULL, &value)
-                DEVICE_SCALE_FACTOR scale;
+            PROCESS_DPI_AWARENESS val1;
+            if (SUCCEEDED((*pf1)(0, &val1))) {  // GetProcessDpiAwareness(0, &val1)
+                DEVICE_SCALE_FACTOR val2;
                 HMONITOR hMon = ::MonitorFromWindow(::GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
-                if (SUCCEEDED((*pf2)(hMon, &scale))) {  // GetScaleFactorForMonitor(hMon, &scale)
-                    if (value != PROCESS_DPI_UNAWARE) {
-                        width = width * (uint)scale / 100;
-                        height = height * (uint)scale / 100;
+                if (SUCCEEDED((*pf2)(hMon, &val2))) {  // GetScaleFactorForMonitor(hMon, &val2)
+                    if (val1 != PROCESS_DPI_UNAWARE) {
+                        scale = static_cast<float>(val2) / 100.f;
                     } else {
                         // do not scale
                     }
@@ -63,11 +60,11 @@ UI* DISTRHO::createUI()
         }
     }
 
-    return new EdgeWebViewUI(width, height);
+    return new EdgeWebViewUI(scale);
 }
 
-EdgeWebViewUI::EdgeWebViewUI(uint width, uint height)
-    : WebUI(width, height)
+EdgeWebViewUI::EdgeWebViewUI(float scale)
+    : WebUI(scale)
     , fController(0)
     , fView(0)
 {}
