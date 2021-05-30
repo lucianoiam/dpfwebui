@@ -36,12 +36,13 @@ typedef struct {
     WebKitWebView* webView;
 } context_t;
 
-static int create_webview(context_t *ctx);
-static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload, int payload_sz);
+static void create_webview(context_t *ctx);
 static void navigate(const context_t *ctx, const char *url);
 static void reparent(const context_t *ctx, uintptr_t parentId);
 static void destroy_window_cb(GtkWidget* widget, GtkWidget* window);
+static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
+static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload, int payload_sz);
 
 int main(int argc, char* argv[])
 {
@@ -69,12 +70,12 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    create_webview(&ctx);
+
     channel = g_io_channel_unix_new(conf.fd_r);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
 
-    if (create_webview(&ctx) == 0) {
-        gtk_main();
-    }
+    gtk_main();
 
     g_io_channel_shutdown(channel, TRUE, NULL);
     ipc_destroy(ctx.ipc);
@@ -82,48 +83,28 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload, int payload_sz)
+static void create_webview(context_t *ctx)
 {
-    int retval;
-    tlv_t packet;
-
-    packet.t = (short)opcode;
-    packet.l = payload_sz;
-    packet.v = payload;
-
-    if ((retval = ipc_write(ctx->ipc, &packet)) == -1) {
-        LOG_STDERR_ERRNO("Could not write to IPC channel");
-    }
-
-    return retval;
-}
-
-static int create_webview(context_t *ctx)
-{
-    // Create a window that will contain the browser instance
     ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    gtk_window_set_default_size(ctx->window, DISTRHO_UI_INITIAL_WIDTH, DISTRHO_UI_INITIAL_HEIGHT);
+    gtk_window_set_resizable(ctx->window, TRUE);
 
     // TODO: gtk_widget_modify_bg() is deprecated
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     int rgba = DISTRHO_UI_BACKGROUND_COLOR;
     GdkColor color = {0,
                       0x101 * (rgba >> 24),
                       0x101 * ((rgba & 0x00ff0000) >> 16),
                       0x101 * ((rgba & 0x0000ff00) >> 8)};
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     gtk_widget_modify_bg(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
     #pragma GCC diagnostic pop
 
     // Set up callback so that if the main window is closed, the program will exit
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(destroy_window_cb), NULL);
 
-    // Set the window initial size
-    gtk_window_set_default_size(ctx->window, DISTRHO_UI_INITIAL_WIDTH, DISTRHO_UI_INITIAL_HEIGHT);
-
-    // Create a browser instance
+    // Create a browser instance and put the browser area into the main window
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
-
-    // Put the browser area into the main window
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
 
     // Make sure the main window and all its contents are visible
@@ -132,7 +113,9 @@ static int create_webview(context_t *ctx)
     // Make sure that when the browser area becomes visible, it will get mouse and keyboard events
     gtk_widget_grab_focus(GTK_WIDGET(ctx->webView));
 
-    return 0;
+    // Hide webview until it finishes loading to avoid visual glitches
+    gtk_widget_hide(GTK_WIDGET(ctx->webView));
+    g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), NULL);
 }
 
 static void navigate(const context_t *ctx, const char *url)
@@ -158,6 +141,19 @@ static void reparent(const context_t *ctx, uintptr_t parentId)
 static void destroy_window_cb(GtkWidget* widget, GtkWidget* window)
 {
     gtk_main_quit();
+}
+
+static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
+{
+    switch (event) {
+        case WEBKIT_LOAD_FINISHED:
+            // Load completed. All resources are done loading or there was an error during the load operation. 
+            // Make sure the main window and all its contents are visible
+            gtk_widget_show(GTK_WIDGET(view));
+            break;
+        default:
+            break;
+    }
 }
 
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
@@ -186,4 +182,20 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     }
 
     return TRUE;
+}
+
+static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload, int payload_sz)
+{
+    int retval;
+    tlv_t packet;
+
+    packet.t = (short)opcode;
+    packet.l = payload_sz;
+    packet.v = payload;
+
+    if ((retval = ipc_write(ctx->ipc, &packet)) == -1) {
+        LOG_STDERR_ERRNO("Could not write to IPC channel");
+    }
+
+    return retval;
 }
