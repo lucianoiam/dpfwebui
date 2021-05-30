@@ -18,8 +18,8 @@
 
 /**
    A color in RGBA format that overrides the runtime value returned by
-   getBackgroundColor(). If the <body> background color matches it, then visual
-   glitches are greatly reduced while the UI is being opened or resized.
+   getBackgroundColor(). If the <html> background color matches it, then
+   filcker is greatly reduced while the UI is being opened or resized.
  */
 #define DISTRHO_UI_BACKGROUND_COLOR 0x806080ff;
 
