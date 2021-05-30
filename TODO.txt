@@ -8,13 +8,14 @@ ALL PLATFORMS
 LINUX
 -----
 
-- Resizable window
+- Adapt webview to parent window size changes
 - DSSI plugin currently builds but fails to start
 
 
 WINDOWS
 -------
 
-- Resizable window
+- Adapt webview to parent window size changes
 - Find out if it is possible to get the WebView2 SDK files without Visual Studio
 - LV2 is currently broken, binary builds but TTL creation fails
+
