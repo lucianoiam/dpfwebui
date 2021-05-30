@@ -31,6 +31,7 @@ CocoaWebViewUI::CocoaWebViewUI()
 {
     // ARC is off
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    [fView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     NSNumber *yes = [[NSNumber alloc] initWithBool:YES];
     [fView setValue:yes forKey:@"drawsTransparentBackground"];
     NSString *urlStr = [[NSString alloc] initWithCString:getContentUrl() encoding:NSUTF8StringEncoding];

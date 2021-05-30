@@ -25,11 +25,9 @@
 USE_NAMESPACE_DISTRHO
 
 WebUI::WebUI()
-    : UI()
+    : UI(DISTRHO_UI_INITIAL_WIDTH, DISTRHO_UI_INITIAL_HEIGHT)
     , fParentWindowId(0)
 {
-	setGeometryConstraints(800, 600, true);
-
 #ifdef DGL_OPENGL
     uint rgba = getBackgroundColor();
     GLfloat r = (rgba >> 24) / 255.f;

@@ -1,0 +1,28 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    background-color: #806080ff;
+    color: #fff;
+    font-family: sans-serif;
+    margin: 0;
+    padding: 30px;
+    height: 100%;
+    min-width: 600px;
+    min-height: 300px;
+    overflow: hidden;
+}
+
+#main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    border: dashed 2px #fff;
+    border-radius: 30px;
+}
