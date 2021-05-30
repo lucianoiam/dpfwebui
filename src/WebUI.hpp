@@ -39,9 +39,9 @@ public:
 
     void onDisplay() override;
 
-#ifdef DISTRHO_DEFAULT_BACKGROUND_COLOR
+#ifdef DISTRHO_UI_BACKGROUND_COLOR
     // Hides UI method that attempts to query host
-    uint getBackgroundColor() const noexcept { return DISTRHO_DEFAULT_BACKGROUND_COLOR; };
+    uint getBackgroundColor() const noexcept { return DISTRHO_UI_BACKGROUND_COLOR; };
 #endif
 
 protected:

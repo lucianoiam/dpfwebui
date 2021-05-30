@@ -105,7 +105,7 @@ static int create_webview(context_t *ctx)
     // TODO: gtk_widget_modify_bg() is deprecated
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    int rgba = DISTRHO_DEFAULT_BACKGROUND_COLOR;
+    int rgba = DISTRHO_UI_BACKGROUND_COLOR;
     GdkColor color = {0,
                       0x101 * (rgba >> 24),
                       0x101 * ((rgba & 0x00ff0000) >> 16),

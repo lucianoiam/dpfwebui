@@ -15,16 +15,27 @@
  */
 
 // --- Start of custom dpf_webui settings ---
+
 /**
-   A default background color in RGBA format for painting the window before the
-   web view is ready, in order to avoid visual glitches when the UI is being opened.
-   Could be moved to DistrhoPluginfo.h if web becomes an official UI backend someday.
+   A color in RGBA format that overrides the runtime value returned by
+   getBackgroundColor(). If the <body> background color matches it, then visual
+   glitches are greatly reduced while the UI is being opened or resized.
  */
-#define DISTRHO_DEFAULT_BACKGROUND_COLOR 0xffffffff; // solid white
+#define DISTRHO_UI_BACKGROUND_COLOR 0x806080ff;
+
+/**
+   Initial size of the UI
+  */
+#define DISTRHO_UI_INITIAL_WIDTH 600
+
+/**
+   Initial height of the UI
+  */
+#define DISTRHO_UI_INITIAL_HEIGHT 300
 
 /**
     Whether the UI can be resized by the user
-    @note This is a standard setting but DISTRHO examples have no description for it
+    @note This is a standard setting but there is no description of it in the DISTRHO examples
  */
 #define DISTRHO_UI_USER_RESIZABLE 1
 
