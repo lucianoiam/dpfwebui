@@ -44,7 +44,7 @@ START_NAMESPACE_DISTRHO
 class EdgeWebViewUI : public WebUI
 {
 public:
-    EdgeWebViewUI();
+    EdgeWebViewUI(uint width, uint height);
     virtual ~EdgeWebViewUI();
     
     void parameterChanged(uint32_t index, float value) override;
@@ -52,10 +52,10 @@ public:
     void reparent(uintptr_t windowId) override;
     
 private:
-    void cleanup();
-    void resize(HWND hWnd);
+    void  cleanup();
+    void  resize(HWND hWnd);
     
-    void errorMessageBox(std::wstring message, HRESULT result);
+    void  errorMessageBox(std::wstring message, HRESULT result);
 
     EventHandler             fHandler;
     ICoreWebView2Controller* fController;

@@ -34,7 +34,7 @@ START_NAMESPACE_DISTRHO
 class WebUI : public UI
 {
 public:
-    WebUI();
+    WebUI(uint width = DISTRHO_UI_INITIAL_WIDTH, uint height = DISTRHO_UI_INITIAL_HEIGHT);
     virtual ~WebUI() {};
 
     void onDisplay() override;
