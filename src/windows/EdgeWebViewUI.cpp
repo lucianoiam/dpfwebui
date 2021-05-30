@@ -51,13 +51,12 @@ void EdgeWebViewUI::parameterChanged(uint32_t index, float value)
 void EdgeWebViewUI::reparent(uintptr_t windowId)
 {
     // FIXME: Trying to reparent WebView2 calling controller.put_ParentWindow() results in heavy
-    //        flicker to the point the view is unusable. Need to reinitialize everything (@#!)
-
+    //        flicker to the point the view is unusable. Need to reinitialize everything.
     HWND hWnd = (HWND)windowId;
 
     cleanup();
 
-    fHandler.EnvironmentCompleted = [&](HRESULT result, ICoreWebView2Environment* createdEnv) {
+    fHandler.EnvironmentCompleted = [this, hWnd](HRESULT result, ICoreWebView2Environment* createdEnv) {
         if (FAILED(result)) {
             errorMessageBox(L"Could not create WebView2 environment", result);
             return result;
@@ -68,7 +67,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
         return S_OK;
     };
 
-    fHandler.ControllerCompleted = [&](HRESULT result, ICoreWebView2Controller* createdController) {
+    fHandler.ControllerCompleted = [this, hWnd](HRESULT result, ICoreWebView2Controller* createdController) {
         if (FAILED(result)) {
             errorMessageBox(L"Could not create WebView2 controller", result);
             return result;
@@ -87,7 +86,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
         color.B = (rgba & 0x0000ff00) >> 8;
         color.A = 0xff; // alpha does not seem to work
         ICoreWebView2Controller2_put_DefaultBackgroundColor(
-        	reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
+            reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 
         std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
         std::wstring url = converter.from_bytes(getContentUrl());
@@ -126,13 +125,12 @@ void EdgeWebViewUI::resize(HWND hWnd)
     }
 
     RECT bounds;
-    ::GetClientRect(hWnd, &bounds);
-    
-    // FIXME hWnd bounds seem to be incorrect for example 0;31;-1670580753;32767
-    bounds.top = 0;
-    bounds.left = 0;
-    bounds.right = 800;
-    bounds.bottom = 600;
+    HRESULT result = ::GetClientRect(hWnd, &bounds);
+
+    if (FAILED(result)) {
+        LOG_STDERR_INT("Could not determine parent window size", result);
+        return;
+    }
 
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }

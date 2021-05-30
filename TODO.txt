@@ -17,5 +17,6 @@ WINDOWS
 
 - Adapt webview to parent window size changes
 - Find out if it is possible to get the WebView2 SDK files without Visual Studio
+- WebView2 content appears cropped when Windows system-wide font size is set to
+  more than 100%
 - LV2 is currently broken, binary builds but TTL creation fails
-
