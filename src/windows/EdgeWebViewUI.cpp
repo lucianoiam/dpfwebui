@@ -108,8 +108,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
 
         fController = createdController;
         ICoreWebView2Controller2_AddRef(fController);
-        ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
-        ICoreWebView2_AddRef(fView);
+        ICoreWebView2Controller2_put_IsVisible(fController, false);
 
         // Not sure about the legality of the cast below
         uint rgba = getBackgroundColor();
@@ -121,12 +120,23 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
         ICoreWebView2Controller2_put_DefaultBackgroundColor(
             reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 
+        ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
+        ICoreWebView2_AddRef(fView);
+        ICoreWebView2_add_NavigationCompleted(fView, &fHandler, /* token */0);
+
         std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
         std::wstring url = converter.from_bytes(getContentUrl());
         ICoreWebView2_Navigate(fView, url.c_str());
 
         resize(hWnd);
 
+        return S_OK;
+    };
+    
+    fHandler.NavigationCompleted = [this](ICoreWebView2 *sender, ICoreWebView2NavigationCompletedEventArgs *args) {
+        (void)sender;
+        (void)args;
+        ICoreWebView2Controller2_put_IsVisible(fController, true);
         return S_OK;
     };
 
