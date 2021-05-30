@@ -1,18 +1,10 @@
-GENERAL BUILD INSTRUCTIONS
---------------------------
+BUILD INSTRUCTIONS
+------------------
 
 1. DPF is linked as a git submodule. Make sure it was cloned to lib/dpf and
    the selected branch is develop.
 
 2. make
-
-
-
-LINUX ONLY
-----------
-
-DSSI plugin currently builds but fails to start
-
 
 
 WINDOWS ONLY
@@ -37,13 +29,7 @@ installing the MinGW toolchain on Windows:
    SDK documentation at
    https://docs.microsoft.com/en-us/microsoft-edge/webview2/gettingstarted/win32
 
-   TODO:
-   - Does the SDK license already allow to redistribute DLLs?
-   - Is there a way to get the files without installing Visual Studio?
-
 3. For testing and distribution
 
    - Download and install the Microsoft Edge Webview2 Runtime
      https://developer.microsoft.com/microsoft-edge/webview2
-
-4. LV2 is currently broken, binary builds but TTL creation fails
