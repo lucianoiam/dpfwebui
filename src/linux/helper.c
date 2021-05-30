@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-#include "constant.h"
+#include "DistrhoPluginInfo.h"
 #include "ipc.h"
 #include "log.h"
 
@@ -57,18 +57,19 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-
     ctx.ipc = ipc_init(&conf);
-    channel = g_io_channel_unix_new(conf.fd_r);    
-    g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
-
-
-    // FIXME
-    ipc_write_simple(&ctx, 0, "Hello plugin!", 14);
-
 
     gtk_init(0, NULL);
     
+    if (GDK_IS_X11_DISPLAY(gdk_display_get_default())
+            && ((ctx.display = XOpenDisplay(NULL)) == NULL)) {
+        LOG_STDERR("Cannot open display");
+        return -1;
+    }
+
+    channel = g_io_channel_unix_new(conf.fd_r);    
+    g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
+
     if (create_webview(&ctx) == 0) {
         gtk_main();
     }
@@ -114,23 +115,8 @@ static int create_webview(context_t *ctx)
     // Set up callback so that if the main window is closed, the program will exit
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(destroy_window_cb), NULL);
 
-    if (GDK_IS_X11_DISPLAY(gdk_display_get_default())) {
-        if ((ctx->display = XOpenDisplay(NULL)) == NULL) {
-            // Should never happen
-            gtk_widget_destroy(GTK_WIDGET(ctx->window));
-            LOG_STDERR("Cannot open display");
-            return -1;
-        }
-
-        // Set plugin window size
-        /*XWindowAttributes attr;
-        XGetWindowAttributes(xDisplay, nativeParentWindow, &attr);
-        gtk_window_set_default_size(ctx->window, attr.width, attr.height);
-        */
-    }
-
-    // FIXME
-    gtk_window_set_default_size(ctx->window, 800, 600);
+    // Set the window initial size
+    gtk_window_set_default_size(ctx->window, DISTRHO_UI_INITIAL_WIDTH, DISTRHO_UI_INITIAL_HEIGHT);
 
     // Create a browser instance
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
