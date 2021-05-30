@@ -27,9 +27,11 @@
 USE_NAMESPACE_DISTRHO
 
 WebUI::WebUI()
-    : UI(800, 600)  // TODO: avoid arbitrary size, plugin should be resizable
+    : UI()
     , fParentWindowId(0)
 {
+	setGeometryConstraints(800, 600, true);
+
 #ifdef DGL_OPENGL
     uint rgba = getBackgroundColor();
     GLfloat r = (rgba >> 24) / 255.f;

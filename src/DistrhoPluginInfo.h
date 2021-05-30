@@ -14,6 +14,23 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+// --- Start of custom dpf_webui settings ---
+/**
+   A default background color in RGBA format for painting the window before the
+   web view is ready, in order to avoid visual glitches when the UI is being opened.
+   Could be moved to DistrhoPluginfo.h if web becomes an official UI backend someday.
+ */
+#define DISTRHO_DEFAULT_BACKGROUND_COLOR 0xffffffff; // solid white
+
+/**
+    Whether the UI can be resized by the user
+    @note This is a standard setting but DISTRHO examples have no description for it
+ */
+#define DISTRHO_UI_USER_RESIZABLE 1
+
+// ---- End of custom dpf_webui settings ----
+
+
 /**
    The plugin name.@n
    This is used to identify your plugin before a Plugin instance can be created.

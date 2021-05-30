@@ -27,7 +27,7 @@
 #include "DistrhoUI.hpp"
 #include "extra/String.hpp"
 
-#include "constant.h"
+#include "DistrhoPluginInfo.h"
 
 START_NAMESPACE_DISTRHO
 
