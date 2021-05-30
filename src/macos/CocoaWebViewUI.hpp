@@ -36,7 +36,7 @@ public:
     void reparent(uintptr_t windowId) override;
     
 private:
-    WKWebView *fView;
+    WKWebView* fView;
 
 };
 
