@@ -52,6 +52,7 @@ public:
 private:
     void cleanup();
     void resize(HWND hWnd);
+    
     void errorMessageBox(std::wstring message, HRESULT result);
 
     EventHandler             fHandler;
