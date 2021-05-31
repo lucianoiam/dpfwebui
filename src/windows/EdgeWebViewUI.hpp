@@ -20,28 +20,19 @@
 #define EDGEWEBVIEWUI_HPP
 
 #define UNICODE
+#define CINTERFACE
+#define COBJMACROS
 
 #include <string>
 
-/*
-  The official way to work with WebView2 requires WIL which is provided by the
-  NuGet package Microsoft.Windows.ImplementationLibrary, but WIL is not
-  compatible with MinGW. See https://github.com/microsoft/wil/issues/117
-  
-  Solution is to use the C interface to WebView2 as exemplified here:
-  https://github.com/jchv/webview2-in-mingw/blob/master/Src/main.cpp
-*/
-
-#define CINTERFACE
-#define COBJMACROS
 #include "WebView2.h"
-#include "event.h"
 
+#include "WebViewHandler.hpp"
 #include "WebUI.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class EdgeWebViewUI : public WebUI
+class EdgeWebViewUI : public WebUI, WebViewHandler
 {
 public:
     EdgeWebViewUI(float scale);
@@ -52,14 +43,23 @@ public:
     void reparent(uintptr_t windowId) override;
 
     static float getDpiAwareScaleFactor();
+
+    // WebViewHandler
+
+    HRESULT handleWebViewEnvironmentCompleted(HRESULT result,
+                                              ICoreWebView2Environment* environment) override;
+    HRESULT handleWebViewControllerCompleted(HRESULT result,
+                                             ICoreWebView2Controller* controller) override;
+    HRESULT handleWebViewNavigationCompleted(ICoreWebView2 *sender,
+                                             ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
         
 private:
     void cleanup();
-    void resize(HWND hWnd);
+    void resize();
     
     void errorMessageBox(std::wstring message, HRESULT result);
 
-    EventHandler             fHandler;
+    HWND                     fHwnd;
     ICoreWebView2Controller* fController;
     ICoreWebView2*           fView;
 

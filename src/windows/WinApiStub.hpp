@@ -24,10 +24,10 @@
 
 #include "distrho/src/DistrhoDefines.h"
 
-/**
-  MinGW is currently unable to find GetProcessDpiAwareness() and GetScaleFactorForMonitor()
-  despite #include <shellscalingapi.h> (May '21). Also these require Windows 8.1 and the
-  plugin minimum target is Windows 7.
+/*
+   MinGW is currently unable to find GetProcessDpiAwareness() and GetScaleFactorForMonitor()
+   despite #include <shellscalingapi.h> (May '21). Also these require Windows 8.1 and the
+   plugin minimum target is Windows 7.
  */
 
 START_NAMESPACE_DISTRHO
