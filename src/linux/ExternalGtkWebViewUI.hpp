@@ -42,9 +42,12 @@ public:
 
     void reparent(uintptr_t windowId) override;
 
+protected:
+    void onResize(const ResizeEvent& ev) override;
+
 private:
     ipc_t* ipc() const { return fIpc; }
-    int    ipcWrite(opcode_t opcode, const void *payload, int payloadSize); 
+    int    ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize); 
     void   ipcReadCallback(const tlv_t& message);
 
     int     fPipeFd[2][2];

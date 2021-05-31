@@ -39,10 +39,11 @@ typedef struct {
 static void create_webview(context_t *ctx);
 static void navigate(const context_t *ctx, const char *url);
 static void reparent(const context_t *ctx, uintptr_t parentId);
+static void resize(const context_t *ctx, const helper_size_t *size);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
-static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload, int payload_sz);
+static int ipc_write_simple(context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
 
 int main(int argc, char* argv[])
 {
@@ -138,6 +139,11 @@ static void reparent(const context_t *ctx, uintptr_t parentId)
     }
 }
 
+static void resize(const context_t *ctx, const helper_size_t *size)
+{
+    printf("helper: %u x %u\n", size->width, size->height);
+}
+
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
 {
     switch (event) {
@@ -177,6 +183,9 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
         case OPC_REPARENT:
             reparent(ctx, *((uintptr_t *)packet.v));
             break;
+        case OPC_RESIZE:
+            resize(ctx, (const helper_size_t *)packet.v);
+            break;
         default:
             break;
     }
@@ -184,7 +193,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     return TRUE;
 }
 
-static int ipc_write_simple(context_t *ctx, opcode_t opcode, const void *payload, int payload_sz)
+static int ipc_write_simple(context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz)
 {
     int retval;
     tlv_t packet;
