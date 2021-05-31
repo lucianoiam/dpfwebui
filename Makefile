@@ -53,7 +53,8 @@ FILES_UI = $(SRC_FILES_UI:%=src/%)
 # --------------------------------------------------------------
 # Do some magic
 ifneq ($(WINDOWS),true)
-UI_TYPE = cairo
+# FIXME: Use OpenGL on all platforms, seems there are no window resize events with cairo backend?
+#UI_TYPE = cairo
 endif
 include $(DPF_CUSTOM_PATH)/Makefile.plugins.mk
 

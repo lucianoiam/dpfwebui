@@ -40,7 +40,7 @@ EdgeWebViewUI::EdgeWebViewUI(float scale)
     : WebUI(scale)
     , fController(0)
 {
-	// Initializing a WebView2 requires a HWND but parent window not available yet
+    // Initializing a WebView2 requires a HWND but parent window not available yet
 }
 
 EdgeWebViewUI::~EdgeWebViewUI()
@@ -57,8 +57,8 @@ void EdgeWebViewUI::parameterChanged(uint32_t index, float value)
 
 void EdgeWebViewUI::reparent(uintptr_t windowId)
 {
-	(void)windowId;
-	
+    (void)windowId;
+    
     cleanupWebView();
 
     // See handleWebViewControllerCompleted()
@@ -106,7 +106,7 @@ HRESULT EdgeWebViewUI::handleWebViewControllerCompleted(HRESULT result,
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 
-	ICoreWebView2* webView;
+    ICoreWebView2* webView;
     ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
     ICoreWebView2_AddRef(webView);
     ICoreWebView2_add_NavigationCompleted(webView, this, /* token */0);
@@ -127,6 +127,12 @@ HRESULT EdgeWebViewUI::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     (void)eventArgs;
     ICoreWebView2Controller2_put_IsVisible(fController, true);
     return S_OK;
+}
+
+void EdgeWebViewUI::onResize(const ResizeEvent& ev)
+{
+    WebUI::onResize(ev);
+    // TODO
 }
 
 void EdgeWebViewUI::cleanupWebView()
