@@ -39,12 +39,13 @@ UI* DISTRHO::createUI()
 EdgeWebViewUI::EdgeWebViewUI(float scale)
     : WebUI(scale)
     , fController(0)
-    , fView(0)
-{}
+{
+	// Initializing a WebView2 requires a HWND but parent window not available yet
+}
 
 EdgeWebViewUI::~EdgeWebViewUI()
 {
-    cleanup();
+    cleanupWebView();
 }
 
 void EdgeWebViewUI::parameterChanged(uint32_t index, float value)
@@ -56,11 +57,9 @@ void EdgeWebViewUI::parameterChanged(uint32_t index, float value)
 
 void EdgeWebViewUI::reparent(uintptr_t windowId)
 {
-    // FIXME: Trying to reparent WebView2 calling controller.put_ParentWindow() results in heavy
-    //        flicker to the point the view is unusable. Need to reinitialize from scratch.
-    fHwnd = (HWND)windowId;
-
-    cleanup();
+	(void)windowId;
+	
+    cleanupWebView();
 
     // See handleWebViewControllerCompleted()
     std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
@@ -80,7 +79,7 @@ HRESULT EdgeWebViewUI::handleWebViewEnvironmentCompleted(HRESULT result,
         return result;
     }
 
-    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fHwnd, this);
+    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, (HWND)getParentWindowId(), this);
 
     return S_OK;
 }
@@ -107,13 +106,14 @@ HRESULT EdgeWebViewUI::handleWebViewControllerCompleted(HRESULT result,
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 
-    ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
-    ICoreWebView2_AddRef(fView);
-    ICoreWebView2_add_NavigationCompleted(fView, this, /* token */0);
+	ICoreWebView2* webView;
+    ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
+    ICoreWebView2_AddRef(webView);
+    ICoreWebView2_add_NavigationCompleted(webView, this, /* token */0);
 
     std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
     std::wstring url = converter.from_bytes(getContentUrl());
-    ICoreWebView2_Navigate(fView, url.c_str());
+    ICoreWebView2_Navigate(webView, url.c_str());
 
     resize();
 
@@ -129,14 +129,13 @@ HRESULT EdgeWebViewUI::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     return S_OK;
 }
 
-void EdgeWebViewUI::cleanup()
+void EdgeWebViewUI::cleanupWebView()
 {
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
     }
 
     fController = 0;
-    fView = 0;
 }
 
 void EdgeWebViewUI::resize()
@@ -146,7 +145,7 @@ void EdgeWebViewUI::resize()
     }
 
     RECT bounds;
-    HRESULT result = ::GetClientRect(fHwnd, &bounds);
+    HRESULT result = ::GetClientRect((HWND)getParentWindowId(), &bounds);
 
     if (FAILED(result)) {
         LOG_STDERR_INT("Could not determine parent window size", result);

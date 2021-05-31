@@ -33,9 +33,9 @@
 #include "WebView2.h"
 
 class WebViewHandler : public ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler,
-                     public ICoreWebView2CreateCoreWebView2ControllerCompletedHandler,
-                     public ICoreWebView2NavigationCompletedEventHandler
-                     //public ICoreWebView2__EVENT__Handler
+                       public ICoreWebView2CreateCoreWebView2ControllerCompletedHandler,
+                       public ICoreWebView2NavigationCompletedEventHandler
+                       //public ICoreWebView2__EVENT__Handler
 {
 public:
     WebViewHandler();

@@ -54,14 +54,12 @@ public:
                                              ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
         
 private:
-    void cleanup();
+    void cleanupWebView();
     void resize();
     
     void errorMessageBox(std::wstring message, HRESULT result);
 
-    HWND                     fHwnd;
     ICoreWebView2Controller* fController;
-    ICoreWebView2*           fView;
 
 };
 

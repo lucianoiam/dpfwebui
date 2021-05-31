@@ -47,7 +47,9 @@ public:
 protected:
     virtual void reparent(uintptr_t parentWindowId) = 0;
 
-    String getContentUrl();
+    uintptr_t getParentWindowId() { return fParentWindowId; }
+    
+    String    getContentUrl();
 
 private:
     uintptr_t fParentWindowId;
