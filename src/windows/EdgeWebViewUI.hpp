@@ -50,7 +50,9 @@ public:
                                              ICoreWebView2Controller* controller) override;
     HRESULT handleWebViewNavigationCompleted(ICoreWebView2 *sender,
                                              ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
-        
+protected:
+    void onResize(const ResizeEvent& ev) override;
+
 private:
     void cleanupWebView();
     void resize();
