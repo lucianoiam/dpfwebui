@@ -42,18 +42,24 @@ public:
     virtual HRESULT handleWebViewEnvironmentCompleted(HRESULT result,
                                                       ICoreWebView2Environment* environment)
     {
+        (void)result;
+        (void)environment;
         return S_OK;
     }
 
     virtual HRESULT handleWebViewControllerCompleted(HRESULT result,
                                                      ICoreWebView2Controller* controller)
     {
+        (void)result;
+        (void)controller;
         return S_OK;
     }
 
     virtual HRESULT handleWebViewNavigationCompleted(ICoreWebView2 *sender,
                                                      ICoreWebView2NavigationCompletedEventArgs *eventArgs)
     {
+        (void)sender;
+        (void)eventArgs;
         return S_OK;
     }
 

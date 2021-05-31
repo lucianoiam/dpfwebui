@@ -24,7 +24,7 @@
 
 /*
    MinGW is currently unable to find GetProcessDpiAwareness() and GetScaleFactorForMonitor()
-   despite #include <shellscalingapi.h> (May '21). Also these require Windows 8.1 and the
+   despite #include <shellscalingapi.h> (May '21). Also those require Windows 8.1 and the
    plugin minimum target is Windows 7.
  */
 
@@ -35,7 +35,7 @@ namespace winstub {
     HRESULT GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
     HRESULT GetScaleFactorForMonitor(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
 
-    // This is a custom helper function with a winapi-like name
+    // This is a custom helper function with a WinAPI-like name
     FARPROC GetProcAddress(LPCSTR lpDllName, LPCSTR lpProcName);
 
 }

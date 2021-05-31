@@ -32,20 +32,20 @@ typedef struct {
     Display*       display;
     GtkWindow*     window;
     WebKitWebView* webView;
-} context_t;
+} helper_context_t;
 
-static void create_webview(context_t *ctx);
-static void navigate(const context_t *ctx, const char *url);
-static void reparent(const context_t *ctx, uintptr_t parentId);
-static void resize(const context_t *ctx, const helper_size_t *size);
+static void create_webview(helper_context_t *ctx);
+static void navigate(const helper_context_t *ctx, const char *url);
+static void reparent(const helper_context_t *ctx, uintptr_t parentId);
+static void resize(const helper_context_t *ctx, const helper_size_t *size);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
-static int ipc_write_simple(context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
+static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
 
 int main(int argc, char* argv[])
 {
-    context_t ctx;
+    helper_context_t ctx;
     ipc_conf_t conf;
     GIOChannel* channel;
 
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-static void create_webview(context_t *ctx)
+static void create_webview(helper_context_t *ctx)
 {
     ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
@@ -115,12 +115,12 @@ static void create_webview(context_t *ctx)
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), NULL);
 }
 
-static void navigate(const context_t *ctx, const char *url)
+static void navigate(const helper_context_t *ctx, const char *url)
 {
     webkit_web_view_load_uri(ctx->webView, url);
 }
 
-static void reparent(const context_t *ctx, uintptr_t parentId)
+static void reparent(const helper_context_t *ctx, uintptr_t parentId)
 {
     GdkDisplay *gdkDisplay = gdk_display_get_default();
     if (GDK_IS_X11_DISPLAY(gdk_display_get_default())) {
@@ -135,7 +135,7 @@ static void reparent(const context_t *ctx, uintptr_t parentId)
     }
 }
 
-static void resize(const context_t *ctx, const helper_size_t *size)
+static void resize(const helper_context_t *ctx, const helper_size_t *size)
 {
     gtk_window_resize(ctx->window, size->width, size->height);
 }
@@ -160,7 +160,7 @@ static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)
 
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
 {
-    context_t *ctx = (context_t *)data;
+    helper_context_t *ctx = (helper_context_t *)data;
     tlv_t packet;
 
     if ((condition & G_IO_IN) == 0) {
@@ -189,7 +189,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     return TRUE;
 }
 
-static int ipc_write_simple(context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz)
+static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz)
 {
     int retval;
     tlv_t packet;

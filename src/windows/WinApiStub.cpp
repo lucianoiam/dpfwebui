@@ -18,7 +18,7 @@
 
 #include <libloaderapi.h>
 
-// https://github.com/chriskohlhoff/asio/issues/631
+// Explanation for the GCC warnings https://github.com/chriskohlhoff/asio/issues/631
 typedef HRESULT GETPROCESSDPIAWARENESS(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
 typedef HRESULT GETSCALEFACTORFORMONITOR(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
 
