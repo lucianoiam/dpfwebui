@@ -128,7 +128,7 @@ HRESULT EdgeWebViewUI::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
 void EdgeWebViewUI::onResize(const ResizeEvent& ev)
 {
     WebUI::onResize(ev);
-    // TODO
+    resize();
 }
 
 void EdgeWebViewUI::cleanupWebView()

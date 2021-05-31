@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// --- START OF CUSTOM dpf_webui DEFINES ---
+// --- BEING CUSTOM dpf_webui DEFINES ---
 
 /**
    A color in RGBA format that overrides the runtime value returned by
@@ -35,11 +35,11 @@
 
 /**
     Whether the UI can be resized by the user
-    @note This is a standard setting but there is no description of it in the DPF examples
+    @note This is a standard setting but there is no description for it within the DPF examples
  */
 #define DISTRHO_UI_USER_RESIZABLE 1
 
-// ---- END OF CUSTOM dpf_webui DEFINES ----
+// ---- END CUSTOM dpf_webui DEFINES ----
 
 
 /**
