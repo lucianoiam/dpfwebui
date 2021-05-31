@@ -8,7 +8,6 @@ ALL PLATFORMS
 LINUX
 -----
 
-- Adapt webview to parent window size changes
 - DSSI plugin currently builds but fails to start
 
 

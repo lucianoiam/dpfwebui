@@ -82,6 +82,9 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
         return;
     }
 
+    helper_size_t size = {getSize().getWidth(), getSize().getHeight()};
+    ipcWrite(OPC_RESIZE, &size, sizeof(size));
+
     String url = getContentUrl();
     const char *cUrl = static_cast<const char *>(url);
     ipcWrite(OPC_NAVIGATE, cUrl, ::strlen(cUrl) + 1);

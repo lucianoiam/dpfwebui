@@ -87,8 +87,6 @@ int main(int argc, char* argv[])
 static void create_webview(context_t *ctx)
 {
     ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-    gtk_window_set_default_size(ctx->window, DISTRHO_UI_INITIAL_WIDTH, DISTRHO_UI_INITIAL_HEIGHT);
-    gtk_window_set_resizable(ctx->window, TRUE);
 
     // TODO: gtk_widget_modify_bg() is deprecated
     int rgba = DISTRHO_UI_BACKGROUND_COLOR;
@@ -141,7 +139,7 @@ static void reparent(const context_t *ctx, uintptr_t parentId)
 
 static void resize(const context_t *ctx, const helper_size_t *size)
 {
-    printf("helper: %u x %u\n", size->width, size->height);
+    gtk_window_resize(ctx->window, size->width, size->height);
 }
 
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
