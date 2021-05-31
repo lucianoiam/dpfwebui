@@ -63,23 +63,6 @@ static ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerVtbl EventInterf
 };
 
 
-// ---- ContentLoadingEvent ----
-
-static HRESULT STDMETHODCALLTYPE EventInterfaces_ContentLoadingEvent_Invoke(
-    ICoreWebView2ContentLoadingEventHandler* This,
-    ICoreWebView2 *sender, ICoreWebView2ContentLoadingEventArgs *args)
-{
-    return static_cast<EventHandler*>(This)->ContentLoading(sender, args);
-}
-
-static ICoreWebView2ContentLoadingEventHandlerVtbl EventInterfaces_ContentLoadingEventHandlerVtbl = {
-    Null_QueryInterface,
-    Null_AddRef,
-    Null_Release,
-    EventInterfaces_ContentLoadingEvent_Invoke,
-};
-
-
 // ---- NavigationCompletedEvent ----
 
 static HRESULT STDMETHODCALLTYPE EventInterfacesNavigationCompletedEvent_Invoke(
@@ -117,7 +100,6 @@ static ICoreWebView2__EVENT__EventHandlerVtbl EventInterfaces__EVENT__EventHandl
 EventHandler::EventHandler() :
     ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler{&EventInterfaces_EnvironmentCompletedHandlerVtbl},
     ICoreWebView2CreateCoreWebView2ControllerCompletedHandler{&EventInterfaces_ControllerCompletedHandlerVtbl},
-    ICoreWebView2ContentLoadingEventHandler{&EventInterfaces_ContentLoadingEventHandlerVtbl},
     ICoreWebView2NavigationCompletedEventHandler{&EventInterfacesNavigationCompletedEventHandlerVtbl}
  // ICoreWebView2__EVENT__Handler{&EventInterfaces__EVENT__HandlerVtbl}
 {
