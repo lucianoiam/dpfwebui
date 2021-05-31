@@ -37,7 +37,7 @@ namespace platform {
 
     // Helps scaling web views on high density displays
 
-    float getSystemScreenScaleFactor();
+    float getSystemDisplayScaleFactor();
 
 }
 

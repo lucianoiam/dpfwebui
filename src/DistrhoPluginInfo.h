@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// --- Start of custom dpf_webui settings ---
+// --- START OF CUSTOM dpf_webui DEFINES ---
 
 /**
    A color in RGBA format that overrides the runtime value returned by
@@ -39,7 +39,7 @@
  */
 #define DISTRHO_UI_USER_RESIZABLE 1
 
-// ---- End of custom dpf_webui settings ----
+// ---- END OF CUSTOM dpf_webui DEFINES ----
 
 
 /**

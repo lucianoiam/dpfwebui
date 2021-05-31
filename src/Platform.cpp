@@ -35,8 +35,8 @@ USE_NAMESPACE_DISTRHO
 
 String platform::getTemporaryPath()
 {
-	// Currently not needed
-	return String();
+    // Currently not needed
+    return String();
 }
 
 String platform::getExecutablePath()
@@ -99,8 +99,10 @@ String platform::getBinaryDirectoryPath()
 #include <cstring>
 #include <errhandlingapi.h>
 #include <libloaderapi.h>
+#include <shellscalingapi.h>
 #include <shlobj.h>
 #include <shlwapi.h>
+#include <shtypes.h>
 
 #include "windows/WinApiStub.hpp"
 
@@ -189,20 +191,38 @@ String platform::getResourcePath()
 #endif
     String binPath = getBinaryDirectoryPath();
 #ifdef DISTRHO_OS_WINDOWS
-	binPath.replace('\\', '/');
+    binPath.replace('\\', '/');
 #endif
     return binPath + "/" XSTR(BIN_BASENAME) "_resources";
 }
 
-float platform::getSystemScreenScaleFactor()
+float platform::getSystemDisplayScaleFactor()
 {
 #ifdef DISTRHO_OS_LINUX
-	return 1.f;	// TODO
+    return 1.f; // TODO
 #endif
 #ifdef DISTRHO_OS_MAC
-	return 1.f;	// no support
+    return 1.f; // no support
 #endif
 #ifdef DISTRHO_OS_WINDOWS
-	return 1.f; // TODO
+    float k = 1.f;
+    PROCESS_DPI_AWARENESS dpiAware;
+
+    if (SUCCEEDED(winstub::GetProcessDpiAwareness(0, &dpiAware))) {
+        if (dpiAware != PROCESS_DPI_UNAWARE) {
+            HMONITOR hMon = ::MonitorFromWindow(::GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
+            DEVICE_SCALE_FACTOR scaleFactor;
+
+            if (SUCCEEDED(winstub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
+                if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
+                    k = static_cast<float>(scaleFactor) / 100.f;
+                }
+            }
+        } else {
+            // Process is not DPI-aware, do not scale
+        }
+    }
+
+    return k;
 #endif
 }

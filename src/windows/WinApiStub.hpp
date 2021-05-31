@@ -32,7 +32,7 @@
 
 START_NAMESPACE_DISTRHO
 
-namespace stub {
+namespace winstub {
 
     HRESULT GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
     HRESULT GetScaleFactorForMonitor(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
