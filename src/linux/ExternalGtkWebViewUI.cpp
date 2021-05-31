@@ -119,7 +119,7 @@ ExternalGtkWebViewUI::~ExternalGtkWebViewUI()
 
 void ExternalGtkWebViewUI::parameterChanged(uint32_t index, float value)
 {
-    parameter_t param = {index, value};
+    helper_parameter_t param = {index, value};
     ipcWrite(OPC_SET_PARAMETER, &param, sizeof(param));
 }
 
@@ -128,7 +128,14 @@ void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
     ipcWrite(OPC_REPARENT, &windowId, sizeof(windowId));
 }
 
-int ExternalGtkWebViewUI::ipcWrite(opcode_t opcode, const void *payload, int payloadSize)
+void ExternalGtkWebViewUI::onResize(const ResizeEvent& ev)
+{
+    WebUI::onResize(ev);
+    helper_size_t size = {ev.size.getWidth(), ev.size.getHeight()};
+    ipcWrite(OPC_RESIZE, &size, sizeof(size));
+}
+
+int ExternalGtkWebViewUI::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize)
 {
     tlv_t packet;
     packet.t = static_cast<short>(opcode);
@@ -146,9 +153,9 @@ int ExternalGtkWebViewUI::ipcWrite(opcode_t opcode, const void *payload, int pay
 
 void ExternalGtkWebViewUI::ipcReadCallback(const tlv_t& packet)
 {
-    switch (static_cast<opcode_t>(packet.t)) {
+    switch (static_cast<helper_opcode_t>(packet.t)) {
         case OPC_SET_PARAMETER: {
-            const parameter_t *param = static_cast<const parameter_t *>(packet.v);
+            const helper_parameter_t *param = static_cast<const helper_parameter_t *>(packet.v);
             setParameterValue(param->index, param->value);
             break;
         }

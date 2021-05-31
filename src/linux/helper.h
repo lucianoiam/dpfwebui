@@ -22,13 +22,19 @@
 typedef enum {
     OPC_NAVIGATE,
     OPC_REPARENT,
+    OPC_RESIZE,
     OPC_TERMINATE,
     OPC_SET_PARAMETER
-} opcode_t;
+} helper_opcode_t;
+
+typedef struct {
+    unsigned width;
+    unsigned height;
+} helper_size_t;
 
 typedef struct {
     uint32_t index;
     float    value;
-} parameter_t;
+} helper_parameter_t;
 
 #endif  // HELPER_H
