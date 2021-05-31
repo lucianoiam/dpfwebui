@@ -100,6 +100,8 @@ String platform::getBinaryDirectoryPath()
 #include <shlobj.h>
 #include <shlwapi.h>
 
+#include "windows/WinApiStub.hpp"
+
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 String platform::getTemporaryPath()
@@ -188,4 +190,17 @@ String platform::getResourcePath()
 	binPath.replace('\\', '/');
 #endif
     return binPath + "/" XSTR(BIN_BASENAME) "_resources";
+}
+
+float platform::getSystemScreenScaleFactor()
+{
+#ifdef DISTRHO_OS_LINUX
+	return 1.f;	// TODO
+#endif
+#ifdef DISTRHO_OS_MAC
+	return 1.f;	// no support
+#endif
+#ifdef DISTRHO_OS_WINDOWS
+	return 1.f; // TODO
+#endif
 }
