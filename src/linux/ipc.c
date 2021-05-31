@@ -49,11 +49,11 @@ void ipc_destroy(ipc_t *ipc)
 
 int ipc_read(ipc_t *ipc, tlv_t *packet)
 {
-    if (read(ipc->conf.fd_r, &packet->t, sizeof(packet->t)) == -1) {
+    if (read(ipc->conf.fd_r, &packet->t, sizeof(packet->t)) != sizeof(packet->t)) {
         return -1;
     }
 
-    if (read(ipc->conf.fd_r, &packet->l, sizeof(packet->l)) == -1) {
+    if (read(ipc->conf.fd_r, &packet->l, sizeof(packet->l)) != sizeof(packet->l)) {
         return -1;
     }
 
@@ -62,7 +62,7 @@ int ipc_read(ipc_t *ipc, tlv_t *packet)
     if (packet->l > 0) {
         ipc->buf = malloc(packet->l);
 
-        if (read(ipc->conf.fd_r, ipc->buf, packet->l) == -1) {
+        if (read(ipc->conf.fd_r, ipc->buf, packet->l) != packet->l) {
             return -1;
         }
         
