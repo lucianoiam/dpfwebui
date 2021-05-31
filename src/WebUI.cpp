@@ -26,8 +26,8 @@
 
 USE_NAMESPACE_DISTRHO
 
-WebUI::WebUI(float scale)
-    : UI(scale * DISTRHO_UI_INITIAL_WIDTH, scale * DISTRHO_UI_INITIAL_HEIGHT)
+WebUI::WebUI(float scaleFactor)
+    : UI(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT)
     , fParentWindowId(0)
 {
 #ifdef DGL_OPENGL

@@ -46,11 +46,13 @@ class EdgeWebViewUI : public WebUI
 public:
     EdgeWebViewUI(float scale);
     virtual ~EdgeWebViewUI();
-    
+
     void parameterChanged(uint32_t index, float value) override;
 
     void reparent(uintptr_t windowId) override;
-    
+
+    static float getDpiAwareScaleFactor();
+        
 private:
     void cleanup();
     void resize(HWND hWnd);
