@@ -22,7 +22,7 @@
 #include "WebUI.hpp"
 #include "Window.hpp"
 
-#include "RuntimePath.hpp"
+#include "Platform.hpp"
 
 USE_NAMESPACE_DISTRHO
 
@@ -64,5 +64,5 @@ void WebUI::onDisplay()
 
 String WebUI::getContentUrl()
 {
-    return "file://" + rtpath::getResourcePath() + "/index.html";
+    return "file://" + platform::getResourcePath() + "/index.html";
 }

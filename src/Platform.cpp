@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "RuntimePath.hpp"
+#include "Platform.hpp"
 #include "log.h"
 #include "macro.h"
 
@@ -33,13 +33,13 @@ USE_NAMESPACE_DISTRHO
 
 #include <linux/limits.h>
 
-String rtpath::getTemporaryPath()
+String platform::getTemporaryPath()
 {
 	// Currently not needed
 	return String();
 }
 
-String rtpath::getExecutablePath()
+String platform::getExecutablePath()
 {
     char path[PATH_MAX];
     ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path) - 1);
@@ -54,14 +54,14 @@ String rtpath::getExecutablePath()
 
 #include <sys/syslimits.h>
 
-String rtpath::getExecutablePath()
+String platform::getExecutablePath()
 {
     return getSharedLibraryPath();  // does the trick on macOS
 }
 
 #endif
 
-String rtpath::getSharedLibraryPath()
+String platform::getSharedLibraryPath()
 {
     Dl_info dl_info;
     if (::dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
@@ -71,7 +71,7 @@ String rtpath::getSharedLibraryPath()
     return String(dl_info.dli_fname);
 }
 
-String rtpath::getBinaryPath()
+String platform::getBinaryPath()
 {
     // DISTRHO_PLUGIN_TARGET_* macros are not available here
     // Is there a better way to differentiate we are being called from library or executable?
@@ -84,7 +84,7 @@ String rtpath::getBinaryPath()
     return getExecutablePath();
 }
 
-String rtpath::getBinaryDirectoryPath()
+String platform::getBinaryDirectoryPath()
 {
     char path[PATH_MAX];
     ::strcpy(path, getBinaryPath());
@@ -104,7 +104,7 @@ String rtpath::getBinaryDirectoryPath()
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-String rtpath::getTemporaryPath()
+String platform::getTemporaryPath()
 {
     // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPFTemp
     char tempPath[MAX_PATH];
@@ -136,13 +136,13 @@ String rtpath::getTemporaryPath()
     return String(tempPath);
 }
 
-String rtpath::getExecutablePath()
+String platform::getExecutablePath()
 {
     // Standalone JACK app on Windows is not currently implemented
     return String();
 }
 
-String rtpath::getSharedLibraryPath()
+String platform::getSharedLibraryPath()
 {
     char path[MAX_PATH];
     if (::GetModuleFileName((HINSTANCE)&__ImageBase, path, sizeof(path)) == 0) {
@@ -152,12 +152,12 @@ String rtpath::getSharedLibraryPath()
     return String(path);
 }
 
-String rtpath::getBinaryPath()
+String platform::getBinaryPath()
 {
     return getSharedLibraryPath();
 }
 
-String rtpath::getBinaryDirectoryPath()
+String platform::getBinaryDirectoryPath()
 {
     char path[MAX_PATH];
     ::strcpy(path, getBinaryPath());
@@ -168,7 +168,7 @@ String rtpath::getBinaryDirectoryPath()
 #endif // DISTRHO_OS_WINDOWS
 
 
-String rtpath::getResourcePath()
+String platform::getResourcePath()
 {
 #ifdef DISTRHO_OS_MAC
     // There is no DISTRHO method for querying plugin format during runtime

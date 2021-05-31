@@ -27,7 +27,7 @@ SRC_FILES_DSP = \
 
 SRC_FILES_UI  = \
     WebUI.cpp \
-    RuntimePath.cpp
+    Platform.cpp
 
 # Note this is not DPF's Makefile.base.mk
 include Makefile.base.mk
