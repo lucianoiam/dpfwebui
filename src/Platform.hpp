@@ -25,8 +25,8 @@ START_NAMESPACE_DISTRHO
 
 namespace platform {
 
-	// These functions' main goal is to determine the location of web resource files
-	// on disk during runtime. Resources location is relative to the binary location.
+    // The following functions allow to locate resource files and helper binaries
+    // during runtime. Both are relative to the running binary path. 
 
     String getTemporaryPath();
     String getExecutablePath();
@@ -34,6 +34,10 @@ namespace platform {
     String getBinaryPath();
     String getBinaryDirectoryPath();
     String getResourcePath();
+
+    // Helps scaling web views on high density displays
+
+    float getSystemScreenScaleFactor();
 
 }
 
