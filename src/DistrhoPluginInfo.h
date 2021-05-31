@@ -47,7 +47,7 @@
    This is used to identify your plugin before a Plugin instance can be created.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_NAME "Web UI Example"
+#define DISTRHO_PLUGIN_NAME "WebUI"
 
 /**
    Number of audio inputs the plugin has.
