@@ -29,6 +29,8 @@ USE_NAMESPACE_DISTRHO
 
 #ifdef DISTRHO_OS_LINUX
 
+#include <cstdio>
+#include <cstdlib>
 #include <linux/limits.h>
 
 String platform::getTemporaryPath()
@@ -197,20 +199,22 @@ String platform::getResourcePath()
 float platform::getSystemDisplayScaleFactor()
 {
 #ifdef DISTRHO_OS_LINUX
-    return 1.f; // TODO
-#endif
-#ifdef DISTRHO_OS_MAC
-    return 1.f; // no support
+    const char *dpi = ::getenv("GDK_DPI_SCALE");
+    if (dpi != 0) {
+        float k;
+        if (sscanf(dpi, "%f", &k) == 1) {
+            return k;
+        }
+    }
+    return 1.f;
 #endif
 #ifdef DISTRHO_OS_WINDOWS
     float k = 1.f;
     PROCESS_DPI_AWARENESS dpiAware;
-
     if (SUCCEEDED(winstub::GetProcessDpiAwareness(0, &dpiAware))) {
         if (dpiAware != PROCESS_DPI_UNAWARE) {
             HMONITOR hMon = ::MonitorFromWindow(::GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
             DEVICE_SCALE_FACTOR scaleFactor;
-
             if (SUCCEEDED(winstub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
                 if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
                     k = static_cast<float>(scaleFactor) / 100.f;
@@ -220,7 +224,9 @@ float platform::getSystemDisplayScaleFactor()
             // Process is not DPI-aware, do not scale
         }
     }
-
     return k;
+#endif
+#ifdef DISTRHO_OS_MAC
+    return 1.f; // no support
 #endif
 }
