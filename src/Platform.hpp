@@ -14,17 +14,17 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef RUNTIME_PATH_HPP
-#define RUNTIME_PATH_HPP
+#ifndef PLATFORM_HPP
+#define PLATFORM_HPP
 
 #include "extra/String.hpp"
 
-// These functions' main goal is to determine the location of web resource files
-// on disk during runtime. Resources location is relative to the binary location.
-
 START_NAMESPACE_DISTRHO
 
-namespace rtpath {
+namespace platform {
+
+	// These functions' main goal is to determine the location of web resource files
+	// on disk during runtime. Resources location is relative to the binary location.
 
     String getTemporaryPath();
     String getExecutablePath();
@@ -37,4 +37,4 @@ namespace rtpath {
 
 END_NAMESPACE_DISTRHO
 
-#endif  // RUNTIME_PATH_HPP
+#endif  // PLATFORM_HPP

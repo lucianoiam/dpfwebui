@@ -23,7 +23,7 @@
 #include <shtypes.h>
 
 #include "DistrhoPluginInfo.h"
-#include "RuntimePath.hpp"
+#include "Platform.hpp"
 #include "WinApiStub.hpp"
 #include "log.h"
 
@@ -61,7 +61,7 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
 
     // See handleWebViewControllerCompleted()
     std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-    std::wstring temp = converter.from_bytes(rtpath::getTemporaryPath());
+    std::wstring temp = converter.from_bytes(platform::getTemporaryPath());
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, temp.c_str(), 0, this);
 
     if (FAILED(result)) {
