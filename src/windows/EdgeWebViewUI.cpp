@@ -31,25 +31,7 @@ USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
 {
-    float scale = 1.f;
-    PROCESS_DPI_AWARENESS dpiAware;
-
-    if (SUCCEEDED(stub::GetProcessDpiAwareness(0, &dpiAware))) {
-        if (dpiAware != PROCESS_DPI_UNAWARE) {
-            HMONITOR hMon = ::MonitorFromWindow(::GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
-            DEVICE_SCALE_FACTOR scaleFactor;
-
-            if (SUCCEEDED(stub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
-                if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
-                    scale = static_cast<float>(scaleFactor) / 100.f;
-                }
-            }
-        } else {
-            // Process is not DPI-aware, do not scale
-        }
-    }
-
-    return new EdgeWebViewUI(scale);
+    return new EdgeWebViewUI(EdgeWebViewUI::getDpiAwareScaleFactor());
 }
 
 EdgeWebViewUI::EdgeWebViewUI(float scale)
@@ -136,6 +118,29 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
     if (FAILED(result)) {
         errorMessageBox(L"Could not create WebView2 environment options", result);
     }
+}
+
+float EdgeWebViewUI::getDpiAwareScaleFactor()
+{
+    float k = 1.f;
+    PROCESS_DPI_AWARENESS dpiAware;
+
+    if (SUCCEEDED(stub::GetProcessDpiAwareness(0, &dpiAware))) {
+        if (dpiAware != PROCESS_DPI_UNAWARE) {
+            HMONITOR hMon = ::MonitorFromWindow(::GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
+            DEVICE_SCALE_FACTOR scaleFactor;
+
+            if (SUCCEEDED(stub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
+                if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
+                    k = static_cast<float>(scaleFactor) / 100.f;
+                }
+            }
+        } else {
+            // Process is not DPI-aware, do not scale
+        }
+    }
+
+    return k;
 }
 
 void EdgeWebViewUI::cleanup()
