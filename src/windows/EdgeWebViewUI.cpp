@@ -26,37 +26,28 @@
 
 #include "DistrhoPluginInfo.h"
 #include "RuntimePath.hpp"
+#include "WinApiStub.hpp"
 #include "log.h"
-
-// https://github.com/chriskohlhoff/asio/issues/631
-typedef HRESULT GETSCALEFACTORFORMONITOR(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
-typedef HRESULT GETPROCESSDPIAWARENESS(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
 
 USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
 {
-    // GetProcessDpiAwareness() and GetScaleFactorForMonitor() are not available on Windows 7
-    // Also not currently compiling on MinGW despite #include <shellscalingapi.h> (May '21)
     float scale = 1.f;
-    HMODULE hDll = ::LoadLibrary(L"Shcore.dll");
+    PROCESS_DPI_AWARENESS dpiAware;
 
-    if (hDll) {
-        GETPROCESSDPIAWARENESS *pf1 = (GETPROCESSDPIAWARENESS*)::GetProcAddress(hDll, "GetProcessDpiAwareness");
-        GETSCALEFACTORFORMONITOR* pf2 = (GETSCALEFACTORFORMONITOR*)::GetProcAddress(hDll, "GetScaleFactorForMonitor");
-        if (pf1 && pf2) {
-            PROCESS_DPI_AWARENESS val1;
-            if (SUCCEEDED((*pf1)(0, &val1))) {  // GetProcessDpiAwareness(0, &val1)
-                DEVICE_SCALE_FACTOR val2;
-                HMONITOR hMon = ::MonitorFromWindow(::GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
-                if (SUCCEEDED((*pf2)(hMon, &val2))) {  // GetScaleFactorForMonitor(hMon, &val2)
-                    if (val1 != PROCESS_DPI_UNAWARE) {
-                        scale = static_cast<float>(val2) / 100.f;
-                    } else {
-                        // do not scale
-                    }
+    if (SUCCEEDED(stub::GetProcessDpiAwareness(0, &dpiAware))) {
+        if (dpiAware != PROCESS_DPI_UNAWARE) {
+            HMONITOR hMon = ::MonitorFromWindow(::GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
+            DEVICE_SCALE_FACTOR scaleFactor;
+
+            if (SUCCEEDED(stub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
+                if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
+                    scale = static_cast<float>(scaleFactor) / 100.f;
                 }
             }
+        } else {
+            // Process is not DPI-aware, do not scale
         }
     }
 

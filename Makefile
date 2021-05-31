@@ -42,6 +42,7 @@ SRC_FILES_UI += macos/CocoaWebViewUI.mm
 endif
 ifeq ($(WINDOWS),true)
 SRC_FILES_UI += windows/EdgeWebViewUI.cpp \
+				windows/WinApiStub.cpp \
                 windows/event.cpp \
                 windows/plugin.rc
 endif
