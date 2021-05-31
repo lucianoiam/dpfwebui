@@ -42,15 +42,27 @@ public:
     virtual ~WebViewHandler() {};
 
     virtual HRESULT handleWebViewEnvironmentCompleted(HRESULT result,
-                                                      ICoreWebView2Environment* environment) = 0;
+                                                      ICoreWebView2Environment* environment)
+    {
+        return S_OK;
+    }
 
     virtual HRESULT handleWebViewControllerCompleted(HRESULT result,
-                                                     ICoreWebView2Controller* controller) = 0;
+                                                     ICoreWebView2Controller* controller)
+    {
+        return S_OK;
+    }
 
     virtual HRESULT handleWebViewNavigationCompleted(ICoreWebView2 *sender,
-                                                     ICoreWebView2NavigationCompletedEventArgs *eventArgs) = 0;
+                                                     ICoreWebView2NavigationCompletedEventArgs *eventArgs)
+    {
+        return S_OK;
+    }
 
-    //virtual HRESULT handleWebView__EVENT__( ... see WebView2.h for arguments ... ) = 0;
+    /*virtual HRESULT handleWebView__EVENT__( ... see WebView2.h for arguments ... )
+    {
+        return S_OK;
+    }*/
 
 };
 
