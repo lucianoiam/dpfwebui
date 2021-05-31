@@ -32,7 +32,7 @@ START_NAMESPACE_DISTRHO
 class WebUI : public UI
 {
 public:
-    WebUI(float scaleFactor = 1.f);
+    WebUI();
     virtual ~WebUI() {};
 
     void onDisplay() override;

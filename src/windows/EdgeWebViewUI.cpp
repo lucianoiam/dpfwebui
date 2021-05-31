@@ -19,24 +19,20 @@
 #include <codecvt>
 #include <locale>
 #include <sstream>
-#include <shellscalingapi.h>
-#include <shtypes.h>
 
 #include "DistrhoPluginInfo.h"
 #include "Platform.hpp"
-#include "WinApiStub.hpp"
 #include "log.h"
 
 USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
 {
-    return new EdgeWebViewUI(EdgeWebViewUI::getDpiAwareScaleFactor());
+    return new EdgeWebViewUI;
 }
 
-EdgeWebViewUI::EdgeWebViewUI(float scale)
-    : WebUI(scale)
-    , fController(0)
+EdgeWebViewUI::EdgeWebViewUI()
+    : fController(0)
 {
     // Initializing a WebView2 requires a HWND but parent window not available yet
 }
@@ -157,29 +153,6 @@ void EdgeWebViewUI::resize()
     }
 
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
-}
-
-float EdgeWebViewUI::getDpiAwareScaleFactor()
-{
-    float k = 1.f;
-    PROCESS_DPI_AWARENESS dpiAware;
-
-    if (SUCCEEDED(stub::GetProcessDpiAwareness(0, &dpiAware))) {
-        if (dpiAware != PROCESS_DPI_UNAWARE) {
-            HMONITOR hMon = ::MonitorFromWindow(::GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
-            DEVICE_SCALE_FACTOR scaleFactor;
-
-            if (SUCCEEDED(stub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
-                if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
-                    k = static_cast<float>(scaleFactor) / 100.f;
-                }
-            }
-        } else {
-            // Process is not DPI-aware, do not scale
-        }
-    }
-
-    return k;
 }
 
 void EdgeWebViewUI::errorMessageBox(std::wstring message, HRESULT result)

@@ -24,10 +24,11 @@
 
 USE_NAMESPACE_DISTRHO
 
-WebUI::WebUI(float scaleFactor)
-    : UI(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT)
-    , fParentWindowId(0)
+WebUI::WebUI()
+    : fParentWindowId(0)
 {
+    float scaleFactor = platform::getSystemDisplayScaleFactor();
+    setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
 #ifdef DGL_OPENGL
     uint rgba = getBackgroundColor();
     GLfloat r = (rgba >> 24) / 255.f;

@@ -21,4 +21,4 @@
 #define XSTR(s) STR(s)
 #define STR(s) #s
 
-#endif	// MACRO_H
+#endif  // MACRO_H

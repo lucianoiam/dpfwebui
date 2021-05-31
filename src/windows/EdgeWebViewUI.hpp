@@ -33,14 +33,12 @@ START_NAMESPACE_DISTRHO
 class EdgeWebViewUI : public WebUI, WebViewHandler
 {
 public:
-    EdgeWebViewUI(float scale);
+    EdgeWebViewUI();
     virtual ~EdgeWebViewUI();
 
     void parameterChanged(uint32_t index, float value) override;
 
     void reparent(uintptr_t windowId) override;
-
-    static float getDpiAwareScaleFactor();
 
     // WebViewHandler
 
