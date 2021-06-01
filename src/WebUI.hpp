@@ -20,12 +20,7 @@
 #ifndef WEBUI_HPP
 #define WEBUI_HPP
 
-#include <cstdint>
-
 #include "DistrhoUI.hpp"
-#include "extra/String.hpp"
-
-#include "DistrhoPluginInfo.h"
 
 #ifdef DISTRHO_OS_LINUX
 #include "linux/ExternalGtkWebView.hpp"
