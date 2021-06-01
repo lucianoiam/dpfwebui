@@ -36,7 +36,7 @@ UI* DISTRHO::createUI()
 EdgeWebViewUI::EdgeWebViewUI()
     : fController(0)
 {
-    // Initializing a WebView2 requires a HWND but parent window not available yet
+    // Initializing a WebView2 requires a HWND but parent window is not available in ctor
 }
 
 EdgeWebViewUI::~EdgeWebViewUI()
@@ -92,13 +92,13 @@ HRESULT EdgeWebViewUI::handleWebViewControllerCompleted(HRESULT result,
     ICoreWebView2Controller2_AddRef(fController);
     ICoreWebView2Controller2_put_IsVisible(fController, false);
 
-    // Not sure about the legality of the cast below
     uint rgba = getBackgroundColor();
     COREWEBVIEW2_COLOR color;
+    color.A = 0xff; // alpha does not seem to work
     color.R = rgba >> 24;
     color.G = (rgba & 0x00ff0000) >> 16;
     color.B = (rgba & 0x0000ff00) >> 8;
-    color.A = 0xff; // alpha does not seem to work
+    // Not sure about the legality of the cast below
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 

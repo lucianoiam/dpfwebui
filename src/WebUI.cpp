@@ -34,11 +34,7 @@ WebUI::WebUI()
     setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
 #ifdef DGL_OPENGL
     uint rgba = getBackgroundColor();
-    GLfloat r = (rgba >> 24) / 255.f;
-    GLfloat g = ((rgba & 0x00ff0000) >> 16) / 255.f;
-    GLfloat b = ((rgba & 0x0000ff00) >> 8) / 255.f;
-    GLfloat a = (rgba & 0x000000ff) / 255.f;
-    glClearColor(r, g, b, a);
+    glClearColor(UNPACK_RGBA(rgba, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 }
@@ -47,13 +43,9 @@ void WebUI::onDisplay()
 {
     const Window& window = getParentWindow();
 #ifdef DGL_CAIRO
-    uint rgba = getBackgroundColor();
-    double r = (rgba >> 24) / 255.f;
-    double g = ((rgba & 0x00ff0000) >> 16) / 255.0;
-    double b = ((rgba & 0x0000ff00) >> 8) / 255.0;
-    double a = (rgba & 0x000000ff) / 255.0;
     cairo_t* cr = window.getGraphicsContext().cairo;
-    cairo_set_source_rgba(cr, r, g, b, a);
+    uint rgba = getBackgroundColor();
+    cairo_set_source_rgba(UNPACK_RGBA(rgba, double));
     cairo_paint(cr);
 #endif
     // onDisplay() can be called multiple times during lifetime of instance
