@@ -179,7 +179,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             navigate(ctx, (const char *)packet.v);
             break;
         case OPC_REPARENT:
-            usleep(2000);
+            usleep(10000);
             reparent(ctx, *((uintptr_t *)packet.v));
             break;
         case OPC_RESIZE:
