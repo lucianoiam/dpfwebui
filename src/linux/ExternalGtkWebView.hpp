@@ -14,34 +14,31 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef EXTERNALGTKWEBVIEWUI_HPP
-#define EXTERNALGTKWEBVIEWUI_HPP
+#ifndef EXTERNALGTKWEBVIEW_HPP
+#define EXTERNALGTKWEBVIEW_HPP
 
 #include <cstdint>
 #include <sys/types.h>
 
 #include "extra/Thread.hpp"
 
-#include "WebUI.hpp"
+#include "WebViewInterface.hpp"
 #include "ipc.h"
 #include "helper.h"
 
 START_NAMESPACE_DISTRHO
 
-class ExternalGtkWebViewUI : public WebUI
+class ExternalGtkWebView : public WebViewInterface
 {
 friend class IpcReadThread;
 
 public:
-    ExternalGtkWebViewUI();
-    virtual ~ExternalGtkWebViewUI();
-    
-    void parameterChanged(uint32_t index, float value) override;
+    ExternalGtkWebView();
+    ~ExternalGtkWebView();
 
+    void navigate(String url) override;
     void reparent(uintptr_t windowId) override;
-
-protected:
-    void onResize(const ResizeEvent& ev) override;
+    void resize(const Size<uint>& size) override;
 
 private:
     ipc_t* ipc() const { return fIpc; }
@@ -58,15 +55,15 @@ private:
 class IpcReadThread : public Thread
 {
 public:
-    IpcReadThread(ExternalGtkWebViewUI& view);
+    IpcReadThread(ExternalGtkWebView& view);
     
     void run() override;
 
 private:
-    ExternalGtkWebViewUI& fView;
+    ExternalGtkWebView& fView;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // EXTERNALGTKWEBVIEWUI_HPP
+#endif  // EXTERNALGTKWEBVIEW_HPP

@@ -35,13 +35,15 @@ WebUI::WebUI()
 {
     float scaleFactor = platform::getSystemDisplayScaleFactor();
     setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
+
 #ifdef DGL_OPENGL
     uint rgba = getBackgroundColor();
     glClearColor(UNPACK_RGBA(rgba, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
-    String url = "file://" + platform::getResourcePath() + "/index.html";
-    fWebView.navigate(url);
+
+    fWebView.resize(getSize());
+    fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
 }
 
 void WebUI::onDisplay()
@@ -53,8 +55,10 @@ void WebUI::onDisplay()
     cairo_set_source_rgba(UNPACK_RGBA(rgba, double));
     cairo_paint(cr);
 #endif
+
     // onDisplay() can be called multiple times during lifetime of instance
     uintptr_t newParentWindowId = window.getWindowId();
+
     if (fParentWindowId != newParentWindowId) {
         fParentWindowId = newParentWindowId;
         fWebView.reparent(fParentWindowId);
@@ -65,4 +69,9 @@ void WebUI::parameterChanged(uint32_t index, float value)
 {
     (void)index;
     (void)value;
+}
+
+void WebUI::onResize(const ResizeEvent& ev)
+{
+    fWebView.resize(ev.size);
 }

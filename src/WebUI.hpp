@@ -54,6 +54,9 @@ public:
     uint getBackgroundColor() const noexcept { return DISTRHO_UI_BACKGROUND_COLOR; };
 #endif
 
+protected:
+    void onResize(const ResizeEvent& ev) override;
+
 private:
     uintptr_t fParentWindowId;
 
