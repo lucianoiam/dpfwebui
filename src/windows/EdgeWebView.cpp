@@ -26,8 +26,7 @@
 #include "Platform.hpp"
 #include "log.h"
 
-#define _WSTR(s) std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s)
-#define _LPCWSTR(s) _WSTR(s).c_str()
+#define _LPCWSTR(s) std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s).c_str()
 
 USE_NAMESPACE_DISTRHO
 
@@ -48,7 +47,7 @@ EdgeWebView::~EdgeWebView()
 void EdgeWebView::navigate(String url)
 {
     if (fController == 0) {
-        fUrl = url; // wait
+        fUrl = url;
         return;
     }
 
@@ -60,10 +59,10 @@ void EdgeWebView::navigate(String url)
 void EdgeWebView::reparent(uintptr_t windowId)
 {
     if (fController == 0) {
-        bool init = fWindowId == 0;
-        fWindowId = windowId; // wait
+        bool isInitializing = fWindowId != 0;
+        fWindowId = windowId;
 
-        if (init) {
+        if (!isInitializing) {
             initWebView(); // fWindow must be set before calling this
         }
 
@@ -76,7 +75,7 @@ void EdgeWebView::reparent(uintptr_t windowId)
 void EdgeWebView::resize(const Size<uint>& size)
 {
     if (fController == 0) {
-        fSize = size; // wait
+        fSize = size;
         return;
     }
 
@@ -90,8 +89,7 @@ void EdgeWebView::resize(const Size<uint>& size)
 void EdgeWebView::initWebView()
 {
     // See handleWebViewControllerCompleted() below
-    LPCWSTR temp = _LPCWSTR(platform::getTemporaryPath());
-    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, temp, 0, this);
+    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), 0, this);
 
     if (FAILED(result)) {
         errorMessageBox(L"Could not create WebView2 environment options", result);
@@ -103,9 +101,9 @@ void EdgeWebView::cleanupWebView()
     if (fController != 0) {
         ICoreWebView2* webView;
         ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
-        EventRegistrationToken token {};
-        ICoreWebView2_remove_NavigationCompleted(webView, token);
+        ICoreWebView2_remove_NavigationCompleted(webView, fEventToken);
         ICoreWebView2Controller2_Close(fController);
+        ICoreWebView2_Release(fController);
     }
 
     fController = 0;
@@ -135,7 +133,6 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
     fController = controller;
     ICoreWebView2Controller2_AddRef(fController);
     ICoreWebView2Controller2_put_IsVisible(fController, false);
-
 #ifdef DISTRHO_UI_BACKGROUND_COLOR
     COREWEBVIEW2_COLOR color;
     color.R = DISTRHO_UI_BACKGROUND_COLOR >> 24;
@@ -149,9 +146,7 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
 
     ICoreWebView2* webView;
     ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
-    ICoreWebView2_AddRef(webView);
-    EventRegistrationToken token {};
-    ICoreWebView2_add_NavigationCompleted(webView, this, &token);
+    ICoreWebView2_add_NavigationCompleted(webView, this, &fEventToken);
 
     reparent(fWindowId);
     resize(fSize);

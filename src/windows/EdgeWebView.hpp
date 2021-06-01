@@ -58,7 +58,8 @@ private:
     void errorMessageBox(std::wstring message, HRESULT result);
 
     ICoreWebView2Controller* fController;
-
+    EventRegistrationToken   fEventToken;
+    
     uintptr_t  fWindowId;
     String     fUrl;
     Size<uint> fSize;
