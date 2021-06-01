@@ -33,12 +33,12 @@ UI* DISTRHO::createUI()
 WebUI::WebUI()
     : fParentWindowId(0)
 {
+    float scaleFactor = platform::getSystemDisplayScaleFactor();
+    setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
 #if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_OPENGL)
     glClearColor(UNPACK_RGBA(DISTRHO_UI_BACKGROUND_COLOR, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
-    float scaleFactor = platform::getSystemDisplayScaleFactor();
-    setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
     fWebView.resize(getSize());
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
 }

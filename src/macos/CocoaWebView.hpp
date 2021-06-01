@@ -17,12 +17,11 @@
 #ifndef COCOAWEBVIEW_HPP
 #define COCOAWEBVIEW_HPP
 
+#include "WebViewInterface.hpp"
+
 // Though it is possible to #import Obj-C headers here, that would force all
 // source files importing CocoaWebView.hpp to do so before any other project
 // headers to avoid symbol name collisions. Do not make any assumption.
-//#import <WebKit/WebKit.h>
-
-#include "WebViewInterface.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -34,7 +33,7 @@ public:
 
     void navigate(String url) override;
     void reparent(uintptr_t windowId) override;
-    void resize(const Size<uint>& size) override;
+    void resize(const DGL::Size<uint>& size) override;
 
 private:
     void *fView;
