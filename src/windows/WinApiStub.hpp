@@ -34,6 +34,6 @@ namespace winstub {
     // This is a custom helper function with a WinAPI-like name
     FARPROC GetProcAddress(LPCSTR lpDllName, LPCSTR lpProcName);
 
-}
+} // namespace winstub
 
 #endif // WINAPISTUB_HPP

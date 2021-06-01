@@ -30,6 +30,8 @@
 
 #include "WebView2.h"
 
+namespace webview {
+
 class WebViewHandler : public ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler,
                        public ICoreWebView2CreateCoreWebView2ControllerCompletedHandler,
                        public ICoreWebView2NavigationCompletedEventHandler
@@ -69,5 +71,7 @@ public:
     }*/
 
 };
+
+} // namespace webview
 
 #endif // WEBVIEWHANDLER_HPP
