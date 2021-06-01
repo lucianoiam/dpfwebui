@@ -50,12 +50,15 @@ public:
                                              ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
 
 private:
+    void initWebView();
+    void cleanupWebView();
+
     void errorMessageBox(std::wstring message, HRESULT result);
 
     ICoreWebView2Controller* fController;
 
-    String     fUrl;
     uintptr_t  fWindowId;
+    String     fUrl;
     Size<uint> fSize;
 
 };
