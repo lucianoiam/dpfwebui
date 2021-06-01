@@ -2,6 +2,9 @@
  * dpf-webui
  * Copyright (C) 2021 Luciano Iam <lucianoiam@protonmail.com>
  *
+ * DISTRHO Plugin Framework (DPF)
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
  * permission notice appear in all copies.
@@ -14,32 +17,24 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef COCOAWEBVIEWUI_HPP
-#define COCOAWEBVIEWUI_HPP
+#ifndef WEBVIEWINTERFACE_HPP
+#define WEBVIEWINTERFACE_HPP
 
-#include "WebUI.hpp"
+#include <cstdint>
 
-#import <WebKit/WebKit.h>
+#include "extra/String.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class CocoaWebViewUI : public WebUI
+class WebViewInterface
 {
 public:
-    CocoaWebViewUI();
-    virtual ~CocoaWebViewUI();
-    
-    void   parameterChanged(uint32_t index, float value) override;
 
-    void   reparent(uintptr_t windowId) override;
-    
-    String getResourcePath() override;
-
-private:
-    WKWebView* fView;
+    virtual void navigate(String url) = 0;
+    virtual void reparent(uintptr_t windowId) = 0;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // COCOAWEBVIEWUI_HPP
+#endif // WEBVIEWINTERFACE_HPP

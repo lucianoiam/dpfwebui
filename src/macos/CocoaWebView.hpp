@@ -14,31 +14,32 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef PLATFORM_HPP
-#define PLATFORM_HPP
+#ifndef COCOAWEBVIEW_HPP
+#define COCOAWEBVIEW_HPP
 
-#include "extra/String.hpp"
+// Though it is possible to #import Obj-C headers here, that would force all
+// source files importing CocoaWebView.hpp to do so before any other project
+// headers to avoid symbol name collisions. Do not make any assumption.
+//#import <WebKit/WebKit.h>
+
+#include "WebViewInterface.hpp"
 
 START_NAMESPACE_DISTRHO
 
-namespace platform {
+class CocoaWebView : public WebViewInterface
+{
+public:
+    CocoaWebView();
+    ~CocoaWebView();
 
-    // The following functions help locating resource files and helper binaries
-    // during runtime. Such are relative to the running binary path. 
+    void navigate(String url) override;
+    void reparent(uintptr_t windowId) override;
 
-    String getBinaryDirectoryPath();
-    String getBinaryPath();
-    String getSharedLibraryPath();
-    String getExecutablePath();
-    String getResourcePath();
-    String getTemporaryPath();
+private:
+    void *fView;
 
-    // Helps scaling web views on high density displays
-
-    float getSystemDisplayScaleFactor();
-
-}
+};
 
 END_NAMESPACE_DISTRHO
 
-#endif  // PLATFORM_HPP
+#endif  // COCOAWEBVIEW_HPP
