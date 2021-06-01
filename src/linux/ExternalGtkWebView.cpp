@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ExternalGtkWebViewUI.hpp"
+#include "ExternalGtkWebView.hpp"
 
 #include <cstdio>
 #include <signal.h>
@@ -38,12 +38,7 @@ extern char **environ;
 
 USE_NAMESPACE_DISTRHO
 
-UI* DISTRHO::createUI()
-{
-    return new ExternalGtkWebViewUI;
-}
-
-ExternalGtkWebViewUI::ExternalGtkWebViewUI()
+ExternalGtkWebView::ExternalGtkWebView()
     : fPid(-1)
     , fIpc(nullptr)
     , fIpcThread(nullptr)
@@ -81,16 +76,9 @@ ExternalGtkWebViewUI::ExternalGtkWebViewUI()
         LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
     }
-
-    helper_size_t size = {getSize().getWidth(), getSize().getHeight()};
-    ipcWrite(OPC_RESIZE, &size, sizeof(size));
-
-    String url = getContentUrl();
-    const char *cUrl = static_cast<const char *>(url);
-    ipcWrite(OPC_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
 }
 
-ExternalGtkWebViewUI::~ExternalGtkWebViewUI()
+ExternalGtkWebView::~ExternalGtkWebView()
 {
     if (fPid != -1) {
         if (kill(fPid, SIGTERM) == 0) {
@@ -122,25 +110,24 @@ ExternalGtkWebViewUI::~ExternalGtkWebViewUI()
     }
 }
 
-void ExternalGtkWebViewUI::parameterChanged(uint32_t index, float value)
+void ExternalGtkWebView::navigate(String url)
 {
-    helper_parameter_t param = {index, value};
-    ipcWrite(OPC_SET_PARAMETER, &param, sizeof(param));
+    const char *cUrl = static_cast<const char *>(url);
+    ipcWrite(OPC_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
 }
 
-void ExternalGtkWebViewUI::reparent(uintptr_t windowId)
+void ExternalGtkWebView::reparent(uintptr_t windowId)
 {
     ipcWrite(OPC_REPARENT, &windowId, sizeof(windowId));
 }
 
-void ExternalGtkWebViewUI::onResize(const ResizeEvent& ev)
+void ExternalGtkWebView::resize(const Size<uint>& size)
 {
-    WebUI::onResize(ev);
-    helper_size_t size = {ev.size.getWidth(), ev.size.getHeight()};
-    ipcWrite(OPC_RESIZE, &size, sizeof(size));
+    helper_size_t sizePkt = {size.getWidth(), size.getHeight()};
+    ipcWrite(OPC_RESIZE, &sizePkt, sizeof(sizePkt));
 }
 
-int ExternalGtkWebViewUI::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize)
+int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize)
 {
     tlv_t packet;
     packet.t = static_cast<short>(opcode);
@@ -156,20 +143,16 @@ int ExternalGtkWebViewUI::ipcWrite(helper_opcode_t opcode, const void *payload, 
     return retval;
 }
 
-void ExternalGtkWebViewUI::ipcReadCallback(const tlv_t& packet)
+void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
 {
     switch (static_cast<helper_opcode_t>(packet.t)) {
-        case OPC_SET_PARAMETER: {
-            const helper_parameter_t *param = static_cast<const helper_parameter_t *>(packet.v);
-            setParameterValue(param->index, param->value);
-            break;
-        }
+    	// Handle WebView events
         default:
             break;
     }
 }
 
-IpcReadThread::IpcReadThread(ExternalGtkWebViewUI& view) : Thread("ipc_read"), fView(view) {}
+IpcReadThread::IpcReadThread(ExternalGtkWebView& view) : Thread("ipc_read"), fView(view) {}
 
 void IpcReadThread::run()
 {

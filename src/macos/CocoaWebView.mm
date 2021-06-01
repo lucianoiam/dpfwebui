@@ -67,6 +67,11 @@ void CocoaWebView::reparent(uintptr_t windowId)
     [parentView addSubview:fWebView];
 }
 
+void CocoaWebView::resize(const Size<uint>& size)
+{
+    // The WKWebView automatically resizes to match its parent dimensions
+}
+
 @implementation WebViewDelegate
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation

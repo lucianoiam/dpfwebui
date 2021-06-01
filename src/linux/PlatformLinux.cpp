@@ -27,6 +27,7 @@
 #include <linux/limits.h>
 
 #include "log.h"
+#include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
@@ -73,6 +74,11 @@ String platform::getExecutablePath()
     } else {
         return String(path);
     }
+}
+
+String platform::getResourcePath()
+{
+    return getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_resources";
 }
 
 String platform::getTemporaryPath()

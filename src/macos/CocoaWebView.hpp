@@ -36,6 +36,7 @@ public:
 
     void navigate(String url) override;
     void reparent(uintptr_t windowId) override;
+    void resize(const Size<uint>& size) override;
 
 private:
     void *fView;
