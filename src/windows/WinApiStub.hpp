@@ -20,15 +20,11 @@
 #include <shellscalingapi.h>
 #include <shtypes.h>
 
-#include "distrho/src/DistrhoDefines.h"
-
 /*
    MinGW is currently unable to find GetProcessDpiAwareness() and GetScaleFactorForMonitor()
    despite #include <shellscalingapi.h> (May '21). Also those require Windows 8.1 and the
    plugin minimum target is Windows 7.
  */
-
-START_NAMESPACE_DISTRHO
 
 namespace winstub {
 
@@ -39,7 +35,5 @@ namespace winstub {
     FARPROC GetProcAddress(LPCSTR lpDllName, LPCSTR lpProcName);
 
 }
-
-END_NAMESPACE_DISTRHO
 
 #endif // WINAPISTUB_HPP

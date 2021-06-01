@@ -21,6 +21,7 @@
 #include "Window.hpp"
 
 #include "Platform.hpp"
+#include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
@@ -61,7 +62,13 @@ void WebUI::onDisplay()
     }
 }
 
+String WebUI::getResourcePath()
+{
+    return platform::getBinaryDirectoryPath().replace('\\', '/')
+        + "/" XSTR(BIN_BASENAME) "_resources";
+}
+
 String WebUI::getContentUrl()
 {
-    return "file://" + platform::getResourcePath() + "/index.html";
+    return "file://" + getResourcePath() + "/index.html";
 }
