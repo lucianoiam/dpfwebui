@@ -77,7 +77,7 @@ void CocoaWebViewUI::reparent(uintptr_t windowId)
 
 String CocoaWebViewUI::getResourcePath()
 {
-    // There is no DISTRHO method for querying plugin format during runtime
+    // There is no DPF method for querying plugin format during runtime
     // Anyways the ideal solution is to modify the Makefile and rely on macros
     // Mac VST is the only special case
     char path[PATH_MAX];
