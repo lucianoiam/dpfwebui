@@ -19,6 +19,7 @@
 #include "helper.h"
 
 #include <stdint.h>
+#include <unistd.h>
 #include <X11/Xlib.h>
 #include <gdk/gdkx.h>
 #include <gdk/gdkwayland.h>
@@ -101,6 +102,7 @@ static void create_webview(helper_context_t *ctx)
 
     // Set up callback so that if the main window is closed, the program will exit
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), NULL);
+    gtk_window_set_default_size(ctx->window, 0, 0);
 
     // Create a browser instance and put the browser area into the main window
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
@@ -179,6 +181,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             navigate(ctx, (const char *)packet.v);
             break;
         case OPC_REPARENT:
+            usleep(2000);
             reparent(ctx, *((uintptr_t *)packet.v));
             break;
         case OPC_RESIZE:
