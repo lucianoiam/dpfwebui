@@ -35,7 +35,7 @@ public:
 
     virtual void navigate(String url) = 0;
     virtual void reparent(uintptr_t windowId) = 0;
-    virtual void resize(const Size<uint>& size) = 0;
+    virtual void resize(const DGL::Size<uint>& size) = 0;
 
 };
 
