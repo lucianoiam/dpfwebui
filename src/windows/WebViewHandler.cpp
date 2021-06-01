@@ -18,7 +18,7 @@
 
 #include "WebViewHandler.hpp"
 
-using namespace webview;
+using namespace edge;
 
 template <typename T>
 static HRESULT STDMETHODCALLTYPE Null_QueryInterface(T* This, REFIID riid, void** ppvObject)

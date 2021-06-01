@@ -32,7 +32,7 @@
 
 #include "WebView2.h"
 
-namespace webview {
+namespace edge {
 
 class WebViewHandler : public ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler,
                        public ICoreWebView2CreateCoreWebView2ControllerCompletedHandler,

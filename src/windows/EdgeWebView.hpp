@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef EDGEWEBVIEWUI_HPP
-#define EDGEWEBVIEWUI_HPP
+#ifndef EDGEWEBVIEW_HPP
+#define EDGEWEBVIEW_HPP
 
 #define UNICODE
 #define CINTERFACE
@@ -27,20 +27,20 @@
 
 #include "WebView2.h"
 
+#include "WebViewInterface.hpp"
 #include "WebViewHandler.hpp"
-#include "WebUI.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class EdgeWebViewUI : public WebUI, webview::WebViewHandler
+class EdgeWebView : public WebViewInterface, edge::WebViewHandler
 {
 public:
-    EdgeWebViewUI();
-    virtual ~EdgeWebViewUI();
+    EdgeWebView();
+    ~EdgeWebView();
 
-    void parameterChanged(uint32_t index, float value) override;
-
+    void navigate(String url) override;
     void reparent(uintptr_t windowId) override;
+    void resize(const Size<uint>& size) override;
 
     // WebViewHandler
 
@@ -50,19 +50,20 @@ public:
                                              ICoreWebView2Controller* controller) override;
     HRESULT handleWebViewNavigationCompleted(ICoreWebView2 *sender,
                                              ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
-protected:
-    void onResize(const ResizeEvent& ev) override;
 
 private:
     void cleanupWebView();
-    void resize();
     
     void errorMessageBox(std::wstring message, HRESULT result);
 
     ICoreWebView2Controller* fController;
 
+    String     fUrl;
+    uintptr_t  fWindowId;
+    Size<uint> fSize;
+
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // EDGEWEBVIEWUI_HPP
+#endif  // EDGEWEBVIEW_HPP
