@@ -21,4 +21,10 @@
 #define XSTR(s) STR(s)
 #define STR(s) #s
 
+// Actually unpacks and normalizes
+#define UNPACK_RGBA(c,t) ( c >> 24)               / (t)(255), \
+                         ((c & 0x00ff0000) >> 16) / (t)(255), \
+                         ((c & 0x0000ff00) >> 8 ) / (t)(255), \
+                         ( c & 0x000000ff)        / (t)(255)
+
 #endif  // MACRO_H
