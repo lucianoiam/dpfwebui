@@ -33,15 +33,12 @@ UI* DISTRHO::createUI()
 WebUI::WebUI()
     : fParentWindowId(0)
 {
-    float scaleFactor = platform::getSystemDisplayScaleFactor();
-    setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
-
-#ifdef DGL_OPENGL
-    uint rgba = getBackgroundColor();
-    glClearColor(UNPACK_RGBA(rgba, GLfloat));
+#if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_OPENGL)
+    glClearColor(UNPACK_RGBA(DISTRHO_UI_BACKGROUND_COLOR, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
-
+    float scaleFactor = platform::getSystemDisplayScaleFactor();
+    setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
     fWebView.resize(getSize());
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
 }
@@ -49,16 +46,13 @@ WebUI::WebUI()
 void WebUI::onDisplay()
 {
     const Window& window = getParentWindow();
-#ifdef DGL_CAIRO
+#if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_CAIRO)
     cairo_t* cr = window.getGraphicsContext().cairo;
-    uint rgba = getBackgroundColor();
-    cairo_set_source_rgba(UNPACK_RGBA(rgba, double));
+    cairo_set_source_rgba(UNPACK_RGBA(DISTRHO_UI_BACKGROUND_COLOR, double));
     cairo_paint(cr);
 #endif
-
     // onDisplay() can be called multiple times during lifetime of instance
     uintptr_t newParentWindowId = window.getWindowId();
-
     if (fParentWindowId != newParentWindowId) {
         fParentWindowId = newParentWindowId;
         fWebView.reparent(fParentWindowId);

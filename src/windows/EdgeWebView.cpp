@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "EdgeWebViewUI.hpp"
+#include "EdgeWebView.hpp"
 
 #include <codecvt>
 #include <locale>
@@ -26,32 +26,29 @@
 
 USE_NAMESPACE_DISTRHO
 
-UI* DISTRHO::createUI()
-{
-    return new EdgeWebViewUI;
-}
-
-EdgeWebViewUI::EdgeWebViewUI()
+EdgeWebView::EdgeWebView()
     : fController(0)
 {
-    // Initializing a WebView2 requires a HWND but parent window is not available in ctor
+    // Creating an Edge WebView2 requires a HWND but parent window is not available in ctor.
+    // EdgeWebView works a bit different compared to the other platforms due to the async nature
+    // of the native web view initialization process.
 }
 
-EdgeWebViewUI::~EdgeWebViewUI()
+EdgeWebView::~EdgeWebView()
 {
     cleanupWebView();
 }
 
-void EdgeWebViewUI::parameterChanged(uint32_t index, float value)
+void EdgeWebView::navigate(String url)
 {
-    // unused
-    (void)index;
-    (void)value;
+    fUrl = url; // queue
 }
 
-void EdgeWebViewUI::reparent(uintptr_t windowId)
+void EdgeWebView::reparent(uintptr_t windowId)
 {
-    (void)windowId;
+	// The previous parent window is gone, fully reinit WebView2
+	// TODO: give put_ParentWindow another try, caused heavy flicker on first attempt
+    fWindowId = windowId; // queue
     
     cleanupWebView();
 
@@ -65,21 +62,37 @@ void EdgeWebViewUI::reparent(uintptr_t windowId)
     }
 }
 
-HRESULT EdgeWebViewUI::handleWebViewEnvironmentCompleted(HRESULT result,
-                                                         ICoreWebView2Environment* environment)
+void EdgeWebView::resize(const Size<uint>& size)
+{
+    if (fController == 0) {
+        fSize = size; // queue
+        return;
+    }
+
+    RECT bounds;
+    bounds.top = 0;
+    bounds.left = 0;
+    bounds.right = size.getWidth();
+    bounds.bottom = size.getHeight();
+
+    ICoreWebView2Controller2_put_Bounds(fController, bounds);
+}
+
+HRESULT EdgeWebView::handleWebViewEnvironmentCompleted(HRESULT result,
+                                                       ICoreWebView2Environment* environment)
 {
     if (FAILED(result)) {
         errorMessageBox(L"Could not create WebView2 environment", result);
         return result;
     }
 
-    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, (HWND)getParentWindowId(), this);
+    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, (HWND)fWindowId, this);
 
     return S_OK;
 }
 
-HRESULT EdgeWebViewUI::handleWebViewControllerCompleted(HRESULT result,
-                                                        ICoreWebView2Controller* controller)
+HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
+                                                      ICoreWebView2Controller* controller)
 {
     if (FAILED(result)) {
         errorMessageBox(L"Could not create WebView2 controller", result);
@@ -90,15 +103,16 @@ HRESULT EdgeWebViewUI::handleWebViewControllerCompleted(HRESULT result,
     ICoreWebView2Controller2_AddRef(fController);
     ICoreWebView2Controller2_put_IsVisible(fController, false);
 
-    uint rgba = getBackgroundColor();
+#ifdef DISTRHO_UI_BACKGROUND_COLOR
     COREWEBVIEW2_COLOR color;
     color.A = 0xff; // alpha does not seem to work
-    color.R = rgba >> 24;
-    color.G = (rgba & 0x00ff0000) >> 16;
-    color.B = (rgba & 0x0000ff00) >> 8;
+    color.R = DISTRHO_UI_BACKGROUND_COLOR >> 24;
+    color.G = (DISTRHO_UI_BACKGROUND_COLOR & 0x00ff0000) >> 16;
+    color.B = (DISTRHO_UI_BACKGROUND_COLOR & 0x0000ff00) >> 8;
     // Not sure about the legality of the cast below
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
+#endif
 
     ICoreWebView2* webView;
     ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
@@ -106,16 +120,16 @@ HRESULT EdgeWebViewUI::handleWebViewControllerCompleted(HRESULT result,
     ICoreWebView2_add_NavigationCompleted(webView, this, /* token */0);
 
     std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-    std::wstring url = converter.from_bytes(getContentUrl());
+    std::wstring url = converter.from_bytes(fUrl);
     ICoreWebView2_Navigate(webView, url.c_str());
 
-    resize();
+    resize(fSize);
 
     return S_OK;
 }
 
-HRESULT EdgeWebViewUI::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
-                                                        ICoreWebView2NavigationCompletedEventArgs *eventArgs)
+HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
+                                                      ICoreWebView2NavigationCompletedEventArgs *eventArgs)
 {
     (void)sender;
     (void)eventArgs;
@@ -123,13 +137,7 @@ HRESULT EdgeWebViewUI::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     return S_OK;
 }
 
-void EdgeWebViewUI::onResize(const ResizeEvent& ev)
-{
-    WebUI::onResize(ev);
-    resize();
-}
-
-void EdgeWebViewUI::cleanupWebView()
+void EdgeWebView::cleanupWebView()
 {
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
@@ -138,24 +146,7 @@ void EdgeWebViewUI::cleanupWebView()
     fController = 0;
 }
 
-void EdgeWebViewUI::resize()
-{
-    if (fController == 0) {
-        return;
-    }
-
-    RECT bounds;
-    HRESULT result = ::GetClientRect((HWND)getParentWindowId(), &bounds);
-
-    if (FAILED(result)) {
-        LOG_STDERR_INT("Could not determine parent window size", result);
-        return;
-    }
-
-    ICoreWebView2Controller2_put_Bounds(fController, bounds);
-}
-
-void EdgeWebViewUI::errorMessageBox(std::wstring message, HRESULT result)
+void EdgeWebView::errorMessageBox(std::wstring message, HRESULT result)
 {
     std::wstringstream ss;
     ss << message << ", HRESULT 0x" << std::hex << result;

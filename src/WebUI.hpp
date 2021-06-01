@@ -49,11 +49,6 @@ public:
 
     void parameterChanged(uint32_t index, float value) override;
 
-#ifdef DISTRHO_UI_BACKGROUND_COLOR
-    // Hides UI method that attempts to query host
-    uint getBackgroundColor() const noexcept { return DISTRHO_UI_BACKGROUND_COLOR; };
-#endif
-
 protected:
     void onResize(const ResizeEvent& ev) override;
 

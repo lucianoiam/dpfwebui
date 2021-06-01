@@ -17,11 +17,10 @@
 // --- BEING CUSTOM dpf_webui DEFINES ---
 
 /**
-   A color in RGBA format that overrides the runtime value returned by
-   getBackgroundColor(). If the <html> background color matches it, then
-   filcker is greatly reduced while the UI is being opened or resized.
+   An optional color in RGBA format. Matching the <html> background color to it
+   greatly reduces flicker while the UI is being opened or resized.
  */
-#define DISTRHO_UI_BACKGROUND_COLOR 0x806080ff;
+#define DISTRHO_UI_BACKGROUND_COLOR 0x806080ff
 
 /**
    Initial size of the UI
