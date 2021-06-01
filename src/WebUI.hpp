@@ -47,10 +47,12 @@ public:
 protected:
     virtual void reparent(uintptr_t parentWindowId) = 0;
 
+    virtual String getResourcePath();
+
+    String getContentUrl();
+    
     uintptr_t getParentWindowId() { return fParentWindowId; }
     
-    String    getContentUrl();
-
 private:
     uintptr_t fParentWindowId;
 

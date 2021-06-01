@@ -25,15 +25,14 @@ START_NAMESPACE_DISTRHO
 
 namespace platform {
 
-    // The following functions allow to locate resource files and helper binaries
-    // during runtime. Both are relative to the running binary path. 
+    // The following functions help locating resource files and helper binaries
+    // during runtime. Such are relative to the running binary path. 
 
-    String getTemporaryPath();
-    String getExecutablePath();
-    String getSharedLibraryPath();
-    String getBinaryPath();
     String getBinaryDirectoryPath();
-    String getResourcePath();
+    String getBinaryPath();
+    String getSharedLibraryPath();
+    String getExecutablePath();
+    String getTemporaryPath();
 
     // Helps scaling web views on high density displays
 

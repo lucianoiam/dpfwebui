@@ -17,6 +17,8 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
+#include <dlfcn.h>
+
 #include "CocoaWebViewUI.hpp"
 
 @interface WebViewDelegate: NSObject<WKNavigationDelegate>
@@ -69,6 +71,24 @@ void CocoaWebViewUI::reparent(uintptr_t windowId)
     [fView removeFromSuperview];
     fView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
     [parentView addSubview:fView];
+}
+
+String CocoaWebViewUI::getResourcePath()
+{
+    // There is no DISTRHO method for querying plugin format during runtime
+    // Anyways the ideal solution is to modify the Makefile and rely on macros
+    // Mac VST is the only special case
+    char path[PATH_MAX];
+    ::strcpy(path, platform::getSharedLibraryPath());
+    void *handle = ::dlopen(path, RTLD_NOLOAD);
+    if (handle != 0) {
+        void *addr = ::dlsym(handle, "VSTPluginMain");
+        ::dlclose(handle);
+        if (addr != 0) {
+            return String(::dirname(path)) + "/../Resources";
+        }
+    }
+    return WebUI::getSharedLibraryPath();
 }
 
 @implementation WebViewDelegate

@@ -26,8 +26,7 @@ SRC_FILES_DSP = \
     WebPlugin.cpp
 
 SRC_FILES_UI  = \
-    WebUI.cpp \
-    Platform.cpp
+    WebUI.cpp
 
 # Note this is not DPF's Makefile.base.mk
 include Makefile.base.mk
@@ -35,15 +34,18 @@ include Makefile.base.mk
 # Add platform-specific source files
 ifeq ($(LINUX),true)
 SRC_FILES_UI += linux/ExternalGtkWebViewUI.cpp \
+                linux/PlatformLinux.cpp \
                 linux/ipc.c
 endif
 ifeq ($(MACOS),true)
-SRC_FILES_UI += macos/CocoaWebViewUI.mm
+SRC_FILES_UI += macos/CocoaWebViewUI.mm \
+                macos/PlatformMac.cpp
 endif
 ifeq ($(WINDOWS),true)
 SRC_FILES_UI += windows/EdgeWebViewUI.cpp \
                 windows/WebViewHandler.cpp \
-				windows/WinApiStub.cpp \
+                windows/WinApiStub.cpp \
+                windows/PlatformWindows.cpp \
                 windows/plugin.rc
 endif
 

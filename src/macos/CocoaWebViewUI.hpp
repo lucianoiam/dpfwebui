@@ -31,10 +31,12 @@ public:
     CocoaWebViewUI();
     virtual ~CocoaWebViewUI();
     
-    void parameterChanged(uint32_t index, float value) override;
+    void   parameterChanged(uint32_t index, float value) override;
 
-    void reparent(uintptr_t windowId) override;
+    void   reparent(uintptr_t windowId) override;
     
+    String getResourcePath() override;
+
 private:
     WKWebView* fView;
 
