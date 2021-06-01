@@ -17,7 +17,6 @@
 #include "helper.h"
 
 #include <stdint.h>
-#include <unistd.h>
 #include <X11/Xlib.h>
 #include <gdk/gdkx.h>
 #include <gdk/gdkwayland.h>
@@ -85,7 +84,10 @@ int main(int argc, char* argv[])
 
 static void create_webview(helper_context_t *ctx)
 {
+    // Not sure what is the correct approach as both work
     ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    gtk_window_set_decorated(ctx->window, FALSE);
+    //ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_POPUP));
 
     // TODO: gtk_widget_modify_bg() is deprecated
     int rgba = DISTRHO_UI_BACKGROUND_COLOR;
@@ -100,25 +102,23 @@ static void create_webview(helper_context_t *ctx)
 
     // Set up callback so that if the main window is closed, the program will exit
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), NULL);
-    gtk_window_set_default_size(ctx->window, 0, 0);
 
     // Create a browser instance and put the browser area into the main window
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
 
-    // Make sure the main window and all its contents are visible
-    gtk_widget_show_all(GTK_WIDGET(ctx->window));
-
     // Make sure that when the browser area becomes visible, it will get mouse and keyboard events
     gtk_widget_grab_focus(GTK_WIDGET(ctx->webView));
 
-    // Hide webview until it finishes loading to avoid some flicker
-    gtk_widget_hide(GTK_WIDGET(ctx->webView));
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), NULL);
 }
 
 static void navigate(const helper_context_t *ctx, const char *url)
 {
+    // Window must be visible otherwise webkit_web_view_load_uri() fails
+    gtk_widget_show(GTK_WIDGET(ctx->window));
+    // Hide webview until it finishes loading to avoid some flicker
+    gtk_widget_hide(GTK_WIDGET(ctx->webView));
     webkit_web_view_load_uri(ctx->webView, url);
 }
 
@@ -179,7 +179,6 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             navigate(ctx, (const char *)packet.v);
             break;
         case OPC_REPARENT:
-            usleep(10000);
             reparent(ctx, *((uintptr_t *)packet.v));
             break;
         case OPC_RESIZE:
