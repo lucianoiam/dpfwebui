@@ -86,7 +86,7 @@ static HRESULT STDMETHODCALLTYPE EventInterfacesNavigationCompletedEvent_Invoke(
     return static_cast<WebViewHandler*>(This)->handleWebViewNavigationCompleted(sender, args);
 }
 
-static ICoreWebView2NavigationCompletedEventHandlerVtbl EventInterfacesNavigationCompletedEventHandlerVtbl = {
+static ICoreWebView2NavigationCompletedEventHandlerVtbl EventInterfaces_NavigationCompletedEventHandlerVtbl = {
     Null_QueryInterface,
     Null_AddRef,
     Null_Release,
@@ -94,26 +94,26 @@ static ICoreWebView2NavigationCompletedEventHandlerVtbl EventInterfacesNavigatio
 };
 
 
-// __EVENT__
+// [ EVENT ]
 
-/*static HRESULT STDMETHODCALLTYPE EventInterfaces__EVENT___Invoke(
-    ICoreWebView2__EVENT__Handler* This, HRESULT result,
-    ICoreWebView2Controller* controller)
+/*static HRESULT STDMETHODCALLTYPE EventInterfaces[ EVENT ]_Invoke(
+    ICoreWebView2[ EVENT ]Handler* This,
+    [ ARGS ])
 {
-    return static_cast<WebViewHandler*>(This)->handleWebView__EVENT__(result, controller);
+    return static_cast<WebViewHandler*>(This)->handleWebView[ EVENT ]([ ARGS ]);
 }
 
-static ICoreWebView2__EVENT__HandlerVtbl EventInterfaces__EVENT__HandlerVtbl = {
+static ICoreWebView2[ EVENT ]HandlerVtbl EventInterfaces_[ EVENT ]HandlerVtbl = {
     Null_QueryInterface,
     Null_AddRef,
     Null_Release,
-    EventInterfaces__EVENT___Invoke,
+    EventInterfaces[ EVENT ]_Invoke,
 };*/
 
 
 WebViewHandler::WebViewHandler()
     : ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler{&EventInterfaces_EnvironmentCompletedHandlerVtbl}
     , ICoreWebView2CreateCoreWebView2ControllerCompletedHandler{&EventInterfaces_ControllerCompletedHandlerVtbl}
-    , ICoreWebView2NavigationCompletedEventHandler{&EventInterfacesNavigationCompletedEventHandlerVtbl}
-    //,ICoreWebView2__EVENT__Handler{&EventInterfaces__EVENT__HandlerVtbl}
+    , ICoreWebView2NavigationCompletedEventHandler{&EventInterfaces_NavigationCompletedEventHandlerVtbl}
+    //,ICoreWebView2[ EVENT ]Handler{&EventInterfaces_[ EVENT ]HandlerVtbl}
 {}
