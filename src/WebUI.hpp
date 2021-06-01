@@ -29,32 +29,45 @@
 
 #include "DistrhoPluginInfo.h"
 
+#ifdef DISTRHO_OS_LINUX
+#include "linux/ExternalGtkWebView.hpp"
+#endif
+#ifdef DISTRHO_OS_MAC
+#include "macos/CocoaWebView.hpp"
+#endif
+#ifdef DISTRHO_OS_WINDOWS
+#include "windows/EdgeWebView.hpp"
+#endif
+
 START_NAMESPACE_DISTRHO
 
 class WebUI : public UI
 {
 public:
     WebUI();
-    virtual ~WebUI() {};
+    ~WebUI() {};
 
     void onDisplay() override;
+
+    void parameterChanged(uint32_t index, float value) override;
 
 #ifdef DISTRHO_UI_BACKGROUND_COLOR
     // Hides UI method that attempts to query host
     uint getBackgroundColor() const noexcept { return DISTRHO_UI_BACKGROUND_COLOR; };
 #endif
 
-protected:
-    virtual void reparent(uintptr_t parentWindowId) = 0;
-
-    virtual String getResourcePath();
-
-    String getContentUrl();
-    
-    uintptr_t getParentWindowId() { return fParentWindowId; }
-    
 private:
     uintptr_t fParentWindowId;
+
+#ifdef DISTRHO_OS_LINUX
+    ExternalGtkWebView fWebView;
+#endif
+#ifdef DISTRHO_OS_MAC
+    CocoaWebView fWebView;
+#endif
+#ifdef DISTRHO_OS_WINDOWS
+    EdgeWebView fWebView;
+#endif
 
 };
 

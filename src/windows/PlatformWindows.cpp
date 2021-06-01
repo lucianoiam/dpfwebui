@@ -61,6 +61,11 @@ String platform::getExecutablePath()
     return getBinaryPath();
 }
 
+String platform::getResourcePath()
+{
+    return getBinaryDirectoryPath().replace('\\', '/') + "/" XSTR(BIN_BASENAME) "_resources";
+}
+
 String platform::getTemporaryPath()
 {
     // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPFTemp

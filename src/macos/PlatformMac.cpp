@@ -25,6 +25,7 @@
 #include <sys/syslimits.h>
 
 #include "log.h"
+#include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
@@ -54,6 +55,24 @@ String platform::getSharedLibraryPath()
 String platform::getExecutablePath()
 {
     return getBinaryPath();
+}
+
+String platform::getResourcePath()
+{
+    // There is no DPF method for querying plugin format during runtime
+    // Anyways the ideal solution is to modify the Makefile and rely on macros
+    // Mac VST is the only special case
+    char path[PATH_MAX];
+    ::strcpy(path, getSharedLibraryPath());
+    void *handle = ::dlopen(path, RTLD_NOLOAD);
+    if (handle != 0) {
+        void *addr = ::dlsym(handle, "VSTPluginMain");
+        ::dlclose(handle);
+        if (addr != 0) {
+            return String(::dirname(path)) + "/../Resources";
+        }
+    }
+    return getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_resources";
 }
 
 String platform::getTemporaryPath()

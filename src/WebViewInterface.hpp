@@ -15,32 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+ * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
 
-#ifndef PLATFORM_HPP
-#define PLATFORM_HPP
+#ifndef WEBVIEWINTERFACE_HPP
+#define WEBVIEWINTERFACE_HPP
+
+#include <cstdint>
 
 #include "extra/String.hpp"
 
 START_NAMESPACE_DISTRHO
 
-namespace platform {
+class WebViewInterface
+{
+public:
 
-    // The following functions help locating resource files and helper binaries
-    // during runtime. Such are relative to the running binary path. 
+    virtual void navigate(String url) = 0;
+    virtual void reparent(uintptr_t windowId) = 0;
 
-    String getBinaryDirectoryPath();
-    String getBinaryPath();
-    String getSharedLibraryPath();
-    String getExecutablePath();
-    String getResourcePath();
-    String getTemporaryPath();
-
-    // Helps scaling web views on high density displays
-
-    float getSystemDisplayScaleFactor();
-
-}
+};
 
 END_NAMESPACE_DISTRHO
 
-#endif  // PLATFORM_HPP
+#endif // WEBVIEWINTERFACE_HPP

@@ -27,6 +27,11 @@
 
 USE_NAMESPACE_DISTRHO
 
+UI* DISTRHO::createUI()
+{
+    return new WebUI;
+}
+
 WebUI::WebUI()
     : fParentWindowId(0)
 {
@@ -37,6 +42,8 @@ WebUI::WebUI()
     glClearColor(UNPACK_RGBA(rgba, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
+    String url = "file://" + platform::getResourcePath() + "/index.html";
+    fWebView.navigate(url);
 }
 
 void WebUI::onDisplay()
@@ -52,17 +59,12 @@ void WebUI::onDisplay()
     uintptr_t newParentWindowId = window.getWindowId();
     if (fParentWindowId != newParentWindowId) {
         fParentWindowId = newParentWindowId;
-        reparent(fParentWindowId);
+        fWebView.reparent(fParentWindowId);
     }
 }
 
-String WebUI::getResourcePath()
+void WebUI::parameterChanged(uint32_t index, float value)
 {
-    return platform::getBinaryDirectoryPath().replace('\\', '/')
-        + "/" XSTR(BIN_BASENAME) "_resources";
-}
-
-String WebUI::getContentUrl()
-{
-    return "file://" + getResourcePath() + "/index.html";
+    (void)index;
+    (void)value;
 }
