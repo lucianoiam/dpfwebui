@@ -41,8 +41,9 @@ String platform::getBinaryPath()
     if (::dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
         LOG_STDERR(::dlerror());
         return String();
+    } else {
+        return String(dl_info.dli_fname);
     }
-    return String(dl_info.dli_fname);
 }
 
 String platform::getSharedLibraryPath()
