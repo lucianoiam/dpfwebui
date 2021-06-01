@@ -52,8 +52,6 @@ public:
                                              ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
 
 private:
-    void cleanupWebView();
-    
     void errorMessageBox(std::wstring message, HRESULT result);
 
     ICoreWebView2Controller* fController;
