@@ -18,6 +18,8 @@
 
 #include "WebViewHandler.hpp"
 
+using namespace webview;
+
 template <typename T>
 static HRESULT STDMETHODCALLTYPE Null_QueryInterface(T* This, REFIID riid, void** ppvObject)
 {

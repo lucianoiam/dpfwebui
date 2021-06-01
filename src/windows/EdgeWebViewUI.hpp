@@ -32,7 +32,7 @@
 
 START_NAMESPACE_DISTRHO
 
-class EdgeWebViewUI : public WebUI, WebViewHandler
+class EdgeWebViewUI : public WebUI, webview::WebViewHandler
 {
 public:
     EdgeWebViewUI();
