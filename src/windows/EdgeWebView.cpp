@@ -44,27 +44,33 @@ EdgeWebView::~EdgeWebView()
 
 void EdgeWebView::navigate(String url)
 {
+    fUrl = url;
+
     if (fController == 0) {
-        fUrl = url;
-        return;
+        return; // will come back later
     }
 
     ICoreWebView2* webView;
     ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
-    ICoreWebView2_Navigate(webView, _LPCWSTR(url));
+    ICoreWebView2_Navigate(webView, _LPCWSTR(fUrl));
+
+    // FIXME: This atrocity seems to prevent an issue that causes host to
+    // occasionally hang when closing the plugin window. The bug seems to only
+    // affect floating windows, ie. does not affect REAPER embedded views.
+    ::Sleep(100);
 }
 
 void EdgeWebView::reparent(uintptr_t windowId)
 {
-    if (fController == 0) {
-        bool isInitializing = fWindowId != 0;
-        fWindowId = windowId;
+    bool isInitializing = fWindowId != 0;
+    fWindowId = windowId;
 
+    if (fController == 0) {
         if (!isInitializing) {
-            initWebView(); // fWindow must be set before calling this
+            initWebView(); // fWindow must be valid before calling this
         }
 
-        return;
+        return; // will come back later
     }
 
     ICoreWebView2Controller2_put_ParentWindow(fController, (HWND)windowId);
@@ -72,14 +78,15 @@ void EdgeWebView::reparent(uintptr_t windowId)
 
 void EdgeWebView::resize(const Size<uint>& size)
 {
+    fSize = size;
+
     if (fController == 0) {
-        fSize = size;
-        return;
+        return; // will come back later
     }
 
     RECT bounds {};
-    bounds.right = size.getWidth();
-    bounds.bottom = size.getHeight();
+    bounds.right = fSize.getWidth();
+    bounds.bottom = fSize.getHeight();
 
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
