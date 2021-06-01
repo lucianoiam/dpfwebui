@@ -18,8 +18,10 @@
 #import <AppKit/AppKit.h>
 
 #include <dlfcn.h>
+#include <libgen.h>
 
 #include "CocoaWebViewUI.hpp"
+#include "Platform.hpp"
 
 @interface WebViewDelegate: NSObject<WKNavigationDelegate>
 {}
@@ -88,7 +90,7 @@ String CocoaWebViewUI::getResourcePath()
             return String(::dirname(path)) + "/../Resources";
         }
     }
-    return WebUI::getSharedLibraryPath();
+    return WebUI::getResourcePath();
 }
 
 @implementation WebViewDelegate
