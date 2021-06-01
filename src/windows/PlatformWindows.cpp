@@ -44,7 +44,7 @@ String platform::getBinaryPath()
     char path[MAX_PATH];
     if (::GetModuleFileName((HINSTANCE)&__ImageBase, path, sizeof(path)) == 0) {
         LOG_STDERR_INT("Could not determine module path", ::GetLastError());
-        return String();
+        path[0] = '\0';
     }
     return String(path);
 }

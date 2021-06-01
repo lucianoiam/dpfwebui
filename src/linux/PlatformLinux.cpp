@@ -39,13 +39,15 @@ String platform::getBinaryPath()
 {
     // DISTRHO_PLUGIN_TARGET_* macros are not available here
     // Is there a better way to differentiate we are being called from library or executable?
-    String libPath = getSharedLibraryPath(); // path never empty even when running standalone
+    String libPath = getSharedLibraryPath();
     void *handle = ::dlopen(libPath, RTLD_LAZY);
     if (handle) {
         ::dlclose(handle);
         return libPath;
+    } else {
+         // dlopen() fails when running standalone
+        return getExecutablePath();     
     }
-    return getExecutablePath();
 }
 
 String platform::getSharedLibraryPath()
@@ -54,8 +56,9 @@ String platform::getSharedLibraryPath()
     if (::dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
         LOG_STDERR(::dlerror());
         return String();
+    } else {
+        return String(dl_info.dli_fname);
     }
-    return String(dl_info.dli_fname);
 }
 
 String platform::getExecutablePath()
@@ -65,8 +68,9 @@ String platform::getExecutablePath()
     if (len == -1) {
         LOG_STDERR_ERRNO("Could not determine executable path");
         return String();
+    } else {
+        return String(path);
     }
-    return String(path);
 }
 
 String platform::getTemporaryPath()
