@@ -34,7 +34,7 @@ public:
 
     const char* getLabel() const override
     {
-        return "Web UI Example";
+        return "WebUI";
     }
 
     const char* getMaker() const override
