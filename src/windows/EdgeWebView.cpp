@@ -26,10 +26,14 @@
 #include "Platform.hpp"
 #include "log.h"
 
+#define _WSTR(s) std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s)
+#define _LPCWSTR(s) _WSTR(s).c_str()
+
 USE_NAMESPACE_DISTRHO
 
 EdgeWebView::EdgeWebView()
     : fController(0)
+    , fWindowId(0)
 {
     // Creating a WebView2 requires a HWND but parent is not available in ctor.
     // EdgeWebView works a bit different compared to the other platforms due to
@@ -38,39 +42,29 @@ EdgeWebView::EdgeWebView()
 
 EdgeWebView::~EdgeWebView()
 {
-    if (fController != 0) {
-        ICoreWebView2Controller2_Close(fController);
-    }
-
-    fController = 0;
+    cleanupWebView();
 }
 
 void EdgeWebView::navigate(String url)
 {
     if (fController == 0) {
-        fUrl = url; // queue
+        fUrl = url; // wait
         return;
     }
 
     ICoreWebView2* webView;
-    ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);    
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-    std::wstring urlStr = converter.from_bytes(fUrl);
-    ICoreWebView2_Navigate(webView, urlStr.c_str());
+    ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
+    ICoreWebView2_Navigate(webView, _LPCWSTR(url));
 }
 
 void EdgeWebView::reparent(uintptr_t windowId)
 {
     if (fController == 0) {
-        fWindowId = windowId; // queue
-    
-        // See handleWebViewControllerCompleted() below
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-        std::wstring temp = converter.from_bytes(platform::getTemporaryPath());
-        HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, temp.c_str(), 0, this);
+        bool init = fWindowId == 0;
+        fWindowId = windowId; // wait
 
-        if (FAILED(result)) {
-            errorMessageBox(L"Could not create WebView2 environment options", result);
+        if (init) {
+            initWebView(); // fWindow must be set before calling this
         }
 
         return;
@@ -82,7 +76,7 @@ void EdgeWebView::reparent(uintptr_t windowId)
 void EdgeWebView::resize(const Size<uint>& size)
 {
     if (fController == 0) {
-        fSize = size; // queue
+        fSize = size; // wait
         return;
     }
 
@@ -91,6 +85,30 @@ void EdgeWebView::resize(const Size<uint>& size)
     bounds.bottom = size.getHeight();
 
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
+}
+
+void EdgeWebView::initWebView()
+{
+    // See handleWebViewControllerCompleted() below
+    LPCWSTR temp = _LPCWSTR(platform::getTemporaryPath());
+    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, temp, 0, this);
+
+    if (FAILED(result)) {
+        errorMessageBox(L"Could not create WebView2 environment options", result);
+    }
+}
+
+void EdgeWebView::cleanupWebView()
+{
+    if (fController != 0) {
+        ICoreWebView2* webView;
+        ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
+        EventRegistrationToken token {};
+        ICoreWebView2_remove_NavigationCompleted(webView, token);
+        ICoreWebView2Controller2_Close(fController);
+    }
+
+    fController = 0;
 }
 
 HRESULT EdgeWebView::handleWebViewEnvironmentCompleted(HRESULT result,
@@ -132,8 +150,10 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
     ICoreWebView2* webView;
     ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
     ICoreWebView2_AddRef(webView);
-    ICoreWebView2_add_NavigationCompleted(webView, this, /* token */0);
+    EventRegistrationToken token {};
+    ICoreWebView2_add_NavigationCompleted(webView, this, &token);
 
+    reparent(fWindowId);
     resize(fSize);
     navigate(fUrl);
 
@@ -145,7 +165,11 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
 {
     (void)sender;
     (void)eventArgs;
-    ICoreWebView2Controller2_put_IsVisible(fController, true);
+
+    if (fController != 0) {
+        ICoreWebView2Controller2_put_IsVisible(fController, true);
+    }
+
     return S_OK;
 }
 
