@@ -130,7 +130,8 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
         return result;
     }
 
-    // TODO: seems the initial black flicker is caused by pugl_win.cpp
+    // TODO: there is some visible black flash while the window plugin appears and
+    //       Windows' window animations are enabled. Such color is set in pugl_win.cpp:
     // /impl->wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 
     fController = controller;
@@ -168,9 +169,11 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
         ICoreWebView2Controller2_put_IsVisible(fController, true);
     }
 
-    // FIXME: This helps reproducing the window close bug that occasionally causes host to hang
-    // either by clicking X or Alt+F4. Bug affects Carla and Live. Not reproducible on REAPER.
+    // FIXME: The call below helps reproducing a bug that occasionally causes host to hang after
+    // content finishes loading and becomes visible. Bug affects Carla and Live, not REAPER.
     //::Sleep(1000);
+    // Leaving the web view hidden prevents the bug, but that is not very helpful for the user.
+    // Worth mentioning the web view is still capable of loading content when hidden.
 
     return S_OK;
 }
