@@ -16,32 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "WebViewHandler.hpp"
+#include "WebView2Handler.hpp"
+#include "WinApiStub.hpp"
 
 using namespace edge;
-
-template <typename T>
-static HRESULT STDMETHODCALLTYPE Null_QueryInterface(T* This, REFIID riid, void** ppvObject)
-{
-    (void)This;
-    (void)riid;
-    (void)ppvObject;
-    return E_NOINTERFACE;
-}
-
-template <typename T>
-static ULONG STDMETHODCALLTYPE Null_AddRef(T* This)
-{
-    (void)This;
-    return 1;
-}
-
-template <typename T>
-static ULONG STDMETHODCALLTYPE Null_Release(T* This)
-{
-    (void)This;
-    return 1;
-}
+using namespace winstub;
 
 
 // EnvironmentCompleted
@@ -50,7 +29,7 @@ static HRESULT STDMETHODCALLTYPE EventInterfaces_EnvironmentCompleted_Invoke(
     ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler* This, HRESULT result,
     ICoreWebView2Environment* created_environment)
 {
-    return static_cast<WebViewHandler*>(This)->handleWebViewEnvironmentCompleted(result, created_environment);
+    return static_cast<WebView2Handler*>(This)->handleWebViewEnvironmentCompleted(result, created_environment);
 }
 
 static ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandlerVtbl EventInterfaces_EnvironmentCompletedHandlerVtbl =
@@ -65,10 +44,10 @@ static ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandlerVtbl EventInter
 // ControllerCompleted
 
 static HRESULT STDMETHODCALLTYPE EventInterfaces_ControllerCompleted_Invoke(
-    ICoreWebView2CreateCoreWebView2ControllerCompletedHandler* This, HRESULT result,
-    ICoreWebView2Controller* controller)
+    ICoreWebView2CreateCoreWebView2ControllerCompletedHandler* This,
+    HRESULT result, ICoreWebView2Controller* controller)
 {
-    return static_cast<WebViewHandler*>(This)->handleWebViewControllerCompleted(result, controller);
+    return static_cast<WebView2Handler*>(This)->handleWebViewControllerCompleted(result, controller);
 }
 
 static ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerVtbl EventInterfaces_ControllerCompletedHandlerVtbl = {
@@ -85,7 +64,7 @@ static HRESULT STDMETHODCALLTYPE EventInterfacesNavigationCompletedEvent_Invoke(
     ICoreWebView2NavigationCompletedEventHandler* This,
     ICoreWebView2 *sender, ICoreWebView2NavigationCompletedEventArgs *args)
 {
-    return static_cast<WebViewHandler*>(This)->handleWebViewNavigationCompleted(sender, args);
+    return static_cast<WebView2Handler*>(This)->handleWebViewNavigationCompleted(sender, args);
 }
 
 static ICoreWebView2NavigationCompletedEventHandlerVtbl EventInterfaces_NavigationCompletedEventHandlerVtbl = {
@@ -102,7 +81,7 @@ static ICoreWebView2NavigationCompletedEventHandlerVtbl EventInterfaces_Navigati
     ICoreWebView2[ EVENT ]Handler* This,
     [ ARGS ])
 {
-    return static_cast<WebViewHandler*>(This)->handleWebView[ EVENT ]([ ARGS ]);
+    return static_cast<WebView2Handler*>(This)->handleWebView[ EVENT ]([ ARGS ]);
 }
 
 static ICoreWebView2[ EVENT ]HandlerVtbl EventInterfaces_[ EVENT ]HandlerVtbl = {
@@ -113,7 +92,7 @@ static ICoreWebView2[ EVENT ]HandlerVtbl EventInterfaces_[ EVENT ]HandlerVtbl = 
 };*/
 
 
-WebViewHandler::WebViewHandler()
+WebView2Handler::WebView2Handler()
     : ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler{&EventInterfaces_EnvironmentCompletedHandlerVtbl}
     , ICoreWebView2CreateCoreWebView2ControllerCompletedHandler{&EventInterfaces_ControllerCompletedHandlerVtbl}
     , ICoreWebView2NavigationCompletedEventHandler{&EventInterfaces_NavigationCompletedEventHandlerVtbl}

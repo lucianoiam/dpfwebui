@@ -28,11 +28,11 @@
 #include "WebView2.h"
 
 #include "WebViewInterface.hpp"
-#include "WebViewHandler.hpp"
+#include "WebView2Handler.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class EdgeWebView : public WebViewInterface, edge::WebViewHandler
+class EdgeWebView : public WebViewInterface, edge::WebView2Handler
 {
 public:
     EdgeWebView();
