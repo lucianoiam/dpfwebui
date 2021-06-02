@@ -16,32 +16,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBVIEW2HANDLER_HPP
-#define WEBVIEW2HANDLER_HPP
+#ifndef WEBVIEW2EVENTHANDLER_HPP
+#define WEBVIEW2EVENTHANDLER_HPP
 
 /*
-  The official way to work with WebView2 requires WIL which is provided by the
-  NuGet package Microsoft.Windows.ImplementationLibrary, but WIL is not
-  compatible with MinGW. See https://github.com/microsoft/wil/issues/117
+  The easy way to work with WebView2 requires WIL - "Windows Implementation Library"
+  which is not compatible with MinGW, see https://github.com/microsoft/wil/issues/117
   
   Solution is to use the C interface to WebView2 as shown here:
   https://github.com/jchv/webview2-in-mingw
 */
 
+#define UNICODE
 #define CINTERFACE
 
 #include "WebView2.h"
 
 namespace edge {
 
-class WebView2Handler : public ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler,
-                        public ICoreWebView2CreateCoreWebView2ControllerCompletedHandler,
-                        public ICoreWebView2NavigationCompletedEventHandler
-                        //public ICoreWebView2[ EVENT ]Handler
+class WebView2EventHandler : public ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler,
+                             public ICoreWebView2CreateCoreWebView2ControllerCompletedHandler,
+                             public ICoreWebView2NavigationCompletedEventHandler
 {
 public:
-    WebView2Handler();
-    virtual ~WebView2Handler() {};
+    WebView2EventHandler();
+    virtual ~WebView2EventHandler() {};
 
     virtual HRESULT handleWebViewEnvironmentCompleted(HRESULT result,
                                                       ICoreWebView2Environment* environment)
@@ -67,13 +66,8 @@ public:
         return S_OK;
     }
 
-    /*virtual HRESULT handleWebView[ EVENT ]([ ARGS ])
-    {
-        return S_OK;
-    }*/
-
 };
 
 } // namespace edge
 
-#endif // WEBVIEW2HANDLER_HPP
+#endif // WEBVIEW2EVENTHANDLER_HPP

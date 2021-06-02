@@ -24,7 +24,7 @@
 typedef HRESULT GETPROCESSDPIAWARENESS(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
 typedef HRESULT GETSCALEFACTORFORMONITOR(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
 
-HRESULT winstub::GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue)
+HRESULT stub::GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue)
 {
     GETPROCESSDPIAWARENESS *f = (GETPROCESSDPIAWARENESS*)GetProcAddress("Shcore.dll",
         "GetProcessDpiAwareness");
@@ -34,7 +34,7 @@ HRESULT winstub::GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pVa
     return (*f)(hProc, pValue);
 }
 
-HRESULT winstub::GetScaleFactorForMonitor(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale)
+HRESULT stub::GetScaleFactorForMonitor(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale)
 {
     GETSCALEFACTORFORMONITOR *f = (GETSCALEFACTORFORMONITOR*)GetProcAddress("Shcore.dll",
         "GetScaleFactorForMonitor");
@@ -44,7 +44,7 @@ HRESULT winstub::GetScaleFactorForMonitor(HMONITOR hMon, DEVICE_SCALE_FACTOR *pS
     return (*f)(hMon, pScale);
 }
 
-FARPROC winstub::GetProcAddress(LPCSTR lpDllName, LPCSTR lpProcName)
+FARPROC stub::GetProcAddress(LPCSTR lpDllName, LPCSTR lpProcName)
 {
     HMODULE hm = ::LoadLibrary(lpDllName);
     if (hm == 0) {

@@ -16,4 +16,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// WIP
+#ifndef COM_HPP
+#define COM_HPP
+
+namespace com {
+
+    template <typename T>
+    static HRESULT STDMETHODCALLTYPE Null_QueryInterface(T* This, REFIID riid, void** ppvObject)
+    {
+        (void)This;
+        (void)riid;
+        (void)ppvObject;
+        return E_NOINTERFACE;
+    }
+
+    template <typename T>
+    static ULONG STDMETHODCALLTYPE Null_AddRef(T* This)
+    {
+        (void)This;
+        return 1;
+    }
+
+    template <typename T>
+    static ULONG STDMETHODCALLTYPE Null_Release(T* This)
+    {
+        (void)This;
+        return 1;
+    }
+
+} // namespace com
+
+#endif // COM_HPP

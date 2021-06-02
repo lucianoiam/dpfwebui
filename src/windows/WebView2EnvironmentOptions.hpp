@@ -16,35 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef WEBVIEW2ENVIRONMENTOPTIONS_HPP
+#define WEBVIEW2ENVIRONMENTOPTIONS_HPP
 
-// WIP
+#define UNICODE
+#define CINTERFACE
 
-WCHAR args[100];
+#include "WebView2.h"
 
-static HRESULT STDMETHODCALLTYPE CoreWebView2EnvironmentOptions_get_AdditionalBrowserArguments(
-    ICoreWebView2EnvironmentOptions * This, LPWSTR *value)
-{
-    wcscpy(args, L"");
-    *value = args;
-    return S_OK;
-}
+namespace edge {
 
-static ICoreWebView2EnvironmentOptionsVtbl CoreWebView2EnvironmentOptionsVtbl =
-{
-    Null_QueryInterface,
-    Null_AddRef,
-    Null_Release,
-    CoreWebView2EnvironmentOptions_get_AdditionalBrowserArguments
-    // ...
-};
-
-class CoreWebView2EnvironmentOptions: public ICoreWebView2EnvironmentOptions
+class WebView2EnvironmentOptions: public ICoreWebView2EnvironmentOptions
 {
 public:
-    CoreWebView2EnvironmentOptions()
-        : ICoreWebView2EnvironmentOptions {&CoreWebView2EnvironmentOptionsVtbl}
-    {
+    WebView2EnvironmentOptions();
+    ~WebView2EnvironmentOptions() {};
 
-    }
+private:
+    // TODO ...
 
 };
+
+} // namespace edge
+
+#endif // WEBVIEW2ENVIRONMENTOPTIONS_HPP
