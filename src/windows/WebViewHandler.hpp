@@ -72,6 +72,6 @@ public:
 
 };
 
-} // namespace webview
+} // namespace edge
 
 #endif // WEBVIEWHANDLER_HPP
