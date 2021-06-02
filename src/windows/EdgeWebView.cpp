@@ -89,6 +89,8 @@ void EdgeWebView::resize(const Size<uint>& size)
 void EdgeWebView::initWebView()
 {
     // See handleWebViewControllerCompleted() below
+    //CoreWebView2EnvironmentOptions options;
+    //HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), &options, this);
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), 0, this);
 
     if (FAILED(result)) {

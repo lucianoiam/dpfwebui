@@ -14,8 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WEBVIEWHANDLER_HPP
-#define WEBVIEWHANDLER_HPP
+#ifndef WEBVIEW2HANDLER_HPP
+#define WEBVIEW2HANDLER_HPP
 
 /*
   The official way to work with WebView2 requires WIL which is provided by the
@@ -32,14 +32,14 @@
 
 namespace edge {
 
-class WebViewHandler : public ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler,
-                       public ICoreWebView2CreateCoreWebView2ControllerCompletedHandler,
-                       public ICoreWebView2NavigationCompletedEventHandler
-                       //public ICoreWebView2[ EVENT ]Handler
+class WebView2Handler : public ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler,
+                        public ICoreWebView2CreateCoreWebView2ControllerCompletedHandler,
+                        public ICoreWebView2NavigationCompletedEventHandler
+                        //public ICoreWebView2[ EVENT ]Handler
 {
 public:
-    WebViewHandler();
-    virtual ~WebViewHandler() {};
+    WebView2Handler();
+    virtual ~WebView2Handler() {};
 
     virtual HRESULT handleWebViewEnvironmentCompleted(HRESULT result,
                                                       ICoreWebView2Environment* environment)
@@ -74,4 +74,4 @@ public:
 
 } // namespace edge
 
-#endif // WEBVIEWHANDLER_HPP
+#endif // WEBVIEW2HANDLER_HPP

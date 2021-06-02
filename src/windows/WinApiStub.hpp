@@ -36,4 +36,36 @@ namespace winstub {
 
 } // namespace winstub
 
+
+/*
+   These templates help interfacing with WebView2
+ */
+
+namespace winstub {
+
+    template <typename T>
+    static HRESULT STDMETHODCALLTYPE Null_QueryInterface(T* This, REFIID riid, void** ppvObject)
+    {
+        (void)This;
+        (void)riid;
+        (void)ppvObject;
+        return E_NOINTERFACE;
+    }
+
+    template <typename T>
+    static ULONG STDMETHODCALLTYPE Null_AddRef(T* This)
+    {
+        (void)This;
+        return 1;
+    }
+
+    template <typename T>
+    static ULONG STDMETHODCALLTYPE Null_Release(T* This)
+    {
+        (void)This;
+        return 1;
+    }
+
+} // namespace winstub
+
 #endif // WINAPISTUB_HPP
