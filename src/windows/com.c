@@ -14,30 +14,24 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WEBVIEW2ENVIRONMENTOPTIONS_HPP
-#define WEBVIEW2ENVIRONMENTOPTIONS_HPP
+#include <stdio.h>
 
-#define UNICODE
-#define CINTERFACE
+#include "com.h"
 
-#include "WebView2.h"
-
-#define VALUE_MAX 256
-
-namespace edge {
-
-class WebView2EnvironmentOptions : public ICoreWebView2EnvironmentOptions
+LPWSTR refiid2wstr(LPWSTR buf, REFIID riid)
 {
-public:
-    WebView2EnvironmentOptions();
-    ~WebView2EnvironmentOptions() {};
-
-    WCHAR fAdditionalBrowserArguments[VALUE_MAX];
-    WCHAR fLanguage[VALUE_MAX];
-    WCHAR fTargetCompatibleBrowserVersion[VALUE_MAX];
-    BOOL  fAllowSingleSignOnUsingOSPrimaryAccount; 
-};
-
-} // namespace edge
-
-#endif // WEBVIEW2ENVIRONMENTOPTIONS_HPP
+    swprintf(buf, 37, L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+        riid->Data1,
+        riid->Data2,
+        riid->Data3,
+        riid->Data4[0],
+        riid->Data4[1],
+        riid->Data4[2],
+        riid->Data4[3],
+        riid->Data4[4],
+        riid->Data4[5],
+        riid->Data4[6],
+        riid->Data4[7]
+    );
+    return buf;
+}

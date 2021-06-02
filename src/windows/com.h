@@ -14,34 +14,19 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef COM_HPP
-#define COM_HPP
+#ifndef COM_H
+#define COM_H
 
-namespace com {
+#include <WinDef.h>
 
-    template <typename T>
-    static HRESULT STDMETHODCALLTYPE Null_QueryInterface(T* This, REFIID riid, void** ppvObject)
-    {
-        (void)This;
-        (void)riid;
-        (void)ppvObject;
-        return E_NOINTERFACE;
-    }
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    template <typename T>
-    static ULONG STDMETHODCALLTYPE Null_AddRef(T* This)
-    {
-        (void)This;
-        return 1;
-    }
+LPWSTR refiid2wstr(LPWSTR buf /* 37 bytes */, REFIID riid);
 
-    template <typename T>
-    static ULONG STDMETHODCALLTYPE Null_Release(T* This)
-    {
-        (void)This;
-        return 1;
-    }
+#ifdef __cplusplus
+}
+#endif
 
-} // namespace com
-
-#endif // COM_HPP
+#endif // COM_H

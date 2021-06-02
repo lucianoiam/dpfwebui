@@ -17,14 +17,6 @@
 #ifndef WEBVIEW2EVENTHANDLER_HPP
 #define WEBVIEW2EVENTHANDLER_HPP
 
-/*
-  The easy way to work with WebView2 requires WIL - "Windows Implementation Library"
-  which is not compatible with MinGW, see https://github.com/microsoft/wil/issues/117
-  
-  Solution is to use the C interface to WebView2 as shown here:
-  https://github.com/jchv/webview2-in-mingw
-*/
-
 #define UNICODE
 #define CINTERFACE
 

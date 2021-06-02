@@ -25,8 +25,19 @@
 
 #include "WebView2.h"
 
-#include "WebViewInterface.hpp"
+#include "WebView2EnvironmentOptions.hpp"
 #include "WebView2EventHandler.hpp"
+#include "WebViewInterface.hpp"
+
+/*
+  The easy way to work with WebView2 requires WIL - "Windows Implementation Library"
+  which is not compatible with MinGW, see https://github.com/microsoft/wil/issues/117
+  
+  Solution is to use the C interface to WebView2
+  
+  https://github.com/jchv/webview2-in-mingw
+  https://www.codeproject.com/Articles/13601/COM-in-plain-C
+*/
 
 START_NAMESPACE_DISTRHO
 
@@ -55,8 +66,9 @@ private:
 
     void errorMessageBox(std::wstring message, HRESULT result);
 
-    ICoreWebView2Controller* fController;
-    EventRegistrationToken   fEventToken;
+    edge::WebView2EnvironmentOptions fOptions;
+    ICoreWebView2Controller*         fController;
+    EventRegistrationToken           fEventToken;
     
     uintptr_t  fWindowId;
     String     fUrl;
