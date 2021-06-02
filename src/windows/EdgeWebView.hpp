@@ -40,7 +40,7 @@ public:
     void reparent(uintptr_t windowId) override;
     void resize(const Size<uint>& size) override;
 
-    // WebViewHandler
+    // WebView2EventHandler
 
     HRESULT handleWebViewEnvironmentCompleted(HRESULT result,
                                               ICoreWebView2Environment* environment) override;
