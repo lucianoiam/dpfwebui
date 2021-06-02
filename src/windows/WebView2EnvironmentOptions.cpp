@@ -59,22 +59,23 @@ static ULONG STDMETHODCALLTYPE Null_Release(ICoreWebView2EnvironmentOptions* Thi
 static HRESULT STDMETHODCALLTYPE Impl_get_AdditionalBrowserArguments(
     ICoreWebView2EnvironmentOptions * This, LPWSTR *value)
 {
+    ::wprintf(L"get_AdditionalBrowserArguments %ls\n", pInstance->fAdditionalBrowserArguments);
     *value = pInstance->fAdditionalBrowserArguments;
-    ::wprintf(L"get %ls\n", pInstance->fAdditionalBrowserArguments);
     return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE Impl_put_AdditionalBrowserArguments(
     ICoreWebView2EnvironmentOptions * This, LPCWSTR value)
 {
+    ::wprintf(L"put_AdditionalBrowserArguments %ls\n", value);
     wcscpy(pInstance->fAdditionalBrowserArguments, value);
-    ::wprintf(L"put %ls\n", pInstance->fAdditionalBrowserArguments);
     return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE Impl_get_Language(
     ICoreWebView2EnvironmentOptions * This, LPWSTR *value)
 {
+    ::wprintf(L"get_Language %ls\n", pInstance->fLanguage);
     *value = pInstance->fLanguage;
     return S_OK;
 }
@@ -82,6 +83,7 @@ static HRESULT STDMETHODCALLTYPE Impl_get_Language(
 static HRESULT STDMETHODCALLTYPE Impl_put_Language(
     ICoreWebView2EnvironmentOptions * This, LPCWSTR value)
 {
+    ::wprintf(L"put_Language %ls\n", value);
     wcscpy(pInstance->fLanguage, value);
     return S_OK;
 }
@@ -89,6 +91,7 @@ static HRESULT STDMETHODCALLTYPE Impl_put_Language(
 static HRESULT STDMETHODCALLTYPE Impl_get_TargetCompatibleBrowserVersion(
     ICoreWebView2EnvironmentOptions * This, LPWSTR *value)
 {
+    ::wprintf(L"get_TargetCompatibleBrowserVersion %ls\n", pInstance->fTargetCompatibleBrowserVersion);
     *value = pInstance->fTargetCompatibleBrowserVersion;
     return S_OK;
 }
@@ -96,6 +99,7 @@ static HRESULT STDMETHODCALLTYPE Impl_get_TargetCompatibleBrowserVersion(
 static HRESULT STDMETHODCALLTYPE Impl_put_TargetCompatibleBrowserVersion(
     ICoreWebView2EnvironmentOptions * This, LPCWSTR value)
 {
+    ::wprintf(L"put_TargetCompatibleBrowserVersion %ls\n", value);
     wcscpy(pInstance->fTargetCompatibleBrowserVersion, value);
     return S_OK;
 }
@@ -103,6 +107,7 @@ static HRESULT STDMETHODCALLTYPE Impl_put_TargetCompatibleBrowserVersion(
 static HRESULT STDMETHODCALLTYPE Impl_get_AllowSingleSignOnUsingOSPrimaryAccount(
     ICoreWebView2EnvironmentOptions * This, BOOL *allow)
 {
+    ::wprintf(L"get_AllowSingleSignOnUsingOSPrimaryAccount %d\n", pInstance->fAllowSingleSignOnUsingOSPrimaryAccount);
     *allow = pInstance->fAllowSingleSignOnUsingOSPrimaryAccount;
     return S_OK;
 }
@@ -110,6 +115,7 @@ static HRESULT STDMETHODCALLTYPE Impl_get_AllowSingleSignOnUsingOSPrimaryAccount
 static HRESULT STDMETHODCALLTYPE Impl_put_AllowSingleSignOnUsingOSPrimaryAccount(
     ICoreWebView2EnvironmentOptions * This, BOOL allow)
 {
+    ::wprintf(L"put_AllowSingleSignOnUsingOSPrimaryAccount %d\n", allow);
     pInstance->fAllowSingleSignOnUsingOSPrimaryAccount = allow;
     return S_OK;
 }
