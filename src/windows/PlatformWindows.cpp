@@ -101,11 +101,11 @@ float platform::getSystemDisplayScaleFactor()
 {
     float k = 1.f;
     PROCESS_DPI_AWARENESS dpiAware;
-    if (SUCCEEDED(winstub::GetProcessDpiAwareness(0, &dpiAware))) {
+    if (SUCCEEDED(stub::GetProcessDpiAwareness(0, &dpiAware))) {
         if (dpiAware != PROCESS_DPI_UNAWARE) {
             HMONITOR hMon = ::MonitorFromWindow(::GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
             DEVICE_SCALE_FACTOR scaleFactor;
-            if (SUCCEEDED(winstub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
+            if (SUCCEEDED(stub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
                 if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
                     k = static_cast<float>(scaleFactor) / 100.f;
                 }

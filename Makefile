@@ -43,7 +43,8 @@ SRC_FILES_UI += macos/CocoaWebView.mm \
 endif
 ifeq ($(WINDOWS),true)
 SRC_FILES_UI += windows/EdgeWebView.cpp \
-                windows/WebView2Handler.cpp \
+                windows/WebView2EnvironmentOptions.cpp \
+                windows/WebView2EventHandler.cpp \
                 windows/WinApiStub.cpp \
                 windows/PlatformWindows.cpp \
                 windows/plugin.rc

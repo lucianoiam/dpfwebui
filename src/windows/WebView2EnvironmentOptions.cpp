@@ -14,35 +14,29 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "WebView2EnvironmentOptions.hpp"
+#include "com.hpp"
+
+using namespace edge;
+using namespace com;
 
 // WIP
 
-WCHAR args[100];
-
-static HRESULT STDMETHODCALLTYPE CoreWebView2EnvironmentOptions_get_AdditionalBrowserArguments(
+static HRESULT STDMETHODCALLTYPE Impl_get_AdditionalBrowserArguments(
     ICoreWebView2EnvironmentOptions * This, LPWSTR *value)
 {
-    wcscpy(args, L"");
-    *value = args;
+	// TODO
     return S_OK;
 }
 
-static ICoreWebView2EnvironmentOptionsVtbl CoreWebView2EnvironmentOptionsVtbl =
-{
+static ICoreWebView2EnvironmentOptionsVtbl Vtbl_WebView2EnvironmentOptions = {
     Null_QueryInterface,
     Null_AddRef,
     Null_Release,
-    CoreWebView2EnvironmentOptions_get_AdditionalBrowserArguments
-    // ...
+    Impl_get_AdditionalBrowserArguments
+    // TODO ... missing args produces compilation warnings
 };
 
-class CoreWebView2EnvironmentOptions: public ICoreWebView2EnvironmentOptions
-{
-public:
-    CoreWebView2EnvironmentOptions()
-        : ICoreWebView2EnvironmentOptions {&CoreWebView2EnvironmentOptionsVtbl}
-    {
-
-    }
-
-};
+WebView2EnvironmentOptions::WebView2EnvironmentOptions()
+    : ICoreWebView2EnvironmentOptions {&Vtbl_WebView2EnvironmentOptions}
+{}

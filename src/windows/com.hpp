@@ -14,26 +14,34 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WINAPISTUB_HPP
-#define WINAPISTUB_HPP
+#ifndef COM_HPP
+#define COM_HPP
 
-#include <shellscalingapi.h>
-#include <shtypes.h>
+namespace com {
 
-/*
-   MinGW is currently unable to find GetProcessDpiAwareness() and GetScaleFactorForMonitor()
-   despite #include <shellscalingapi.h> (May '21). Also those require Windows 8.1 and the
-   plugin minimum target is Windows 7.
- */
+    template <typename T>
+    static HRESULT STDMETHODCALLTYPE Null_QueryInterface(T* This, REFIID riid, void** ppvObject)
+    {
+        (void)This;
+        (void)riid;
+        (void)ppvObject;
+        return E_NOINTERFACE;
+    }
 
-namespace stub {
+    template <typename T>
+    static ULONG STDMETHODCALLTYPE Null_AddRef(T* This)
+    {
+        (void)This;
+        return 1;
+    }
 
-    HRESULT GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
-    HRESULT GetScaleFactorForMonitor(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
+    template <typename T>
+    static ULONG STDMETHODCALLTYPE Null_Release(T* This)
+    {
+        (void)This;
+        return 1;
+    }
 
-    // This is a custom helper function with a WinAPI-like name
-    FARPROC GetProcAddress(LPCSTR lpDllName, LPCSTR lpProcName);
+} // namespace com
 
-} // namespace stub
-
-#endif // WINAPISTUB_HPP
+#endif // COM_HPP

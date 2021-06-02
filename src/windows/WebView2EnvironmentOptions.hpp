@@ -14,4 +14,27 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// WIP
+#ifndef WEBVIEW2ENVIRONMENTOPTIONS_HPP
+#define WEBVIEW2ENVIRONMENTOPTIONS_HPP
+
+#define UNICODE
+#define CINTERFACE
+
+#include "WebView2.h"
+
+namespace edge {
+
+class WebView2EnvironmentOptions: public ICoreWebView2EnvironmentOptions
+{
+public:
+    WebView2EnvironmentOptions();
+    ~WebView2EnvironmentOptions() {};
+
+private:
+    // TODO ...
+
+};
+
+} // namespace edge
+
+#endif // WEBVIEW2ENVIRONMENTOPTIONS_HPP

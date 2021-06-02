@@ -21,6 +21,7 @@
 #include <sstream>
 
 #include "DistrhoPluginInfo.h"
+#include "WebView2EnvironmentOptions.hpp"
 #include "Platform.hpp"
 #include "log.h"
 
@@ -89,7 +90,7 @@ void EdgeWebView::resize(const Size<uint>& size)
 void EdgeWebView::initWebView()
 {
     // See handleWebViewControllerCompleted() below
-    //CoreWebView2EnvironmentOptions options;
+    edge::WebView2EnvironmentOptions options;
     //HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), &options, this);
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), 0, this);
 
