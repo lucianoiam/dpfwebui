@@ -23,7 +23,6 @@
 #include <sstream>
 
 #include "DistrhoPluginInfo.h"
-#include "WebView2EnvironmentOptions.hpp"
 #include "Platform.hpp"
 #include "log.h"
 
@@ -91,9 +90,11 @@ void EdgeWebView::resize(const Size<uint>& size)
 
 void EdgeWebView::initWebView()
 {
+    // https://peter.sh/experiments/chromium-command-line-switches/
+    ICoreWebView2EnvironmentOptions_put_AdditionalBrowserArguments(&fOptions, L"");
+
     // See handleWebViewControllerCompleted() below
-    edge::WebView2EnvironmentOptions options;
-    //HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), &options, this);
+    //HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), &fOptions, this);
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), 0, this);
 
     if (FAILED(result)) {

@@ -16,30 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBVIEW2ENVIRONMENTOPTIONS_HPP
-#define WEBVIEW2ENVIRONMENTOPTIONS_HPP
+#ifndef COM_H
+#define COM_H
 
-#define UNICODE
-#define CINTERFACE
+#include <WinDef.h>
 
-#include "WebView2.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define VALUE_MAX 256
+LPWSTR refiid2wstr(LPWSTR buf /* 37 bytes */, REFIID riid);
 
-namespace edge {
+#ifdef __cplusplus
+}
+#endif
 
-class WebView2EnvironmentOptions : public ICoreWebView2EnvironmentOptions
-{
-public:
-    WebView2EnvironmentOptions();
-    ~WebView2EnvironmentOptions() {};
-
-    WCHAR fAdditionalBrowserArguments[VALUE_MAX];
-    WCHAR fLanguage[VALUE_MAX];
-    WCHAR fTargetCompatibleBrowserVersion[VALUE_MAX];
-    BOOL  fAllowSingleSignOnUsingOSPrimaryAccount; 
-};
-
-} // namespace edge
-
-#endif // WEBVIEW2ENVIRONMENTOPTIONS_HPP
+#endif // COM_H

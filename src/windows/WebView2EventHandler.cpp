@@ -17,10 +17,34 @@
  */
 
 #include "WebView2EventHandler.hpp"
-#include "com.hpp"
 
 using namespace edge;
-using namespace com;
+
+#define pInstance static_cast<WebView2EventHandler*>(This)
+
+
+template <typename T>
+static HRESULT STDMETHODCALLTYPE Null_QueryInterface(T* This, REFIID riid, void** ppvObject)
+{
+    (void)This;
+    (void)riid;
+    (void)ppvObject;
+    return E_NOINTERFACE;
+}
+
+template <typename T>
+static ULONG STDMETHODCALLTYPE Null_AddRef(T* This)
+{
+    (void)This;
+    return 1;
+}
+
+template <typename T>
+static ULONG STDMETHODCALLTYPE Null_Release(T* This)
+{
+    (void)This;
+    return 1;
+}
 
 
 // EnvironmentCompleted
@@ -29,7 +53,7 @@ static HRESULT STDMETHODCALLTYPE Impl_EnvironmentCompletedHandler(
     ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler* This,
     HRESULT result, ICoreWebView2Environment* environment)
 {
-    return static_cast<WebView2EventHandler*>(This)->handleWebViewEnvironmentCompleted(result, environment);
+    return pInstance->handleWebViewEnvironmentCompleted(result, environment);
 }
 
 static ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandlerVtbl Vtbl_EnvironmentCompletedHandler = {
@@ -46,7 +70,7 @@ static HRESULT STDMETHODCALLTYPE Impl_ControllerCompletedHandler(
     ICoreWebView2CreateCoreWebView2ControllerCompletedHandler* This,
     HRESULT result, ICoreWebView2Controller* controller)
 {
-    return static_cast<WebView2EventHandler*>(This)->handleWebViewControllerCompleted(result, controller);
+    return pInstance->handleWebViewControllerCompleted(result, controller);
 }
 
 static ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerVtbl Vtbl_ControllerCompletedHandler = {
@@ -63,7 +87,7 @@ static HRESULT STDMETHODCALLTYPE Impl_NavigationCompletedEventHandler(
     ICoreWebView2NavigationCompletedEventHandler* This,
     ICoreWebView2 *sender, ICoreWebView2NavigationCompletedEventArgs *args)
 {
-    return static_cast<WebView2EventHandler*>(This)->handleWebViewNavigationCompleted(sender, args);
+    return pInstance->handleWebViewNavigationCompleted(sender, args);
 }
 
 static ICoreWebView2NavigationCompletedEventHandlerVtbl Vtbl_NavigationCompletedEventHandler = {
@@ -75,7 +99,7 @@ static ICoreWebView2NavigationCompletedEventHandlerVtbl Vtbl_NavigationCompleted
 
 
 WebView2EventHandler::WebView2EventHandler()
-    : ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler{&Vtbl_EnvironmentCompletedHandler}
-    , ICoreWebView2CreateCoreWebView2ControllerCompletedHandler{&Vtbl_ControllerCompletedHandler}
-    , ICoreWebView2NavigationCompletedEventHandler{&Vtbl_NavigationCompletedEventHandler}
+    : ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler { &Vtbl_EnvironmentCompletedHandler }
+    , ICoreWebView2CreateCoreWebView2ControllerCompletedHandler { &Vtbl_ControllerCompletedHandler }
+    , ICoreWebView2NavigationCompletedEventHandler { &Vtbl_NavigationCompletedEventHandler }
 {}
