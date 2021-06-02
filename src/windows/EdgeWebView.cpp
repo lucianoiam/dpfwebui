@@ -98,7 +98,7 @@ void EdgeWebView::initWebView()
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), 0, this);
 
     if (FAILED(result)) {
-        errorMessageBox(L"Could not create WebView2 environment options", result);
+        errorMessageBox(L"Could not create WebView2 environment", result);
     }
 }
 
