@@ -61,7 +61,7 @@ private:
     uintptr_t  fWindowId;
     String     fUrl;
     Size<uint> fSize;
-
+    
 };
 
 END_NAMESPACE_DISTRHO
