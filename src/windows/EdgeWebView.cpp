@@ -55,11 +55,6 @@ void EdgeWebView::navigate(String url)
     ICoreWebView2* webView;
     ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
     ICoreWebView2_Navigate(webView, _LPCWSTR(fUrl));
-
-    // FIXME: This atrocity seems to prevent an issue that causes host to
-    // occasionally hang when closing the plugin window. The bug seems to only
-    // affect floating windows, ie. does not affect REAPER embedded views.
-    ::Sleep(100);
 }
 
 void EdgeWebView::reparent(uintptr_t windowId)
@@ -171,6 +166,10 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     if (fController != 0) {
         ICoreWebView2Controller2_put_IsVisible(fController, true);
     }
+
+    // FIXME: This helps reproducing the window close bug that occasionally causes host to hang
+    // either by clicking X or Alt+F4. Bug affects Carla and Live. Not reproducible on REAPER.
+    //::Sleep(1000);
 
     return S_OK;
 }
