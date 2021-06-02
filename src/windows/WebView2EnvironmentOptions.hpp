@@ -32,12 +32,12 @@ class WebView2EnvironmentOptions : public ICoreWebView2EnvironmentOptions
 {
 public:
     WebView2EnvironmentOptions();
-    ~WebView2EnvironmentOptions();
+    ~WebView2EnvironmentOptions() {};
 
-    LPWSTR fAdditionalBrowserArguments;
-    LPWSTR fLanguage;
-    LPWSTR fTargetCompatibleBrowserVersion;
-    BOOL   fAllowSingleSignOnUsingOSPrimaryAccount; 
+    WCHAR fAdditionalBrowserArguments[VALUE_MAX];
+    WCHAR fLanguage[VALUE_MAX];
+    WCHAR fTargetCompatibleBrowserVersion[VALUE_MAX];
+    BOOL  fAllowSingleSignOnUsingOSPrimaryAccount; 
 };
 
 } // namespace edge

@@ -18,32 +18,23 @@
 
 #include "WebView2EnvironmentOptions.hpp"
 
-#include <cstdio>
-#include <guiddef.h>
 #include <combaseapi.h>
-
-#include "com.h"
+#include <guiddef.h>
 
 using namespace edge;
 
 #define pInstance static_cast<WebView2EnvironmentOptions*>(This)
+#define CO_TASK_MEM_ALLOC_WSTR(n) static_cast<LPWSTR>(::CoTaskMemAlloc(n));
 
 static HRESULT STDMETHODCALLTYPE QueryInterface(ICoreWebView2EnvironmentOptions* This, REFIID riid, void** ppvObject)
 {
-    WCHAR temp[37];
-    refiid2wstr(temp, riid);
-
-    ::wprintf(L"DBG: Query %ls : ", temp);
-
     if (!::IsEqualIID(riid, IID_ICoreWebView2EnvironmentOptions)) {
         *ppvObject = 0;
-        ::wprintf(L"DBG: E_NOINTERFACE\n");
         return E_NOINTERFACE;
     }
 
     *ppvObject = This;
 
-    ::wprintf(L"DBG: NOERROR\n");
     return NOERROR;
 }
 
@@ -62,15 +53,14 @@ static ULONG STDMETHODCALLTYPE Null_Release(ICoreWebView2EnvironmentOptions* Thi
 static HRESULT STDMETHODCALLTYPE Impl_get_AdditionalBrowserArguments(
     ICoreWebView2EnvironmentOptions * This, LPWSTR *value)
 {
-    ::wprintf(L"DBG: get_AdditionalBrowserArguments %ls\n", pInstance->fAdditionalBrowserArguments);
-    *value = pInstance->fAdditionalBrowserArguments;
+    *value = CO_TASK_MEM_ALLOC_WSTR(VALUE_MAX);
+    wcscpy(*value, pInstance->fAdditionalBrowserArguments);
     return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE Impl_put_AdditionalBrowserArguments(
     ICoreWebView2EnvironmentOptions * This, LPCWSTR value)
 {
-    ::wprintf(L"DBG: put_AdditionalBrowserArguments %ls\n", value);
     wcscpy(pInstance->fAdditionalBrowserArguments, value);
     return S_OK;
 }
@@ -78,15 +68,14 @@ static HRESULT STDMETHODCALLTYPE Impl_put_AdditionalBrowserArguments(
 static HRESULT STDMETHODCALLTYPE Impl_get_Language(
     ICoreWebView2EnvironmentOptions * This, LPWSTR *value)
 {
-    ::wprintf(L"DBG: get_Language %ls\n", pInstance->fLanguage);
-    *value = pInstance->fLanguage;
+    *value = CO_TASK_MEM_ALLOC_WSTR(VALUE_MAX);
+    wcscpy(*value, pInstance->fLanguage);
     return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE Impl_put_Language(
     ICoreWebView2EnvironmentOptions * This, LPCWSTR value)
 {
-    ::wprintf(L"DBG: put_Language %ls\n", value);
     wcscpy(pInstance->fLanguage, value);
     return S_OK;
 }
@@ -94,15 +83,14 @@ static HRESULT STDMETHODCALLTYPE Impl_put_Language(
 static HRESULT STDMETHODCALLTYPE Impl_get_TargetCompatibleBrowserVersion(
     ICoreWebView2EnvironmentOptions * This, LPWSTR *value)
 {
-    ::wprintf(L"DBG: get_TargetCompatibleBrowserVersion %ls\n", pInstance->fTargetCompatibleBrowserVersion);
-    *value = pInstance->fTargetCompatibleBrowserVersion;
+    *value = CO_TASK_MEM_ALLOC_WSTR(VALUE_MAX);
+    wcscpy(*value, pInstance->fTargetCompatibleBrowserVersion);
     return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE Impl_put_TargetCompatibleBrowserVersion(
     ICoreWebView2EnvironmentOptions * This, LPCWSTR value)
 {
-    ::wprintf(L"DBG: put_TargetCompatibleBrowserVersion %ls\n", value);
     wcscpy(pInstance->fTargetCompatibleBrowserVersion, value);
     return S_OK;
 }
@@ -110,7 +98,6 @@ static HRESULT STDMETHODCALLTYPE Impl_put_TargetCompatibleBrowserVersion(
 static HRESULT STDMETHODCALLTYPE Impl_get_AllowSingleSignOnUsingOSPrimaryAccount(
     ICoreWebView2EnvironmentOptions * This, BOOL *allow)
 {
-    ::wprintf(L"DBG: get_AllowSingleSignOnUsingOSPrimaryAccount %d\n", pInstance->fAllowSingleSignOnUsingOSPrimaryAccount);
     *allow = pInstance->fAllowSingleSignOnUsingOSPrimaryAccount;
     return S_OK;
 }
@@ -118,7 +105,6 @@ static HRESULT STDMETHODCALLTYPE Impl_get_AllowSingleSignOnUsingOSPrimaryAccount
 static HRESULT STDMETHODCALLTYPE Impl_put_AllowSingleSignOnUsingOSPrimaryAccount(
     ICoreWebView2EnvironmentOptions * This, BOOL allow)
 {
-    ::wprintf(L"DBG: put_AllowSingleSignOnUsingOSPrimaryAccount %d\n", allow);
     pInstance->fAllowSingleSignOnUsingOSPrimaryAccount = allow;
     return S_OK;
 }
@@ -140,18 +126,8 @@ static ICoreWebView2EnvironmentOptionsVtbl Vtbl_WebView2EnvironmentOptions = {
 WebView2EnvironmentOptions::WebView2EnvironmentOptions()
     : ICoreWebView2EnvironmentOptions { &Vtbl_WebView2EnvironmentOptions }
 {
-    fAdditionalBrowserArguments = static_cast<LPWSTR>(::CoTaskMemAlloc(VALUE_MAX));
     fAdditionalBrowserArguments[0] = L'\0';
-    fLanguage = static_cast<LPWSTR>(::CoTaskMemAlloc(VALUE_MAX));
     fLanguage[0] = L'\0';
-    fTargetCompatibleBrowserVersion = static_cast<LPWSTR>(::CoTaskMemAlloc(VALUE_MAX));
     fTargetCompatibleBrowserVersion[0] = L'\0';
     fAllowSingleSignOnUsingOSPrimaryAccount = FALSE;
-}
-
-WebView2EnvironmentOptions::~WebView2EnvironmentOptions()
-{
-    ::CoTaskMemFree(fAdditionalBrowserArguments);
-    ::CoTaskMemFree(fLanguage);
-    ::CoTaskMemFree(fTargetCompatibleBrowserVersion);
 }
