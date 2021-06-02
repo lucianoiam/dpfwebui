@@ -174,11 +174,12 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
         ICoreWebView2Controller2_put_IsVisible(fController, true);
     }
 
-    // FIXME: The call below helps reproducing a bug that occasionally causes host to hang after
-    // content finishes loading and becomes visible. Bug affects Carla and Live, not REAPER.
+    // FIXME: The following call helps reproducing a bug that occasionally causes host to hang after
+    // content finishes loading and is set to visible.
     //::Sleep(1000);
-    // Leaving the web view hidden prevents the bug, but that is not very helpful for the user.
-    // Worth mentioning the web view is still capable of loading content when hidden.
+    // Bug can be reproduced on Carla or Live but not REAPER. Windows version does not seem to
+    // matter, tested 10 and 7. Leaving the web view hidden prevents the bug, but that is not very
+    // helpful for the user.
 
     return S_OK;
 }
