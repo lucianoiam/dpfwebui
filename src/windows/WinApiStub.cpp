@@ -24,25 +24,25 @@ typedef HRESULT GETSCALEFACTORFORMONITOR(HMONITOR hMon, DEVICE_SCALE_FACTOR *pSc
 
 HRESULT stub::GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue)
 {
-    GETPROCESSDPIAWARENESS *f = (GETPROCESSDPIAWARENESS*)GetProcAddress("Shcore.dll",
-        "GetProcessDpiAwareness");
+    GETPROCESSDPIAWARENESS *f = (GETPROCESSDPIAWARENESS*)GetProcAddressForDllName(
+    	"Shcore.dll", "GetProcessDpiAwareness");
     if (f == 0) {
-        return GetLastError();
+        return ::GetLastError();
     }
     return (*f)(hProc, pValue);
 }
 
 HRESULT stub::GetScaleFactorForMonitor(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale)
 {
-    GETSCALEFACTORFORMONITOR *f = (GETSCALEFACTORFORMONITOR*)GetProcAddress("Shcore.dll",
-        "GetScaleFactorForMonitor");
+    GETSCALEFACTORFORMONITOR *f = (GETSCALEFACTORFORMONITOR*)GetProcAddressForDllName(
+    	"Shcore.dll", "GetScaleFactorForMonitor");
     if (f == 0) {
-        return GetLastError();
+        return ::GetLastError();
     }
     return (*f)(hMon, pScale);
 }
 
-FARPROC stub::GetProcAddress(LPCSTR lpDllName, LPCSTR lpProcName)
+FARPROC stub::GetProcAddressForDllName(LPCSTR lpDllName, LPCSTR lpProcName)
 {
     HMODULE hm = ::LoadLibrary(lpDllName);
     if (hm == 0) {
