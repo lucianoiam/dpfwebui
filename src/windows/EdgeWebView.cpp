@@ -130,6 +130,9 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
         return result;
     }
 
+    // TODO: seems the initial black flicker is caused by pugl_win.cpp
+    // /impl->wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+
     fController = controller;
     ICoreWebView2Controller2_AddRef(fController);
     ICoreWebView2Controller2_put_IsVisible(fController, false);
