@@ -24,7 +24,7 @@
 
 #include "WebView2.h"
 
-#define VALUE_MAX 256
+#define VALUE_MAX 1024
 
 namespace edge {
 
