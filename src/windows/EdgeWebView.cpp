@@ -89,12 +89,19 @@ void EdgeWebView::resize(const Size<uint>& size)
 void EdgeWebView::initWebView()
 {
     // https://peter.sh/experiments/chromium-command-line-switches/
-    ICoreWebView2EnvironmentOptions_put_AdditionalBrowserArguments(&fOptions, L"");
-    ICoreWebView2EnvironmentOptions_put_TargetCompatibleBrowserVersion(&fOptions, L"91.0.864.37");
+    LPWSTR versionInfo;
+    ::GetAvailableCoreWebView2BrowserVersionString(0, &versionInfo);
+    if (versionInfo == 0) {
+        // TODO ...
+        return;
+    }
+
+    edge::WebView2EnvironmentOptions options;
+    ICoreWebView2EnvironmentOptions_put_TargetCompatibleBrowserVersion(&options, versionInfo);
+    ICoreWebView2EnvironmentOptions_put_AdditionalBrowserArguments(&options, L"");
 
     // See handleWebViewControllerCompleted() below
-    //HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), &fOptions, this);
-    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), 0, this);
+    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), &options, this);
 
     if (FAILED(result)) {
         errorMessageBox(L"Could not create WebView2 environment", result);

@@ -66,9 +66,8 @@ private:
 
     void errorMessageBox(std::wstring message, HRESULT result);
 
-    edge::WebView2EnvironmentOptions fOptions;
-    ICoreWebView2Controller*         fController;
-    EventRegistrationToken           fEventToken;
+    ICoreWebView2Controller* fController;
+    EventRegistrationToken   fEventToken;
     
     uintptr_t  fWindowId;
     String     fUrl;
