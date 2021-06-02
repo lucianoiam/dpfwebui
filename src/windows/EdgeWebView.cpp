@@ -92,6 +92,7 @@ void EdgeWebView::initWebView()
 {
     // https://peter.sh/experiments/chromium-command-line-switches/
     ICoreWebView2EnvironmentOptions_put_AdditionalBrowserArguments(&fOptions, L"");
+    ICoreWebView2EnvironmentOptions_put_TargetCompatibleBrowserVersion(&fOptions, L"91.0.864.37");
 
     // See handleWebViewControllerCompleted() below
     //HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), &fOptions, this);
