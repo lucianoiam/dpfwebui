@@ -32,7 +32,6 @@ EdgeWebView::EdgeWebView()
     : fController(0)
     , fWindowId(0)
 {
-    // Creating a WebView2 requires a HWND but parent is not available in ctor.
     // EdgeWebView works a bit different compared to the other platforms due to
     // the async nature of the native web view initialization process.
 }
@@ -62,7 +61,7 @@ void EdgeWebView::reparent(uintptr_t windowId)
 
     if (fController == 0) {
         if (!isInitializing) {
-            initWebView(); // fWindow must be valid before calling this
+            initWebView();
         }
 
         return; // will come back later
@@ -117,7 +116,27 @@ HRESULT EdgeWebView::handleWebViewEnvironmentCompleted(HRESULT result,
         return result;
     }
 
-    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, (HWND)fWindowId, this);
+    // TODO: cleanup
+    WCHAR tempClassName[256];
+    ::swprintf(tempClassName, sizeof(tempClassName), L"DPF_Class_%d", std::rand());
+
+    WNDCLASS wc = {};
+    wc.lpszClassName = wcsdup(tempClassName);
+    wc.lpfnWndProc = DefWindowProc;
+    ::RegisterClass(&wc);
+    
+    HWND dummy = ::CreateWindowEx(
+        WS_EX_TOOLWINDOW,
+        wc.lpszClassName,
+        L"WebView2 Init",
+        WS_POPUPWINDOW | WS_CAPTION,
+        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        0, 0, 0, 0
+    );
+
+    ::ShowWindow(dummy,  SW_SHOWNOACTIVATE);
+
+    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, dummy, this);
 
     return S_OK;
 }
@@ -136,7 +155,7 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
 
     fController = controller;
     ICoreWebView2Controller2_AddRef(fController);
-    ICoreWebView2Controller2_put_IsVisible(fController, false);
+    //ICoreWebView2Controller2_put_IsVisible(fController, false);
 #ifdef DISTRHO_UI_BACKGROUND_COLOR
     COREWEBVIEW2_COLOR color;
     color.R = DISTRHO_UI_BACKGROUND_COLOR >> 24;
@@ -152,7 +171,6 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
     ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
     ICoreWebView2_add_NavigationCompleted(webView, this, &fEventToken);
 
-    reparent(fWindowId);
     resize(fSize);
     navigate(fUrl);
 
@@ -166,15 +184,9 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     (void)eventArgs;
 
     if (fController != 0) {
-        ICoreWebView2Controller2_put_IsVisible(fController, true);
+        //ICoreWebView2Controller2_put_IsVisible(fController, true);
+        reparent(fWindowId);
     }
-
-    // FIXME: The following call helps reproducing a bug that occasionally causes host to hang after
-    // content finishes loading and is set to visible.
-    //::Sleep(1000);
-    // Bug can be reproduced on Carla or Live but not REAPER. Windows version does not seem to
-    // matter, tested 10 and 7. Leaving the web view hidden prevents the bug, but that is not very
-    // helpful for the user.
 
     return S_OK;
 }
