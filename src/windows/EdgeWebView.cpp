@@ -90,21 +90,8 @@ void EdgeWebView::resize(const Size<uint>& size)
 
 void EdgeWebView::initWebView()
 {
-    LPWSTR versionInfo;
-    ::GetAvailableCoreWebView2BrowserVersionString(0, &versionInfo);
-
-    if (versionInfo == 0) {
-        errorMessageBox(L"Please install Microsoft Edge Webview2 Runtime", 0);
-        return;
-    }
-
-    // https://peter.sh/experiments/chromium-command-line-switches/
-    edge::WebView2EnvironmentOptions options;
-    ICoreWebView2EnvironmentOptions_put_TargetCompatibleBrowserVersion(&options, versionInfo);
-    //ICoreWebView2EnvironmentOptions_put_AdditionalBrowserArguments(&options, L"--ui-show-fps-counter");
-
     // See handleWebViewControllerCompleted() below
-    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), &options, this);
+    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), 0, this);
 
     if (FAILED(result)) {
         errorMessageBox(L"Could not create WebView2 environment", result);

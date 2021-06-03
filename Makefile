@@ -47,7 +47,6 @@ SRC_FILES_UI += windows/EdgeWebView.cpp \
                 windows/WebView2EventHandler.cpp \
                 windows/WinApiStub.cpp \
                 windows/PlatformWindows.cpp \
-                windows/com.c \
                 windows/plugin.rc
 endif
 
