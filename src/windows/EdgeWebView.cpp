@@ -122,6 +122,7 @@ HRESULT EdgeWebView::handleWebViewEnvironmentCompleted(HRESULT result,
 
     WNDCLASS wc = {};
     wc.lpszClassName = wcsdup(tempClassName);
+    wc.hbrBackground = (HBRUSH)::GetStockObject(NULL_BRUSH);
     wc.lpfnWndProc = DefWindowProc;
     ::RegisterClass(&wc);
     
