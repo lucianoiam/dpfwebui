@@ -36,6 +36,17 @@ CocoaWebView::CocoaWebView()
     [fWebView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     fWebView.navigationDelegate = [[WebViewDelegate alloc] init];
     fWebView.hidden = YES;
+    // Play safe when calling undocumented APIs 
+    if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
+        @try {
+            NSNumber *no = [[NSNumber alloc] initWithBool:NO];
+            [fWebView setValue:no forKey: @"drawsBackground"];
+            [no release];
+        }
+        @catch (NSException * e) {
+            NSLog(@"Could not set transparent color for web view");
+        }
+    }
 }
 
 CocoaWebView::~CocoaWebView()
