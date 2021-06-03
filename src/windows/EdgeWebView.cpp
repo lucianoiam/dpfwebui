@@ -20,8 +20,8 @@
 #include <locale>
 #include <sstream>
 
-#include "DistrhoPluginInfo.h"
 #include "Platform.hpp"
+#include "DistrhoPluginInfo.h"
 #include "log.h"
 
 #define _LPCWSTR(s) std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s).c_str()
@@ -151,22 +151,14 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
 
     // TODO: there is some visible black flash while the window plugin appears and
     //       Windows' window animations are enabled. Such color is set in pugl_win.cpp:
-    // /impl->wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    // impl->wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 
     fController = controller;
     ICoreWebView2Controller2_AddRef(fController);
-#ifdef DISTRHO_UI_BACKGROUND_COLOR
-    COREWEBVIEW2_COLOR color;
-    color.R = DISTRHO_UI_BACKGROUND_COLOR >> 24;
-    color.G = (DISTRHO_UI_BACKGROUND_COLOR & 0x00ff0000) >> 16;
-    color.B = (DISTRHO_UI_BACKGROUND_COLOR & 0x0000ff00) >> 8;
-    color.A = DISTRHO_UI_BACKGROUND_COLOR && 0x000000ff;
-    // Not sure about the legality of the cast below
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
-        reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
-#endif
-
+        reinterpret_cast<ICoreWebView2Controller2 *>(fController), /* clear */COREWEBVIEW2_COLOR());
     ICoreWebView2* webView;
+
     ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
     ICoreWebView2_add_NavigationCompleted(webView, this, &fEventToken);
 
