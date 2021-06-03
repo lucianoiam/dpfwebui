@@ -26,6 +26,7 @@
 #include "DistrhoPluginInfo.h"
 #include "ipc.h"
 #include "log.h"
+#include "macro.h"
 
 typedef struct {
     ipc_t*         ipc;
@@ -84,41 +85,28 @@ int main(int argc, char* argv[])
 
 static void create_webview(helper_context_t *ctx)
 {
-    // Not sure what is the correct approach as both work
     ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     gtk_window_set_decorated(ctx->window, FALSE);
-    //ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_POPUP));
-
-    // TODO: gtk_widget_modify_bg() is deprecated
-    int rgba = DISTRHO_UI_BACKGROUND_COLOR;
-    GdkColor color = {0,
-                      0x101 * (rgba >> 24),
-                      0x101 * ((rgba & 0x00ff0000) >> 16),
-                      0x101 * ((rgba & 0x0000ff00) >> 8)};
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    gtk_widget_modify_bg(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
-    #pragma GCC diagnostic pop
 
     // Set up callback so that if the main window is closed, the program will exit
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), NULL);
 
-    // Create a browser instance and put the browser area into the main window
+    // TODO: gtk_widget_override_background_color() is deprecated
+    GdkRGBA color = {UNPACK_RGBA(DISTRHO_UI_BACKGROUND_COLOR, gdouble)};
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
+    #pragma GCC diagnostic pop
+
+    gtk_widget_show(GTK_WIDGET(ctx->window));
+
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
-
-    // Make sure that when the browser area becomes visible, it will get mouse and keyboard events
-    gtk_widget_grab_focus(GTK_WIDGET(ctx->webView));
-
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), NULL);
 }
 
 static void navigate(const helper_context_t *ctx, const char *url)
 {
-    // Window must be visible otherwise webkit_web_view_load_uri() fails
-    gtk_widget_show(GTK_WIDGET(ctx->window));
-    // Hide webview until it finishes loading to avoid some flicker
-    gtk_widget_hide(GTK_WIDGET(ctx->webView));
     webkit_web_view_load_uri(ctx->webView, url);
 }
 
@@ -147,7 +135,6 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
-            // Make sure the main window and all its contents are visible
             gtk_widget_show(GTK_WIDGET(view));
             break;
         default:
