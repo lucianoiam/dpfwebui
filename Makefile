@@ -43,11 +43,10 @@ SRC_FILES_UI += macos/CocoaWebView.mm \
 endif
 ifeq ($(WINDOWS),true)
 SRC_FILES_UI += windows/EdgeWebView.cpp \
-                windows/WebView2EnvironmentOptions.cpp \
                 windows/WebView2EventHandler.cpp \
                 windows/WinApiStub.cpp \
                 windows/PlatformWindows.cpp \
-                windows/plugin.rc
+                windows/res/plugin.rc
 endif
 
 FILES_DSP = $(SRC_FILES_DSP:%=src/%)
@@ -159,10 +158,10 @@ WEBVIEW_DLL = lib/windows/WebView2/runtimes/win-x64/native/WebView2Loader.dll
 winlibs:
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
 	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
-	@cp src/windows/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+	@cp src/windows/res/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
 	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
-	@cp src/windows/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
+	@cp src/windows/res/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
 
 clean: clean_winlibs
 

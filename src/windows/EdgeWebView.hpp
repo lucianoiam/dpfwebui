@@ -27,7 +27,6 @@
 
 #include "WebView2.h"
 
-#include "WebView2EnvironmentOptions.hpp"
 #include "WebView2EventHandler.hpp"
 #include "WebViewInterface.hpp"
 
