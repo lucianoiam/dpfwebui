@@ -41,19 +41,6 @@ EdgeWebView::~EdgeWebView()
     cleanupWebView();
 }
 
-void EdgeWebView::navigate(String url)
-{
-    fUrl = url;
-
-    if (fController == 0) {
-        return; // will come back later
-    }
-
-    ICoreWebView2* webView;
-    ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
-    ICoreWebView2_Navigate(webView, _LPCWSTR(fUrl));
-}
-
 void EdgeWebView::reparent(uintptr_t windowId)
 {
     bool isInitializing = fWindowId != 0;
@@ -68,6 +55,19 @@ void EdgeWebView::reparent(uintptr_t windowId)
     }
 
     ICoreWebView2Controller2_put_ParentWindow(fController, (HWND)windowId);
+}
+
+void EdgeWebView::navigate(String url)
+{
+    fUrl = url;
+
+    if (fController == 0) {
+        return; // will come back later
+    }
+
+    ICoreWebView2* webView;
+    ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
+    ICoreWebView2_Navigate(webView, _LPCWSTR(fUrl));
 }
 
 void EdgeWebView::resize(const Size<uint>& size)
@@ -116,7 +116,7 @@ HRESULT EdgeWebView::handleWebViewEnvironmentCompleted(HRESULT result,
         return result;
     }
 
-    // TODO: cleanup
+    // TODO: cleanup, explain why using a dummy window instead of parent for this
     WCHAR tempClassName[256];
     ::swprintf(tempClassName, sizeof(tempClassName), L"DPF_Class_%d", std::rand());
 
@@ -155,7 +155,6 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
 
     fController = controller;
     ICoreWebView2Controller2_AddRef(fController);
-    //ICoreWebView2Controller2_put_IsVisible(fController, false);
 #ifdef DISTRHO_UI_BACKGROUND_COLOR
     COREWEBVIEW2_COLOR color;
     color.R = DISTRHO_UI_BACKGROUND_COLOR >> 24;
@@ -184,7 +183,6 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     (void)eventArgs;
 
     if (fController != 0) {
-        //ICoreWebView2Controller2_put_IsVisible(fController, true);
         reparent(fWindowId);
     }
 

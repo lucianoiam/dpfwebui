@@ -46,9 +46,9 @@ public:
     EdgeWebView();
     ~EdgeWebView();
 
-    void navigate(String url) override;
     void reparent(uintptr_t windowId) override;
     void resize(const Size<uint>& size) override;
+    void navigate(String url) override;
 
     // WebView2EventHandler
 

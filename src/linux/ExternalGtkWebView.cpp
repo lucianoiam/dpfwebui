@@ -108,12 +108,6 @@ ExternalGtkWebView::~ExternalGtkWebView()
     }
 }
 
-void ExternalGtkWebView::navigate(String url)
-{
-    const char *cUrl = static_cast<const char *>(url);
-    ipcWrite(OPC_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
-}
-
 void ExternalGtkWebView::reparent(uintptr_t windowId)
 {
     ipcWrite(OPC_REPARENT, &windowId, sizeof(windowId));
@@ -123,6 +117,12 @@ void ExternalGtkWebView::resize(const Size<uint>& size)
 {
     helper_size_t sizePkt = {size.getWidth(), size.getHeight()};
     ipcWrite(OPC_RESIZE, &sizePkt, sizeof(sizePkt));
+}
+
+void ExternalGtkWebView::navigate(String url)
+{
+    const char *cUrl = static_cast<const char *>(url);
+    ipcWrite(OPC_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
 }
 
 int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize)
