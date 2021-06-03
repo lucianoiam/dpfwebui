@@ -38,9 +38,9 @@ public:
     ExternalGtkWebView();
     ~ExternalGtkWebView();
 
-    void navigate(String url) override;
     void reparent(uintptr_t windowId) override;
     void resize(const Size<uint>& size) override;
+    void navigate(String url) override;
 
 private:
     ipc_t* ipc() const { return fIpc; }

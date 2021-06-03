@@ -45,17 +45,6 @@ CocoaWebView::~CocoaWebView()
     [fWebView release];
 }
 
-void CocoaWebView::navigate(String url)
-{
-    NSString *urlStr = [[NSString alloc] initWithCString:url encoding:NSUTF8StringEncoding];
-    NSURL *urlObj = [[NSURL alloc] initWithString:urlStr];
-    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:urlObj];
-    [fWebView loadRequest:request];
-    [request release];
-    [urlObj release];
-    [urlStr release];
-}
-
 void CocoaWebView::reparent(uintptr_t windowId)
 {
     // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
@@ -70,6 +59,17 @@ void CocoaWebView::reparent(uintptr_t windowId)
 void CocoaWebView::resize(const DGL::Size<uint>& size)
 {
     // The WKWebView automatically resizes to match its parent dimensions
+}
+
+void CocoaWebView::navigate(String url)
+{
+    NSString *urlStr = [[NSString alloc] initWithCString:url encoding:NSUTF8StringEncoding];
+    NSURL *urlObj = [[NSURL alloc] initWithString:urlStr];
+    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:urlObj];
+    [fWebView loadRequest:request];
+    [request release];
+    [urlObj release];
+    [urlStr release];
 }
 
 @implementation WebViewDelegate

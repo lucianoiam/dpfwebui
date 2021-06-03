@@ -33,9 +33,9 @@ public:
     CocoaWebView();
     ~CocoaWebView();
 
-    void navigate(String url) override;
     void reparent(uintptr_t windowId) override;
     void resize(const DGL::Size<uint>& size) override;
+    void navigate(String url) override;
 
 private:
     void *fView;
