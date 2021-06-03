@@ -86,7 +86,11 @@ int main(int argc, char* argv[])
 static void create_webview(helper_context_t *ctx)
 {
     ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-    gtk_window_set_decorated(ctx->window, FALSE);
+    
+    if (!GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) {
+        // Do not remove decorations on Wayland
+        gtk_window_set_decorated(ctx->window, FALSE);
+    }
 
     // Set up callback so that if the main window is closed, the program will exit
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), NULL);
