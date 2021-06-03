@@ -50,7 +50,7 @@ void WebUI::onDisplay()
     const Window& window = getParentWindow();
 #if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_CAIRO)
     cairo_t* cr = window.getGraphicsContext().cairo;
-    cairo_set_source_rgba(UNPACK_RGBA(DISTRHO_UI_BACKGROUND_COLOR, double));
+    cairo_set_source_rgba(cr, UNPACK_RGBA(DISTRHO_UI_BACKGROUND_COLOR, double));
     cairo_paint(cr);
 #endif
     // onDisplay() can be called multiple times during lifetime of instance
