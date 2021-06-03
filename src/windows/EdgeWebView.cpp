@@ -19,6 +19,7 @@
 #include <codecvt>
 #include <locale>
 #include <sstream>
+#include <winuser.h>
 
 #include "Platform.hpp"
 #include "DistrhoPluginInfo.h"
@@ -31,27 +32,58 @@ USE_NAMESPACE_DISTRHO
 EdgeWebView::EdgeWebView()
     : fController(0)
     , fWindowId(0)
+    , fHelperHwnd(0)
 {
     // EdgeWebView works a bit different compared to the other platforms due to
-    // the async nature of the native web view initialization process.
+    // the async nature of the native web view initialization process
+    WCHAR className[256];
+    ::swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
+    ::ZeroMemory(&fHelperClass, sizeof(fHelperClass));
+    fHelperClass.lpszClassName = wcsdup(className);
+    fHelperClass.lpfnWndProc = DefWindowProc;
+    ::RegisterClass(&fHelperClass);
+    
+    fHelperHwnd = ::CreateWindowEx(
+        WS_EX_TOOLWINDOW,
+        fHelperClass.lpszClassName,
+        L"WebView2 Init Helper",
+        WS_POPUPWINDOW | WS_CAPTION,
+        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        0, 0, 0, 0
+    );
+
+    ::ShowWindow(fHelperHwnd,  SW_SHOWNOACTIVATE);
 }
 
 EdgeWebView::~EdgeWebView()
 {
-    cleanupWebView();
+    if (fController != 0) {
+        ICoreWebView2Controller2_Close(fController);
+        ICoreWebView2_Release(fController);
+    }
+
+    ::DestroyWindow(fHelperHwnd);
+    ::UnregisterClass(fHelperClass.lpszClassName, 0);
+    ::free((void*)fHelperClass.lpszClassName);
 }
 
 void EdgeWebView::reparent(uintptr_t windowId)
 {
+    // WebView2 is created here if needed
     bool isInitializing = fWindowId != 0;
     fWindowId = windowId;
 
     if (fController == 0) {
         if (!isInitializing) {
-            initWebView();
+            // See handleWebViewControllerCompleted()
+            HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), 0, this);
+
+            if (FAILED(result)) {
+                errorMessageBox(L"Could not create WebView2 environment", result);
+            }
         }
 
-        return; // will come back later
+        return; // later
     }
 
     ICoreWebView2Controller2_put_ParentWindow(fController, (HWND)windowId);
@@ -62,7 +94,7 @@ void EdgeWebView::navigate(String url)
     fUrl = url;
 
     if (fController == 0) {
-        return; // will come back later
+        return; // later
     }
 
     ICoreWebView2* webView;
@@ -75,7 +107,7 @@ void EdgeWebView::resize(const Size<uint>& size)
     fSize = size;
 
     if (fController == 0) {
-        return; // will come back later
+        return; // later
     }
 
     RECT bounds {};
@@ -83,29 +115,6 @@ void EdgeWebView::resize(const Size<uint>& size)
     bounds.bottom = fSize.getHeight();
 
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
-}
-
-void EdgeWebView::initWebView()
-{
-    // See handleWebViewControllerCompleted() below
-    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), 0, this);
-
-    if (FAILED(result)) {
-        errorMessageBox(L"Could not create WebView2 environment", result);
-    }
-}
-
-void EdgeWebView::cleanupWebView()
-{
-    if (fController != 0) {
-        ICoreWebView2* webView;
-        ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
-        ICoreWebView2_remove_NavigationCompleted(webView, fEventToken);
-        ICoreWebView2Controller2_Close(fController);
-        ICoreWebView2_Release(fController);
-    }
-
-    fController = 0;
 }
 
 HRESULT EdgeWebView::handleWebViewEnvironmentCompleted(HRESULT result,
@@ -116,28 +125,7 @@ HRESULT EdgeWebView::handleWebViewEnvironmentCompleted(HRESULT result,
         return result;
     }
 
-    // TODO: cleanup, explain why using a dummy window instead of parent for this
-    WCHAR tempClassName[256];
-    ::swprintf(tempClassName, sizeof(tempClassName), L"DPF_Class_%d", std::rand());
-
-    WNDCLASS wc = {};
-    wc.lpszClassName = wcsdup(tempClassName);
-    wc.hbrBackground = (HBRUSH)::GetStockObject(NULL_BRUSH);
-    wc.lpfnWndProc = DefWindowProc;
-    ::RegisterClass(&wc);
-    
-    HWND dummy = ::CreateWindowEx(
-        WS_EX_TOOLWINDOW,
-        wc.lpszClassName,
-        L"WebView2 Init",
-        WS_POPUPWINDOW | WS_CAPTION,
-        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-        0, 0, 0, 0
-    );
-
-    ::ShowWindow(dummy,  SW_SHOWNOACTIVATE);
-
-    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, dummy, this);
+    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fHelperHwnd, this);
 
     return S_OK;
 }
@@ -150,7 +138,7 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
         return result;
     }
 
-    // TODO: there is some visible black flash while the window plugin appears and
+    // TODO: there is some visible black flash while the window plugin is appearing and
     //       Windows' window animations are enabled. Such color is set in pugl_win.cpp:
     // impl->wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 
@@ -161,7 +149,7 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
     ICoreWebView2* webView;
 
     ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
-    ICoreWebView2_add_NavigationCompleted(webView, this, &fEventToken);
+    ICoreWebView2_add_NavigationCompleted(webView, this, 0);
 
     resize(fSize);
     navigate(fUrl);
