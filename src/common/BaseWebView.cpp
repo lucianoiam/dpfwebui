@@ -20,11 +20,11 @@
 
 void BaseWebView::loadFinished()
 {
-    runScript(String("document.getElementById('greeting').innerHTML+='<h2>Plugin Ready</h2>'"));
+    runScript(String("document.getElementById('greeting').innerHTML+='<h2>UI Ready</h2>'"));
     // TODO: add CSS for disabling selection, context menu, zoom...
 }
 
 void BaseWebView::addStylesheet(String source)
 {
-    // TODO: use runScript() to insert a stylesheet
+    // TODO: call runScript() to insert a stylesheet...
 }
