@@ -28,6 +28,8 @@
 #include "ipc.h"
 #include "helper.h"
 
+#define WEBVIEW_CLASS ExternalGtkWebView
+
 START_NAMESPACE_DISTRHO
 
 class ExternalGtkWebView : public WebViewInterface
