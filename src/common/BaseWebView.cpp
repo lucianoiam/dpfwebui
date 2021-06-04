@@ -16,6 +16,8 @@
 
 #include "BaseWebView.hpp"
 
+// TODO: maybe it is better to move all this to dpf.js and inject that script only
+
 #define JS_DISABLE_CONTEXT_MENU "document.body.setAttribute('oncontextmenu', 'event.preventDefault();');"
 #define CSS_DISABLE_PINCH_ZOOM  "body { touch-action: pan-x pan-y; }"
 #define CSS_DISABLE_SELECTION   "body { user-select: none; -webkit-user-select: none; }"
