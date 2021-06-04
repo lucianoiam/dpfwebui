@@ -30,7 +30,8 @@
 
 USE_NAMESPACE_DISTRHO
 
-CocoaWebView::CocoaWebView()
+CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
+    : BaseWebView(handler)
 {
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];
     [fWebView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -83,11 +84,17 @@ void CocoaWebView::navigate(String url)
     [urlStr release];
 }
 
+void CocoaWebView::runScript(String source)
+{
+    // TODO
+}
+
 @implementation WebViewDelegate
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
     webView.hidden = NO;
+    // TODO: CocoaWebView::contentReady()
 }
 
 @end

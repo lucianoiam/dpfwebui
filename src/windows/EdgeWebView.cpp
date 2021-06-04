@@ -29,8 +29,9 @@
 
 USE_NAMESPACE_DISTRHO
 
-EdgeWebView::EdgeWebView()
-    : fController(0)
+EdgeWebView::EdgeWebView(WebViewScriptMessageHandler& handler)
+    : BaseWebView(handler)
+    , fController(0)
     , fWindowId(0)
     , fHelperHwnd(0)
 {
@@ -94,6 +95,11 @@ void EdgeWebView::navigate(String url)
     ICoreWebView2_Navigate(webView, _LPCWSTR(fUrl));
 }
 
+void EdgeWebView::runScript(String source)
+{
+    // TODO
+}
+
 void EdgeWebView::resize(const Size<uint>& size)
 {
     fSize = size;
@@ -149,6 +155,7 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     (void)eventArgs;
     if (fController != 0) {
         reparent(fWindowId);
+        contentReady();
     }
     return S_OK;
 }

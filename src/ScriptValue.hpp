@@ -1,10 +1,7 @@
 /*
  * dpf-webui
  * Copyright (C) 2021 Luciano Iam <lucianoiam@protonmail.com>
- *
- * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
- *
+
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
  * permission notice appear in all copies.
@@ -17,26 +14,37 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WEBVIEWINTERFACE_HPP
-#define WEBVIEWINTERFACE_HPP
+#ifndef SCRIPTVALUE_HPP
+#define SCRIPTVALUE_HPP
 
-#include <cstdint>
-
-#include "dgl/Geometry.hpp"
 #include "extra/String.hpp"
+
+#include "DistrhoPluginInfo.h"
 
 START_NAMESPACE_DISTRHO
 
-class WebViewInterface
-{
+class ScriptValue {
 public:
+    ScriptValue(bool b)        : fB(b) {};
+    ScriptValue(int32_t i)     : fI(i) {};
+    ScriptValue(double d)      : fD(d) {};
+    ScriptValue(String s)      : fS(s) {};
+    ScriptValue(const char* s) : fS(String(s)) {};
 
-    virtual void reparent(uintptr_t windowId) = 0;
-    virtual void resize(const DGL::Size<uint>& size) = 0;
-    virtual void navigate(String url) = 0;
+    operator bool()        const { return fB; }
+    operator int32_t()     const { return fI; }
+    operator double()      const { return fD; }
+    operator String()      const { return fS; }
+    operator const char*() const { return fS; }
+
+private:
+    bool    fB;
+    int32_t fI;
+    double  fD;
+    String  fS;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif // WEBVIEWINTERFACE_HPP
+#endif // SCRIPTVALUE_HPP

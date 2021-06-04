@@ -130,6 +130,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
+            // TODO: ExternalGtkWebView::contentReady()  (via IPC)
             gtk_widget_show(GTK_WIDGET(view));
             break;
         default:

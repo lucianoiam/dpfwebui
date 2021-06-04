@@ -36,8 +36,9 @@ extern char **environ;
 
 USE_NAMESPACE_DISTRHO
 
-ExternalGtkWebView::ExternalGtkWebView()
-    : fPid(-1)
+ExternalGtkWebView::ExternalGtkWebView(WebViewScriptMessageHandler& handler)
+    : BaseWebView(handler)
+    , fPid(-1)
     , fIpc(nullptr)
     , fIpcThread(nullptr)
 {
@@ -116,6 +117,11 @@ void ExternalGtkWebView::navigate(String url)
 {
     const char *cUrl = static_cast<const char *>(url);
     ipcWrite(OPC_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
+}
+
+void ExternalGtkWebView::runScript(String source)
+{
+    // TODO
 }
 
 int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize)

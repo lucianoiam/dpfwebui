@@ -26,7 +26,7 @@
 #include "WebView2.h"
 
 #include "WebView2EventHandler.hpp"
-#include "WebViewInterface.hpp"
+#include "BaseWebView.hpp"
 
 /*
   The easy way to work with WebView2 requires WIL - "Windows Implementation Library"
@@ -42,15 +42,16 @@
 
 START_NAMESPACE_DISTRHO
 
-class EdgeWebView : public WebViewInterface, edge::WebView2EventHandler
+class EdgeWebView : public BaseWebView, edge::WebView2EventHandler
 {
 public:
-    EdgeWebView();
+    EdgeWebView(WebViewScriptMessageHandler& handler);
     ~EdgeWebView();
 
     void reparent(uintptr_t windowId) override;
     void resize(const Size<uint>& size) override;
     void navigate(String url) override;
+    void runScript(String source) override;
 
     // WebView2EventHandler
 
