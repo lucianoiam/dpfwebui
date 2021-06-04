@@ -16,13 +16,30 @@
 
 #include "BaseWebView.hpp"
 
+#define JS_DISABLE_CONTEXT_MENU \
+    "document.body.setAttribute('oncontextmenu', 'event.preventDefault()');"
+
+#define JS_DISABLE_ZOOM \
+    "document.head.insertAdjacentHTML('beforeend', '<meta name=\"viewport\"" \
+        " content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\" />');"
+
+#define CSS_DISABLE_SELECTION \
+    "body {" \
+    "   -webkit-user-select: none;" \
+    "}"
+
 void BaseWebView::loadFinished()
 {
-    runScript(String("document.getElementById('greeting').innerHTML+='<h2>UI Ready</h2>'"));
-    // TODO: add CSS for disabling selection, context menu, zoom...
+    runScript(String(JS_DISABLE_CONTEXT_MENU));
+    runScript(String(JS_DISABLE_ZOOM));
+    addStylesheet(String(CSS_DISABLE_SELECTION));
 }
 
 void BaseWebView::addStylesheet(String source)
 {
-    // TODO: call runScript() to insert a stylesheet...
+    String js;
+    js += "const style = document.createElement('style');"
+          "style.innerHTML = '" + source + "';"
+          "document.head.appendChild(style);";
+    runScript(js);
 }
