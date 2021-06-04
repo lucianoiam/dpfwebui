@@ -18,6 +18,7 @@
 
 void BaseWebView::contentReady()
 {
+    runScript(String("document.getElementById('greeting').innerHTML+='<h2>Plugin Ready</h2>'"));
     // TODO: add CSS for disabling selection, context menu, zoom...
 }
 

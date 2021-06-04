@@ -24,3 +24,7 @@ body {
     border: dashed 2px #fff;
     border-radius: 30px;
 }
+
+#greeting {
+	text-align: center;
+}

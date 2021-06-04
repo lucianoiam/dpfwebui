@@ -22,7 +22,9 @@
 typedef enum {
     OPC_NAVIGATE,
     OPC_REPARENT,
-    OPC_RESIZE
+    OPC_RESIZE,
+    OPC_RUN_SCRIPT,
+    OPC_HANDLE_SCRIPT_MESSAGE
 } helper_opcode_t;
 
 typedef struct {
