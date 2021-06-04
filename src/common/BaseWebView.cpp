@@ -19,9 +19,14 @@
 #define JS_DISABLE_CONTEXT_MENU \
     "document.body.setAttribute('oncontextmenu', 'event.preventDefault()');"
 
-#define JS_DISABLE_ZOOM \
+#define JS_DISABLE_PINCH_ZOOM \
     "document.head.insertAdjacentHTML('beforeend', '<meta name=\"viewport\"" \
         " content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\" />');"
+
+#define CSS_DISABLE_PINCH_ZOOM \
+    "body {" \
+    "   touch-action: pan-x pan-y;" \
+    "}"
 
 #define CSS_DISABLE_SELECTION \
     "body {" \
@@ -31,7 +36,8 @@
 void BaseWebView::loadFinished()
 {
     runScript(String(JS_DISABLE_CONTEXT_MENU));
-    runScript(String(JS_DISABLE_ZOOM));
+    runScript(String(JS_DISABLE_PINCH_ZOOM));
+    addStylesheet(String(CSS_DISABLE_PINCH_ZOOM));
     addStylesheet(String(CSS_DISABLE_SELECTION));
 }
 
