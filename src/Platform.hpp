@@ -24,7 +24,7 @@ START_NAMESPACE_DISTRHO
 namespace platform {
 
     // The following functions help locating resource files and helper binaries
-    // during runtime. Such are relative to the running binary path. 
+    // during runtime. Location of such is relative to the running binary path. 
 
     String getBinaryDirectoryPath();
     String getBinaryPath();
@@ -33,7 +33,7 @@ namespace platform {
     String getResourcePath();
     String getTemporaryPath();
 
-    // Helps scaling web views on high density displays
+    // Helps scaling the web view on high density displays
 
     float getSystemDisplayScaleFactor();
 
