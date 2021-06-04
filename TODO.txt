@@ -1,9 +1,8 @@
 ALL PLATFORMS
 -------------
 
-- Disable context menu
-- Disable content selection
-- Host <-> JavaScript parameter bridge
+- Print JavaScript console.log output to stderr
+- JavaScript -> plugin messaging
 - Persistent state handling
 
 
