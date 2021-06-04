@@ -37,9 +37,7 @@ typedef struct {
 } helper_context_t;
 
 static void create_webview(helper_context_t *ctx);
-static void navigate(const helper_context_t *ctx, const char *url);
 static void reparent(const helper_context_t *ctx, uintptr_t parentId);
-static void resize(const helper_context_t *ctx, const helper_size_t *size);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
@@ -98,12 +96,7 @@ static void create_webview(helper_context_t *ctx)
 
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
-    g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), NULL);
-}
-
-static void navigate(const helper_context_t *ctx, const char *url)
-{
-    webkit_web_view_load_uri(ctx->webView, url);
+    g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
 }
 
 static void reparent(const helper_context_t *ctx, uintptr_t parentId)
@@ -121,17 +114,13 @@ static void reparent(const helper_context_t *ctx, uintptr_t parentId)
     }
 }
 
-static void resize(const helper_context_t *ctx, const helper_size_t *size)
-{
-    gtk_window_resize(ctx->window, size->width, size->height);
-}
-
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
 {
+    helper_context_t *ctx = (helper_context_t *)data;
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
-            // TODO: ExternalGtkWebView::contentReady()  (via IPC)
+            ipc_write_simple(ctx, OPC_HANDLE_LOAD_FINISHED, NULL, 0);
             gtk_widget_show(GTK_WIDGET(view));
             break;
         default:
@@ -158,15 +147,24 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     }
 
     switch (packet.t) {
-        case OPC_NAVIGATE:
-            navigate(ctx, (const char *)packet.v);
+        case OPC_NAVIGATE: {
+            const char *url = (const char *)packet.v;
+            webkit_web_view_load_uri(ctx->webView, url);
             break;
-        case OPC_REPARENT:
+        }
+        case OPC_REPARENT: {
             reparent(ctx, *((uintptr_t *)packet.v));
             break;
-        case OPC_RESIZE:
-            resize(ctx, (const helper_size_t *)packet.v);
+        }
+        case OPC_RESIZE: {
+            const helper_size_t *size = (const helper_size_t *)packet.v;
+            gtk_window_resize(ctx->window, size->width, size->height);
             break;
+        }
+        case OPC_RUN_SCRIPT: {
+            const char *js = (const char *)packet.v;
+            webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
+        }
         default:
             break;
     }

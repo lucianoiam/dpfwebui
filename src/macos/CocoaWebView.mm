@@ -97,7 +97,7 @@ void CocoaWebView::runScript(String source)
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
-    self.cppView->wkContentReady();
+    self.cppView->didFinishNavigation();
     webView.hidden = NO;
 }
 
