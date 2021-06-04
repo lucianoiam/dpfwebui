@@ -74,12 +74,12 @@ void EdgeWebView::reparent(uintptr_t windowId)
     if (fController == 0) {
         if (!isInitializing) {
             // See handleWebViewControllerCompleted()
-            HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0, _LPCWSTR(platform::getTemporaryPath()), 0, this);
+            HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
+            	_LPCWSTR(platform::getTemporaryPath()), 0, this);
             if (FAILED(result)) {
                 errorMessageBox(L"Could not create WebView2 environment", result);
             }
         }
-
         return; // later
     }
     ICoreWebView2Controller2_put_ParentWindow(fController, (HWND)windowId);
@@ -131,8 +131,9 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
     // impl->wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     fController = controller;
     ICoreWebView2Controller2_AddRef(fController);
+    COREWEBVIEW2_COLOR clear = {};
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
-        reinterpret_cast<ICoreWebView2Controller2 *>(fController), /* clear */COREWEBVIEW2_COLOR());
+        reinterpret_cast<ICoreWebView2Controller2 *>(fController), clear);
     ICoreWebView2* webView;
     ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
     ICoreWebView2_add_NavigationCompleted(webView, this, 0);
