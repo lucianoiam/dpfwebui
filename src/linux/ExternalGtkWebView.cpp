@@ -143,15 +143,16 @@ int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, in
 void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
 {
     switch (static_cast<helper_opcode_t>(packet.t)) {
-        // Handle WebView events
+        case OPC_HANDLE_LOAD_FINISHED:
+            loadFinished();
         default:
             break;
     }
 }
 
 IpcReadThread::IpcReadThread(ExternalGtkWebView& view)
-	: Thread("ipc_read")
-	, fView(view)
+    : Thread("ipc_read")
+    , fView(view)
 {}
 
 void IpcReadThread::run()

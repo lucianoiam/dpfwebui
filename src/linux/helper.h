@@ -22,11 +22,14 @@
 #include <stdint.h>
 
 typedef enum {
+    // Plugin -> web view
     OPC_NAVIGATE,
     OPC_REPARENT,
     OPC_RESIZE,
     OPC_RUN_SCRIPT,
-    OPC_HANDLE_SCRIPT_MESSAGE
+    // Plugin <- web view
+    OPC_HANDLE_SCRIPT_MESSAGE,
+    OPC_HANDLE_LOAD_FINISHED
 } helper_opcode_t;
 
 typedef struct {

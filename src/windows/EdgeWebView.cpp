@@ -157,7 +157,7 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     (void)eventArgs;
     if (fController != 0) {
         reparent(fWindowId);
-        contentReady();
+        loadFinished();
     }
     return S_OK;
 }

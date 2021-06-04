@@ -49,7 +49,7 @@ public:
 protected:
     WebViewScriptMessageHandler& handler() { return fHandler; }
 
-    void contentReady();
+    void loadFinished();
 
 private:
     void addStylesheet(String source);
