@@ -38,6 +38,8 @@
   https://www.codeproject.com/Articles/13601/COM-in-plain-C
 */
 
+#define WEBVIEW_CLASS EdgeWebView
+
 START_NAMESPACE_DISTRHO
 
 class EdgeWebView : public WebViewInterface, edge::WebView2EventHandler
