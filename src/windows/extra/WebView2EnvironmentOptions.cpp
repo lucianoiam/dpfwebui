@@ -30,9 +30,7 @@ static HRESULT STDMETHODCALLTYPE QueryInterface(ICoreWebView2EnvironmentOptions*
         *ppvObject = 0;
         return E_NOINTERFACE;
     }
-
     *ppvObject = This;
-
     return NOERROR;
 }
 

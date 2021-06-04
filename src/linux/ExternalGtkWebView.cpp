@@ -42,17 +42,14 @@ ExternalGtkWebView::ExternalGtkWebView()
     , fIpcThread(nullptr)
 {
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
-
     if (::pipe(fPipeFd[0]) == -1) {
         LOG_STDERR_ERRNO("Could not create plugin->helper pipe");
         return;
     }
-
     if (::pipe(fPipeFd[1]) == -1) {
         LOG_STDERR_ERRNO("Could not create helper->plugin pipe");
         return;
     }
-
     ipc_conf_t conf;
     conf.fd_r = fPipeFd[1][0];
     conf.fd_w = fPipeFd[0][1];
@@ -61,13 +58,12 @@ ExternalGtkWebView::ExternalGtkWebView()
     fIpcThread = new IpcReadThread(*this);
     fIpcThread->startThread();
 
+    // BIN_BASENAME is defined in Makefile
     char rfd[10];
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
     char wfd[10];
     ::sprintf(wfd, "%d", fPipeFd[1][1]);
-    // BIN_BASENAME is defined in Makefile
     String helperPath = platform::getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_helper";
-
     const char *argv[] = {helperPath, rfd, wfd, 0};
     int status = ::posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
     if (status != 0) {
@@ -87,17 +83,14 @@ ExternalGtkWebView::~ExternalGtkWebView()
         }
         fPid = -1;
     }
-
     if (fIpcThread != nullptr) {
         fIpcThread->stopThread(-1);
         fIpcThread = nullptr;
     }
-
     if (fIpc != nullptr) {
         ipc_destroy(fIpc);
         fIpc = nullptr;
     }
-
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             if ((fPipeFd[i][j] != -1) && (close(fPipeFd[i][j]) == -1)) {
@@ -131,13 +124,10 @@ int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, in
     packet.t = static_cast<short>(opcode);
     packet.l = payloadSize;
     packet.v = payload;
-
     int retval;
-
     if ((retval = ipc_write(fIpc, &packet)) == -1) {
         LOG_STDERR_ERRNO("Could not write to IPC channel");
     }
-
     return retval;
 }
 
@@ -165,25 +155,20 @@ void IpcReadThread::run()
         tv.tv_sec = 0;
         tv.tv_usec = 100000;
         int retval = ::select(fd + 1, &rfds, 0, 0, &tv);
-
         if (retval == -1) {
             LOG_STDERR_ERRNO("Failed select() on IPC channel");
             break;
         }
-
         if (shouldThreadExit()) {
             break;
         }
-
         if (retval == 0) {
             continue;   // select() timeout
         }
-
         if (ipc_read(fView.ipc(), &packet) == -1) {
             LOG_STDERR_ERRNO("Could not read from IPC channel");
             break;
         }
-
         fView.ipcReadCallback(packet);
     }
 }

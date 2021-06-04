@@ -48,6 +48,5 @@ FARPROC stub::GetProcAddressForDllName(LPCSTR lpDllName, LPCSTR lpProcName)
     if (hm == 0) {
         return 0;
     }
-
     return ::GetProcAddress(hm, lpProcName);
 }

@@ -49,21 +49,17 @@ int main(int argc, char* argv[])
     helper_context_t ctx;
     ipc_conf_t conf;
     GIOChannel* channel;
-
     if (argc < 3) {
         LOG_STDERR("Invalid argument count");
         return -1;
     }
-
     if ((sscanf(argv[1], "%d", &conf.fd_r) == 0) || (sscanf(argv[2], "%d", &conf.fd_w) == 0)) {
         LOG_STDERR("Invalid file descriptor");
         return -1;
     }
 
     ctx.ipc = ipc_init(&conf);
-
     gtk_init(0, NULL);
-    
     if (GDK_IS_X11_DISPLAY(gdk_display_get_default())
             && ((ctx.display = XOpenDisplay(NULL)) == NULL)) {
         LOG_STDERR("Cannot open display");
@@ -71,7 +67,6 @@ int main(int argc, char* argv[])
     }
 
     create_webview(&ctx);
-
     channel = g_io_channel_unix_new(conf.fd_r);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
 
@@ -86,22 +81,18 @@ int main(int argc, char* argv[])
 static void create_webview(helper_context_t *ctx)
 {
     ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-    
     if (!GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) {
         // Do not remove decorations on Wayland
         gtk_window_set_decorated(ctx->window, FALSE);
     }
-
     // Set up callback so that if the main window is closed, the program will exit
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), NULL);
-
     // TODO: gtk_widget_override_background_color() is deprecated
     GdkRGBA color = {UNPACK_RGBA(DISTRHO_UI_BACKGROUND_COLOR, gdouble)};
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
-    #pragma GCC diagnostic pop
-
+#pragma GCC diagnostic pop
     gtk_widget_show(GTK_WIDGET(ctx->window));
 
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
@@ -159,7 +150,6 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     if ((condition & G_IO_IN) == 0) {
         return TRUE;
     }
-
     if (ipc_read(ctx->ipc, &packet) == -1) {
         LOG_STDERR_ERRNO("Could not read from IPC channel");
         return TRUE;
@@ -186,14 +176,11 @@ static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const
 {
     int retval;
     tlv_t packet;
-
     packet.t = (short)opcode;
     packet.l = payload_sz;
     packet.v = payload;
-
     if ((retval = ipc_write(ctx->ipc, &packet)) == -1) {
         LOG_STDERR_ERRNO("Could not write to IPC channel");
     }
-
     return retval;
 }
