@@ -16,35 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef COCOAWEBVIEW_HPP
-#define COCOAWEBVIEW_HPP
-
 #include "BaseWebView.hpp"
 
-// While it is possible to #import Obj-C headers here, that would force all
-// source files importing CocoaWebView.hpp to do so before any other project
-// headers to avoid symbol name collisions. Do not make any assumption.
-
-#define WEBVIEW_CLASS CocoaWebView
-
-START_NAMESPACE_DISTRHO
-
-class CocoaWebView : public BaseWebView
+void BaseWebView::contentReady()
 {
-public:
-    CocoaWebView(WebViewScriptMessageHandler& handler);
-    ~CocoaWebView();
+    // TODO: add CSS for disabling selection, context menu, zoom...
+}
 
-    void reparent(uintptr_t windowId) override;
-    void resize(const DGL::Size<uint>& size) override;
-    void navigate(String url) override;
-    void runScript(String source) override;
-
-private:
-    void *fView;
-
-};
-
-END_NAMESPACE_DISTRHO
-
-#endif  // COCOAWEBVIEW_HPP
+void BaseWebView::addStylesheet(String source)
+{
+    // TODO: use runScript() to insert a stylesheet
+}

@@ -24,7 +24,7 @@
 
 #include "extra/Thread.hpp"
 
-#include "WebViewInterface.hpp"
+#include "BaseWebView.hpp"
 #include "ipc.h"
 #include "helper.h"
 
@@ -32,17 +32,18 @@
 
 START_NAMESPACE_DISTRHO
 
-class ExternalGtkWebView : public WebViewInterface
+class ExternalGtkWebView : public BaseWebView
 {
 friend class IpcReadThread;
 
 public:
-    ExternalGtkWebView();
+    ExternalGtkWebView(WebViewScriptMessageHandler& handler);
     ~ExternalGtkWebView();
 
     void reparent(uintptr_t windowId) override;
     void resize(const Size<uint>& size) override;
     void navigate(String url) override;
+    void runScript(String source) override;
 
 private:
     ipc_t* ipc() const { return fIpc; }

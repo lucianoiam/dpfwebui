@@ -15,48 +15,49 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
 
-#ifndef WEBUI_HPP
-#define WEBUI_HPP
+#ifndef BASEWEBVIEW_HPP
+#define BASEWEBVIEW_HPP
 
-#include "DistrhoUI.hpp"
+#include <cstdint>
 
-#ifdef DISTRHO_OS_LINUX
-#include "linux/ExternalGtkWebView.hpp"
-#endif
-#ifdef DISTRHO_OS_MAC
-#include "macos/CocoaWebView.hpp"
-#endif
-#ifdef DISTRHO_OS_WINDOWS
-#include "windows/EdgeWebView.hpp"
-#endif
+#include "dgl/Geometry.hpp"
+#include "extra/String.hpp"
+
+#include "ScriptValue.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class WebUI : public UI, public WebViewScriptMessageHandler
+class WebViewScriptMessageHandler
 {
 public:
-    WebUI();
-    ~WebUI() {};
+    virtual void handleWebViewScriptMessage(String name, ScriptValue arg1, ScriptValue arg2) = 0;
 
-    void onDisplay() override;
+};
 
-    void parameterChanged(uint32_t index, float value) override;
+class BaseWebView
+{
+public:
+    BaseWebView(WebViewScriptMessageHandler& handler) : fHandler(handler) {}
+    virtual ~BaseWebView() {};
 
-    void handleWebViewScriptMessage(String name, ScriptValue arg1, ScriptValue arg2) override;
+    virtual void reparent(uintptr_t windowId) = 0;
+    virtual void resize(const DGL::Size<uint>& size) = 0;
+    virtual void navigate(String url) = 0;
+    virtual void runScript(String source) = 0;
 
 protected:
-    void onResize(const ResizeEvent& ev) override;
+    WebViewScriptMessageHandler& handler() { return fHandler; }
+
+    void contentReady();
 
 private:
-    WEBVIEW_CLASS fWebView;
-    uintptr_t     fParentWindowId;
+    void addStylesheet(String source);
+
+    WebViewScriptMessageHandler& fHandler;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBUI_HPP
+#endif // BASEWEBVIEW_HPP

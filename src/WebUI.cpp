@@ -33,7 +33,8 @@ UI* DISTRHO::createUI()
 }
 
 WebUI::WebUI()
-    : fParentWindowId(0)
+    : fWebView(*this)
+    , fParentWindowId(0)
 {
     float scaleFactor = platform::getSystemDisplayScaleFactor();
     setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
@@ -70,4 +71,18 @@ void WebUI::parameterChanged(uint32_t index, float value)
 void WebUI::onResize(const ResizeEvent& ev)
 {
     fWebView.resize(ev.size);
+}
+
+void WebUI::handleWebViewScriptMessage(String name, ScriptValue arg1, ScriptValue arg2)
+{
+    // TODO
+    if (name == "editParameter") {
+        // uint32_t index, bool started
+    } else if (name == "setParameterValue") {
+        // uint32_t index, float value
+#if DISTRHO_PLUGIN_WANT_STATE
+    } else if (name == "setState") {
+        // const char* key, const char* value
+#endif
+    }
 }
