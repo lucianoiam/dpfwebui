@@ -23,10 +23,11 @@
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-#include "DistrhoPluginInfo.h"
+#include "../DistrhoPluginInfo.h"
+#include "../common/log.h"
+#include "../common/macro.h"
+
 #include "ipc.h"
-#include "log.h"
-#include "macro.h"
 
 typedef struct {
     ipc_t*         ipc;

@@ -23,9 +23,9 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 
-#include "Platform.hpp"
-#include "log.h"
-#include "macro.h"
+#include "../common/Platform.hpp"
+#include "../common/log.h"
+#include "../common/macro.h"
 
 /*
   Need to launch a separate process hosting the GTK web view because linking

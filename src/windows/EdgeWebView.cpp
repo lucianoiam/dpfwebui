@@ -21,9 +21,9 @@
 #include <sstream>
 #include <winuser.h>
 
-#include "Platform.hpp"
-#include "DistrhoPluginInfo.h"
-#include "log.h"
+#include "../DistrhoPluginInfo.h"
+#include "../common/Platform.hpp"
+#include "../common/log.h"
 
 #define _LPCWSTR(s) std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s).c_str()
 
