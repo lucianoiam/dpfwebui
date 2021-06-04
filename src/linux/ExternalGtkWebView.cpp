@@ -142,7 +142,10 @@ void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
     }
 }
 
-IpcReadThread::IpcReadThread(ExternalGtkWebView& view) : Thread("ipc_read"), fView(view) {}
+IpcReadThread::IpcReadThread(ExternalGtkWebView& view)
+	: Thread("ipc_read")
+	, fView(view)
+{}
 
 void IpcReadThread::run()
 {
@@ -165,7 +168,7 @@ void IpcReadThread::run()
             break;
         }
         if (retval == 0) {
-            continue;   // select() timeout
+            continue; // timeout
         }
         if (ipc_read(fView.ipc(), &packet) == -1) {
             LOG_STDERR_ERRNO("Could not read from IPC channel");
