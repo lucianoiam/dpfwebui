@@ -24,18 +24,20 @@
 
 // NOTE: ARC is not available
 
-@interface WebViewDelegate: NSObject<WKNavigationDelegate>
-{}
-@end
-
 USE_NAMESPACE_DISTRHO
+
+@interface WebViewDelegate: NSObject<WKNavigationDelegate>
+@property (assign, nonatomic) CocoaWebView *cppView;
+@end
 
 CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
     : BaseWebView(handler)
 {
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];
     [fWebView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-    fWebView.navigationDelegate = [[WebViewDelegate alloc] init];
+    WebViewDelegate *delegate = [[WebViewDelegate alloc] init];
+    delegate.cppView = this;
+    fWebView.navigationDelegate = delegate;
     fWebView.hidden = YES;
     // Play safe when calling undocumented APIs 
     if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
@@ -86,15 +88,17 @@ void CocoaWebView::navigate(String url)
 
 void CocoaWebView::runScript(String source)
 {
-    // TODO
+    NSString *js = [[NSString alloc] initWithCString:source encoding:NSUTF8StringEncoding];
+    [fWebView evaluateJavaScript:js completionHandler: nil];
+    [js release];
 }
 
 @implementation WebViewDelegate
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
+    self.cppView->wkContentReady();
     webView.hidden = NO;
-    // TODO: CocoaWebView::contentReady()
 }
 
 @end

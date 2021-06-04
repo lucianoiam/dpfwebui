@@ -40,6 +40,9 @@ public:
     void navigate(String url) override;
     void runScript(String source) override;
 
+    // Allow calling protected contentReady() from the ObjC WKNavigationDelegate
+    void wkContentReady() { contentReady(); }
+
 private:
     void *fView;
 

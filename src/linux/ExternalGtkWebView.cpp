@@ -123,7 +123,8 @@ void ExternalGtkWebView::navigate(String url)
 
 void ExternalGtkWebView::runScript(String source)
 {
-    // TODO
+    const char *js = static_cast<const char *>(source);
+    ipcWrite(OPC_RUN_SCRIPT, js, ::strlen(js) + 1);
 }
 
 int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize)
