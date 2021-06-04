@@ -16,16 +16,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "Platform.hpp"
-
 #include <cstring>
 #include <dlfcn.h>
 #include <libgen.h>
 #include <unistd.h>
 #include <sys/syslimits.h>
 
-#include "log.h"
-#include "macro.h"
+#include "../common/Platform.hpp"
+#include "../common/log.h"
+#include "../common/macro.h"
 
 USE_NAMESPACE_DISTRHO
 

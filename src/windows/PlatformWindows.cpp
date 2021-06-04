@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "Platform.hpp"
-
 #include <cstring>
 #include <errhandlingapi.h>
 #include <libloaderapi.h>
@@ -26,9 +24,11 @@
 #include <shlwapi.h>
 #include <shtypes.h>
 
+#include "../common/Platform.hpp"
+#include "../common/log.h"
+#include "../common/macro.h"
+
 #include "WinApiStub.hpp"
-#include "log.h"
-#include "macro.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 

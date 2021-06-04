@@ -27,7 +27,7 @@ SRC_FILES_DSP = \
 
 SRC_FILES_UI  = \
     WebUI.cpp \
-    BaseWebView.cpp
+    common/BaseWebView.cpp
 
 # Note this is not DPF's Makefile.base.mk
 include Makefile.base.mk
