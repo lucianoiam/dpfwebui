@@ -74,7 +74,7 @@ void EdgeWebView::reparent(uintptr_t windowId)
         if (!isInitializing) {
             // See handleWebViewControllerCompleted()
             HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
-            	_LPCWSTR(platform::getTemporaryPath()), 0, this);
+                _LPCWSTR(platform::getTemporaryPath()), 0, this);
             if (FAILED(result)) {
                 errorMessageBox(L"Could not create WebView2 environment", result);
             }
@@ -97,7 +97,9 @@ void EdgeWebView::navigate(String url)
 
 void EdgeWebView::runScript(String source)
 {
-    // TODO
+    ICoreWebView2* webView;
+    ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
+    ICoreWebView2_ExecuteScript(webView, _LPCWSTR(source), 0);
 }
 
 void EdgeWebView::resize(const Size<uint>& size)
@@ -154,8 +156,8 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     (void)sender;
     (void)eventArgs;
     if (fController != 0) {
-        reparent(fWindowId);
         loadFinished();
+        reparent(fWindowId);
     }
     return S_OK;
 }
