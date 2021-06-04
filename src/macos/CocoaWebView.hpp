@@ -21,7 +21,7 @@
 
 #include "WebViewInterface.hpp"
 
-// Though it is possible to #import Obj-C headers here, that would force all
+// While it is possible to #import Obj-C headers here, that would force all
 // source files importing CocoaWebView.hpp to do so before any other project
 // headers to avoid symbol name collisions. Do not make any assumption.
 

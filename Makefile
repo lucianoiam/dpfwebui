@@ -5,7 +5,7 @@
 # Web UI example by lucianoiam
 
 # Allow placing DPF in a random directory and include its Makefiles
-# These variables are not supported by the official release as of 16 May 2021
+# These variables are not supported by the official release as of May '21
 DPF_CUSTOM_PATH = lib/dpf
 DPF_CUSTOM_TARGET_DIR = ./bin
 DPF_CUSTOM_BUILD_DIR = ./build
