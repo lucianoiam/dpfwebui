@@ -76,7 +76,6 @@ String platform::getTemporaryPath()
         LOG_STDERR_INT("Could not determine user app data folder", result);
         return String();
     }
-
     // Append host executable name to the temp path otherwise WebView2 controller initialization
     // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
     // simultaneously due to permissions. C:\Users\< USERNAME >\AppData\Local\DPFTemp\< HOST_BIN >
@@ -85,17 +84,14 @@ String platform::getTemporaryPath()
         LOG_STDERR_INT("Could not determine host executable path", ::GetLastError());
         return String();
     }
-
     LPSTR exeFilename = ::PathFindFileName(exePath);
     // The following call relies on a further Windows library called Pathcch, which is implemented
     // in in api-ms-win-core-path-l1-1-0.dll and requires Windows 8.
     // Since the minimum plugin target is Windows 7 it is acceptable to use a deprecated function.
     //::PathCchRemoveExtension(exeFilename, sizeof(exeFilename));
     ::PathRemoveExtension(exeFilename);
-
     ::strcat(tempPath, "\\DPFTemp\\");
     ::strcat(tempPath, exeFilename);
-    
     return String(tempPath);
 }
 
