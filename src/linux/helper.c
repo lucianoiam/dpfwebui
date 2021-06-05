@@ -38,13 +38,11 @@ typedef struct {
 
 static void create_webview(helper_context_t *ctx);
 static void reparent(const helper_context_t *ctx, uintptr_t parentId);
+static void inject_script(const helper_context_t *ctx, const char* js);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
-
-static int    injected_js_num;
-static char **injected_js;
 
 int main(int argc, char* argv[])
 {
@@ -77,11 +75,6 @@ int main(int argc, char* argv[])
 
     g_io_channel_shutdown(channel, TRUE, NULL);
     ipc_destroy(ctx.ipc);
-
-    for (i = 0; i < injected_js_num; i++) {
-        free(injected_js[i]);
-    }
-    free(injected_js);
 
     return 0;
 }
@@ -123,17 +116,19 @@ static void reparent(const helper_context_t *ctx, uintptr_t parentId)
     }
 }
 
+static void inject_script(const helper_context_t *ctx, const char* js)
+{
+    WebKitUserScript *script = webkit_user_script_new(js, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+        WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL);
+    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
+    webkit_user_content_manager_add_script(manager, script);
+    webkit_user_script_unref(script);
+}
+
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
 {
     helper_context_t *ctx = (helper_context_t *)data;
-    int i;
-
     switch (event) {
-        case WEBKIT_LOAD_COMMITTED:
-            for (i = 0; i < injected_js_num; i++) {
-                webkit_web_view_run_javascript(ctx->webView, injected_js[i], NULL, NULL, NULL);
-            }
-            break;
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
             ipc_write_simple(ctx, OPC_HANDLE_LOAD_FINISHED, NULL, 0);
@@ -178,11 +173,8 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             webkit_web_view_run_javascript(ctx->webView, packet.v, NULL, NULL, NULL);
             break;
         case OPC_INJECT_SCRIPT:
-            // WebKit2GTK does not come with a buil-in mechanism for running
-            // scripts before user ones, see web_view_load_changed_cb()
-            injected_js = realloc(injected_js, injected_js_num + 1);
-            injected_js[injected_js_num] = malloc(strlen(packet.v) + 1);
-            strcpy(injected_js[injected_js_num++], packet.v);
+            inject_script(ctx, packet.v);
+            break;
         default:
             break;
     }

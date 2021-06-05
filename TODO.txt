@@ -5,6 +5,7 @@ ALL PLATFORMS
 - JavaScript -> plugin messaging
 - Persistent state handling
 - Catch changes in res/ directory files and trigger Makefile resources target
+- window.alert(), window.confirm() and window.prompt() would be nice to have
 
 
 LINUX
