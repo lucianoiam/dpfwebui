@@ -25,6 +25,7 @@ typedef enum {
     OPC_REPARENT,
     OPC_RESIZE,
     OPC_RUN_SCRIPT,
+    OPC_INJECT_SCRIPT,
     // Plugin <- web view
     OPC_HANDLE_SCRIPT_MESSAGE,
     OPC_HANDLE_LOAD_FINISHED
