@@ -18,13 +18,11 @@
 #include <dlfcn.h>
 #include <libgen.h>
 #include <unistd.h>
-#include <cstdio>
-#include <cstdlib>
-#include <linux/limits.h>
+#include <sys/syslimits.h>
 
-#include "../common/Platform.hpp"
-#include "../common/log.h"
-#include "../common/macro.h"
+#include "base/Platform.hpp"
+#include "base/log.h"
+#include "base/macro.h"
 
 USE_NAMESPACE_DISTRHO
 
@@ -37,21 +35,6 @@ String platform::getBinaryDirectoryPath()
 
 String platform::getBinaryPath()
 {
-    // DISTRHO_PLUGIN_TARGET_* macros are not available here
-    // Is there a better way to differentiate we are being called from library or executable?
-    String libPath = getSharedLibraryPath();
-    void *handle = ::dlopen(libPath, RTLD_LAZY);
-    if (handle) {
-        ::dlclose(handle);
-        return libPath;
-    } else {
-         // dlopen() fails when running standalone
-        return getExecutablePath();     
-    }
-}
-
-String platform::getSharedLibraryPath()
-{
     Dl_info dl_info;
     if (::dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
         LOG_STDERR(::dlerror());
@@ -61,20 +44,31 @@ String platform::getSharedLibraryPath()
     }
 }
 
+String platform::getSharedLibraryPath()
+{
+    return getBinaryPath();
+}
+
 String platform::getExecutablePath()
 {
-    char path[PATH_MAX];
-    ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path) - 1);
-    if (len == -1) {
-        LOG_STDERR_ERRNO("Could not determine executable path");
-        return String();
-    } else {
-        return String(path);
-    }
+    return getBinaryPath();
 }
 
 String platform::getResourcePath()
 {
+    // There is no DPF method for querying plugin format during runtime
+    // Anyways the ideal solution is to modify the Makefile and rely on macros
+    // Mac VST is the only special case
+    char path[PATH_MAX];
+    ::strcpy(path, getSharedLibraryPath());
+    void *handle = ::dlopen(path, RTLD_NOLOAD);
+    if (handle != 0) {
+        void *addr = ::dlsym(handle, "VSTPluginMain");
+        ::dlclose(handle);
+        if (addr != 0) {
+            return String(::dirname(path)) + "/../Resources";
+        }
+    }
     return getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_resources";
 }
 
@@ -85,12 +79,5 @@ String platform::getTemporaryPath()
 
 float platform::getSystemDisplayScaleFactor()
 {
-    const char *dpi = ::getenv("GDK_DPI_SCALE");
-    if (dpi != 0) {
-        float k;
-        if (sscanf(dpi, "%f", &k) == 1) {
-            return k;
-        }
-    }
-    return 1.f;
+    return 1.f; // not implemented
 }

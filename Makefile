@@ -27,27 +27,27 @@ SRC_FILES_DSP = \
 
 SRC_FILES_UI  = \
     WebUI.cpp \
-    common/BaseWebView.cpp
+    base/BaseWebView.cpp
 
 # Note this is not DPF's Makefile.base.mk
 include Makefile.base.mk
 
 # Add platform-specific source files
 ifeq ($(LINUX),true)
-SRC_FILES_UI += linux/ExternalGtkWebView.cpp \
-                linux/PlatformLinux.cpp \
-                linux/ipc.c
+SRC_FILES_UI += arch/linux/ExternalGtkWebView.cpp \
+                arch/linux/PlatformLinux.cpp \
+                arch/linux/ipc.c
 endif
 ifeq ($(MACOS),true)
-SRC_FILES_UI += macos/CocoaWebView.mm \
-                macos/PlatformMac.cpp
+SRC_FILES_UI += arch/macos/CocoaWebView.mm \
+                arch/macos/PlatformMac.cpp
 endif
 ifeq ($(WINDOWS),true)
-SRC_FILES_UI += windows/EdgeWebView.cpp \
-                windows/WebView2EventHandler.cpp \
-                windows/WinApiStub.cpp \
-                windows/PlatformWindows.cpp \
-                windows/res/plugin.rc
+SRC_FILES_UI += arch/windows/EdgeWebView.cpp \
+                arch/windows/WebView2EventHandler.cpp \
+                arch/windows/WinApiStub.cpp \
+                arch/windows/PlatformWindows.cpp \
+                arch/windows/res/plugin.rc
 endif
 
 FILES_DSP = $(SRC_FILES_DSP:%=src/%)
@@ -119,7 +119,7 @@ ifeq ($(LINUX),true)
 TARGETS += lxhelper
 HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_helper
 
-lxhelper: src/linux/helper.c src/linux/ipc.c
+lxhelper: src/arch/linux/helper.c src/arch/linux/ipc.c
 	@echo "Creating helper"
 	$(SILENT)$(CC) $^ -Isrc -o $(HELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
