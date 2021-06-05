@@ -18,16 +18,17 @@
 
 #include "BaseWebView.hpp"
 
+#include <iostream>
+
+#define JS_CONSOLE_REDIRECT     "window.console = {log: (s) => window.webkit.messageHandlers.console_log.postMessage([s])};"
 #define JS_DISABLE_CONTEXT_MENU "window.oncontextmenu = (e) => e.preventDefault();"
 #define CSS_DISABLE_PINCH_ZOOM  "body { touch-action: pan-x pan-y; }"
 #define CSS_DISABLE_SELECTION   "body { user-select: none; -webkit-user-select: none; }"
 
-BaseWebView::BaseWebView(WebViewScriptMessageHandler& handler)
-    : fHandler(handler)
+void BaseWebView::redirectConsole()
 {
-    // TODO: insert console.log() implementation here after js->plugin comm is complete
     // Script runs before any user script starts running
-    // injectScript(...)
+    injectScript(String(JS_CONSOLE_REDIRECT));
 }
 
 void BaseWebView::loadFinished()
@@ -36,6 +37,15 @@ void BaseWebView::loadFinished()
     runScript(String(JS_DISABLE_CONTEXT_MENU));
     addStylesheet(String(CSS_DISABLE_PINCH_ZOOM));
     addStylesheet(String(CSS_DISABLE_SELECTION));
+}
+
+void BaseWebView::handleWebViewScriptMessage(String name, ScriptValue arg1, ScriptValue arg2)
+{
+    if (name == "console_log") {
+        std::cerr << static_cast<const char*>(arg1) << std::endl;
+    } else {
+        fHandler.handleWebViewScriptMessage(name, arg1, arg2);
+    }
 }
 
 void BaseWebView::addStylesheet(String source)

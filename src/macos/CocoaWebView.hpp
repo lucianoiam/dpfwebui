@@ -41,8 +41,17 @@ public:
     void runScript(String source) override;
     void injectScript(String source) override;
 
-    // Allow calling protected loadFinished() from the ObjC WKNavigationDelegate
-    void didFinishNavigation() { loadFinished(); }
+    // Allow calling some protected methods from the ObjC WKNavigationDelegate
+    
+    void didFinishNavigation()
+    {
+        loadFinished();
+    }
+
+    void didReceiveScriptMessage(String name, ScriptValue arg1, ScriptValue arg2)
+    {
+        handleWebViewScriptMessage(name, arg1, arg2);
+    }
 
 private:
     void *fView;
