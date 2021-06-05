@@ -173,7 +173,8 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             webkit_web_view_run_javascript(ctx->webView, packet.v, NULL, NULL, NULL);
             break;
         case OPC_INJECT_SCRIPT:
-            // WebKit2GTK does not come with a mechanism to run scripts before user ones
+            // WebKit2GTK does not come with a buil-in mechanism for running
+            // scripts before user ones, see web_view_load_changed_cb()
             if (injected_js) free(injected_js);
             injected_js = malloc(strlen(packet.v) + 1);
             strcpy(injected_js, packet.v);
