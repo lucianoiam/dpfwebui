@@ -45,10 +45,12 @@ static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
 
-static char *injected_js;
+static int    injected_js_num;
+static char **injected_js;
 
 int main(int argc, char* argv[])
 {
+    int i;
     helper_context_t ctx;
     ipc_conf_t conf;
     GIOChannel* channel;
@@ -78,9 +80,10 @@ int main(int argc, char* argv[])
     g_io_channel_shutdown(channel, TRUE, NULL);
     ipc_destroy(ctx.ipc);
 
-    if (injected_js) {
-        free(injected_js);
+    for (i = 0; i < injected_js_num; i++) {
+        free(injected_js[i]);
     }
+    free(injected_js);
 
     return 0;
 }
@@ -125,10 +128,12 @@ static void reparent(const helper_context_t *ctx, uintptr_t parentId)
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
 {
     helper_context_t *ctx = (helper_context_t *)data;
+    int i;
+
     switch (event) {
         case WEBKIT_LOAD_COMMITTED:
-            if (injected_js) {
-                webkit_web_view_run_javascript(ctx->webView, injected_js, NULL, NULL, NULL);
+            for (i = 0; i < injected_js_num; i++) {
+                webkit_web_view_run_javascript(ctx->webView, injected_js[i], NULL, NULL, NULL);
             }
             break;
         case WEBKIT_LOAD_FINISHED:
@@ -177,9 +182,9 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
         case OPC_INJECT_SCRIPT:
             // WebKit2GTK does not come with a buil-in mechanism for running
             // scripts before user ones, see web_view_load_changed_cb()
-            if (injected_js) free(injected_js);
-            injected_js = malloc(strlen(packet.v) + 1);
-            strcpy(injected_js, packet.v);
+            injected_js = realloc(injected_js, injected_js_num + 1);
+            injected_js[injected_js_num] = malloc(strlen(packet.v) + 1);
+            strcpy(injected_js[injected_js_num++], packet.v);
         default:
             break;
     }
