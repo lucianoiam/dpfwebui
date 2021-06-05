@@ -146,15 +146,12 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), clear);
     ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
     ICoreWebView2_add_NavigationCompleted(fView, this, 0);
-
     for (std::vector<String>::iterator it = fInjectedJs.begin(); it != fInjectedJs.end(); ++it) {
         ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, _LPCWSTR(*it), 0);
     }
-
     // Call pending setters
     resize(fSize);
     navigate(fUrl);
-
     return S_OK;
 }
 
