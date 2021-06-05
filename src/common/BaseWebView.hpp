@@ -38,7 +38,7 @@ public:
 class BaseWebView
 {
 public:
-    BaseWebView(WebViewScriptMessageHandler& handler) : fHandler(handler) {}
+    BaseWebView(WebViewScriptMessageHandler& handler);
     virtual ~BaseWebView() {};
 
     virtual void reparent(uintptr_t windowId) = 0;

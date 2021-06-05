@@ -18,14 +18,21 @@
 
 #include "BaseWebView.hpp"
 
-// TODO: maybe it is better to move all this to dpf.js and inject that script only
-
-#define JS_DISABLE_CONTEXT_MENU "document.body.setAttribute('oncontextmenu', 'event.preventDefault();');"
+#define JS_DISABLE_CONTEXT_MENU "window.oncontextmenu = (e) => e.preventDefault();"
 #define CSS_DISABLE_PINCH_ZOOM  "body { touch-action: pan-x pan-y; }"
 #define CSS_DISABLE_SELECTION   "body { user-select: none; -webkit-user-select: none; }"
 
+BaseWebView::BaseWebView(WebViewScriptMessageHandler& handler)
+    : fHandler(handler)
+{
+    // TODO: insert console.log() implementation here after js->plugin comm is complete
+    // Script runs before any user script starts running
+    // injectScript(...)
+}
+
 void BaseWebView::loadFinished()
 {
+    // User scripts may have started running already
     runScript(String(JS_DISABLE_CONTEXT_MENU));
     addStylesheet(String(CSS_DISABLE_PINCH_ZOOM));
     addStylesheet(String(CSS_DISABLE_SELECTION));
