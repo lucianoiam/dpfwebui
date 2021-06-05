@@ -45,9 +45,11 @@ public:
     void resize(const Size<uint>& size) override;
     void navigate(String url) override;
     void runScript(String source) override;
+    void injectScript(String source) override;
 
 private:
     ipc_t* ipc() const { return fIpc; }
+    int    ipcWriteString(helper_opcode_t opcode, String str);
     int    ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize); 
     void   ipcReadCallback(const tlv_t& message);
 

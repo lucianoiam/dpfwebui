@@ -117,14 +117,23 @@ void ExternalGtkWebView::resize(const Size<uint>& size)
 
 void ExternalGtkWebView::navigate(String url)
 {
-    const char *cUrl = static_cast<const char *>(url);
-    ipcWrite(OPC_NAVIGATE, cUrl, ::strlen(cUrl) + 1);
+    ipcWriteString(OPC_NAVIGATE, url);
 }
 
 void ExternalGtkWebView::runScript(String source)
 {
-    const char *js = static_cast<const char *>(source);
-    ipcWrite(OPC_RUN_SCRIPT, js, ::strlen(js) + 1);
+    ipcWriteString(OPC_RUN_SCRIPT, source);
+}
+
+void ExternalGtkWebView::injectScript(String source)
+{
+    ipcWriteString(OPC_INJECT_SCRIPT, source);
+}
+    
+int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str)
+{
+    const char *cStr = static_cast<const char *>(str);
+    return ipcWrite(opcode, cStr, ::strlen(cStr) + 1);
 }
 
 int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize)

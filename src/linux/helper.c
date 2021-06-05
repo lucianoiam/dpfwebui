@@ -45,6 +45,8 @@ static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
 
+static char *injected_js;
+
 int main(int argc, char* argv[])
 {
     helper_context_t ctx;
@@ -75,6 +77,10 @@ int main(int argc, char* argv[])
 
     g_io_channel_shutdown(channel, TRUE, NULL);
     ipc_destroy(ctx.ipc);
+
+    if (injected_js) {
+        free(injected_js);
+    }
 
     return 0;
 }
@@ -120,6 +126,11 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
 {
     helper_context_t *ctx = (helper_context_t *)data;
     switch (event) {
+        case WEBKIT_LOAD_COMMITTED:
+            if (injected_js) {
+                webkit_web_view_run_javascript(ctx->webView, injected_js, NULL, NULL, NULL);
+            }
+            break;
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
             ipc_write_simple(ctx, OPC_HANDLE_LOAD_FINISHED, NULL, 0);
@@ -149,24 +160,25 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     }
 
     switch (packet.t) {
-        case OPC_NAVIGATE: {
-            const char *url = (const char *)packet.v;
-            webkit_web_view_load_uri(ctx->webView, url);
+        case OPC_NAVIGATE:
+            webkit_web_view_load_uri(ctx->webView, packet.v);
             break;
-        }
-        case OPC_REPARENT: {
+        case OPC_REPARENT:
             reparent(ctx, *((uintptr_t *)packet.v));
             break;
-        }
         case OPC_RESIZE: {
             const helper_size_t *size = (const helper_size_t *)packet.v;
             gtk_window_resize(ctx->window, size->width, size->height);
             break;
         }
-        case OPC_RUN_SCRIPT: {
-            const char *js = (const char *)packet.v;
-            webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
-        }
+        case OPC_RUN_SCRIPT:
+            webkit_web_view_run_javascript(ctx->webView, packet.v, NULL, NULL, NULL);
+            break;
+        case OPC_INJECT_SCRIPT:
+            // WebKit2GTK does not come with a mechanism to run scripts before user ones
+            if (injected_js) free(injected_js);
+            injected_js = malloc(strlen(packet.v) + 1);
+            strcpy(injected_js, packet.v);
         default:
             break;
     }
