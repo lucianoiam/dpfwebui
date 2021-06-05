@@ -54,13 +54,10 @@ int ipc_read(ipc_t *ipc, tlv_t *packet)
     if (read(ipc->conf.fd_r, &packet->t, sizeof(packet->t)) != sizeof(packet->t)) {
         return -1;
     }
-
     if (read(ipc->conf.fd_r, &packet->l, sizeof(packet->l)) != sizeof(packet->l)) {
         return -1;
     }
-
     ipc_free_buf(ipc);
-    
     if (packet->l > 0) {
         ipc->buf = malloc(packet->l);
 
@@ -70,7 +67,6 @@ int ipc_read(ipc_t *ipc, tlv_t *packet)
         
         packet->v = ipc->buf;
     }
-
     return 0;
 }
 
@@ -79,15 +75,12 @@ int ipc_write(const ipc_t *ipc, const tlv_t *packet)
     if (write(ipc->conf.fd_w, &packet->t, sizeof(packet->t)) == -1) {
         return -1;
     }
-
     if (write(ipc->conf.fd_w, &packet->l, sizeof(packet->l)) == -1) {
         return -1;
     }
-    
     if ((packet->l > 0) && (write(ipc->conf.fd_w, packet->v, packet->l) == -1)) {
         return -1;
     }
-
     return 0;
 }
 
