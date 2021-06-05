@@ -22,6 +22,7 @@
 #define COBJMACROS
 
 #include <string>
+#include <vector>
 
 #include "WebView2.h"
 
@@ -69,12 +70,12 @@ private:
     ICoreWebView2Controller* fController;
     ICoreWebView2*           fView;
 
-    uintptr_t  fWindowId;
-    Size<uint> fSize;
-    String     fUrl;
-    String     fInjectJs;
-    WNDCLASS   fHelperClass;
-    HWND       fHelperHwnd;
+    uintptr_t           fWindowId;
+    Size<uint>          fSize;
+    String              fUrl;
+    std::vector<String> fInjectedJs;
+    WNDCLASS            fHelperClass;
+    HWND                fHelperHwnd;
     
 };
 
