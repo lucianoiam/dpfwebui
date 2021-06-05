@@ -103,11 +103,7 @@ void EdgeWebView::runScript(String source)
 
 void EdgeWebView::injectScript(String source)
 {
-    fInjectJs = source;
-    if (fView == 0) {
-        return; // later
-    }
-    ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, _LPCWSTR(fInjectJs), 0);
+    fInjectedJs.push_back(source);
 }
 
 void EdgeWebView::resize(const Size<uint>& size)
@@ -151,9 +147,12 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
     ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
     ICoreWebView2_add_NavigationCompleted(fView, this, 0);
 
+    for (std::vector<String>::iterator it = fInjectedJs.begin(); it != fInjectedJs.end(); ++it) {
+        ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, _LPCWSTR(*it), 0);
+    }
+
     // Call pending setters
     resize(fSize);
-    injectScript(fInjectJs);
     navigate(fUrl);
 
     return S_OK;
