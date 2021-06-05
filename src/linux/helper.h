@@ -38,4 +38,12 @@ typedef struct {
     unsigned height;
 } helper_size_t;
 
+typedef enum {
+    ARG_TYPE_NULL,
+    ARG_TYPE_FALSE,
+    ARG_TYPE_TRUE,
+    ARG_TYPE_DOUBLE,
+    ARG_TYPE_STRING
+} helper_msg_arg_type_t;
+
 #endif  // HELPER_H

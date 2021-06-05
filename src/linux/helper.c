@@ -38,6 +38,11 @@ typedef struct {
     WebKitWebView* webView;
 } helper_context_t;
 
+typedef struct {
+    char name[128]; 
+    helper_context_t* ctx;
+} helper_msg_handler_context_t;
+
 static void create_webview(helper_context_t *ctx);
 static void reparent(const helper_context_t *ctx, uintptr_t parentId);
 static void inject_script(const helper_context_t *ctx, const char* js);
@@ -46,6 +51,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
+static int serialize_jsc_value(JSCValue *value, void **buf, int buf_sz);
 
 int main(int argc, char* argv[])
 {
@@ -90,7 +96,7 @@ static void create_webview(helper_context_t *ctx)
         gtk_window_set_decorated(ctx->window, FALSE);
     }
     // Set up callback so that if the main window is closed, the program will exit
-    g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), NULL);
+    g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), ctx);
     // TODO: gtk_widget_override_background_color() is deprecated
     GdkRGBA color = {UNPACK_RGBA(DISTRHO_UI_BACKGROUND_COLOR, gdouble)};
 #pragma GCC diagnostic push
@@ -102,8 +108,13 @@ static void create_webview(helper_context_t *ctx)
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
+    // Listen to script messages
+    // TODO: move to a function that will be called from ExternalGtkWebView
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
-    g_signal_connect(manager, "script-message-received", G_CALLBACK(web_view_script_message_cb), NULL);
+    helper_msg_handler_context_t *handler_ctx = malloc(sizeof(helper_msg_handler_context_t));
+    handler_ctx->ctx = ctx;
+    strcpy(handler_ctx->name, "console_log");
+    g_signal_connect(manager, "script-message-received", G_CALLBACK(web_view_script_message_cb), handler_ctx);
     webkit_user_content_manager_register_script_message_handler(manager, "console_log");
 }
 
@@ -152,24 +163,28 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
 
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data)
 {
-    // TODO: create union typed_value_t for IPC transfer, also add a ScriptValue(typed_value_t) constructor
+    // Serialize JS values into type;value chunks. Available types are restricted to
+    // those defined by helper_msg_arg_type_t so there is no need to encode value sizes.
     gint32 jsArgsNum;
     JSCValue *jsArg;
     JSCValue *jsArgs = webkit_javascript_result_get_js_value(res);
-    if (!jsc_value_is_array(jsArgs)) {
-        webkit_javascript_result_unref(res);
-        return;
-    }
-    jsArgsNum = jsc_value_to_int32(jsc_value_object_get_property(jsArgs, "length"));
-    if (jsArgsNum > 0) {
-        jsArg = jsc_value_object_get_property_at_index(jsArgs, 0);
-        printf("arg1: %s\n", jsc_value_to_string(jsArg));
-        if (jsArgsNum > 1) {
-            jsArg = jsc_value_object_get_property_at_index(jsArgs, 1);
-            printf("arg2: %s\n", jsc_value_to_string(jsArg));
+    helper_msg_handler_context_t *handler_ctx = (helper_msg_handler_context_t *)data;
+    int payload_sz = strlen(handler_ctx->name) + 1;
+    void *payload = malloc(payload_sz);
+    strcpy(payload, handler_ctx->name);
+    if (jsc_value_is_array(jsArgs)) {
+        jsArgsNum = jsc_value_to_int32(jsc_value_object_get_property(jsArgs, "length"));
+        if (jsArgsNum > 0) {
+            jsArg = jsc_value_object_get_property_at_index(jsArgs, 0);
+            payload_sz += serialize_jsc_value(jsArg, &payload, payload_sz);
+            if (jsArgsNum > 1) {
+                jsArg = jsc_value_object_get_property_at_index(jsArgs, 1);
+                payload_sz += serialize_jsc_value(jsArg, &payload, payload_sz);
+            }
         }
     }
-    fflush(stdout);
+    ipc_write_simple(handler_ctx->ctx, OPC_HANDLE_SCRIPT_MESSAGE, payload, payload_sz);
+    free(payload);
     webkit_javascript_result_unref(res);
 }
 
@@ -222,4 +237,41 @@ static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const
         LOG_STDERR_ERRNO("Could not write to IPC channel");
     }
     return retval;
+}
+
+static int serialize_jsc_value(JSCValue *value, void **buf, int buf_sz)
+{
+    int new_buf_sz = buf_sz;
+    if (jsc_value_is_null(value) || jsc_value_is_undefined(value)) {
+        new_buf_sz += 1;
+        *buf = realloc(*buf, new_buf_sz);
+        *((char*)buf[buf_sz]) = (char)ARG_TYPE_NULL;
+        printf("+arg undefined\n");
+    } else if (jsc_value_is_boolean(value)) {
+        new_buf_sz += 1;
+        *buf = realloc(*buf, new_buf_sz);
+        if (jsc_value_to_boolean(value)) {
+            *((char*)buf[buf_sz]) = (char)ARG_TYPE_TRUE;
+            printf("+arg true\n");
+        } else {
+            *((char*)buf[buf_sz]) = (char)ARG_TYPE_FALSE;
+            printf("+arg false\n");
+        }
+    } else if (jsc_value_is_number(value)) {
+        // There is no way to make a distinction between int32 and double
+        new_buf_sz += 1 + sizeof(double);
+        *buf = realloc(*buf, new_buf_sz);
+        *((char*)buf[buf_sz++]) = (char)ARG_TYPE_DOUBLE;
+        *((double*)buf[buf_sz]) = jsc_value_to_double(value);
+        printf("+arg %.2g\n", *((double*)buf[buf_sz]));
+    } else if (jsc_value_is_string(value)) {
+        const char *s = jsc_value_to_string(value);
+        new_buf_sz += 1 + strlen(s);
+        *buf = realloc(*buf, new_buf_sz);
+        *((char*)buf[buf_sz++]) = (char)ARG_TYPE_STRING;
+        strcpy((char*)buf[buf_sz], s);
+        printf("+arg %s\n", (char*)buf[buf_sz]);
+    }
+    fflush(stdout);
+    return new_buf_sz;
 }
