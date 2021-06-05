@@ -22,8 +22,6 @@
 
 #define fWebView ((WKWebView*)fView)
 
-// NOTE: ARC is not available
-
 USE_NAMESPACE_DISTRHO
 
 @interface WebViewDelegate: NSObject<WKNavigationDelegate>
@@ -33,12 +31,21 @@ USE_NAMESPACE_DISTRHO
 CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
     : BaseWebView(handler)
 {
-    fView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    // Create configuration
+    WKUserScript *script = [[WKUserScript alloc] initWithSource:@"window.DPF = {message:'Hello World'};"
+        injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
+    WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
+    configuration.userContentController = [[WKUserContentController alloc] init];
+    [configuration.userContentController addUserScript:script];
+
+    // Create web view
+    fView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:configuration];
     [fWebView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     WebViewDelegate *delegate = [[WebViewDelegate alloc] init];
     delegate.cppView = this;
-    fWebView.navigationDelegate = delegate;
+    fWebView.navigationDelegate = delegate; // weak, no retain
     fWebView.hidden = YES;
+
     // Play safe when calling undocumented APIs 
     if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
         @try {
@@ -50,6 +57,11 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
             NSLog(@"Could not set transparent color for web view");
         }
     }
+
+    // ARC not available here
+    [configuration.userContentController release];
+    [configuration release];
+    [script release];
 }
 
 CocoaWebView::~CocoaWebView()
@@ -79,9 +91,7 @@ void CocoaWebView::navigate(String url)
 {
     NSString *urlStr = [[NSString alloc] initWithCString:url encoding:NSUTF8StringEncoding];
     NSURL *urlObj = [[NSURL alloc] initWithString:urlStr];
-    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:urlObj];
-    [fWebView loadRequest:request];
-    [request release];
+    [fWebView loadFileURL:urlObj allowingReadAccessToURL:urlObj];
     [urlObj release];
     [urlStr release];
 }
