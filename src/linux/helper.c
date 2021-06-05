@@ -181,7 +181,6 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
             }
         }
     }
-    fflush(stdout);
     ipc_write_simple(handler_ctx->ctx, OPC_HANDLE_SCRIPT_MESSAGE, payload, payload_sz);
     free(payload);
     webkit_javascript_result_unref(res);
@@ -273,5 +272,5 @@ static void serialize_jsc_value(JSCValue *value, char **buf, int *offset)
         //printf("Tx (str) %s\n", *buf+*offset);
         *offset += sz;
     }
-    fflush(stdout);
+    //fflush(stdout);
 }
