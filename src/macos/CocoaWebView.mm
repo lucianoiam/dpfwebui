@@ -56,7 +56,7 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
         }
     }
 
-    redirectConsole();
+    createConsole();
 }
 
 CocoaWebView::~CocoaWebView()

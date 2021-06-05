@@ -25,7 +25,7 @@
 #define CSS_DISABLE_PINCH_ZOOM  "body { touch-action: pan-x pan-y; }"
 #define CSS_DISABLE_SELECTION   "body { user-select: none; -webkit-user-select: none; }"
 
-void BaseWebView::redirectConsole()
+void BaseWebView::createConsole()
 {
     // Script runs before any user script starts running
     injectScript(String(JS_CONSOLE_REDIRECT));
