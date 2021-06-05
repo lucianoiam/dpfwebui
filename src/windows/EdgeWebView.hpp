@@ -72,6 +72,7 @@ private:
     uintptr_t  fWindowId;
     Size<uint> fSize;
     String     fUrl;
+    String     fInjectJs;
     WNDCLASS   fHelperClass;
     HWND       fHelperHwnd;
     

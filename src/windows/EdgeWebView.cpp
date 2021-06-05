@@ -32,6 +32,7 @@ USE_NAMESPACE_DISTRHO
 EdgeWebView::EdgeWebView(WebViewScriptMessageHandler& handler)
     : BaseWebView(handler)
     , fController(0)
+    , fView(0)
     , fWindowId(0)
     , fHelperHwnd(0)
 {
@@ -87,7 +88,7 @@ void EdgeWebView::reparent(uintptr_t windowId)
 void EdgeWebView::navigate(String url)
 {
     fUrl = url;
-    if (fController == 0) {
+    if (fView == 0) {
         return; // later
     }
     ICoreWebView2_Navigate(fView, _LPCWSTR(fUrl));
@@ -100,7 +101,11 @@ void EdgeWebView::runScript(String source)
 
 void EdgeWebView::injectScript(String source)
 {
-
+    fInjectJs = source;
+    if (fView == 0) {
+        return; // later
+    }
+    ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, _LPCWSTR(fInjectJs), 0);
 }
 
 void EdgeWebView::resize(const Size<uint>& size)
@@ -144,7 +149,9 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
     ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
     ICoreWebView2_add_NavigationCompleted(fView, this, 0);
 
+    // Call pending setters
     resize(fSize);
+    injectScript(fInjectJs);
     navigate(fUrl);
 
     return S_OK;
