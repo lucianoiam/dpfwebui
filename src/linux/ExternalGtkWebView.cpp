@@ -72,7 +72,7 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewScriptMessageHandler& handler)
         return;
     }
 
-    redirectConsole();
+    createConsole();
 }
 
 ExternalGtkWebView::~ExternalGtkWebView()

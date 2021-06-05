@@ -46,7 +46,7 @@ public:
     virtual void injectScript(String source) = 0;
 
 protected:
-    void redirectConsole();
+    void createConsole();
     void loadFinished();
     void handleWebViewScriptMessage(String name, ScriptValue arg1, ScriptValue arg2);
 
