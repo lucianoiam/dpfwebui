@@ -49,7 +49,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
-static int serialize_jsc_value(JSCValue *value, void **buf, int buf_sz);
+static void serialize_jsc_value(JSCValue *value, char **buf, int *offset);
 
 int main(int argc, char* argv[])
 {
@@ -168,19 +168,20 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
     JSCValue *jsArgs = webkit_javascript_result_get_js_value(res);
     helper_msg_handler_context_t *handler_ctx = (helper_msg_handler_context_t *)data;
     int payload_sz = strlen(handler_ctx->name) + 1;
-    void *payload = malloc(payload_sz);
+    char *payload = (char *)malloc(payload_sz);
     strcpy(payload, handler_ctx->name);
     if (jsc_value_is_array(jsArgs)) {
         jsArgsNum = jsc_value_to_int32(jsc_value_object_get_property(jsArgs, "length"));
         if (jsArgsNum > 0) {
             jsArg = jsc_value_object_get_property_at_index(jsArgs, 0);
-            payload_sz += serialize_jsc_value(jsArg, &payload, payload_sz);
+            serialize_jsc_value(jsArg, &payload, &payload_sz);
             if (jsArgsNum > 1) {
                 jsArg = jsc_value_object_get_property_at_index(jsArgs, 1);
-                payload_sz += serialize_jsc_value(jsArg, &payload, payload_sz);
+                serialize_jsc_value(jsArg, &payload, &payload_sz);
             }
         }
     }
+    fflush(stdout);
     ipc_write_simple(handler_ctx->ctx, OPC_HANDLE_SCRIPT_MESSAGE, payload, payload_sz);
     free(payload);
     webkit_javascript_result_unref(res);
@@ -237,39 +238,40 @@ static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const
     return retval;
 }
 
-static int serialize_jsc_value(JSCValue *value, void **buf, int buf_sz)
+static void serialize_jsc_value(JSCValue *value, char **buf, int *offset)
 {
-    int new_buf_sz = buf_sz;
     if (jsc_value_is_null(value) || jsc_value_is_undefined(value)) {
-        new_buf_sz += 1;
-        *buf = realloc(*buf, new_buf_sz);
-        *((char*)buf[buf_sz]) = (char)ARG_TYPE_NULL;
-        printf("+arg undefined\n");
+        *buf = (char *)realloc(*buf, *offset + 1);
+        *(*buf+*offset) = (char)ARG_TYPE_NULL;
+        *offset += 1;
+        //printf("Tx null\n");
     } else if (jsc_value_is_boolean(value)) {
-        new_buf_sz += 1;
-        *buf = realloc(*buf, new_buf_sz);
+        *buf = (char *)realloc(*buf, *offset + 1);
         if (jsc_value_to_boolean(value)) {
-            *((char*)buf[buf_sz]) = (char)ARG_TYPE_TRUE;
-            printf("+arg true\n");
+            *(*buf+*offset) = (char)ARG_TYPE_TRUE;
+            //printf("Tx true\n");
         } else {
-            *((char*)buf[buf_sz]) = (char)ARG_TYPE_FALSE;
-            printf("+arg false\n");
+            *(*buf+*offset) = (char)ARG_TYPE_FALSE;
+            //printf("Tx false\n");
         }
+        *offset += 1;
     } else if (jsc_value_is_number(value)) {
         // There is no way to make a distinction between int32 and double
-        new_buf_sz += 1 + sizeof(double);
-        *buf = realloc(*buf, new_buf_sz);
-        *((char*)buf[buf_sz++]) = (char)ARG_TYPE_DOUBLE;
-        *((double*)buf[buf_sz]) = jsc_value_to_double(value);
-        printf("+arg %.2g\n", *((double*)buf[buf_sz]));
+        *buf = (char *)realloc(*buf, *offset + 1 + sizeof(double));
+        *(*buf+*offset) = (char)ARG_TYPE_DOUBLE;
+        *offset += 1;
+        *(double *)(*buf+*offset) = jsc_value_to_double(value);
+        //printf("Tx %.2g\n", *(double *)(*buf+*offset));
+        *offset += sizeof(double);
     } else if (jsc_value_is_string(value)) {
         const char *s = jsc_value_to_string(value);
-        new_buf_sz += 1 + strlen(s);
-        *buf = realloc(*buf, new_buf_sz);
-        *((char*)buf[buf_sz++]) = (char)ARG_TYPE_STRING;
-        strcpy((char*)buf[buf_sz], s);
-        printf("+arg %s\n", (char*)buf[buf_sz]);
+        int sz = strlen(s) + 1;
+        *buf = (char *)realloc(*buf, *offset + 1 + sz);
+        *(*buf+*offset) = (char)ARG_TYPE_STRING;
+        *offset += 1;
+        strcpy(*buf+*offset, s);
+        //printf("Tx (str) %s\n", *buf+*offset);
+        *offset += sz;
     }
     fflush(stdout);
-    return new_buf_sz;
 }

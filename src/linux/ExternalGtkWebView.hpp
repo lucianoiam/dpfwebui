@@ -51,6 +51,9 @@ private:
     int    ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize); 
     void   ipcReadCallback(const tlv_t& message);
 
+    void        handleHelperScriptMessage(const char *payload, int payloadSize);
+    ScriptValue nextScriptValue(const char *payload, int *offset);
+
     int     fPipeFd[2][2];
     pid_t   fPid;
     ipc_t*  fIpc;
