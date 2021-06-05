@@ -73,6 +73,8 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewScriptMessageHandler& handler)
         LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
     }
+
+    redirectConsole();
 }
 
 ExternalGtkWebView::~ExternalGtkWebView()
