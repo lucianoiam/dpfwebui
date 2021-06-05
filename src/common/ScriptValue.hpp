@@ -29,7 +29,7 @@ class ScriptValue {
 public:
     ScriptValue()              : fNull(true) {};
     ScriptValue(bool b)        : fNull(false), fB(b) {};
-    ScriptValue(int32_t i)     : fNull(false), fI(i) {};
+    //ScriptValue(int32_t i)     : fNull(false), fI(i) {};
     ScriptValue(double d)      : fNull(false), fD(d) {};
     ScriptValue(String s)      : fNull(false), fS(s) {};
     ScriptValue(const char* s) : fNull(false), fS(String(s)) {};
@@ -37,7 +37,7 @@ public:
     bool isNull() const { return fNull; }
 
     operator bool()        const { return fB; }
-    operator int32_t()     const { return fI; }
+    //operator int32_t()     const { return fI; }
     operator double()      const { return fD; }
     operator String()      const { return fS; }
     operator const char*() const { return fS; }
@@ -45,7 +45,7 @@ public:
 private:
     bool    fNull;
     bool    fB;
-    int32_t fI;
+    //int32_t fI;
     double  fD;
     String  fS;
 

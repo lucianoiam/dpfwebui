@@ -39,6 +39,7 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
     [fWebView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     fWebView.hidden = YES;
     // Attach a ObjC object that responds to some web view callbacks
+    // TODO: move to separate register method
     WebViewDelegate *delegate = [[WebViewDelegate alloc] init];
     delegate.cppView = this;
     fWebView.navigationDelegate = delegate; // weak, no retain

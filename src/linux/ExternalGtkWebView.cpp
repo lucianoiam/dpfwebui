@@ -156,7 +156,61 @@ void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
     switch (static_cast<helper_opcode_t>(packet.t)) {
         case OPC_HANDLE_LOAD_FINISHED:
             loadFinished();
+            break;
+        case OPC_HANDLE_SCRIPT_MESSAGE:
+            handleHelperScriptMessage(static_cast<const char*>(packet.v), packet.l);
+            break;
         default:
+            break;
+    }
+}
+
+void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payloadSize)
+{
+    const char *name = payload;
+    int offset = ::strlen(name) + 1;
+    ScriptValue arg1, arg2;
+    if (offset < payloadSize) {
+        arg1 = nextScriptValue(payload, &offset);
+        if (offset < payloadSize) {
+            arg2 = nextScriptValue(payload, &offset);
+        }
+    }
+    handleWebViewScriptMessage(String(name), arg1, arg2);
+}
+
+ScriptValue ExternalGtkWebView::nextScriptValue(const char *payload, int *offset)
+{
+    // Not validating bytesLeft...
+    const char *typeAndValue = payload + *offset;
+    switch (typeAndValue[0]) {
+        case ARG_TYPE_NULL:
+            *offset += 1;
+            //::printf("Rx null\n");
+            return ScriptValue();
+            break;
+        case ARG_TYPE_FALSE:
+            //::printf("Rx false\n");
+            *offset += 1;
+            return ScriptValue(false);
+            break;
+        case ARG_TYPE_TRUE:
+            //::printf("Rx true\n");
+            *offset += 1;
+            return ScriptValue(true);
+            break;
+        case ARG_TYPE_DOUBLE:
+            //::printf("Rx %.2g\n", *reinterpret_cast<const double *>(typeAndValue + 1));
+            *offset += 1 + sizeof(double);
+            return ScriptValue(*reinterpret_cast<const double *>(typeAndValue + 1));
+            break;
+        case ARG_TYPE_STRING:
+            //::printf("Rx (str) %s\n", typeAndValue + 1);
+            *offset += 1 /*type*/ + ::strlen(typeAndValue + 1) + 1 /*null*/;
+            return ScriptValue(String(typeAndValue + 1));
+            break;
+        default:
+            return ScriptValue();
             break;
     }
 }
