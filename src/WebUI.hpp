@@ -25,13 +25,13 @@
 #include "DistrhoUI.hpp"
 
 #ifdef DISTRHO_OS_LINUX
-#include "linux/ExternalGtkWebView.hpp"
+#include "arch/linux/ExternalGtkWebView.hpp"
 #endif
 #ifdef DISTRHO_OS_MAC
-#include "macos/CocoaWebView.hpp"
+#include "arch/macos/CocoaWebView.hpp"
 #endif
 #ifdef DISTRHO_OS_WINDOWS
-#include "windows/EdgeWebView.hpp"
+#include "arch/windows/EdgeWebView.hpp"
 #endif
 
 START_NAMESPACE_DISTRHO

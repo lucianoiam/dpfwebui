@@ -24,7 +24,7 @@
 
 #include "extra/Thread.hpp"
 
-#include "../common/BaseWebView.hpp"
+#include "base/BaseWebView.hpp"
 
 #include "ipc.h"
 #include "helper.h"

@@ -28,7 +28,7 @@
 
 #include "WebView2.h"
 
-#include "../common/BaseWebView.hpp"
+#include "base/BaseWebView.hpp"
 #include "WebView2EventHandler.hpp"
 
 /*

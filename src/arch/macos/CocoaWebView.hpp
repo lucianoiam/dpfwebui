@@ -19,7 +19,7 @@
 #ifndef COCOAWEBVIEW_HPP
 #define COCOAWEBVIEW_HPP
 
-#include "../common/BaseWebView.hpp"
+#include "base/BaseWebView.hpp"
 
 // While it is possible to #import Obj-C headers here, that would force all
 // source files importing CocoaWebView.hpp to do so before any other project

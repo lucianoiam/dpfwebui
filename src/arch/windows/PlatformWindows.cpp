@@ -24,9 +24,9 @@
 #include <shlwapi.h>
 #include <shtypes.h>
 
-#include "../common/Platform.hpp"
-#include "../common/log.h"
-#include "../common/macro.h"
+#include "base/Platform.hpp"
+#include "base/log.h"
+#include "base/macro.h"
 
 #include "WinApiStub.hpp"
 

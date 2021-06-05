@@ -22,8 +22,8 @@
 #include "WebUI.hpp"
 #include "Window.hpp"
 
-#include "common/Platform.hpp"
-#include "common/macro.h"
+#include "base/Platform.hpp"
+#include "base/macro.h"
 
 USE_NAMESPACE_DISTRHO
 

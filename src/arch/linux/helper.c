@@ -25,9 +25,9 @@
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-#include "../DistrhoPluginInfo.h"
-#include "../common/log.h"
-#include "../common/macro.h"
+#include "base/log.h"
+#include "base/macro.h"
+#include "DistrhoPluginInfo.h"
 
 #include "ipc.h"
 
