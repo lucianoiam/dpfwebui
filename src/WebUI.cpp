@@ -43,6 +43,7 @@ WebUI::WebUI()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
     fWebView.resize(getSize());
+    fWebView.injectScript(String("window.DPF = {message:'Hello World'};"));
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
 }
 

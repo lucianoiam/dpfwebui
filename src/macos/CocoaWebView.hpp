@@ -39,6 +39,7 @@ public:
     void resize(const DGL::Size<uint>& size) override;
     void navigate(String url) override;
     void runScript(String source) override;
+    void injectScript(String source) override;
 
     // Allow calling protected loadFinished() from the ObjC WKNavigationDelegate
     void didFinishNavigation() { loadFinished(); }

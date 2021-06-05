@@ -22,6 +22,8 @@
 
 #define fWebView ((WKWebView*)fView)
 
+// NOTE: ARC is not available here
+
 USE_NAMESPACE_DISTRHO
 
 @interface WebViewDelegate: NSObject<WKNavigationDelegate>
@@ -31,21 +33,12 @@ USE_NAMESPACE_DISTRHO
 CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
     : BaseWebView(handler)
 {
-    // Create configuration
-    WKUserScript *script = [[WKUserScript alloc] initWithSource:@"window.DPF = {message:'Hello World'};"
-        injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
-    WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
-    configuration.userContentController = [[WKUserContentController alloc] init];
-    [configuration.userContentController addUserScript:script];
-
-    // Create web view
-    fView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:configuration];
+    fView = [[WKWebView alloc] initWithFrame:CGRectZero];
     [fWebView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     WebViewDelegate *delegate = [[WebViewDelegate alloc] init];
     delegate.cppView = this;
     fWebView.navigationDelegate = delegate; // weak, no retain
     fWebView.hidden = YES;
-
     // Play safe when calling undocumented APIs 
     if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
         @try {
@@ -57,11 +50,6 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
             NSLog(@"Could not set transparent color for web view");
         }
     }
-
-    // ARC not available here
-    [configuration.userContentController release];
-    [configuration release];
-    [script release];
 }
 
 CocoaWebView::~CocoaWebView()
@@ -100,6 +88,16 @@ void CocoaWebView::runScript(String source)
 {
     NSString *js = [[NSString alloc] initWithCString:source encoding:NSUTF8StringEncoding];
     [fWebView evaluateJavaScript:js completionHandler: nil];
+    [js release];
+}
+
+void CocoaWebView::injectScript(String source)
+{
+    NSString *js = [[NSString alloc] initWithCString:source encoding:NSUTF8StringEncoding];
+    WKUserScript *script = [[WKUserScript alloc] initWithSource:js
+        injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
+    [fWebView.configuration.userContentController addUserScript:script];
+    [script release];
     [js release];
 }
 
