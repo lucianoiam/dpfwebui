@@ -43,6 +43,7 @@ public:
     virtual void resize(const DGL::Size<uint>& size) = 0;
     virtual void navigate(String url) = 0;
     virtual void runScript(String source) = 0;
+    virtual void injectScript(String source) = 0;
 
 protected:
     WebViewScriptMessageHandler& handler() { return fHandler; }
