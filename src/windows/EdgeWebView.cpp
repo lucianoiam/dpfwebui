@@ -90,16 +90,17 @@ void EdgeWebView::navigate(String url)
     if (fController == 0) {
         return; // later
     }
-    ICoreWebView2* webView;
-    ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
-    ICoreWebView2_Navigate(webView, _LPCWSTR(fUrl));
+    ICoreWebView2_Navigate(fView, _LPCWSTR(fUrl));
 }
 
 void EdgeWebView::runScript(String source)
 {
-    ICoreWebView2* webView;
-    ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
-    ICoreWebView2_ExecuteScript(webView, _LPCWSTR(source), 0);
+    ICoreWebView2_ExecuteScript(fView, _LPCWSTR(source), 0);
+}
+
+void EdgeWebView::injectScript(String source)
+{
+
 }
 
 void EdgeWebView::resize(const Size<uint>& size)
@@ -140,9 +141,8 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
     COREWEBVIEW2_COLOR clear = {};
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), clear);
-    ICoreWebView2* webView;
-    ICoreWebView2Controller2_get_CoreWebView2(fController, &webView);
-    ICoreWebView2_add_NavigationCompleted(webView, this, 0);
+    ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
+    ICoreWebView2_add_NavigationCompleted(fView, this, 0);
 
     resize(fSize);
     navigate(fUrl);

@@ -52,6 +52,7 @@ public:
     void resize(const Size<uint>& size) override;
     void navigate(String url) override;
     void runScript(String source) override;
+    void injectScript(String source) override;
 
     // WebView2EventHandler
 
@@ -66,7 +67,8 @@ private:
     void errorMessageBox(std::wstring message, HRESULT result);
 
     ICoreWebView2Controller* fController;
-    
+    ICoreWebView2*           fView;
+
     uintptr_t  fWindowId;
     Size<uint> fSize;
     String     fUrl;
