@@ -36,7 +36,7 @@ public:
 class BaseWebView
 {
 public:
-    BaseWebView(WebViewScriptMessageHandler& handler);
+    BaseWebView(WebViewScriptMessageHandler& handler) : fHandler(handler) {}
     virtual ~BaseWebView() {};
 
     virtual void reparent(uintptr_t windowId) = 0;
@@ -46,9 +46,9 @@ public:
     virtual void injectScript(String source) = 0;
 
 protected:
-    WebViewScriptMessageHandler& handler() { return fHandler; }
-
+    void redirectConsole();
     void loadFinished();
+    void handleWebViewScriptMessage(String name, ScriptValue arg1, ScriptValue arg2);
 
 private:
     void addStylesheet(String source);

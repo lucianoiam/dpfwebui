@@ -25,11 +25,14 @@ START_NAMESPACE_DISTRHO
 
 class ScriptValue {
 public:
-    ScriptValue(bool b)        : fB(b) {};
-    ScriptValue(int32_t i)     : fI(i) {};
-    ScriptValue(double d)      : fD(d) {};
-    ScriptValue(String s)      : fS(s) {};
-    ScriptValue(const char* s) : fS(String(s)) {};
+    ScriptValue()              : fNull(true) {};
+    ScriptValue(bool b)        : fNull(false), fB(b) {};
+    ScriptValue(int32_t i)     : fNull(false), fI(i) {};
+    ScriptValue(double d)      : fNull(false), fD(d) {};
+    ScriptValue(String s)      : fNull(false), fS(s) {};
+    ScriptValue(const char* s) : fNull(false), fS(String(s)) {};
+
+    bool isNull() const { return fNull; }
 
     operator bool()        const { return fB; }
     operator int32_t()     const { return fI; }
@@ -38,6 +41,7 @@ public:
     operator const char*() const { return fS; }
 
 private:
+    bool    fNull;
     bool    fB;
     int32_t fI;
     double  fD;

@@ -26,19 +26,25 @@
 
 USE_NAMESPACE_DISTRHO
 
-@interface WebViewDelegate: NSObject<WKNavigationDelegate>
+@interface WebViewDelegate: NSObject<WKNavigationDelegate, WKScriptMessageHandler>
 @property (assign, nonatomic) CocoaWebView *cppView;
+- (ScriptValue)scriptValueFromObjCInstance:(id)obj;
 @end
 
 CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
     : BaseWebView(handler)
 {
+    // Create web view
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];
     [fWebView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    fWebView.hidden = YES;
+
+    // Attach a ObjC object that responds to some web view callbacks
     WebViewDelegate *delegate = [[WebViewDelegate alloc] init];
     delegate.cppView = this;
     fWebView.navigationDelegate = delegate; // weak, no retain
-    fWebView.hidden = YES;
+    [fWebView.configuration.userContentController addScriptMessageHandler:delegate name:@"console_log"];
+    
     // Play safe when calling undocumented APIs 
     if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
         @try {
@@ -50,6 +56,8 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
             NSLog(@"Could not set transparent color for web view");
         }
     }
+
+    redirectConsole();
 }
 
 CocoaWebView::~CocoaWebView()
@@ -107,6 +115,35 @@ void CocoaWebView::injectScript(String source)
 {
     self.cppView->didFinishNavigation();
     webView.hidden = NO;
+}
+
+- (void)userContentController:(WKUserContentController *)controller didReceiveScriptMessage:(WKScriptMessage *)message
+{
+    if (![message.body isKindOfClass:[NSArray class]]) {
+        return;
+    }
+
+    String name = String([message.name cStringUsingEncoding:NSUTF8StringEncoding]);
+    ScriptValue arg1, arg2;
+    NSArray *objcArgs = (NSArray *)message.body;
+
+    if (objcArgs.count > 0) {
+        arg1 = [self scriptValueFromObjCInstance:objcArgs[0]];
+        if (objcArgs.count > 1) {
+            arg2 = [self scriptValueFromObjCInstance:objcArgs[1]];
+        }
+    }
+
+    self.cppView->didReceiveScriptMessage(name, arg1, arg2);
+}
+
+- (ScriptValue)scriptValueFromObjCInstance:(id)obj
+{
+    if ([obj isKindOfClass:[NSString class]]) {
+        return ScriptValue([obj cStringUsingEncoding:NSUTF8StringEncoding]);
+    }
+
+    return ScriptValue(); // null
 }
 
 @end
