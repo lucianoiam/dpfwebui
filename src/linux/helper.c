@@ -39,8 +39,9 @@ typedef struct {
 static void create_webview(helper_context_t *ctx);
 static void reparent(const helper_context_t *ctx, uintptr_t parentId);
 static void inject_script(const helper_context_t *ctx, const char* js);
-static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
+static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
+static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
 
@@ -95,10 +96,13 @@ static void create_webview(helper_context_t *ctx)
     gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
 #pragma GCC diagnostic pop
     gtk_widget_show(GTK_WIDGET(ctx->window));
-
+    // Create web view
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
+    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
+    g_signal_connect(manager, "script-message-received", G_CALLBACK(web_view_script_message_cb), NULL);
+    webkit_user_content_manager_register_script_message_handler(manager, "console_log");
 }
 
 static void reparent(const helper_context_t *ctx, uintptr_t parentId)
@@ -125,6 +129,11 @@ static void inject_script(const helper_context_t *ctx, const char* js)
     webkit_user_script_unref(script);
 }
 
+static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)
+{
+    gtk_main_quit();
+}
+
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
 {
     helper_context_t *ctx = (helper_context_t *)data;
@@ -139,9 +148,27 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
     }
 }
 
-static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)
+static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data)
 {
-    gtk_main_quit();
+    // TODO: create union typed_value_t for IPC transfer, also add a ScriptValue(typed_value_t) constructor
+    gint32 jsArgsNum;
+    JSCValue *jsArg;
+    JSCValue *jsArgs = webkit_javascript_result_get_js_value(res);
+    if (!jsc_value_is_array(jsArgs)) {
+        webkit_javascript_result_unref(res);
+        return;
+    }
+    jsArgsNum = jsc_value_to_int32(jsc_value_object_get_property(jsArgs, "length"));
+    if (jsArgsNum > 0) {
+        jsArg = jsc_value_object_get_property_at_index(jsArgs, 0);
+        printf("arg1: %s\n", jsc_value_to_string(jsArg));
+        if (jsArgsNum > 1) {
+            jsArg = jsc_value_object_get_property_at_index(jsArgs, 1);
+            printf("arg2: %s\n", jsc_value_to_string(jsArg));
+        }
+    }
+    fflush(stdout);
+    webkit_javascript_result_unref(res);
 }
 
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
