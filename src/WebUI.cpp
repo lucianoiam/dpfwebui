@@ -41,7 +41,7 @@ WebUI::WebUI()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
     fWebView.resize(getSize());
-    fWebView.addScriptMessageHandler(String("dpf"));
+    fWebView.addScriptMessageHandler(String("DPF"));
     fWebView.injectScript(String("window._testString = 'Hello World';"));
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
 }
@@ -75,7 +75,7 @@ void WebUI::onResize(const ResizeEvent& ev)
 
 void WebUI::handleWebViewScriptMessage(String name, const ScriptMessageArguments& args)
 {
-    if ((name != "dpf") || args.empty()) {
+    if ((name != "DPF") || args.empty()) {
         return;
     }
     String method = args[0].asString();
