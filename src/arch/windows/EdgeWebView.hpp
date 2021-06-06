@@ -56,7 +56,6 @@ public:
     void navigate(String url) override;
     void runScript(String source) override;
     void injectScript(String source) override;
-    void addScriptMessageHandler(String name) override;
 
     // WebView2EventHandler
 
@@ -83,7 +82,6 @@ private:
     Size<uint>          fPSize;
     String              fPUrl;
     std::vector<String> fPInjectedScripts;
-    std::vector<String> fPMessageHandlers;
 
 };
 

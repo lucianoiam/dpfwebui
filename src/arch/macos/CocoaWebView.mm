@@ -46,7 +46,6 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
     fWebViewDelegate.cppView = this;
     fWebView.navigationDelegate = fWebViewDelegate;
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
-    injectScript(String(HOST_SHIM_JS));
     // Play safe when calling undocumented APIs 
     if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
         @try {
@@ -58,6 +57,7 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
             NSLog(@"Could not set transparent color for web view");
         }
     }
+    injectScript(String(HOST_SHIM_JS));
     createConsole();
 }
 

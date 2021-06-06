@@ -29,6 +29,7 @@
 #include "DistrhoPluginInfo.h"
 
 #define _LPCWSTR(s) std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s).c_str()
+#define HOST_SHIM_JS "window.webviewHost = {postMessage: (args) => window.chrome.webview.postMessage(args)};"
 
 USE_NAMESPACE_DISTRHO
 
@@ -56,6 +57,9 @@ EdgeWebView::EdgeWebView(WebViewScriptMessageHandler& handler)
         0, 0, 0, 0
     );
     ::ShowWindow(fHelperHwnd,  SW_SHOWNOACTIVATE);
+    
+    injectScript(String(HOST_SHIM_JS));
+    createConsole();
 }
 
 EdgeWebView::~EdgeWebView()
@@ -112,15 +116,6 @@ void EdgeWebView::injectScript(String source)
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, _LPCWSTR(source), 0);
 }
 
-void EdgeWebView::addScriptMessageHandler(String name)
-{
-    if (fController == 0) {
-        fPMessageHandlers.push_back(name);
-        return; // later
-    }
-    // TODO
-}
-
 void EdgeWebView::resize(const Size<uint>& size)
 {
     if (fController == 0) {
@@ -166,14 +161,10 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
     for (std::vector<String>::iterator it = fPInjectedScripts.begin(); it != fPInjectedScripts.end(); ++it) {
         injectScript(*it);
     }
-    for (std::vector<String>::iterator it = fPMessageHandlers.begin(); it != fPMessageHandlers.end(); ++ it) {
-        addScriptMessageHandler(*it);
-    }
     resize(fPSize);
     navigate(fPUrl);
     // Cleanup, handleWebViewControllerCompleted() will not be called again anyways
     fPInjectedScripts.clear();
-    fPMessageHandlers.clear();
     fPSize = {};
     fPUrl.clear();
     return S_OK;
@@ -194,11 +185,14 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     }
     return S_OK;
 }
-    
+
 HRESULT EdgeWebView::handleWebViewWebMessageReceived(ICoreWebView2 *sender,
                                                      ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
 {
-    // TODO
+    LPWSTR json;
+    ICoreWebView2WebMessageReceivedEventArgs_get_WebMessageAsJson(eventArgs, &json);
+    ::wprintf(L"%ls\n", json);
+    ::CoTaskMemFree(json);
     return S_OK;
 }
 
