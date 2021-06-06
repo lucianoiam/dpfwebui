@@ -167,43 +167,34 @@ void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payl
 {
     const char *name = payload;
     int offset = ::strlen(name) + 1;
-    ScriptValue arg1, arg2;
-    if (offset < payloadSize) {
-        arg1 = nextScriptValue(payload, &offset);
-        if (offset < payloadSize) {
-            arg2 = nextScriptValue(payload, &offset);
-        }
-    }
-    handleWebViewScriptMessage(String(name), arg1, arg2);
+	ScriptMessageArguments args;
+	while (offset < payloadSize) {
+		args.push_back(popScriptValue(payload, &offset));
+	}
+    handleWebViewScriptMessage(String(name), args);
 }
 
-ScriptValue ExternalGtkWebView::nextScriptValue(const char *payload, int *offset)
+ScriptValue ExternalGtkWebView::popScriptValue(const char *payload, int *offset)
 {
-    // Not validating bytesLeft...
+    // Not validating offset...
     const char *typeAndValue = payload + *offset;
     switch (typeAndValue[0]) {
         case ARG_TYPE_NULL:
             *offset += 1;
-            //::printf("Rx null\n");
             return ScriptValue();
             break;
         case ARG_TYPE_FALSE:
-            //::printf("Rx false\n");
             *offset += 1;
             return ScriptValue(false);
             break;
         case ARG_TYPE_TRUE:
-            //::printf("Rx true\n");
             *offset += 1;
             return ScriptValue(true);
             break;
-        case ARG_TYPE_DOUBLE:
-            //::printf("Rx %.2g\n", *reinterpret_cast<const double *>(typeAndValue + 1));
             *offset += 1 + sizeof(double);
             return ScriptValue(*reinterpret_cast<const double *>(typeAndValue + 1));
             break;
         case ARG_TYPE_STRING:
-            //::printf("Rx (str) %s\n", typeAndValue + 1);
             *offset += 1 /*type*/ + ::strlen(typeAndValue + 1) + 1 /*null*/;
             return ScriptValue(String(typeAndValue + 1));
             break;

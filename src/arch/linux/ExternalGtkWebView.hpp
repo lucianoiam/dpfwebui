@@ -52,7 +52,7 @@ private:
     void   ipcReadCallback(const tlv_t& message);
 
     void        handleHelperScriptMessage(const char *payload, int payloadSize);
-    ScriptValue nextScriptValue(const char *payload, int *offset);
+    ScriptValue popScriptValue(const char *payload, int *offset);
 
     int     fPipeFd[2][2];
     pid_t   fPid;
