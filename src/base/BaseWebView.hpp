@@ -29,7 +29,7 @@
 #define GET_BOOL_ARGUMENT(args)   GET_ARGUMENT(args).asBool()
 #define GET_DOUBLE_ARGUMENT(args) GET_ARGUMENT(args).asDouble()
 #define GET_STRING_ARGUMENT(args) GET_ARGUMENT(args).asString()
-#define POP_ARGUMENT(args)        (args.pop_front())
+#define POP_ARGUMENT(args)        {if (!args.empty()) args.pop_front();}
 
 START_NAMESPACE_DISTRHO
 

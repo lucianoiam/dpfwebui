@@ -80,12 +80,11 @@ void WebUI::handleWebViewScriptMessage(ScriptMessageArguments& args)
     String method = GET_STRING_ARGUMENT(args);
     POP_ARGUMENT(args);
     if (method == "editParameter") {
-        // uint32_t index, bool started
         uint32_t index = static_cast<uint32_t>(GET_DOUBLE_ARGUMENT(args));
         POP_ARGUMENT(args);
-        bool started = static_cast<uint32_t>(GET_BOOL_ARGUMENT(args));
+        bool started = static_cast<bool>(GET_BOOL_ARGUMENT(args));
         POP_ARGUMENT(args);
-        printf("%d %d\n", index, started);
+        editParameter(index, started);
     } else if (method == "setParameterValue") {
         // uint32_t index, float value
 #if DISTRHO_PLUGIN_WANT_STATE
