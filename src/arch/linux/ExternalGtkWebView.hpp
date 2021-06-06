@@ -38,7 +38,7 @@ class ExternalGtkWebView : public BaseWebView
 friend class IpcReadThread;
 
 public:
-    ExternalGtkWebView(WebViewScriptMessageHandler& handler);
+    ExternalGtkWebView(WebViewEventHandler& handler);
     ~ExternalGtkWebView();
 
     void reparent(uintptr_t windowId) override;

@@ -48,7 +48,7 @@ START_NAMESPACE_DISTRHO
 class EdgeWebView : public BaseWebView, edge::WebView2EventHandler
 {
 public:
-    EdgeWebView(WebViewScriptMessageHandler& handler);
+    EdgeWebView(WebViewEventHandler& handler);
     ~EdgeWebView();
 
     void reparent(uintptr_t windowId) override;

@@ -32,7 +32,7 @@ START_NAMESPACE_DISTRHO
 class CocoaWebView : public BaseWebView
 {
 public:
-    CocoaWebView(WebViewScriptMessageHandler& handler);
+    CocoaWebView(WebViewEventHandler& handler);
     ~CocoaWebView();
 
     void reparent(uintptr_t windowId) override;
@@ -43,8 +43,8 @@ public:
     
     // Allow calling some protected methods from the ObjC WKNavigationDelegate
     
-    void didFinishNavigation() { loadFinished(); }
-    void didReceiveScriptMessage(ScriptMessageArguments& args) { handleWebViewScriptMessage(args); }
+    void didFinishNavigation() { handleLoadFinished(); }
+    void didReceiveScriptMessage(ScriptMessageArguments& args) { handleScriptMessage(args); }
 
 private:
     void *fView;

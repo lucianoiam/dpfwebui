@@ -73,6 +73,11 @@ void WebUI::onResize(const ResizeEvent& ev)
     fWebView.resize(ev.size);
 }
 
+void WebUI::handleWebViewLoadFinished()
+{
+    // TODO - send state
+}
+
 void WebUI::handleWebViewScriptMessage(ScriptMessageArguments& args)
 {
     if (GET_STRING_ARGUMENT(args) != "DPF") {

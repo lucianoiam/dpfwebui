@@ -40,7 +40,7 @@ extern char **environ;
 
 USE_NAMESPACE_DISTRHO
 
-ExternalGtkWebView::ExternalGtkWebView(WebViewScriptMessageHandler& handler)
+ExternalGtkWebView::ExternalGtkWebView(WebViewEventHandler& handler)
     : BaseWebView(handler)
     , fPid(-1)
     , fIpc(nullptr)
@@ -158,7 +158,7 @@ void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
 {
     switch (static_cast<helper_opcode_t>(packet.t)) {
         case OPC_HANDLE_LOAD_FINISHED:
-            loadFinished();
+            handleLoadFinished();
             break;
         case OPC_HANDLE_SCRIPT_MESSAGE:
             handleHelperScriptMessage(static_cast<const char*>(packet.v), packet.l);
@@ -199,7 +199,7 @@ void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payl
                 break;
         }
     }
-    handleWebViewScriptMessage(args);
+    handleScriptMessage(args);
 }
 
 IpcReadThread::IpcReadThread(ExternalGtkWebView& view)
