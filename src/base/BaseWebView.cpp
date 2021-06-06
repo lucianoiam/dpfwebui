@@ -37,10 +37,11 @@ void BaseWebView::loadFinished()
     addStylesheet(String(CSS_DISABLE_SELECTION));
 }
 
-void BaseWebView::handleWebViewScriptMessage(const ScriptMessageArguments& args)
+void BaseWebView::handleWebViewScriptMessage(ScriptMessageArguments& args)
 {
-    if (args[0].asString() == "console.log") {
-        std::cerr << args[1].asString() << std::endl;
+    if (GET_STRING_ARGUMENT(args) == "console.log") {
+        POP_ARGUMENT(args);
+        std::cerr << GET_STRING_ARGUMENT(args) << std::endl;
     } else {
         fHandler.handleWebViewScriptMessage(args);
     }

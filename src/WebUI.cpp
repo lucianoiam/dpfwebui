@@ -71,13 +71,14 @@ void WebUI::onResize(const ResizeEvent& ev)
     fWebView.resize(ev.size);
 }
 
-void WebUI::handleWebViewScriptMessage(const ScriptMessageArguments& args)
+void WebUI::handleWebViewScriptMessage(ScriptMessageArguments& args)
 {
-    // TODO: use a macro for safely popping arguments
-    if (args[0].asString() != "DPF") {
+    if (GET_STRING_ARGUMENT(args) != "DPF") {
         return;
     }
-    String method = args[1].asString();
+    POP_ARGUMENT(args);
+    String method = GET_STRING_ARGUMENT(args);
+    POP_ARGUMENT(args);
     if (method == "editParameter") {
         // uint32_t index, bool started
     } else if (method == "setParameterValue") {

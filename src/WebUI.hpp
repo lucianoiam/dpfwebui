@@ -44,7 +44,7 @@ public:
 
     void parameterChanged(uint32_t index, float value) override;
 
-    void handleWebViewScriptMessage(const ScriptMessageArguments& args) override;
+    void handleWebViewScriptMessage(ScriptMessageArguments& args) override;
 
 protected:
     void onResize(const ResizeEvent& ev) override;
