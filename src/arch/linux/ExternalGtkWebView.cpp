@@ -170,42 +170,37 @@ void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
 
 void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payloadSize)
 {
-    int offset = 0;
+    // Should validate payload is never read past payloadSize 
     ScriptMessageArguments args;
+    int offset = 0;
     while (offset < payloadSize) {
-        args.push_back(popScriptValue(payload, &offset));
+        const char *type = payload + offset;
+        const char *value = type + 1;
+        switch (*type) {
+            case ARG_TYPE_FALSE:
+                offset += 1;
+                args.push_back(ScriptValue(false));
+                break;
+            case ARG_TYPE_TRUE:
+                offset += 1;
+                args.push_back(ScriptValue(true));
+                break;
+            case ARG_TYPE_DOUBLE:
+                offset += 1 + sizeof(double);
+                args.push_back(ScriptValue(*reinterpret_cast<const double *>(value)));
+                break;
+            case ARG_TYPE_STRING:
+                offset += 1 /*type*/ + ::strlen(value) + 1 /*\0*/;
+                args.push_back(ScriptValue(String(value)));
+                break;
+            default:
+                offset += 1;
+                args.push_back(ScriptValue()); // null
+                break;
+        }
     }
-    handleWebViewScriptMessage(args);
-}
-
-ScriptValue ExternalGtkWebView::popScriptValue(const char *payload, int *offset)
-{
-    // Not validating offset...
-    const char *typeAndValue = payload + *offset;
-    switch (typeAndValue[0]) {
-        case ARG_TYPE_NULL:
-            *offset += 1;
-            return ScriptValue();
-            break;
-        case ARG_TYPE_FALSE:
-            *offset += 1;
-            return ScriptValue(false);
-            break;
-        case ARG_TYPE_TRUE:
-            *offset += 1;
-            return ScriptValue(true);
-            break;
-        case ARG_TYPE_DOUBLE:
-            *offset += 1 + sizeof(double);
-            return ScriptValue(*reinterpret_cast<const double *>(typeAndValue + 1));
-            break;
-        case ARG_TYPE_STRING:
-            *offset += 1 /*type*/ + ::strlen(typeAndValue + 1) + 1 /*null*/;
-            return ScriptValue(String(typeAndValue + 1));
-            break;
-        default:
-            return ScriptValue();
-            break;
+    if (!args.empty()) {
+        handleWebViewScriptMessage(args);
     }
 }
 
