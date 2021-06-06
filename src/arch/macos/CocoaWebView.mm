@@ -43,7 +43,6 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
     WebViewDelegate *delegate = [[WebViewDelegate alloc] init];
     delegate.cppView = this;
     fWebView.navigationDelegate = delegate; // weak, no retain
-    [fWebView.configuration.userContentController addScriptMessageHandler:delegate name:@"console_log"];
     // Play safe when calling undocumented APIs 
     if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
         @try {
@@ -107,6 +106,13 @@ void CocoaWebView::injectScript(String source)
     [fWebView.configuration.userContentController addUserScript:script];
     [script release];
     [js release];
+}
+
+void CocoaWebView::addScriptMessageHandler(String name)
+{
+    NSString *nameStr = [[NSString alloc] initWithCString:name encoding:NSUTF8StringEncoding];
+    [fWebView.configuration.userContentController addScriptMessageHandler:delegate name:nameStr];
+    [nameStr release];
 }
 
 @implementation WebViewDelegate

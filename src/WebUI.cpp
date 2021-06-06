@@ -41,6 +41,7 @@ WebUI::WebUI()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
     fWebView.resize(getSize());
+    fWebView.addScriptMessageHandler(String("dpf"));
     fWebView.injectScript(String("window._testString = 'Hello World';"));
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
 }
@@ -74,14 +75,19 @@ void WebUI::onResize(const ResizeEvent& ev)
 
 void WebUI::handleWebViewScriptMessage(String name, const ScriptMessageArguments& args)
 {
-    (void)args;
+    if ((name != "dpf") || args.empty()) {
+        return;
+    }
+    String method = args[0].asString();
     // TODO
-    if (name == "editParameter") {
+    if (method == "editParameter") {
         // uint32_t index, bool started
-    } else if (name == "setParameterValue") {
+    } else if (method == "setParameterValue") {
         // uint32_t index, float value
+        ::printf("%s(%u,%.2f)\n", static_cast<const char*>(method),
+            static_cast<uint32_t>(args[1].asDouble()), static_cast<float>(args[2].asDouble()));
 #if DISTRHO_PLUGIN_WANT_STATE
-    } else if (name == "setState") {
+    } else if (method == "setState") {
         // const char* key, const char* value
 #endif
     }
