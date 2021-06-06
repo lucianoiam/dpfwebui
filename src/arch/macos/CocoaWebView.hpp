@@ -46,9 +46,9 @@ public:
         loadFinished();
     }
 
-    void didReceiveScriptMessage(String name, ScriptValue arg1, ScriptValue arg2)
+    void didReceiveScriptMessage(String name, const ScriptMessageArguments& args)
     {
-        handleWebViewScriptMessage(name, arg1, arg2);
+        handleWebViewScriptMessage(name, args);
     }
 
 private:

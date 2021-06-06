@@ -18,6 +18,7 @@
 #define BASEWEBVIEW_HPP
 
 #include <cstdint>
+#include <vector>
 
 #include "dgl/Geometry.hpp"
 #include "extra/String.hpp"
@@ -26,10 +27,12 @@
 
 START_NAMESPACE_DISTRHO
 
+typedef std::vector<ScriptValue> ScriptMessageArguments;
+
 class WebViewScriptMessageHandler
 {
 public:
-    virtual void handleWebViewScriptMessage(String name, ScriptValue arg1, ScriptValue arg2) = 0;
+    virtual void handleWebViewScriptMessage(String name, const ScriptMessageArguments& args) = 0;
 
 };
 
@@ -48,7 +51,7 @@ public:
 protected:
     void createConsole();
     void loadFinished();
-    void handleWebViewScriptMessage(String name, ScriptValue arg1, ScriptValue arg2);
+    void handleWebViewScriptMessage(String name, const ScriptMessageArguments& args);
 
 private:
     void addStylesheet(String source);

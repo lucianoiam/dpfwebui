@@ -72,10 +72,9 @@ void WebUI::onResize(const ResizeEvent& ev)
     fWebView.resize(ev.size);
 }
 
-void WebUI::handleWebViewScriptMessage(String name, ScriptValue arg1, ScriptValue arg2)
+void WebUI::handleWebViewScriptMessage(String name, const ScriptMessageArguments& args)
 {
-    (void)arg1;
-    (void)arg2;
+    (void)args;
     // TODO
     if (name == "editParameter") {
         // uint32_t index, bool started
