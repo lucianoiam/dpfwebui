@@ -26,8 +26,8 @@
 
 #include "base/Platform.hpp"
 #include "base/log.h"
+#include "extra/cJSON.h"
 #include "DistrhoPluginInfo.h"
-#include "cJSON.h"
 
 #define _LPCWSTR(s) std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s).c_str()
 #define _LPCSTR(s)  std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(s).c_str()

@@ -44,10 +44,10 @@ SRC_FILES_UI += arch/macos/CocoaWebView.mm \
 endif
 ifeq ($(WINDOWS),true)
 SRC_FILES_UI += arch/windows/EdgeWebView.cpp \
-                arch/windows/WebView2EventHandler.cpp \
-                arch/windows/WinApiStub.cpp \
                 arch/windows/PlatformWindows.cpp \
-                arch/windows/cJSON.c \
+                arch/windows/extra/WebView2EventHandler.cpp \
+                arch/windows/extra/WinApiStub.cpp \
+                arch/windows/extra/cJSON.c \
                 arch/windows/res/plugin.rc
 endif
 
