@@ -31,7 +31,6 @@ USE_NAMESPACE_DISTRHO
 
 @interface WebViewDelegate: NSObject<WKNavigationDelegate, WKScriptMessageHandler>
 @property (assign, nonatomic) CocoaWebView *cppView;
-- (ScriptValue)scriptValueFromObjCInstance:(id)obj;
 @end
 
 CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
@@ -126,23 +125,17 @@ void CocoaWebView::injectScript(String source)
     }
     ScriptMessageArguments args;
     for (id objcArg : (NSArray *)message.body) {
-        args.push_back([self scriptValueFromObjCInstance:objcArg]);
+        if (CFGetTypeID(objcArg) == CFBooleanGetTypeID()) {
+            args.push_back(ScriptValue(static_cast<bool>([objcArg boolValue])));
+        } else if ([objcArg isKindOfClass:[NSNumber class]]) {
+            args.push_back(ScriptValue([objcArg doubleValue]));
+        } else if ([objcArg isKindOfClass:[NSString class]]) {
+            args.push_back(ScriptValue(String([objcArg cStringUsingEncoding:NSUTF8StringEncoding])));
+        } else {
+            args.push_back(ScriptValue()); // null
+        }
     }
     self.cppView->didReceiveScriptMessage(args);
-}
-
-- (ScriptValue)scriptValueFromObjCInstance:(id)obj
-{
-    if ([obj isKindOfClass:[NSNull class]]) {
-        return ScriptValue();
-    } else if (CFGetTypeID(obj) == CFBooleanGetTypeID()) {
-        return ScriptValue(static_cast<bool>([obj boolValue]));
-    } else if ([obj isKindOfClass:[NSNumber class]]) {
-        return ScriptValue([obj doubleValue]);
-    } else if ([obj isKindOfClass:[NSString class]]) {
-        return ScriptValue(String([obj cStringUsingEncoding:NSUTF8StringEncoding]));
-    }
-    return ScriptValue(); // null
 }
 
 @end
