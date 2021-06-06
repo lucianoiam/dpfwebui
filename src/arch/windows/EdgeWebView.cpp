@@ -161,6 +161,7 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), clear);
     ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
     ICoreWebView2_add_NavigationCompleted(fView, this, 0);
+    ICoreWebView2_add_WebMessageReceived(fView, this, 0);
     // Call pending setters
     for (std::vector<String>::iterator it = fPInjectedScripts.begin(); it != fPInjectedScripts.end(); ++it) {
         injectScript(*it);
@@ -191,6 +192,13 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
             fPWindowId = 0;
         }
     }
+    return S_OK;
+}
+    
+HRESULT EdgeWebView::handleWebViewWebMessageReceived(ICoreWebView2 *sender,
+                                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
+{
+    // TODO
     return S_OK;
 }
 

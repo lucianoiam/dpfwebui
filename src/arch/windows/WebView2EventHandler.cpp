@@ -85,9 +85,9 @@ static ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerVtbl Vtbl_Contro
 
 static HRESULT STDMETHODCALLTYPE Impl_NavigationCompletedEventHandler(
     ICoreWebView2NavigationCompletedEventHandler* This,
-    ICoreWebView2 *sender, ICoreWebView2NavigationCompletedEventArgs *args)
+    ICoreWebView2 *sender, ICoreWebView2NavigationCompletedEventArgs *eventArgs)
 {
-    return pInstance->handleWebViewNavigationCompleted(sender, args);
+    return pInstance->handleWebViewNavigationCompleted(sender, eventArgs);
 }
 
 static ICoreWebView2NavigationCompletedEventHandlerVtbl Vtbl_NavigationCompletedEventHandler = {
@@ -98,8 +98,26 @@ static ICoreWebView2NavigationCompletedEventHandlerVtbl Vtbl_NavigationCompleted
 };
 
 
+// WebMessageReceivedEvent
+
+static HRESULT STDMETHODCALLTYPE Impl_WebMessageReceivedEventHandler(
+    ICoreWebView2WebMessageReceivedEventHandler* This,
+    ICoreWebView2 *sender, ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
+{
+    return pInstance->handleWebViewWebMessageReceived(sender, eventArgs);
+}
+
+static ICoreWebView2WebMessageReceivedEventHandlerVtbl Vtbl_WebMessageReceivedEventHandler = {
+    Null_QueryInterface,
+    Null_AddRef,
+    Null_Release,
+    Impl_WebMessageReceivedEventHandler,
+};
+
+
 WebView2EventHandler::WebView2EventHandler()
     : ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler { &Vtbl_EnvironmentCompletedHandler }
     , ICoreWebView2CreateCoreWebView2ControllerCompletedHandler { &Vtbl_ControllerCompletedHandler }
     , ICoreWebView2NavigationCompletedEventHandler { &Vtbl_NavigationCompletedEventHandler }
+    , ICoreWebView2WebMessageReceivedEventHandler { &Vtbl_WebMessageReceivedEventHandler }
 {}
