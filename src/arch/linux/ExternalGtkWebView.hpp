@@ -26,7 +26,7 @@
 
 #include "base/BaseWebView.hpp"
 
-#include "ipc.h"
+#include "extra/ipc.h"
 #include "helper.h"
 
 #define WEBVIEW_CLASS ExternalGtkWebView

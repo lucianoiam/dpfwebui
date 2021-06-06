@@ -36,7 +36,7 @@ include Makefile.base.mk
 ifeq ($(LINUX),true)
 SRC_FILES_UI += arch/linux/ExternalGtkWebView.cpp \
                 arch/linux/PlatformLinux.cpp \
-                arch/linux/ipc.c
+                arch/linux/extra/ipc.c
 endif
 ifeq ($(MACOS),true)
 SRC_FILES_UI += arch/macos/CocoaWebView.mm \
@@ -120,7 +120,7 @@ ifeq ($(LINUX),true)
 TARGETS += lxhelper
 HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_helper
 
-lxhelper: src/arch/linux/helper.c src/arch/linux/ipc.c
+lxhelper: src/arch/linux/helper.c src/arch/linux/extra/ipc.c
 	@echo "Creating helper"
 	$(SILENT)$(CC) $^ -Isrc -o $(HELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
