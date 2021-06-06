@@ -57,14 +57,14 @@ public:
 
     // WebView2EventHandler
 
-    HRESULT handleWebViewEnvironmentCompleted(HRESULT result,
-                                              ICoreWebView2Environment* environment) override;
-    HRESULT handleWebViewControllerCompleted(HRESULT result,
-                                             ICoreWebView2Controller* controller) override;
-    HRESULT handleWebViewNavigationCompleted(ICoreWebView2 *sender,
-                                             ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
-    HRESULT handleWebViewWebMessageReceived(ICoreWebView2 *sender,
-                                            ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
+    HRESULT handleWebView2EnvironmentCompleted(HRESULT result,
+                                               ICoreWebView2Environment* environment) override;
+    HRESULT handleWebView2ControllerCompleted(HRESULT result,
+                                              ICoreWebView2Controller* controller) override;
+    HRESULT handleWebView2NavigationCompleted(ICoreWebView2 *sender,
+                                              ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
+    HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
+                                             ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
 private:
     void errorMessageBox(std::wstring message, HRESULT result);

@@ -33,32 +33,32 @@ public:
     WebView2EventHandler();
     virtual ~WebView2EventHandler() {};
 
-    virtual HRESULT handleWebViewEnvironmentCompleted(HRESULT result,
-                                                      ICoreWebView2Environment* environment)
+    virtual HRESULT handleWebView2EnvironmentCompleted(HRESULT result,
+                                                       ICoreWebView2Environment* environment)
     {
         (void)result;
         (void)environment;
         return S_OK;
     }
 
-    virtual HRESULT handleWebViewControllerCompleted(HRESULT result,
-                                                     ICoreWebView2Controller* controller)
+    virtual HRESULT handleWebView2ControllerCompleted(HRESULT result,
+                                                      ICoreWebView2Controller* controller)
     {
         (void)result;
         (void)controller;
         return S_OK;
     }
 
-    virtual HRESULT handleWebViewNavigationCompleted(ICoreWebView2 *sender,
-                                                     ICoreWebView2NavigationCompletedEventArgs *eventArgs)
+    virtual HRESULT handleWebView2NavigationCompleted(ICoreWebView2 *sender,
+                                                      ICoreWebView2NavigationCompletedEventArgs *eventArgs)
     {
         (void)sender;
         (void)eventArgs;
         return S_OK;
     }
 
-    virtual HRESULT handleWebViewWebMessageReceived(ICoreWebView2 *sender,
-                                                    ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
+    virtual HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
+                                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
     {
         (void)sender;
         (void)eventArgs;

@@ -128,8 +128,8 @@ void EdgeWebView::resize(const Size<uint>& size)
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
-HRESULT EdgeWebView::handleWebViewEnvironmentCompleted(HRESULT result,
-                                                       ICoreWebView2Environment* environment)
+HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
+                                                        ICoreWebView2Environment* environment)
 {
     if (FAILED(result)) {
         errorMessageBox(L"Could not create WebView2 environment", result);
@@ -139,8 +139,8 @@ HRESULT EdgeWebView::handleWebViewEnvironmentCompleted(HRESULT result,
     return S_OK;
 }
 
-HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
-                                                      ICoreWebView2Controller* controller)
+HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
+                                                       ICoreWebView2Controller* controller)
 {
     if (FAILED(result)) {
         errorMessageBox(L"Could not create WebView2 controller", result);
@@ -170,8 +170,8 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
     return S_OK;
 }
 
-HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
-                                                      ICoreWebView2NavigationCompletedEventArgs *eventArgs)
+HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
+                                                       ICoreWebView2NavigationCompletedEventArgs *eventArgs)
 {
     (void)sender;
     (void)eventArgs;
@@ -186,8 +186,8 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     return S_OK;
 }
 
-HRESULT EdgeWebView::handleWebViewWebMessageReceived(ICoreWebView2 *sender,
-                                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
+HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
+                                                      ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
 {
     // Edge WebView2 does not provide access to JavaScriptCore values
     (void)sender;
