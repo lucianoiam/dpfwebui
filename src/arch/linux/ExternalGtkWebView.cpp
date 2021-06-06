@@ -135,13 +135,13 @@ void ExternalGtkWebView::injectScript(String source)
     ipcWriteString(OPC_INJECT_SCRIPT, source);
 }
 
-int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str)
+int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str) const
 {
     const char *cStr = static_cast<const char *>(str);
     return ipcWrite(opcode, cStr, ::strlen(cStr) + 1);
 }
 
-int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize)
+int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize) const
 {
     tlv_t packet;
     packet.t = static_cast<short>(opcode);
