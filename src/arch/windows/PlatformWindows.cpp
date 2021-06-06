@@ -26,7 +26,7 @@
 #include "base/log.h"
 #include "base/macro.h"
 
-#include "WinApiStub.hpp"
+#include "extra/WinApiStub.hpp"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 

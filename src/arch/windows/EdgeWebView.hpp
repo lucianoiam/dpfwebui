@@ -27,7 +27,7 @@
 #include "WebView2.h"
 
 #include "base/BaseWebView.hpp"
-#include "WebView2EventHandler.hpp"
+#include "extra/WebView2EventHandler.hpp"
 
 /*
   The easy way to work with WebView2 requires WIL - "Windows Implementation Library"
