@@ -104,6 +104,11 @@ void EdgeWebView::injectScript(String source)
     fInjectedJs.push_back(source);
 }
 
+void EdgeWebView::addScriptMessageHandler(String name)
+{
+    // TODO
+}
+
 void EdgeWebView::resize(const Size<uint>& size)
 {
     fSize = size;

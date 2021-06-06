@@ -54,6 +54,7 @@ public:
     void navigate(String url) override;
     void runScript(String source) override;
     void injectScript(String source) override;
+    void addScriptMessageHandler(String name) override;
 
     // WebView2EventHandler
 
