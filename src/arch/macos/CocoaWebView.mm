@@ -20,7 +20,8 @@
 
 #include "CocoaWebView.hpp"
 
-#define fWebView ((WKWebView*)fView)
+#define fWebView         ((WKWebView*)fView)
+#define fWebViewDelegate ((WebViewDelegate*)fDelegate)
 
 // NOTE: ARC is not available here
 
@@ -38,11 +39,10 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];
     [fWebView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     fWebView.hidden = YES;
-    // Attach a ObjC object that responds to some web view callbacks
-    // TODO: move to separate register method
-    WebViewDelegate *delegate = [[WebViewDelegate alloc] init];
-    delegate.cppView = this;
-    fWebView.navigationDelegate = delegate; // weak, no retain
+    // Create a ObjC object that responds to some web view callbacks
+    fDelegate = [[WebViewDelegate alloc] init];
+    fWebViewDelegate.cppView = this;
+    fWebView.navigationDelegate = fWebViewDelegate;
     // Play safe when calling undocumented APIs 
     if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
         @try {
@@ -60,9 +60,9 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
 
 CocoaWebView::~CocoaWebView()
 {
-    [fWebView.navigationDelegate release];
     [fWebView removeFromSuperview];
     [fWebView release];
+    [fWebViewDelegate release];
 }
 
 void CocoaWebView::reparent(uintptr_t windowId)
@@ -111,7 +111,7 @@ void CocoaWebView::injectScript(String source)
 void CocoaWebView::addScriptMessageHandler(String name)
 {
     NSString *nameStr = [[NSString alloc] initWithCString:name encoding:NSUTF8StringEncoding];
-    [fWebView.configuration.userContentController addScriptMessageHandler:delegate name:nameStr];
+    [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:nameStr];
     [nameStr release];
 }
 
@@ -131,15 +131,21 @@ void CocoaWebView::addScriptMessageHandler(String name)
     String name = String([message.name cStringUsingEncoding:NSUTF8StringEncoding]);
     ScriptMessageArguments args;
     for (id objcArg : (NSArray *)message.body) {
-    	args.push_back([self scriptValueFromObjCInstance:objcArg]);
+        args.push_back([self scriptValueFromObjCInstance:objcArg]);
     }
     self.cppView->didReceiveScriptMessage(name, args);
 }
 
 - (ScriptValue)scriptValueFromObjCInstance:(id)obj
 {
-    if ([obj isKindOfClass:[NSString class]]) {
-        return ScriptValue([obj cStringUsingEncoding:NSUTF8StringEncoding]);
+    if ([obj isKindOfClass:[NSNull class]]) {
+        return ScriptValue();
+    } else if (CFGetTypeID(obj) == CFBooleanGetTypeID()) {
+        return ScriptValue(static_cast<bool>([obj boolValue]));
+    } else if ([obj isKindOfClass:[NSNumber class]]) {
+        return ScriptValue([obj doubleValue]);
+    } else if ([obj isKindOfClass:[NSString class]]) {
+        return ScriptValue(String([obj cStringUsingEncoding:NSUTF8StringEncoding]));
     }
     return ScriptValue(); // null
 }

@@ -54,6 +54,7 @@ public:
 
 private:
     void *fView;
+    void *fDelegate;
 
 };
 
