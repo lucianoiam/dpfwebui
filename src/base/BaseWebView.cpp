@@ -20,7 +20,7 @@
 
 #include <iostream>
 
-#define JS_CONSOLE_REDIRECT     "window.console = {log: (s) => window.webkit.messageHandlers.console_log.postMessage([String(s)])};"
+#define JS_CONSOLE_OUTPUT       "window.console = {log: (s) => window.webkit.messageHandlers.console_log.postMessage([String(s)])};"
 #define JS_DISABLE_CONTEXT_MENU "window.oncontextmenu = (e) => e.preventDefault();"
 #define CSS_DISABLE_PINCH_ZOOM  "body { touch-action: pan-x pan-y; }"
 #define CSS_DISABLE_SELECTION   "body { user-select: none; -webkit-user-select: none; }"
@@ -29,7 +29,7 @@ void BaseWebView::createConsole()
 {
     // Injected scripts run before any user script starts running
     addScriptMessageHandler(String("console_log"));
-    injectScript(String(JS_CONSOLE_REDIRECT));
+    injectScript(String(JS_CONSOLE_OUTPUT));
 }
 
 void BaseWebView::loadFinished()
