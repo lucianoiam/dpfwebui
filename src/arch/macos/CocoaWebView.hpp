@@ -41,15 +41,8 @@ public:
     
     // Allow calling some protected methods from the ObjC WKNavigationDelegate
     
-    void didFinishNavigation()
-    {
-        loadFinished();
-    }
-
-    void didReceiveScriptMessage(const ScriptMessageArguments& args)
-    {
-        handleWebViewScriptMessage(args);
-    }
+    void didFinishNavigation() { loadFinished(); }
+    void didReceiveScriptMessage(const ScriptMessageArguments& args) { handleWebViewScriptMessage(args); }
 
 private:
     void *fView;
