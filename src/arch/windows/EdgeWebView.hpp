@@ -73,12 +73,15 @@ private:
     ICoreWebView2Controller* fController;
     ICoreWebView2*           fView;
 
-    uintptr_t           fWindowId;
-    Size<uint>          fSize;
-    String              fUrl;
-    std::vector<String> fInjectedJs;
-    WNDCLASS            fHelperClass;
-    HWND                fHelperHwnd;
+    WNDCLASS fHelperClass;
+    HWND     fHelperHwnd;
+
+    // P means Pending
+    uintptr_t           fPWindowId;
+    Size<uint>          fPSize;
+    String              fPUrl;
+    std::vector<String> fPInjectedScripts;
+    std::vector<String> fPMessageHandlers;
 
 };
 
