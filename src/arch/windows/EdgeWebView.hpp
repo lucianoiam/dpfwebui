@@ -71,11 +71,12 @@ public:
 private:
     void errorMessageBox(std::wstring message, HRESULT result);
 
-    ICoreWebView2Controller* fController;
-    ICoreWebView2*           fView;
-
+    bool     fWebViewBusy;
     WNDCLASS fHelperClass;
     HWND     fHelperHwnd;
+
+    ICoreWebView2Controller* fController;
+    ICoreWebView2*           fView;
 
     // "P" means "pending"
     uintptr_t           fPWindowId;
