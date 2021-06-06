@@ -40,7 +40,6 @@ public:
     void navigate(String url) override;
     void runScript(String source) override;
     void injectScript(String source) override;
-    void addScriptMessageHandler(String name) override;
     
     // Allow calling some protected methods from the ObjC WKNavigationDelegate
     
@@ -49,9 +48,9 @@ public:
         loadFinished();
     }
 
-    void didReceiveScriptMessage(String name, const ScriptMessageArguments& args)
+    void didReceiveScriptMessage(const ScriptMessageArguments& args)
     {
-        handleWebViewScriptMessage(name, args);
+        handleWebViewScriptMessage(args);
     }
 
 private:

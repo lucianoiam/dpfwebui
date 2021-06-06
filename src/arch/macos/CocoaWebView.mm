@@ -23,6 +23,8 @@
 #define fWebView         ((WKWebView*)fView)
 #define fWebViewDelegate ((WebViewDelegate*)fDelegate)
 
+#define HOST_SHIM_JS "window.webviewHost = {postMessage: (args) => window.webkit.messageHandlers.host.postMessage(args)};"
+
 // NOTE: ARC is not available here
 
 USE_NAMESPACE_DISTRHO
@@ -43,6 +45,8 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
     fDelegate = [[WebViewDelegate alloc] init];
     fWebViewDelegate.cppView = this;
     fWebView.navigationDelegate = fWebViewDelegate;
+    [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
+    injectScript(String(HOST_SHIM_JS));
     // Play safe when calling undocumented APIs 
     if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
         @try {
@@ -54,7 +58,6 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
             NSLog(@"Could not set transparent color for web view");
         }
     }
-
     createConsole();
 }
 
@@ -108,13 +111,6 @@ void CocoaWebView::injectScript(String source)
     [js release];
 }
 
-void CocoaWebView::addScriptMessageHandler(String name)
-{
-    NSString *nameStr = [[NSString alloc] initWithCString:name encoding:NSUTF8StringEncoding];
-    [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:nameStr];
-    [nameStr release];
-}
-
 @implementation WebViewDelegate
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
@@ -125,15 +121,14 @@ void CocoaWebView::addScriptMessageHandler(String name)
 
 - (void)userContentController:(WKUserContentController *)controller didReceiveScriptMessage:(WKScriptMessage *)message
 {
-    if (![message.body isKindOfClass:[NSArray class]]) {
+    if (![message.body isKindOfClass:[NSArray class]] || ([message.body count] == 0)) {
         return;
     }
-    String name = String([message.name cStringUsingEncoding:NSUTF8StringEncoding]);
     ScriptMessageArguments args;
     for (id objcArg : (NSArray *)message.body) {
         args.push_back([self scriptValueFromObjCInstance:objcArg]);
     }
-    self.cppView->didReceiveScriptMessage(name, args);
+    self.cppView->didReceiveScriptMessage(args);
 }
 
 - (ScriptValue)scriptValueFromObjCInstance:(id)obj
