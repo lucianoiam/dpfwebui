@@ -34,6 +34,8 @@
   plugins to UI toolkit libraries like GTK or QT is known to be problematic.
 */
 
+#define HOST_SHIM_JS "window.webviewHost = {postMessage: (args) => window.webkit.messageHandlers.host.postMessage(args)};"
+
 extern char **environ;
 
 USE_NAMESPACE_DISTRHO
@@ -74,6 +76,7 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewScriptMessageHandler& handler)
         return;
     }
 
+    injectScript(String(HOST_SHIM_JS));
     createConsole();
 }
 
@@ -132,11 +135,6 @@ void ExternalGtkWebView::injectScript(String source)
     ipcWriteString(OPC_INJECT_SCRIPT, source);
 }
 
-void ExternalGtkWebView::addScriptMessageHandler(String name)
-{
-    ipcWriteString(OPC_ADD_SCRIPT_MESSAGE_HANDLER, name);
-}
-
 int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str)
 {
     const char *cStr = static_cast<const char *>(str);
@@ -172,13 +170,12 @@ void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
 
 void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payloadSize)
 {
-    const char *name = payload;
-    int offset = ::strlen(name) + 1;
+    int offset = 0;
     ScriptMessageArguments args;
     while (offset < payloadSize) {
         args.push_back(popScriptValue(payload, &offset));
     }
-    handleWebViewScriptMessage(String(name), args);
+    handleWebViewScriptMessage(args);
 }
 
 ScriptValue ExternalGtkWebView::popScriptValue(const char *payload, int *offset)
