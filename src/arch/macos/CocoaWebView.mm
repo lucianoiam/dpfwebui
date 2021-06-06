@@ -120,7 +120,7 @@ void CocoaWebView::injectScript(String source)
 
 - (void)userContentController:(WKUserContentController *)controller didReceiveScriptMessage:(WKScriptMessage *)message
 {
-    if (![message.body isKindOfClass:[NSArray class]] || ([message.body count] == 0)) {
+    if (![message.body isKindOfClass:[NSArray class]]) {
         return;
     }
     ScriptMessageArguments args;

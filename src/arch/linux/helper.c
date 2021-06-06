@@ -194,8 +194,8 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
         }
     }
     webkit_javascript_result_unref(res);
+    ipc_write_simple((helper_context_t *)data, OPC_HANDLE_SCRIPT_MESSAGE, payload, offset);
     if (payload) {
-        ipc_write_simple((helper_context_t *)data, OPC_HANDLE_SCRIPT_MESSAGE, payload, offset);
         free(payload);
     }
 }

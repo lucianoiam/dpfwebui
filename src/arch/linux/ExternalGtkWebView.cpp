@@ -199,9 +199,7 @@ void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payl
                 break;
         }
     }
-    if (!args.empty()) {
-        handleWebViewScriptMessage(args);
-    }
+    handleWebViewScriptMessage(args);
 }
 
 IpcReadThread::IpcReadThread(ExternalGtkWebView& view)
