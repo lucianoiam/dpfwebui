@@ -16,6 +16,7 @@
 
 #include "EdgeWebView.hpp"
 
+#include <cassert>
 #include <codecvt>
 #include <locale>
 #include <sstream>
@@ -33,7 +34,7 @@ EdgeWebView::EdgeWebView(WebViewScriptMessageHandler& handler)
     : BaseWebView(handler)
     , fController(0)
     , fView(0)
-    , fWindowId(0)
+    , fPWindowId(0)
     , fHelperHwnd(0)
 {
     // EdgeWebView works a bit different compared to the other platforms due to
@@ -69,9 +70,9 @@ EdgeWebView::~EdgeWebView()
 void EdgeWebView::reparent(uintptr_t windowId)
 {
     // WebView2 is created here if needed
-    bool isInitializing = fWindowId != 0;
-    fWindowId = windowId;
     if (fController == 0) {
+        bool isInitializing = fPWindowId != 0;
+        fPWindowId = windowId;
         if (!isInitializing) {
             // See handleWebViewControllerCompleted()
             HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
@@ -87,37 +88,46 @@ void EdgeWebView::reparent(uintptr_t windowId)
 
 void EdgeWebView::navigate(String url)
 {
-    fUrl = url;
     if (fView == 0) {
+        fPUrl = url;
         return; // later
     }
-    ICoreWebView2_Navigate(fView, _LPCWSTR(fUrl));
+    ICoreWebView2_Navigate(fView, _LPCWSTR(url));
 }
 
 void EdgeWebView::runScript(String source)
 {
+    assert(fView != 0); // in the plugin specific case, fView==0 means a programming error
     ICoreWebView2_ExecuteScript(fView, _LPCWSTR(source), 0);
 }
 
 void EdgeWebView::injectScript(String source)
 {
-    fInjectedJs.push_back(source);
+    if (fController == 0) {
+        fPInjectedScripts.push_back(source);
+        return; // later
+    }
+    ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, _LPCWSTR(source), 0);
 }
 
 void EdgeWebView::addScriptMessageHandler(String name)
 {
+    if (fController == 0) {
+        fPMessageHandlers.push_back(name);
+        return; // later
+    }
     // TODO
 }
 
 void EdgeWebView::resize(const Size<uint>& size)
 {
-    fSize = size;
     if (fController == 0) {
+        fPSize = size;
         return; // later
     }
     RECT bounds {};
-    bounds.right = fSize.getWidth();
-    bounds.bottom = fSize.getHeight();
+    bounds.right = size.getWidth();
+    bounds.bottom = size.getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
@@ -149,12 +159,15 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), clear);
     ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
     ICoreWebView2_add_NavigationCompleted(fView, this, 0);
-    for (std::vector<String>::iterator it = fInjectedJs.begin(); it != fInjectedJs.end(); ++it) {
-        ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, _LPCWSTR(*it), 0);
-    }
     // Call pending setters
-    resize(fSize);
-    navigate(fUrl);
+    for (std::vector<String>::iterator it = fPInjectedScripts.begin(); it != fPInjectedScripts.end(); ++it) {
+        injectScript(*it);
+    }
+    for (std::vector<String>::iterator it = fPMessageHandlers.begin(); it != fPMessageHandlers.end(); ++ it) {
+        addScriptMessageHandler(*it);
+    }
+    resize(fPSize);
+    navigate(fPUrl);
     return S_OK;
 }
 
@@ -165,7 +178,7 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     (void)eventArgs;
     if (fController != 0) {
         loadFinished();
-        reparent(fWindowId);
+        reparent(fPWindowId);
     }
     return S_OK;
 }
