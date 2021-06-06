@@ -34,8 +34,8 @@ EdgeWebView::EdgeWebView(WebViewScriptMessageHandler& handler)
     : BaseWebView(handler)
     , fController(0)
     , fView(0)
-    , fPWindowId(0)
     , fHelperHwnd(0)
+    , fPWindowId(0)
 {
     // EdgeWebView works a bit different compared to the other platforms due to
     // the async nature of the native web view initialization process
@@ -69,7 +69,7 @@ EdgeWebView::~EdgeWebView()
 
 void EdgeWebView::reparent(uintptr_t windowId)
 {
-    // WebView2 is created here if needed
+    // WebView2 is created during reparent() if needed
     if (fController == 0) {
         bool isInitializing = fPWindowId != 0;
         fPWindowId = windowId;
@@ -168,6 +168,11 @@ HRESULT EdgeWebView::handleWebViewControllerCompleted(HRESULT result,
     }
     resize(fPSize);
     navigate(fPUrl);
+    // Cleanup, handleWebViewControllerCompleted() will not be called again anyways
+    fPInjectedScripts.clear();
+    fPMessageHandlers.clear();
+    fPSize = {};
+    fPUrl.clear();
     return S_OK;
 }
 
@@ -178,7 +183,11 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     (void)eventArgs;
     if (fController != 0) {
         loadFinished();
-        reparent(fPWindowId);
+        if (fPWindowId != 0) {
+            reparent(fPWindowId);
+            // handleWebViewNavigationCompleted() could be called again
+            fPWindowId = 0;
+        }
     }
     return S_OK;
 }
