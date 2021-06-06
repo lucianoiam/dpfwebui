@@ -100,8 +100,6 @@ static void create_webview(helper_context_t *ctx)
     gtk_widget_show(GTK_WIDGET(ctx->window));
     // Create web view
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
-    WebKitSettings *settings = webkit_web_view_get_settings(ctx->webView);
-    webkit_settings_set_allow_universal_access_from_file_urls(settings, TRUE);
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
     // Listen to script messages
