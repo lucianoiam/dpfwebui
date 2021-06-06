@@ -20,21 +20,27 @@
 #define BASEWEBVIEW_HPP
 
 #include <cstdint>
-#include <vector>
+#include <deque>
 
 #include "dgl/Geometry.hpp"
 #include "extra/String.hpp"
 
 #include "ScriptValue.hpp"
 
+#define GET_ARGUMENT(args)        (args.empty() ? ScriptValue() : args.front())
+#define GET_BOOL_ARGUMENT(args)   GET_ARGUMENT(args).asBool()
+#define GET_DOUBLE_ARGUMENT(args) GET_ARGUMENT(args).asDouble()
+#define GET_STRING_ARGUMENT(args) GET_ARGUMENT(args).asString()
+#define POP_ARGUMENT(args)        (args.pop_front())
+
 START_NAMESPACE_DISTRHO
 
-typedef std::vector<ScriptValue> ScriptMessageArguments;
+typedef std::deque<ScriptValue> ScriptMessageArguments;
 
 class WebViewScriptMessageHandler
 {
 public:
-    virtual void handleWebViewScriptMessage(const ScriptMessageArguments& args) = 0;
+    virtual void handleWebViewScriptMessage(ScriptMessageArguments& args) = 0;
 
 };
 
@@ -53,7 +59,7 @@ public:
 protected:
     void createConsole();
     void loadFinished();
-    void handleWebViewScriptMessage(const ScriptMessageArguments& args);
+    void handleWebViewScriptMessage(ScriptMessageArguments& args);
 
 private:
     void addStylesheet(String source);
