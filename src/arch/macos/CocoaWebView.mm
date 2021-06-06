@@ -56,8 +56,7 @@ CocoaWebView::CocoaWebView(WebViewEventHandler& handler)
             NSLog(@"Could not set transparent color for web view");
         }
     }
-    injectScript(String(HOST_SHIM_JS));
-    injectDefaultScripts();
+    injectDefaultScripts(String(HOST_SHIM_JS));
 }
 
 CocoaWebView::~CocoaWebView()

@@ -73,9 +73,8 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewEventHandler& handler)
         LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
     }
-
-    injectScript(String(HOST_SHIM_JS));
-    injectDefaultScripts();
+    
+    injectDefaultScripts(String(HOST_SHIM_JS));
 }
 
 ExternalGtkWebView::~ExternalGtkWebView()
