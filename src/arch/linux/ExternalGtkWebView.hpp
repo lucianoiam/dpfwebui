@@ -44,7 +44,6 @@ public:
     void navigate(String url) override;
     void runScript(String source) override;
     void injectScript(String source) override;
-    void addScriptMessageHandler(String name) override;
 
 private:
     ipc_t* ipc() const { return fIpc; }

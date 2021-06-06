@@ -36,15 +36,9 @@ typedef struct {
     WebKitWebView* webView;
 } helper_context_t;
 
-typedef struct {
-    char name[128]; 
-    const helper_context_t* ctx;
-} helper_msg_handler_context_t;
-
 static void create_webview(helper_context_t *ctx);
 static void reparent(const helper_context_t *ctx, uintptr_t parentId);
 static void inject_script(const helper_context_t *ctx, const char* js);
-static void add_message_handler(const helper_context_t *ctx, const char *name);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
@@ -107,6 +101,10 @@ static void create_webview(helper_context_t *ctx)
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
+    // Listen to script messages
+    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
+    g_signal_connect(manager, "script-message-received::host", G_CALLBACK(web_view_script_message_cb), ctx);
+    webkit_user_content_manager_register_script_message_handler(manager, "host");
 }
 
 static void reparent(const helper_context_t *ctx, uintptr_t parentId)
@@ -131,21 +129,6 @@ static void inject_script(const helper_context_t *ctx, const char* js)
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
     webkit_user_content_manager_add_script(manager, script);
     webkit_user_script_unref(script);
-}
-
-static void add_message_handler(const helper_context_t *ctx, const char *name)
-{
-    // There is no remove_message_handler(), keep handler_ctx alive indefinitely
-    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
-    helper_msg_handler_context_t *handler_ctx = malloc(sizeof(helper_msg_handler_context_t));
-    handler_ctx->ctx = ctx;
-    strcpy(handler_ctx->name, name);
-    char *signame = malloc(25 + strlen(name) + 1);
-    strcpy(signame, "script-message-received::");
-    strcat(signame, name);
-    g_signal_connect(manager, signame, G_CALLBACK(web_view_script_message_cb), handler_ctx);
-    webkit_user_content_manager_register_script_message_handler(manager, name);
-    free(signame);
 }
 
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)
@@ -174,10 +157,8 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
     gint32 numArgs, i;
     JSCValue *jsArg;
     JSCValue *jsArgs = webkit_javascript_result_get_js_value(res);
-    helper_msg_handler_context_t *handler_ctx = (helper_msg_handler_context_t *)data;
-    int payload_sz = strlen(handler_ctx->name) + 1;
-    char *payload = (char *)malloc(payload_sz);
-    strcpy(payload, handler_ctx->name);
+    int payload_sz = 0;
+    char *payload = NULL;
     if (jsc_value_is_array(jsArgs)) {
         numArgs = jsc_value_to_int32(jsc_value_object_get_property(jsArgs, "length"));
         for (i = 0; i < numArgs; i++) {
@@ -185,7 +166,7 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
             append_jsc_value(jsArg, &payload, &payload_sz);
         }
     }
-    ipc_write_simple(handler_ctx->ctx, OPC_HANDLE_SCRIPT_MESSAGE, payload, payload_sz);
+    ipc_write_simple((helper_context_t *)data, OPC_HANDLE_SCRIPT_MESSAGE, payload, payload_sz);
     free(payload);
     webkit_javascript_result_unref(res);
 }
@@ -220,9 +201,6 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             break;
         case OPC_INJECT_SCRIPT:
             inject_script(ctx, packet.v);
-            break;
-        case OPC_ADD_SCRIPT_MESSAGE_HANDLER:
-            add_message_handler(ctx, packet.v);
             break;
         default:
             break;
