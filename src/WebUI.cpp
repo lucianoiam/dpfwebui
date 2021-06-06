@@ -87,6 +87,7 @@ void WebUI::handleWebViewScriptMessage(ScriptMessageArguments& args)
         bool started = static_cast<bool>(GET_BOOL_ARGUMENT(args));
         POP_ARGUMENT(args);
         editParameter(index, started);
+        ::printf("Successful call to editParameter(%d, %s)\n", index, started ? "true" : "false");
     } else if (method == "setParameterValue") {
         // uint32_t index, float value
 #if DISTRHO_PLUGIN_WANT_STATE
