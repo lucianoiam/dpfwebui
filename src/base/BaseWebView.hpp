@@ -32,7 +32,7 @@ typedef std::vector<ScriptValue> ScriptMessageArguments;
 class WebViewScriptMessageHandler
 {
 public:
-    virtual void handleWebViewScriptMessage(String name, const ScriptMessageArguments& args) = 0;
+    virtual void handleWebViewScriptMessage(const ScriptMessageArguments& args) = 0;
 
 };
 
@@ -47,12 +47,11 @@ public:
     virtual void navigate(String url) = 0;
     virtual void runScript(String source) = 0;
     virtual void injectScript(String source) = 0;
-    virtual void addScriptMessageHandler(String name) = 0;
 
 protected:
     void createConsole();
     void loadFinished();
-    void handleWebViewScriptMessage(String name, const ScriptMessageArguments& args);
+    void handleWebViewScriptMessage(const ScriptMessageArguments& args);
 
 private:
     void addStylesheet(String source);

@@ -18,7 +18,7 @@
 
 #include <iostream>
 
-#define JS_CONSOLE_OUTPUT       "window.console = {log: (s) => window.webkit.messageHandlers.console_log.postMessage([String(s)])};"
+#define JS_CONSOLE_OUTPUT       "window.console = {log: (s) => window.webviewHost.postMessage(['console.log', String(s)])};"
 #define JS_DISABLE_CONTEXT_MENU "window.oncontextmenu = (e) => e.preventDefault();"
 #define CSS_DISABLE_PINCH_ZOOM  "body { touch-action: pan-x pan-y; }"
 #define CSS_DISABLE_SELECTION   "body { user-select: none; -webkit-user-select: none; }"
@@ -26,7 +26,6 @@
 void BaseWebView::createConsole()
 {
     // Injected scripts run before any user script starts running
-    addScriptMessageHandler(String("console_log"));
     injectScript(String(JS_CONSOLE_OUTPUT));
 }
 
@@ -38,12 +37,12 @@ void BaseWebView::loadFinished()
     addStylesheet(String(CSS_DISABLE_SELECTION));
 }
 
-void BaseWebView::handleWebViewScriptMessage(String name, const ScriptMessageArguments& args)
+void BaseWebView::handleWebViewScriptMessage(const ScriptMessageArguments& args)
 {
-    if (name == "console_log") {
-        std::cerr << args[0].asString() << std::endl;
+    if (args[0].asString() == "console.log") {
+        std::cerr << args[1].asString() << std::endl;
     } else {
-        fHandler.handleWebViewScriptMessage(name, args);
+        fHandler.handleWebViewScriptMessage(args);
     }
 }
 
