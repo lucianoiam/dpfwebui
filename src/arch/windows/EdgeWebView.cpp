@@ -89,8 +89,7 @@ void EdgeWebView::reparent(uintptr_t windowId)
             HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
                 _LPCWSTR(platform::getTemporaryPath()), 0, this);
             if (FAILED(result)) {
-                // FIXME: "make sure runtime is installed..."
-                errorMessageBox(L"Could not create WebView2 environment", result);
+                webViewLoaderErrorMessageBox(result);
             }
         }
         return; // later
@@ -139,8 +138,7 @@ HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
                                                         ICoreWebView2Environment* environment)
 {
     if (FAILED(result)) {
-        // FIXME: "make sure runtime is installed..."
-        errorMessageBox(L"Could not create WebView2 environment", result);
+        webViewLoaderErrorMessageBox(result);
         return result;
     }
     ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fHelperHwnd, this);
@@ -151,6 +149,7 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
                                                        ICoreWebView2Controller* controller)
 {
     if (FAILED(result)) {
+        // Do not call MessageBox here, it makes the host crash if 'this' is being deleted
         LOG_STDERR_INT("handleWebView2ControllerCompleted() called with HRESULT", result);
         return result;
     }
@@ -229,9 +228,10 @@ HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
     return S_OK;
 }
 
-void EdgeWebView::errorMessageBox(std::wstring message, HRESULT result)
+void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
 {
     std::wstringstream ss;
-    ss << message << ", HRESULT 0x" << std::hex << result;
+    ss << "Make sure you have installed the Microsoft Edge WebView2 Runtime. "
+       << "Error 0x" << std::hex << result;
     ::MessageBox(0, ss.str().c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
 }

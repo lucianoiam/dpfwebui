@@ -31,5 +31,5 @@ installing the MinGW toolchain on Windows:
 
 3. For testing and distribution
 
-   - The Microsoft Edge Webview2 Runtime must be installed to run the plugin
+   - The Microsoft Edge WebView2 Runtime must be installed to run the plugin
      https://developer.microsoft.com/microsoft-edge/webview2
