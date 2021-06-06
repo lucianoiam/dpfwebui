@@ -46,16 +46,6 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
     fWebView.navigationDelegate = fWebViewDelegate;
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
     // Play safe when calling undocumented APIs
-    if ([fWebView.configuration.preferences respondsToSelector:@selector(_setAllowFileAccessFromFileURLs:)]) {
-        @try {
-            NSNumber *yes = [[NSNumber alloc] initWithBool:YES];
-            [fWebView.configuration.preferences setValue:yes forKey:@"allowFileAccessFromFileURLs"];
-            [yes release];
-        }
-        @catch (NSException *e) {
-            NSLog(@"Could not bypass CORS for file URLs");
-        }
-    }
     if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
         @try {
             NSNumber *no = [[NSNumber alloc] initWithBool:NO];
