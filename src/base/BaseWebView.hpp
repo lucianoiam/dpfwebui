@@ -59,6 +59,7 @@ public:
 
 protected:
     void injectDefaultScripts();
+    
     void handleLoadFinished();
     void handleScriptMessage(ScriptMessageArguments& args);
 
