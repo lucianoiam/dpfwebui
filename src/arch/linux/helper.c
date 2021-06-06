@@ -44,7 +44,6 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 static int ipc_write_simple(const helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
-static void append_jsc_value(JSCValue *value, char **buf, int *offset);
 
 int main(int argc, char* argv[])
 {
@@ -157,18 +156,46 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
     gint32 numArgs, i;
     JSCValue *jsArg;
     JSCValue *jsArgs = webkit_javascript_result_get_js_value(res);
-    int payload_sz = 0;
     char *payload = NULL;
+    int offset = 0;
     if (jsc_value_is_array(jsArgs)) {
         numArgs = jsc_value_to_int32(jsc_value_object_get_property(jsArgs, "length"));
         for (i = 0; i < numArgs; i++) {
             jsArg = jsc_value_object_get_property_at_index(jsArgs, i);
-            append_jsc_value(jsArg, &payload, &payload_sz);
+            if (jsc_value_is_boolean(jsArg)) {
+                payload = (char *)realloc(payload, offset + 1);
+                if (jsc_value_to_boolean(jsArg)) {
+                    *(payload+offset) = (char)ARG_TYPE_TRUE;
+                } else {
+                    *(payload+offset) = (char)ARG_TYPE_FALSE;
+                }
+                offset += 1;
+            } else if (jsc_value_is_number(jsArg)) {
+                payload = (char *)realloc(payload, offset + 1 + sizeof(double));
+                *(payload+offset) = (char)ARG_TYPE_DOUBLE;
+                offset += 1;
+                *(double *)(payload+offset) = jsc_value_to_double(jsArg);
+                offset += sizeof(double);
+            } else if (jsc_value_is_string(jsArg)) {
+                const char *s = jsc_value_to_string(jsArg);
+                int slen = strlen(s) + 1;
+                payload = (char *)realloc(payload, offset + 1 + slen);
+                *(payload+offset) = (char)ARG_TYPE_STRING;
+                offset += 1;
+                strcpy(payload+offset, s);
+                offset += slen;
+            } else {
+                payload = (char *)realloc(payload, offset + 1);
+                *(payload+offset) = (char)ARG_TYPE_NULL;
+                offset += 1;
+            }
         }
     }
-    ipc_write_simple((helper_context_t *)data, OPC_HANDLE_SCRIPT_MESSAGE, payload, payload_sz);
-    free(payload);
     webkit_javascript_result_unref(res);
+    if (payload) {
+        ipc_write_simple((helper_context_t *)data, OPC_HANDLE_SCRIPT_MESSAGE, payload, offset);
+        free(payload);
+    }
 }
 
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
@@ -220,36 +247,4 @@ static int ipc_write_simple(const helper_context_t *ctx, helper_opcode_t opcode,
         LOG_STDERR_ERRNO("Could not write to IPC channel");
     }
     return retval;
-}
-
-static void append_jsc_value(JSCValue *value, char **buf, int *offset)
-{
-    if (jsc_value_is_null(value) || jsc_value_is_undefined(value)) {
-        *buf = (char *)realloc(*buf, *offset + 1);
-        *(*buf+*offset) = (char)ARG_TYPE_NULL;
-        *offset += 1;
-    } else if (jsc_value_is_boolean(value)) {
-        *buf = (char *)realloc(*buf, *offset + 1);
-        if (jsc_value_to_boolean(value)) {
-            *(*buf+*offset) = (char)ARG_TYPE_TRUE;
-        } else {
-            *(*buf+*offset) = (char)ARG_TYPE_FALSE;
-        }
-        *offset += 1;
-    } else if (jsc_value_is_number(value)) {
-        // There is no way to make a distinction between int32 and double
-        *buf = (char *)realloc(*buf, *offset + 1 + sizeof(double));
-        *(*buf+*offset) = (char)ARG_TYPE_DOUBLE;
-        *offset += 1;
-        *(double *)(*buf+*offset) = jsc_value_to_double(value);
-        *offset += sizeof(double);
-    } else if (jsc_value_is_string(value)) {
-        const char *s = jsc_value_to_string(value);
-        int slen = strlen(s) + 1;
-        *buf = (char *)realloc(*buf, *offset + 1 + slen);
-        *(*buf+*offset) = (char)ARG_TYPE_STRING;
-        *offset += 1;
-        strcpy(*buf+*offset, s);
-        *offset += slen;
-    }
 }
