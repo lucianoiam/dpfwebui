@@ -1,19 +1,21 @@
-Early code for embedding a web view in a DPF plugin
----------------------------------------------------
+[WIP] Template for building desktop VST audio plugins with HTML/JavaScript UIs
+------------------------------------------------------------------------------
 
-Supersedes https://github.com/lucianoiam/dpf-cef
+* Based on DPF, DISTRHO Plugin Framework
+* C++ for DSP code
+* HTML/CSS/JS for UI code
+* Linux, macOS and Windows
+* VST2, LV2, DSSI and JACK-based standalone app
+* Makefile based
+* Lightweight
+* BSD-like license
 
-Goal is to enable developing multiplatform audio plugins with web-based UIs
-based on the lightweight and libre DISTRHO Plugin Framework https://github.com/DISTRHO/DPF
+This is work in progress ( nearly 70% complete )
 
-This is early work in progress...
+**"DPF is designed to make development of new plugins an easy and enjoyable task"**
 
+Do not forget to visit https://github.com/DISTRHO/DPF
 
-Proposed implementation
-
-* On Linux launch a separate process running WebKitGTK then reparent window
-* On macOS embed a Cocoa web view
-* On Windows embed a Chromium-based WebView2 provided by the OS
-
+If you find this software useful please support the developer(s) 🎵🖤
 
 ![](https://user-images.githubusercontent.com/930494/118394103-eae67280-b642-11eb-8e98-66267542adc0.png)
