@@ -1,7 +1,7 @@
 import DPF from './dpf.js';
 
 {
-    console.log('Hello stderr');
+    console.log('Hello stderr from JS');
 
     const main = document.getElementById('main');
     main.innerHTML = `<h1>Hello World</h1>`;
