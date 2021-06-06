@@ -46,11 +46,11 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewScriptMessageHandler& handler)
 {
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
     if (::pipe(fPipeFd[0]) == -1) {
-        LOG_STDERR_ERRNO("Could not create plugin->helper pipe");
+        LOG_STDERR_ERRNO("Could not create parent->helper pipe");
         return;
     }
     if (::pipe(fPipeFd[1]) == -1) {
-        LOG_STDERR_ERRNO("Could not create helper->plugin pipe");
+        LOG_STDERR_ERRNO("Could not create helper->parent pipe");
         return;
     }
     ipc_conf_t conf;
