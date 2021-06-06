@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-export default class DPF {
+class DPF {
 
     editParameter(index, started) {
         this._call('editParameter', index, started);

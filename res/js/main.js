@@ -1,5 +1,3 @@
-import DPF from './dpf.js';
-
 {
     console.log('Hello stderr from JS');
 
