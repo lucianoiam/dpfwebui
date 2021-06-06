@@ -40,10 +40,10 @@ public:
     operator String() const { return fS; }
 
 private:
-    bool    fNull;
-    bool    fB;
-    double  fD;
-    String  fS;
+    bool   fNull;
+    bool   fB;
+    double fD;
+    String fS;
 
 };
 
