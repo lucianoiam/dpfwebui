@@ -25,9 +25,9 @@
 
 #include "base/log.h"
 #include "base/macro.h"
-#include "DistrhoPluginInfo.h"
+#include "extra/ipc.h"
 
-#include "ipc.h"
+#include "DistrhoPluginInfo.h"
 
 typedef struct {
     ipc_t*         ipc;
