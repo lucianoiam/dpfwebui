@@ -80,6 +80,7 @@ void CocoaWebView::reparent(uintptr_t windowId)
 void CocoaWebView::resize(const DGL::Size<uint>& size)
 {
     // The WKWebView automatically resizes to match its parent dimensions
+    (void)size;
 }
 
 void CocoaWebView::navigate(String url)
@@ -122,15 +123,11 @@ void CocoaWebView::injectScript(String source)
         return;
     }
     String name = String([message.name cStringUsingEncoding:NSUTF8StringEncoding]);
-    ScriptValue arg1, arg2;
-    NSArray *objcArgs = (NSArray *)message.body;
-    if (objcArgs.count > 0) {
-        arg1 = [self scriptValueFromObjCInstance:objcArgs[0]];
-        if (objcArgs.count > 1) {
-            arg2 = [self scriptValueFromObjCInstance:objcArgs[1]];
-        }
+    ScriptMessageArguments args;
+    for (id objcArg : (NSArray *)message.body) {
+    	args.push_back([self scriptValueFromObjCInstance:objcArg]);
     }
-    self.cppView->didReceiveScriptMessage(name, arg1, arg2);
+    self.cppView->didReceiveScriptMessage(name, args);
 }
 
 - (ScriptValue)scriptValueFromObjCInstance:(id)obj
