@@ -58,7 +58,7 @@ public:
     virtual void injectScript(String source) = 0;
 
 protected:
-    void injectDefaultScripts();
+    void injectDefaultScripts(String platformSpecificScript);
     
     void handleLoadFinished();
     void handleScriptMessage(ScriptMessageArguments& args);
