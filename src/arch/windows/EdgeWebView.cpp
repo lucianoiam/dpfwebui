@@ -33,7 +33,7 @@
 
 USE_NAMESPACE_DISTRHO
 
-EdgeWebView::EdgeWebView(WebViewScriptMessageHandler& handler)
+EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
     : BaseWebView(handler)
     , fController(0)
     , fView(0)
@@ -176,7 +176,7 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
     (void)sender;
     (void)eventArgs;
     if (fController != 0) {
-        loadFinished();
+        handleLoadFinished();
         if (fPWindowId != 0) {
             reparent(fPWindowId);
             // handleWebViewNavigationCompleted() could be called again
@@ -216,7 +216,7 @@ HRESULT EdgeWebView::handleWebViewWebMessageReceived(ICoreWebView2 *sender,
     }
     ::cJSON_free(jArgs);
     ::CoTaskMemFree(jsonStr);
-    handleWebViewScriptMessage(args);
+    handleScriptMessage(args);
     return S_OK;
 }
 

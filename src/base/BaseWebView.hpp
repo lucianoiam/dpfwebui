@@ -35,9 +35,10 @@ START_NAMESPACE_DISTRHO
 
 typedef std::deque<ScriptValue> ScriptMessageArguments;
 
-class WebViewScriptMessageHandler
+class WebViewEventHandler
 {
 public:
+	virtual void handleWebViewLoadFinished() = 0;
     virtual void handleWebViewScriptMessage(ScriptMessageArguments& args) = 0;
 
 };
@@ -45,7 +46,7 @@ public:
 class BaseWebView
 {
 public:
-    BaseWebView(WebViewScriptMessageHandler& handler) : fHandler(handler) {}
+    BaseWebView(WebViewEventHandler& handler) : fHandler(handler) {}
     virtual ~BaseWebView() {};
 
     virtual void reparent(uintptr_t windowId) = 0;
@@ -56,13 +57,13 @@ public:
 
 protected:
     void injectDefaultScripts();
-    void loadFinished();
-    void handleWebViewScriptMessage(ScriptMessageArguments& args);
+    void handleLoadFinished();
+    void handleScriptMessage(ScriptMessageArguments& args);
 
 private:
     void addStylesheet(String source);
 
-    WebViewScriptMessageHandler& fHandler;
+    WebViewEventHandler& fHandler;
 
 };
 

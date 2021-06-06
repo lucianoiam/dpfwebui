@@ -30,14 +30,15 @@ void BaseWebView::injectDefaultScripts()
     injectScript(String(JS_DISABLE_CONTEXT_MENU));
 }
 
-void BaseWebView::loadFinished()
+void BaseWebView::handleLoadFinished()
 {
     // User scripts may have started running already
     addStylesheet(String(CSS_DISABLE_PINCH_ZOOM));
     addStylesheet(String(CSS_DISABLE_SELECTION));
+    fHandler.handleWebViewLoadFinished();
 }
 
-void BaseWebView::handleWebViewScriptMessage(ScriptMessageArguments& args)
+void BaseWebView::handleScriptMessage(ScriptMessageArguments& args)
 {
     if (GET_STRING_ARGUMENT(args) == "console.log") {
         POP_ARGUMENT(args);
