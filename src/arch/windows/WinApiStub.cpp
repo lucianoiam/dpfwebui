@@ -27,7 +27,7 @@ typedef HRESULT GETSCALEFACTORFORMONITOR(HMONITOR hMon, DEVICE_SCALE_FACTOR *pSc
 HRESULT stub::GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue)
 {
     GETPROCESSDPIAWARENESS *f = (GETPROCESSDPIAWARENESS*)GetProcAddressForDllName(
-    	"Shcore.dll", "GetProcessDpiAwareness");
+        "Shcore.dll", "GetProcessDpiAwareness");
     if (f == 0) {
         return ::GetLastError();
     }
@@ -37,7 +37,7 @@ HRESULT stub::GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue
 HRESULT stub::GetScaleFactorForMonitor(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale)
 {
     GETSCALEFACTORFORMONITOR *f = (GETSCALEFACTORFORMONITOR*)GetProcAddressForDllName(
-    	"Shcore.dll", "GetScaleFactorForMonitor");
+        "Shcore.dll", "GetScaleFactorForMonitor");
     if (f == 0) {
         return ::GetLastError();
     }

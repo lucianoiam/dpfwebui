@@ -40,17 +40,18 @@ typedef struct {
 
 typedef struct {
     char name[128]; 
-    helper_context_t* ctx;
+    const helper_context_t* ctx;
 } helper_msg_handler_context_t;
 
 static void create_webview(helper_context_t *ctx);
 static void reparent(const helper_context_t *ctx, uintptr_t parentId);
 static void inject_script(const helper_context_t *ctx, const char* js);
+static void add_message_handler(const helper_context_t *ctx, const char *name);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
-static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
+static int ipc_write_simple(const helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
 static void append_jsc_value(JSCValue *value, char **buf, int *offset);
 
 int main(int argc, char* argv[])
@@ -108,14 +109,6 @@ static void create_webview(helper_context_t *ctx)
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
-    // Listen to script messages
-    // TODO: move to a function that will be called from ExternalGtkWebView
-    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
-    helper_msg_handler_context_t *handler_ctx = malloc(sizeof(helper_msg_handler_context_t));
-    handler_ctx->ctx = ctx;
-    strcpy(handler_ctx->name, "console_log");
-    g_signal_connect(manager, "script-message-received", G_CALLBACK(web_view_script_message_cb), handler_ctx);
-    webkit_user_content_manager_register_script_message_handler(manager, "console_log");
 }
 
 static void reparent(const helper_context_t *ctx, uintptr_t parentId)
@@ -140,6 +133,21 @@ static void inject_script(const helper_context_t *ctx, const char* js)
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
     webkit_user_content_manager_add_script(manager, script);
     webkit_user_script_unref(script);
+}
+
+static void add_message_handler(const helper_context_t *ctx, const char *name)
+{
+    // There is no remove_message_handler(), keep handler_ctx alive indefinitely
+    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
+    helper_msg_handler_context_t *handler_ctx = malloc(sizeof(helper_msg_handler_context_t));
+    handler_ctx->ctx = ctx;
+    strcpy(handler_ctx->name, name);
+    char *signame = malloc(25 + strlen(name) + 1);
+    strcpy(signame, "script-message-received::");
+    strcat(signame, name);
+    g_signal_connect(manager, signame, G_CALLBACK(web_view_script_message_cb), handler_ctx);
+    webkit_user_content_manager_register_script_message_handler(manager, name);
+    free(signame);
 }
 
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)
@@ -175,7 +183,7 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
     if (jsc_value_is_array(jsArgs)) {
         numArgs = jsc_value_to_int32(jsc_value_object_get_property(jsArgs, "length"));
         for (i = 0; i < numArgs; i++) {
-        	jsArg = jsc_value_object_get_property_at_index(jsArgs, i);
+            jsArg = jsc_value_object_get_property_at_index(jsArgs, i);
             append_jsc_value(jsArg, &payload, &payload_sz);
         }
     }
@@ -215,6 +223,9 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
         case OPC_INJECT_SCRIPT:
             inject_script(ctx, packet.v);
             break;
+        case OPC_ADD_SCRIPT_MESSAGE_HANDLER:
+            add_message_handler(ctx, packet.v);
+            break;
         default:
             break;
     }
@@ -222,7 +233,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     return TRUE;
 }
 
-static int ipc_write_simple(helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz)
+static int ipc_write_simple(const helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz)
 {
     int retval;
     tlv_t packet;

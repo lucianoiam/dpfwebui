@@ -131,7 +131,12 @@ void ExternalGtkWebView::injectScript(String source)
 {
     ipcWriteString(OPC_INJECT_SCRIPT, source);
 }
-    
+
+void ExternalGtkWebView::addScriptMessageHandler(String name)
+{
+    ipcWriteString(OPC_ADD_SCRIPT_MESSAGE_HANDLER, name);
+}
+
 int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str)
 {
     const char *cStr = static_cast<const char *>(str);
@@ -169,10 +174,10 @@ void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payl
 {
     const char *name = payload;
     int offset = ::strlen(name) + 1;
-	ScriptMessageArguments args;
-	while (offset < payloadSize) {
-		args.push_back(popScriptValue(payload, &offset));
-	}
+    ScriptMessageArguments args;
+    while (offset < payloadSize) {
+        args.push_back(popScriptValue(payload, &offset));
+    }
     handleWebViewScriptMessage(String(name), args);
 }
 
@@ -193,6 +198,7 @@ ScriptValue ExternalGtkWebView::popScriptValue(const char *payload, int *offset)
             *offset += 1;
             return ScriptValue(true);
             break;
+        case ARG_TYPE_DOUBLE:
             *offset += 1 + sizeof(double);
             return ScriptValue(*reinterpret_cast<const double *>(typeAndValue + 1));
             break;

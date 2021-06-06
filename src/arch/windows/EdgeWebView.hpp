@@ -78,7 +78,7 @@ private:
     std::vector<String> fInjectedJs;
     WNDCLASS            fHelperClass;
     HWND                fHelperHwnd;
-    
+
 };
 
 END_NAMESPACE_DISTRHO

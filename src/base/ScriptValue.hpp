@@ -27,25 +27,23 @@ START_NAMESPACE_DISTRHO
 
 class ScriptValue {
 public:
-    ScriptValue()              : fNull(true) {};
-    ScriptValue(bool b)        : fNull(false), fB(b) {};
-    //ScriptValue(int32_t i)     : fNull(false), fI(i) {};
-    ScriptValue(double d)      : fNull(false), fD(d) {};
-    ScriptValue(String s)      : fNull(false), fS(s) {};
-    ScriptValue(const char* s) : fNull(false), fS(String(s)) {};
+    ScriptValue()         : fNull(true) {};
+    ScriptValue(bool b)   : fNull(false), fB(b) {};
+    ScriptValue(double d) : fNull(false), fD(d) {};
+    ScriptValue(String s) : fNull(false), fS(s) {};
 
-    bool isNull() const { return fNull; }
+    bool   isNull()   const { return fNull; }
+    bool   asBool()   const { return fB; }
+    double asDouble() const { return fD; }
+    String asString() const { return fS; }
 
-    operator bool()        const { return fB; }
-    //operator int32_t()     const { return fI; }
-    operator double()      const { return fD; }
-    operator String()      const { return fS; }
-    operator const char*() const { return fS; }
+    operator bool()   const { return fB; }
+    operator double() const { return fD; }
+    operator String() const { return fS; }
 
 private:
     bool    fNull;
     bool    fB;
-    //int32_t fI;
     double  fD;
     String  fS;
 

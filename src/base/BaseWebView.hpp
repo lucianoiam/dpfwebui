@@ -49,6 +49,7 @@ public:
     virtual void navigate(String url) = 0;
     virtual void runScript(String source) = 0;
     virtual void injectScript(String source) = 0;
+    virtual void addScriptMessageHandler(String name) = 0;
 
 protected:
     void createConsole();
