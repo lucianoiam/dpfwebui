@@ -27,8 +27,10 @@
 #include "base/Platform.hpp"
 #include "base/log.h"
 #include "DistrhoPluginInfo.h"
+#include "cJSON.h"
 
 #define _LPCWSTR(s) std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s).c_str()
+#define _LPCSTR(s)  std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(s).c_str()
 #define HOST_SHIM_JS "window.webviewHost = {postMessage: (args) => window.chrome.webview.postMessage(args)};"
 
 USE_NAMESPACE_DISTRHO
@@ -189,10 +191,36 @@ HRESULT EdgeWebView::handleWebViewNavigationCompleted(ICoreWebView2 *sender,
 HRESULT EdgeWebView::handleWebViewWebMessageReceived(ICoreWebView2 *sender,
                                                      ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
 {
-    LPWSTR json;
-    ICoreWebView2WebMessageReceivedEventArgs_get_WebMessageAsJson(eventArgs, &json);
-    ::wprintf(L"%ls\n", json);
-    ::CoTaskMemFree(json);
+    // Edge WebView2 does not provide access to JavaScriptCore values
+    (void)sender;
+    LPWSTR jsonStr;
+    ICoreWebView2WebMessageReceivedEventArgs_get_WebMessageAsJson(eventArgs, &jsonStr);
+    cJSON* jArgs = ::cJSON_Parse(_LPCSTR(jsonStr));
+    ScriptMessageArguments args;
+    if (::cJSON_IsArray(jArgs)) {
+        int numArgs = ::cJSON_GetArraySize(jArgs);
+        if (numArgs > 0) {
+            for (int i = 0; i < numArgs; i++) {
+                cJSON* jArg = ::cJSON_GetArrayItem(jArgs, i);
+                if (::cJSON_IsFalse(jArg)) {
+                    args.push_back(ScriptValue(false));
+                } else if (::cJSON_IsTrue(jArg)) {
+                    args.push_back(ScriptValue(true));
+                } else if (::cJSON_IsNumber(jArg)) {
+                    args.push_back(ScriptValue(::cJSON_GetNumberValue(jArg)));
+                } else if (::cJSON_IsString(jArg)) {
+                    args.push_back(ScriptValue(String(::cJSON_GetStringValue(jArg))));
+                } else {
+                    args.push_back(ScriptValue()); // null
+                }
+            }
+        }
+    }
+    ::cJSON_free(jArgs);
+    ::CoTaskMemFree(jsonStr);
+    if (!args.empty()) {
+        handleWebViewScriptMessage(args);
+    }
     return S_OK;
 }
 

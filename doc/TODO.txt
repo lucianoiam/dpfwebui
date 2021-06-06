@@ -1,8 +1,6 @@
 ALL PLATFORMS
 -------------
 
-- Print JavaScript console.log output to stderr
-- JavaScript -> plugin messaging
 - Persistent state handling
 - Catch changes in res/ directory files and trigger Makefile resources target
 - window.alert(), window.confirm() and window.prompt() would be nice to have

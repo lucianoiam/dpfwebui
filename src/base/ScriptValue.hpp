@@ -27,10 +27,10 @@ START_NAMESPACE_DISTRHO
 
 class ScriptValue {
 public:
-    ScriptValue()         : fNull(true) {};
-    ScriptValue(bool b)   : fNull(false), fB(b) {};
-    ScriptValue(double d) : fNull(false), fD(d) {};
-    ScriptValue(String s) : fNull(false), fS(s) {};
+    ScriptValue()         : fNull(true),  fB(false), fD(0) {};
+    ScriptValue(bool b)   : fNull(false), fB(b),     fD(0) {};
+    ScriptValue(double d) : fNull(false), fB(false), fD(d) {};
+    ScriptValue(String s) : fNull(false), fB(false), fD(0), fS(s) {};
 
     bool   isNull()   const { return fNull; }
     bool   asBool()   const { return fB; }
