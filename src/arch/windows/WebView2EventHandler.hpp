@@ -26,7 +26,8 @@ namespace edge {
 
 class WebView2EventHandler : public ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler,
                              public ICoreWebView2CreateCoreWebView2ControllerCompletedHandler,
-                             public ICoreWebView2NavigationCompletedEventHandler
+                             public ICoreWebView2NavigationCompletedEventHandler,
+                             public ICoreWebView2WebMessageReceivedEventHandler
 {
 public:
     WebView2EventHandler();
@@ -50,6 +51,14 @@ public:
 
     virtual HRESULT handleWebViewNavigationCompleted(ICoreWebView2 *sender,
                                                      ICoreWebView2NavigationCompletedEventArgs *eventArgs)
+    {
+        (void)sender;
+        (void)eventArgs;
+        return S_OK;
+    }
+
+    virtual HRESULT handleWebViewWebMessageReceived(ICoreWebView2 *sender,
+                                                    ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
     {
         (void)sender;
         (void)eventArgs;

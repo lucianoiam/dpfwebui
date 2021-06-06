@@ -64,6 +64,8 @@ public:
                                              ICoreWebView2Controller* controller) override;
     HRESULT handleWebViewNavigationCompleted(ICoreWebView2 *sender,
                                              ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
+    HRESULT handleWebViewWebMessageReceived(ICoreWebView2 *sender,
+                                            ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
 private:
     void errorMessageBox(std::wstring message, HRESULT result);
@@ -74,7 +76,7 @@ private:
     WNDCLASS fHelperClass;
     HWND     fHelperHwnd;
 
-    // P means Pending
+    // "P" means "pending"
     uintptr_t           fPWindowId;
     Size<uint>          fPSize;
     String              fPUrl;
