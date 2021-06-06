@@ -23,7 +23,6 @@
 #define CINTERFACE
 #define COBJMACROS
 
-#include <string>
 #include <vector>
 
 #include "WebView2.h"
@@ -69,7 +68,7 @@ public:
                                              ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
 private:
-    void errorMessageBox(std::wstring message, HRESULT result);
+    void webViewLoaderErrorMessageBox(HRESULT result);
 
     bool     fWebViewBusy;
     WNDCLASS fHelperClass;
