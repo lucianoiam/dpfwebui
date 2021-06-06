@@ -35,9 +35,10 @@ USE_NAMESPACE_DISTRHO
 
 EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
     : BaseWebView(handler)
+    , fWebViewBusy(false)
+    , fHelperHwnd(0)
     , fController(0)
     , fView(0)
-    , fHelperHwnd(0)
     , fPWindowId(0)
 {
     // EdgeWebView works a bit different compared to the other platforms due to
@@ -63,6 +64,10 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
 
 EdgeWebView::~EdgeWebView()
 {
+    if (fWebViewBusy) {
+         // Avoid crash when opening and closing the UI too quickly
+        ::Sleep(1000);
+    }
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
         ICoreWebView2_Release(fController);
@@ -79,10 +84,12 @@ void EdgeWebView::reparent(uintptr_t windowId)
         bool isInitializing = fPWindowId != 0;
         fPWindowId = windowId;
         if (!isInitializing) {
+            fWebViewBusy = true;
             // See handleWebViewControllerCompleted() below
             HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
                 _LPCWSTR(platform::getTemporaryPath()), 0, this);
             if (FAILED(result)) {
+                // FIXME: "make sure runtime is installed..."
                 errorMessageBox(L"Could not create WebView2 environment", result);
             }
         }
@@ -97,6 +104,7 @@ void EdgeWebView::navigate(String url)
         fPUrl = url;
         return; // later
     }
+    fWebViewBusy = true;
     ICoreWebView2_Navigate(fView, _LPCWSTR(url));
 }
 
@@ -131,6 +139,7 @@ HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
                                                         ICoreWebView2Environment* environment)
 {
     if (FAILED(result)) {
+        // FIXME: "make sure runtime is installed..."
         errorMessageBox(L"Could not create WebView2 environment", result);
         return result;
     }
@@ -142,7 +151,7 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
                                                        ICoreWebView2Controller* controller)
 {
     if (FAILED(result)) {
-        errorMessageBox(L"Could not create WebView2 controller", result);
+        LOG_STDERR_INT("handleWebView2ControllerCompleted() called with HRESULT", result);
         return result;
     }
     // TODO: there is some visible black flash while the window plugin is appearing and
@@ -182,6 +191,7 @@ HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
             fPWindowId = 0;
         }
     }
+    fWebViewBusy = false;
     return S_OK;
 }
 
