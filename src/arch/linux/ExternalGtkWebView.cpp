@@ -77,7 +77,7 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewScriptMessageHandler& handler)
     }
 
     injectScript(String(HOST_SHIM_JS));
-    createConsole();
+    injectDefaultScripts();
 }
 
 ExternalGtkWebView::~ExternalGtkWebView()

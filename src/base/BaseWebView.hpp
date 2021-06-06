@@ -57,7 +57,7 @@ public:
     virtual void injectScript(String source) = 0;
 
 protected:
-    void createConsole();
+    void injectDefaultScripts();
     void loadFinished();
     void handleWebViewScriptMessage(ScriptMessageArguments& args);
 

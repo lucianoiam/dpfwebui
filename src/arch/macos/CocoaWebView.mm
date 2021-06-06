@@ -67,7 +67,7 @@ CocoaWebView::CocoaWebView(WebViewScriptMessageHandler& handler)
         }
     }
     injectScript(String(HOST_SHIM_JS));
-    createConsole();
+    injectDefaultScripts();
 }
 
 CocoaWebView::~CocoaWebView()

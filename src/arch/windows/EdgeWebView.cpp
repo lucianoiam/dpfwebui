@@ -61,7 +61,7 @@ EdgeWebView::EdgeWebView(WebViewScriptMessageHandler& handler)
     ::ShowWindow(fHelperHwnd,  SW_SHOWNOACTIVATE);
     
     injectScript(String(HOST_SHIM_JS));
-    createConsole();
+    injectDefaultScripts();
 }
 
 EdgeWebView::~EdgeWebView()
@@ -82,7 +82,7 @@ void EdgeWebView::reparent(uintptr_t windowId)
         bool isInitializing = fPWindowId != 0;
         fPWindowId = windowId;
         if (!isInitializing) {
-            // See handleWebViewControllerCompleted()
+            // See handleWebViewControllerCompleted() below
             HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
                 _LPCWSTR(platform::getTemporaryPath()), 0, this);
             if (FAILED(result)) {

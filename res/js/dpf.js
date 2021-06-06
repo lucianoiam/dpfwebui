@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export default class DPF {
+class DPF {
 
     editParameter(index, started) {
         this._call('editParameter', index, started);

@@ -25,16 +25,16 @@
 #define CSS_DISABLE_PINCH_ZOOM  "body { touch-action: pan-x pan-y; }"
 #define CSS_DISABLE_SELECTION   "body { user-select: none; -webkit-user-select: none; }"
 
-void BaseWebView::createConsole()
+void BaseWebView::injectDefaultScripts()
 {
     // Injected scripts run before any user script starts running
     injectScript(String(JS_CONSOLE_OUTPUT));
+    injectScript(String(JS_DISABLE_CONTEXT_MENU));
 }
 
 void BaseWebView::loadFinished()
 {
     // User scripts may have started running already
-    runScript(String(JS_DISABLE_CONTEXT_MENU));
     addStylesheet(String(CSS_DISABLE_PINCH_ZOOM));
     addStylesheet(String(CSS_DISABLE_SELECTION));
 }
