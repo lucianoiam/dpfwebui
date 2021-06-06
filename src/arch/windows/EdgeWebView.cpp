@@ -216,9 +216,7 @@ HRESULT EdgeWebView::handleWebViewWebMessageReceived(ICoreWebView2 *sender,
     }
     ::cJSON_free(jArgs);
     ::CoTaskMemFree(jsonStr);
-    if (!args.empty()) {
-        handleWebViewScriptMessage(args);
-    }
+    handleWebViewScriptMessage(args);
     return S_OK;
 }
 
