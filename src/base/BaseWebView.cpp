@@ -36,7 +36,7 @@ void BaseWebView::handleLoadFinished()
     // User scripts may have started running already
     addStylesheet(String(CSS_DISABLE_PINCH_ZOOM));
     addStylesheet(String(CSS_DISABLE_SELECTION));
-    fHandler.handleWebViewLoadFinished();
+    fHandler.webViewLoadFinished();
 }
 
 void BaseWebView::handleScriptMessage(ScriptMessageArguments& args)
@@ -45,7 +45,7 @@ void BaseWebView::handleScriptMessage(ScriptMessageArguments& args)
         SAFE_POP_ARG(args);
         std::cerr << SAFE_GET_STRING_ARG(args) << std::endl;
     } else {
-        fHandler.handleWebViewScriptMessage(args);
+        fHandler.webViewScriptMessageReceived(args);
     }
 }
 

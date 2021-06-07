@@ -34,7 +34,7 @@
 
 START_NAMESPACE_DISTRHO
 
-class WebUI : public UI, private WebViewEventHandler
+class WebUI : public UI, protected WebViewEventHandler
 {
 public:
     WebUI();
@@ -47,10 +47,14 @@ public:
 protected:
     void onResize(const ResizeEvent& ev) override;
 
-private:
-    void handleWebViewLoadFinished() override;
-    void handleWebViewScriptMessage(ScriptMessageArguments& args) override;
+    WEBVIEW_CLASS& webView() { return fWebView; }
 
+    // WebViewEventHandler
+
+    virtual void webViewLoadFinished() override;
+    virtual bool webViewScriptMessageReceived(ScriptMessageArguments& args) override;
+
+private:
     WEBVIEW_CLASS fWebView;
     uintptr_t     fParentWindowId;
 

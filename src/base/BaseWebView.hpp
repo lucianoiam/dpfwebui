@@ -38,8 +38,8 @@ typedef std::deque<ScriptValue> ScriptMessageArguments;
 class WebViewEventHandler
 {
 public:
-    virtual void handleWebViewLoadFinished() = 0;
-    virtual void handleWebViewScriptMessage(ScriptMessageArguments& args) = 0;
+    virtual void webViewLoadFinished() = 0;
+    virtual bool webViewScriptMessageReceived(ScriptMessageArguments& args) = 0;
 
 };
 
