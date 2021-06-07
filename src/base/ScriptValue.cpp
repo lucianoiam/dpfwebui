@@ -16,8 +16,6 @@
 
 #include "ScriptValue.hpp"
 
-#include <ostream>
-
 USE_NAMESPACE_DISTRHO
 
 std::ostream& operator<<(std::ostream &os, const ScriptValue &val) {
