@@ -66,7 +66,7 @@ String platform::getResourcePath()
 
 String platform::getTemporaryPath()
 {
-    // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPFTemp
+    // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPF_Temp
     char tempPath[MAX_PATH];
     HRESULT result = ::SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, 0, SHGFP_TYPE_DEFAULT, tempPath);
     if (FAILED(result)) {
@@ -75,7 +75,7 @@ String platform::getTemporaryPath()
     }
     // Append host executable name to the temp path otherwise WebView2 controller initialization
     // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
-    // simultaneously due to permissions. C:\Users\< USERNAME >\AppData\Local\DPFTemp\< HOST_BIN >
+    // simultaneously due to permissions. C:\Users\< USERNAME >\AppData\Local\DPF_Temp\< HOST_BIN >
     char exePath[MAX_PATH];
     if (::GetModuleFileName(0, exePath, sizeof(exePath)) == 0) {
         DISTRHO_LOG_STDERR_INT("Could not determine host executable path", ::GetLastError());
@@ -87,7 +87,7 @@ String platform::getTemporaryPath()
     // Since the minimum plugin target is Windows 7 it is acceptable to use a deprecated function.
     //::PathCchRemoveExtension(exeFilename, sizeof(exeFilename));
     ::PathRemoveExtension(exeFilename);
-    ::strcat(tempPath, "\\DPFTemp\\");
+    ::strcat(tempPath, "\\DPF_Temp\\");
     ::strcat(tempPath, exeFilename);
     return String(tempPath);
 }
