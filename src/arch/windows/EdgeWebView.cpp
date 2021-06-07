@@ -29,8 +29,9 @@
 #include "extra/cJSON.h"
 #include "DistrhoPluginInfo.h"
 
-#define TO_LPCWSTR(s)  std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s).c_str()
-#define TO_LPCSTR(s)   std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(s).c_str()
+#define WSTRING_CONVERTER std::wstring_convert<std::codecvt_utf8<wchar_t>>()
+#define TO_LPCWSTR(s)     WSTRING_CONVERTER.from_bytes(s).c_str()
+#define TO_LPCSTR(s)      WSTRING_CONVERTER.to_bytes(s).c_str()
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.chrome.webview.postMessage(args);"
 
