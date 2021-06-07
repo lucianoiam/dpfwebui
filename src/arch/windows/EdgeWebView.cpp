@@ -26,9 +26,10 @@
 #include "extra/cJSON.h"
 #include "DistrhoPluginInfo.h"
 
-#define _LPCWSTR(s) std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s).c_str()
-#define _LPCSTR(s)  std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(s).c_str()
-#define HOST_SHIM_JS "window.webviewHost = {postMessage: (args) => window.chrome.webview.postMessage(args)};"
+#define TO_LPCWSTR(s)  std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s).c_str()
+#define TO_LPCSTR(s)   std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(s).c_str()
+
+#define HOST_SHIM_JS  "window.webviewHost = {postMessage: (args) => window.chrome.webview.postMessage(args)};"
 
 USE_NAMESPACE_DISTRHO
 
@@ -85,7 +86,7 @@ void EdgeWebView::reparent(uintptr_t windowId)
             fWebViewBusy = true;
             // See handleWebViewControllerCompleted() below
             HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
-                _LPCWSTR(platform::getTemporaryPath()), 0, this);
+                TO_LPCWSTR(platform::getTemporaryPath()), 0, this);
             if (FAILED(result)) {
                 webViewLoaderErrorMessageBox(result);
             }
@@ -102,13 +103,13 @@ void EdgeWebView::navigate(String url)
         return; // later
     }
     fWebViewBusy = true;
-    ICoreWebView2_Navigate(fView, _LPCWSTR(url));
+    ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
 }
 
 void EdgeWebView::runScript(String source)
 {
     assert(fView != 0); // in the plugin specific case, fView==0 means a programming error
-    ICoreWebView2_ExecuteScript(fView, _LPCWSTR(source), 0);
+    ICoreWebView2_ExecuteScript(fView, TO_LPCWSTR(source), 0);
 }
 
 void EdgeWebView::injectScript(String source)
@@ -117,7 +118,7 @@ void EdgeWebView::injectScript(String source)
         fPInjectedScripts.push_back(source);
         return; // later
     }
-    ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, _LPCWSTR(source), 0);
+    ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
 }
 
 void EdgeWebView::resize(const Size<uint>& size)
@@ -147,7 +148,7 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
                                                        ICoreWebView2Controller* controller)
 {
     if (FAILED(result)) {
-        // Do not call MessageBox here, it makes the host crash if 'this' is being deleted
+        // Calling MessageBox here makes the host crash if 'this' is being deleted
         DISTRHO_LOG_STDERR_INT("handleWebView2ControllerCompleted() called with HRESULT", result);
         return result;
     }
@@ -199,7 +200,7 @@ HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
     (void)sender;
     LPWSTR jsonStr;
     ICoreWebView2WebMessageReceivedEventArgs_get_WebMessageAsJson(eventArgs, &jsonStr);
-    cJSON* jArgs = ::cJSON_Parse(_LPCSTR(jsonStr));
+    cJSON* jArgs = ::cJSON_Parse(TO_LPCSTR(jsonStr));
     ::CoTaskMemFree(jsonStr);
     ScriptMessageArguments args;
     if (::cJSON_IsArray(jArgs)) {
