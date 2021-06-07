@@ -19,16 +19,20 @@ R"DPF_JS(
 
 class DPF {
 
+    // UI::editParameter(uint32_t index, bool started)
     editParameter(index, started) {
         this._callNativeInternal('editParameter', index, started);
     }
 
+    // UI::webViewScriptMessageReceived(ScriptMessageArguments& args)
     callNative(...args) {
         window.webviewHost.postMessage([...args]);
     }
 
+    // Private methods
+
     _callNativeInternal(method, ...args) {
-        this.callNative('WebUI', method, ...args);
+        this.callNative('DPF', method, ...args);
     }
 
 }
