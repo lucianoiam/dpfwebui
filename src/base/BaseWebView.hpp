@@ -49,7 +49,7 @@ public:
     virtual void runScript(String source) = 0;
     virtual void injectScript(String source) = 0;
 
-    void sendHostMessage(const ScriptValueVector& args); // native->js
+    void postHostMessage(const ScriptValueVector& args); // native->js
 
 protected:
     void injectDefaultScripts(String platformSpecificScript);

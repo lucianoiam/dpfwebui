@@ -40,7 +40,7 @@ void BaseWebView::handleLoadFinished()
     fHandler.webViewLoadFinished();
 }
 
-void BaseWebView::sendHostMessage(const ScriptValueVector& args)
+void BaseWebView::postHostMessage(const ScriptValueVector& args)
 {
 	// WebKit-based webviews implement a mechanism for transferring messages from JS to the native
 	// side, carrying a payload of JavaScript values that can be accessed through jsc_value_* calls

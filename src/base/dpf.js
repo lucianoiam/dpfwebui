@@ -41,7 +41,7 @@ class DPF {
         window.webviewHost.postMessage([...args]);
     }
 
-    // BaseWebView::sendHostMessage(const ScriptValueVector& args)
+    // BaseWebView::postHostMessage(const ScriptValueVector& args)
     addHostMessageListener(listener) {
         window.webviewHost.addEventListener('message', (ev) => listener(ev.detail));
     }

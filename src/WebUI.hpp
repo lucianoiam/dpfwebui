@@ -49,7 +49,7 @@ protected:
 
     WEBVIEW_CLASS& webView() { return fWebView; }
 
-    void webViewSendHostMessage(const ScriptValueVector& args) { fWebView.sendHostMessage(args); }
+    void webViewpostHostMessage(const ScriptValueVector& args) { fWebView.postHostMessage(args); }
 
     // WebViewEventHandler
 
