@@ -27,12 +27,11 @@
 
 #include "ScriptValue.hpp"
 
-// SV means ScriptValue
-#define DISTRHO_SAFE_GET_SV_ARG(args)           (args.empty() ? ScriptValue() : args.front())
-#define DISTRHO_SAFE_GET_SV_ARG_AS_BOOL(args)   DISTRHO_SAFE_GET_SV_ARG(args).asBool()
-#define DISTRHO_SAFE_GET_SV_ARG_AS_DOUBLE(args) DISTRHO_SAFE_GET_SV_ARG(args).asDouble()
-#define DISTRHO_SAFE_GET_SV_ARG_AS_STRING(args) DISTRHO_SAFE_GET_SV_ARG(args).asString()
-#define DISTRHO_SAFE_POP_SV_ARG(args)           {if (!args.empty()) args.pop_front();}
+#define SAFE_GET_ARG(args)         (args.empty() ? ScriptValue() : args.front())
+#define SAFE_GET_BOOL_ARG(args)    SAFE_GET_ARG(args).asBool()
+#define SAFE_GET_DOUBLE_ARG(args)  SAFE_GET_ARG(args).asDouble()
+#define SAFE_GET_STRING_ARG(args)  SAFE_GET_ARG(args).asString()
+#define SAFE_POP_ARG(args)         {if (!args.empty()) args.pop_front();}
 
 START_NAMESPACE_DISTRHO
 

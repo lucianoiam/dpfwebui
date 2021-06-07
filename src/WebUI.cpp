@@ -39,7 +39,7 @@ WebUI::WebUI()
     float scaleFactor = platform::getSystemDisplayScaleFactor();
     setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
 #if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_OPENGL)
-    glClearColor(UNPACK_RGBA(DISTRHO_UI_BACKGROUND_COLOR, GLfloat));
+    glClearColor(DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
     fWebView.resize(getSize());
@@ -51,7 +51,7 @@ void WebUI::onDisplay()
     const Window& window = getParentWindow();
 #if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_CAIRO)
     cairo_t* cr = window.getGraphicsContext().cairo;
-    cairo_set_source_rgba(cr, UNPACK_RGBA(DISTRHO_UI_BACKGROUND_COLOR, double));
+    cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, double));
     cairo_paint(cr);
 #endif
     // onDisplay() can be called multiple times during lifetime of instance
@@ -80,17 +80,17 @@ void WebUI::handleWebViewLoadFinished()
 
 void WebUI::handleWebViewScriptMessage(ScriptMessageArguments& args)
 {
-    if (DISTRHO_SAFE_GET_SV_ARG_AS_STRING(args) != "DPF") {
+    if (SAFE_GET_STRING_ARG(args) != "DPF") {
         return;
     }
-    DISTRHO_SAFE_POP_SV_ARG(args);
-    String method = DISTRHO_SAFE_GET_SV_ARG_AS_STRING(args);
-    DISTRHO_SAFE_POP_SV_ARG(args);
+    SAFE_POP_ARG(args);
+    String method = SAFE_GET_STRING_ARG(args);
+    SAFE_POP_ARG(args);
     if (method == "editParameter") {
-        uint32_t index = static_cast<uint32_t>(DISTRHO_SAFE_GET_SV_ARG_AS_DOUBLE(args));
-        DISTRHO_SAFE_POP_SV_ARG(args);
-        bool started = static_cast<bool>(DISTRHO_SAFE_GET_SV_ARG_AS_BOOL(args));
-        DISTRHO_SAFE_POP_SV_ARG(args);
+        uint32_t index = static_cast<uint32_t>(SAFE_GET_DOUBLE_ARG(args));
+        SAFE_POP_ARG(args);
+        bool started = static_cast<bool>(SAFE_GET_BOOL_ARG(args));
+        SAFE_POP_ARG(args);
         editParameter(index, started);
         ::printf("Successful call to editParameter(%d, %s)\n", index, started ? "true" : "false");
     } else if (method == "setParameterValue") {

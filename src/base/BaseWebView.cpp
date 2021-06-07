@@ -20,10 +20,10 @@
 
 #include <iostream>
 
-#define JS_CONSOLE_OUTPUT       "window.console = {log: (s) => window.webviewHost.postMessage(['console.log', String(s)])};"
-#define JS_DISABLE_CONTEXT_MENU "window.oncontextmenu = (e) => e.preventDefault();"
-#define CSS_DISABLE_PINCH_ZOOM  "body { touch-action: pan-x pan-y; }"
-#define CSS_DISABLE_SELECTION   "body { user-select: none; -webkit-user-select: none; }"
+#define JS_CONSOLE_OUTPUT        "window.console = {log: (s) => window.webviewHost.postMessage(['console.log', String(s)])};"
+#define JS_DISABLE_CONTEXT_MENU  "window.oncontextmenu = (e) => e.preventDefault();"
+#define CSS_DISABLE_PINCH_ZOOM   "body { touch-action: pan-x pan-y; }"
+#define CSS_DISABLE_SELECTION    "body { user-select: none; -webkit-user-select: none; }"
 
 void BaseWebView::injectDefaultScripts(String platformSpecificScript)
 {
@@ -43,9 +43,9 @@ void BaseWebView::handleLoadFinished()
 
 void BaseWebView::handleScriptMessage(ScriptMessageArguments& args)
 {
-    if (DISTRHO_SAFE_GET_SV_ARG_AS_STRING(args) == "console.log") {
-        DISTRHO_SAFE_POP_SV_ARG(args);
-        std::cerr << DISTRHO_SAFE_GET_SV_ARG_AS_STRING(args) << std::endl;
+    if (SAFE_GET_STRING_ARG(args) == "console.log") {
+        SAFE_POP_ARG(args);
+        std::cerr << SAFE_GET_STRING_ARG(args) << std::endl;
     } else {
         fHandler.handleWebViewScriptMessage(args);
     }

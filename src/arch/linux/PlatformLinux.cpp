@@ -25,7 +25,6 @@
 #include <linux/limits.h>
 
 #include "base/Platform.hpp"
-#include "base/log.h"
 #include "base/macro.h"
 
 USE_NAMESPACE_DISTRHO
@@ -56,7 +55,7 @@ String platform::getSharedLibraryPath()
 {
     Dl_info dl_info;
     if (::dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
-        LOG_STDERR(::dlerror());
+        DISTRHO_LOG_STDERR(::dlerror());
         return String();
     } else {
         return String(dl_info.dli_fname);
@@ -68,7 +67,7 @@ String platform::getExecutablePath()
     char path[PATH_MAX];
     ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path) - 1);
     if (len == -1) {
-        LOG_STDERR_ERRNO("Could not determine executable path");
+        DISTRHO_LOG_STDERR_ERRNO("Could not determine executable path");
         return String();
     } else {
         return String(path);
