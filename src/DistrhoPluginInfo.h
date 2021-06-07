@@ -20,7 +20,7 @@
    An optional color in RGBA format. Matching the <html> background color to it
    greatly reduces flicker while the UI is being opened or resized.
  */
-#define DISTRHO_UI_BACKGROUND_COLOR 0x806080ff
+#define DISTRHO_UI_BACKGROUND_COLOR 0xffffffff
 
 /**
    Initial size of the UI
