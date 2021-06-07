@@ -68,7 +68,7 @@ String platform::getResourcePath()
             return String(::dirname(path)) + "/../Resources";
         }
     }
-    return getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_resources";
+    return getBinaryDirectoryPath() + RESOURCES_SUBDIR_STRING;
 }
 
 String platform::getTemporaryPath()

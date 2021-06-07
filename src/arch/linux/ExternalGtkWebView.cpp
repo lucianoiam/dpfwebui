@@ -63,7 +63,7 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewEventHandler& handler)
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
     char wfd[10];
     ::sprintf(wfd, "%d", fPipeFd[1][1]);
-    String helperPath = platform::getBinaryDirectoryPath() + "/" XSTR(BIN_BASENAME) "_helper";
+    String helperPath = platform::getBinaryDirectoryPath() + String("/" XSTR(BIN_BASENAME) "_helper");
     const char *argv[] = {helperPath, rfd, wfd, 0};
     int status = ::posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
     if (status != 0) {
