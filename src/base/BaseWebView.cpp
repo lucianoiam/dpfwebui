@@ -46,7 +46,7 @@ void BaseWebView::sendHostMessage(const ScriptValueVector& args)
     runScript(String("window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:456}));"));
 }
 
-void BaseWebView::handleScriptMessage(ScriptValueVector& args)
+void BaseWebView::handleScriptMessage(const ScriptValueVector& args)
 {
     if ((args.size() > 1) && (args[0].asString() == "console.log")) {
         std::cerr << args[1].asString() << std::endl;

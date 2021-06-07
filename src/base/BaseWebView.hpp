@@ -55,7 +55,7 @@ protected:
     void injectDefaultScripts(String platformSpecificScript);
     
     void handleLoadFinished();
-    void handleScriptMessage(ScriptValueVector& args); // js->native
+    void handleScriptMessage(const ScriptValueVector& args); // js->native
 
 private:
     void addStylesheet(String source);
