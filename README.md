@@ -1,5 +1,7 @@
-[WIP] Template for building multiplatform VST audio plugins with HTML/JavaScript UIs
-------------------------------------------------------------------------------------
+[WIP] Multiplatform VST audio plugins with HTML/JavaScript UI
+-------------------------------------------------------------
+
+What if the UI toolkit was a web UI toolkit? :)
 
 * Based on DPF: DISTRHO Plugin Framework
 * C++ for DSP code
@@ -18,4 +20,4 @@ Do not forget to visit https://github.com/DISTRHO
 
 If you find this software useful please support the developers 🎵🖤
 
-![](https://user-images.githubusercontent.com/930494/118394103-eae67280-b642-11eb-8e98-66267542adc0.png)
+![](https://user-images.githubusercontent.com/930494/121054583-c94d5680-c7bc-11eb-858c-0ef46bc21bd9.png)
