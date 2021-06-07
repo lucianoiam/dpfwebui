@@ -42,6 +42,10 @@ WebUI::WebUI()
     glClearColor(DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
+    const char* dpfJs =
+#include "base/dpf.js"
+    ;
+    fWebView.injectScript(String(dpfJs));
     fWebView.resize(getSize());
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
 }
