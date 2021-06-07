@@ -1,3 +1,4 @@
+R"DPF_JS(
 /*
  * dpf-webui
  * Copyright (C) 2021 Luciano Iam <lucianoiam@protonmail.com>
@@ -25,3 +26,4 @@ class DPF {
     }
 
 }
+)DPF_JS"
