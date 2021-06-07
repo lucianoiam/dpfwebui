@@ -122,7 +122,7 @@ void CocoaWebView::injectScript(String source)
     if (![message.body isKindOfClass:[NSArray class]]) {
         return;
     }
-    ScriptMessageArguments args;
+    ScriptValueDeque args;
     for (id objcArg : (NSArray *)message.body) {
         if (CFGetTypeID(objcArg) == CFBooleanGetTypeID()) {
             args.push_back(ScriptValue(static_cast<bool>([objcArg boolValue])));

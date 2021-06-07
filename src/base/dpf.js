@@ -24,7 +24,7 @@ class DPF {
         this._callNativeInternal('editParameter', index, started);
     }
 
-    // UI::webViewScriptMessageReceived(ScriptMessageArguments& args)
+    // UI::webViewScriptMessageReceived(ScriptValueDeque& args)
     callNative(...args) {
         window.webviewHost.postMessage([...args]);
     }

@@ -39,11 +39,16 @@ void BaseWebView::handleLoadFinished()
     fHandler.webViewLoadFinished();
 }
 
-void BaseWebView::handleScriptMessage(ScriptMessageArguments& args)
+void BaseWebView::sendScriptMessage(ScriptValueDeque& args)
 {
-    if (SAFE_GET_STRING_ARG(args) == "console.log") {
-        SAFE_POP_ARG(args);
-        std::cerr << SAFE_GET_STRING_ARG(args) << std::endl;
+    // TODO
+}
+
+void BaseWebView::handleScriptMessage(ScriptValueDeque& args)
+{
+    if (SAFE_GET_STRING(args) == "console.log") {
+        SAFE_POP_VALUE(args);
+        std::cerr << SAFE_GET_STRING(args) << std::endl;
     } else {
         fHandler.webViewScriptMessageReceived(args);
     }

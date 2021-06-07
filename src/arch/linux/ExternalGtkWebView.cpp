@@ -164,7 +164,7 @@ void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
 void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payloadSize)
 {
     // Should validate payload is never read past payloadSize 
-    ScriptMessageArguments args;
+    ScriptValueDeque args;
     int offset = 0;
     while (offset < payloadSize) {
         const char *type = payload + offset;

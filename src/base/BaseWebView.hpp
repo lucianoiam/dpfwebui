@@ -25,21 +25,21 @@
 
 #include "ScriptValue.hpp"
 
-#define SAFE_GET_ARG(args)         (args.empty() ? ScriptValue() : args.front())
-#define SAFE_GET_BOOL_ARG(args)    SAFE_GET_ARG(args).asBool()
-#define SAFE_GET_DOUBLE_ARG(args)  SAFE_GET_ARG(args).asDouble()
-#define SAFE_GET_STRING_ARG(args)  SAFE_GET_ARG(args).asString()
-#define SAFE_POP_ARG(args)         {if (!args.empty()) args.pop_front();}
+#define SAFE_GET_VALUE(d)   (d.empty() ? ScriptValue() : d.front())
+#define SAFE_GET_BOOL(d)    SAFE_GET_VALUE(d).asBool()
+#define SAFE_GET_DOUBLE(d)  SAFE_GET_VALUE(d).asDouble()
+#define SAFE_GET_STRING(d)  SAFE_GET_VALUE(d).asString()
+#define SAFE_POP_VALUE(d)   {if (!d.empty()) d.pop_front();}
 
 START_NAMESPACE_DISTRHO
 
-typedef std::deque<ScriptValue> ScriptMessageArguments;
+typedef std::deque<ScriptValue> ScriptValueDeque;
 
 class WebViewEventHandler
 {
 public:
     virtual void webViewLoadFinished() = 0;
-    virtual bool webViewScriptMessageReceived(ScriptMessageArguments& args) = 0;
+    virtual bool webViewScriptMessageReceived(ScriptValueDeque& args) = 0;
 
 };
 
@@ -55,11 +55,13 @@ public:
     virtual void runScript(String source) = 0;
     virtual void injectScript(String source) = 0;
 
+    void sendScriptMessage(ScriptValueDeque& args);
+
 protected:
     void injectDefaultScripts(String platformSpecificScript);
     
     void handleLoadFinished();
-    void handleScriptMessage(ScriptMessageArguments& args);
+    void handleScriptMessage(ScriptValueDeque& args);
 
 private:
     void addStylesheet(String source);
