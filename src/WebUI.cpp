@@ -80,17 +80,17 @@ void WebUI::handleWebViewLoadFinished()
 
 void WebUI::handleWebViewScriptMessage(ScriptMessageArguments& args)
 {
-    if (GET_STRING_ARGUMENT(args) != "DPF") {
+    if (DISTRHO_SAFE_GET_SV_ARG_AS_STRING(args) != "DPF") {
         return;
     }
-    POP_ARGUMENT(args);
-    String method = GET_STRING_ARGUMENT(args);
-    POP_ARGUMENT(args);
+    DISTRHO_SAFE_POP_SV_ARG(args);
+    String method = DISTRHO_SAFE_GET_SV_ARG_AS_STRING(args);
+    DISTRHO_SAFE_POP_SV_ARG(args);
     if (method == "editParameter") {
-        uint32_t index = static_cast<uint32_t>(GET_DOUBLE_ARGUMENT(args));
-        POP_ARGUMENT(args);
-        bool started = static_cast<bool>(GET_BOOL_ARGUMENT(args));
-        POP_ARGUMENT(args);
+        uint32_t index = static_cast<uint32_t>(DISTRHO_SAFE_GET_SV_ARG_AS_DOUBLE(args));
+        DISTRHO_SAFE_POP_SV_ARG(args);
+        bool started = static_cast<bool>(DISTRHO_SAFE_GET_SV_ARG_AS_BOOL(args));
+        DISTRHO_SAFE_POP_SV_ARG(args);
         editParameter(index, started);
         ::printf("Successful call to editParameter(%d, %s)\n", index, started ? "true" : "false");
     } else if (method == "setParameterValue") {
