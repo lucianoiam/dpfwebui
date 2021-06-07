@@ -15,6 +15,8 @@ R"DPF_JS(
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+{ // start private namespace
+
 class DPF {
 
     editParameter(index, started) {
@@ -26,4 +28,9 @@ class DPF {
     }
 
 }
+
+window.DPF = new DPF;
+
+} // end private namespace
+
 )DPF_JS"
