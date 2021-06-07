@@ -25,6 +25,7 @@
 #include <winuser.h>
 
 #include "base/Platform.hpp"
+#include "base/macro.h"
 #include "extra/cJSON.h"
 #include "DistrhoPluginInfo.h"
 
