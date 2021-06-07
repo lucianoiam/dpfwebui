@@ -23,8 +23,7 @@
 #define fWebView         ((WKWebView*)fView)
 #define fWebViewDelegate ((WebViewDelegate*)fDelegate)
 
-#define HOST_SHIM_JS "window.webviewHost = new EventTarget;" \
-                     "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
+#define HOST_SHIM_JS "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
 // NOTE: ARC is not available here
 

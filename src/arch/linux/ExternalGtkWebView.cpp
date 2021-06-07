@@ -33,7 +33,7 @@
   plugins to UI toolkit libraries like GTK or QT is known to be problematic.
 */
 
-#define HOST_SHIM_JS "window.webviewHost = {postMessage: (args) => window.webkit.messageHandlers.host.postMessage(args)};"
+#define HOST_SHIM_JS "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
 extern char **environ;
 
