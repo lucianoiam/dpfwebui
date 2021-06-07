@@ -42,6 +42,16 @@ void BaseWebView::handleLoadFinished()
 
 void BaseWebView::sendHostMessage(const ScriptValueVector& args)
 {
+	// WebKit-based webviews implement a mechanism for transferring messages from JS to the native
+	// side, carrying a payload of JavaScript values that can be accessed through jsc_value_* calls
+	// in Linux WebKitGTK or automatically bridged to its Objective-C counterparts in Mac WKWebView.
+	// On Edge WebView2 only JSON is available (see EdgeWebView::handleWebView2WebMessageReceived).
+	// There is no equivalent inverse mechanism for passing messages from native to JS, other than
+	// calling custom JavaScript using a function provided by all webviews.
+	// This method implements something like a "reverse" postMessage() aiming to keep things
+	// symmetrical and avoiding custom JavaScript as much as possible while keeping things generic.
+	// The window.webviewHost object is an EventTarget that can be listened for messages.
+
     // TODO
     runScript(String("window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:456}));"));
 }
