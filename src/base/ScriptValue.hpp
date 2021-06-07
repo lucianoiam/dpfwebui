@@ -17,11 +17,7 @@
 #ifndef SCRIPTVALUE_HPP
 #define SCRIPTVALUE_HPP
 
-#include <ostream>
-
 #include "extra/String.hpp"
-
-#include "DistrhoPluginInfo.h"
 
 START_NAMESPACE_DISTRHO
 
@@ -39,7 +35,13 @@ public:
     ScriptValue(double d) : fT(TDouble), fB(false), fD(d)  {};
     ScriptValue(String s) : fT(TString), fB(false), fD(0), fS(s) {};
 
+    // Convenience constructors
+    ScriptValue(uint32_t i)    : fT(TDouble), fB(false), fD(static_cast<double>(i)) {};
+    ScriptValue(float f)       : fT(TDouble), fB(false), fD(static_cast<double>(f)) {};
+    ScriptValue(const char *s) : fT(TString), fB(false), fD(0), fS(String(s)) {};
+
     bool   isNull()    const { return fT == TNull; }
+    Type   getType()   const { return fT; }
     bool   getBool()   const { return fB; }
     double getDouble() const { return fD; }
     String getString() const { return fS; }
@@ -47,35 +49,6 @@ public:
     operator bool()   const { return fB; }
     operator double() const { return fD; }
     operator String() const { return fS; }
-
-    std::ostream& operator<<(std::ostream &os) {
-        switch (fT) {
-            case TNull:
-                os << "null";
-                break;
-            case TBool:
-                os << (fB ? "true" : "false");
-                break;
-            case TDouble:
-                os << fD;
-                break;
-            case TString: {
-                const char *buf = fS.buffer();
-                int len = fS.length();
-                for (int i = 0; i < len; i++) {
-                    if (buf[i] != '"') {
-                        os << buf[i];
-                    } else {
-                        os << "\\\"";
-                    }
-                }
-                break;
-            }
-            default:
-                break;
-        }
-        return os; 
-    }
 
 private:
     Type   fT;
@@ -86,5 +59,7 @@ private:
 };
 
 END_NAMESPACE_DISTRHO
+
+std::ostream& operator<<(std::ostream &os, const ScriptValue &val);
 
 #endif // SCRIPTVALUE_HPP

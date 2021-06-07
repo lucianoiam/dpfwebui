@@ -17,17 +17,26 @@
 #include "BaseWebView.hpp"
 
 #include <iostream>
+#include <sstream>
 
-#define JS_CREATE_HOST_OBJECT    "window.webviewHost = new EventTarget;"
 #define JS_CREATE_CONSOLE        "window.console = {log: (s) => window.webviewHost.postMessage(['console.log', String(s)])};"
+#define JS_CREATE_HOST_OBJECT    "window.webviewHost = new EventTarget;" \
+                                 "window.webviewHost.addMessageListener = (lr) => {" \
+                                    "window.webviewHost.addEventListener('message', (ev) => lr(ev.detail)) };"
 #define JS_DISABLE_CONTEXT_MENU  "window.oncontextmenu = (e) => e.preventDefault();"
 #define CSS_DISABLE_PINCH_ZOOM   "body { touch-action: pan-x pan-y; }"
 #define CSS_DISABLE_SELECTION    "body { user-select: none; -webkit-user-select: none; }"
 
+/**
+   Keep this class generic, DPF specific functionality belongs to WebUI.
+ */
+
+USE_NAMESPACE_DISTRHO
+
 void BaseWebView::injectDefaultScripts(String platformSpecificScript)
 {
-    injectScript(String(JS_CREATE_HOST_OBJECT));
     injectScript(String(JS_CREATE_CONSOLE));
+    injectScript(String(JS_CREATE_HOST_OBJECT));
     injectScript(String(JS_DISABLE_CONTEXT_MENU));
     injectScript(platformSpecificScript);
 }
@@ -50,15 +59,26 @@ void BaseWebView::postMessage(const ScriptValueVector& args)
     // calling custom JavaScript using a function provided by webviews on all platforms.
     // This method implements something like a "reverse" postMessage() aiming to keep the bridge
     // symmetrical. Global window.webviewHost is an EventTarget that can be listened for messages.
-
-    // TODO
-    runScript(String("window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:456}));"));
+    std::stringstream ss;
+    ss << '[';
+    for (ScriptValueVector::const_iterator it = args.cbegin(); it != args.cend(); ++it) {
+        if (it != args.cbegin()) {
+            ss << ',';
+        }
+        ss << *it;
+    }
+    ss << ']';
+    String js;
+    js += "window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:";
+    js += ss.str().c_str();
+    js += "}));";
+    runScript(js);
 }
 
 void BaseWebView::handleScriptMessage(const ScriptValueVector& args)
 {
     if ((args.size() > 1) && (args[0].getString() == "console.log")) {
-        std::cerr << args[1].getString() << std::endl;
+        std::cerr << args[1].getString().buffer() << std::endl;
     } else {
         fHandler.webViewScriptMessageReceived(args);
     }

@@ -31,10 +31,10 @@ WebExampleUI::WebExampleUI()
 void WebExampleUI::webViewLoadFinished()
 {
     // Called when the main document finished loading
+    WebUI::webViewLoadFinished();
 }
 
 bool WebExampleUI::webViewScriptMessageReceived(const ScriptValueVector& args)
 {
-    (void)args;
-    return true;
+    return WebUI::webViewScriptMessageReceived(args);
 }

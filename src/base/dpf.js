@@ -20,16 +20,20 @@ R"DPF_JS(
 class DPF {
 
     constructor() {
-        // TODO
-
-        this.addMessageListener((message) => {
-            console.log(message);
+        // Listen to messages from host
+        this.addMessageListener((args) => {
+            if (args[0] == 'DPF') {
+                this._dispatch(...args.slice(1));
+            }
         });
+
+        // TEST CALL
+        this.editParameter(123,true);
     }
 
     // UI::editParameter(uint32_t index, bool started)
     editParameter(index, started) {
-        this._builtinCall('editParameter', index, started);
+        this._call('editParameter', index, started);
     }
 
     /**
@@ -38,20 +42,31 @@ class DPF {
 
     // WebViewEventHandler::webViewScriptMessageReceived(const ScriptValueVector& args)
     postMessage(...args) {
-        window.webviewHost.postMessage([...args]);
+        window.webviewHost.postMessage(args);
     }
 
     // BaseWebView::postMessage(const ScriptValueVector& args)
     addMessageListener(listener) {
-        window.webviewHost.addEventListener('message', (ev) => listener(ev.detail));
+        window.webviewHost.addMessageListener(listener);
     }
 
     /**
       Private methods
      */
 
-    _builtinCall(method, ...args) {
+    _call(method, ...args) {
         this.postMessage('DPF', method, ...args);
+    }
+
+    _dispatch(...args) {
+        switch (args[0]) {
+            case 'parameterChanged':
+                // TODO: call observers...
+                console.log(`Web received parameterChanged(${args.slice(1)})`);
+                break;
+            default:
+                break;
+        }
     }
 
 }

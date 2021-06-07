@@ -34,10 +34,10 @@ WebUI::WebUI()
     glClearColor(DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
-    String dpfLibrary = String(
+    String dpfjs = String(
 #include "base/dpf.js"
     );
-    fWebView.injectScript(dpfLibrary);
+    fWebView.injectScript(dpfjs);
     fWebView.resize(getSize());
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
 }
@@ -65,17 +65,15 @@ void WebUI::onResize(const ResizeEvent& ev)
 
 void WebUI::parameterChanged(uint32_t index, float value)
 {
-    (void)index;
-    (void)value;
-    // TODO
+    webViewPostMessage({"DPF", "parameterChanged", index, value});
 }
 
 void WebUI::webViewLoadFinished()
 {
     // TODO - send state?
 
-    // for testing purposes
-    webViewPostMessage({});
+    // TEST CALL
+    parameterChanged(123, 4.5);
 }
 
 bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
@@ -88,7 +86,7 @@ bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
         uint32_t index = static_cast<uint32_t>(args[2].getDouble());
         bool started = static_cast<bool>(args[3].getBool());
         editParameter(index, started);
-        ::printf("Successful call to WebUI::editParameter(%d, %s)\n", index, started ? "true" : "false");
+        ::printf("Native received editParameter(%d,%s)\n", index, started ? "true" : "false");
     } else if (method == "setParameterValue") {
         // uint32_t index, float value
 #if DISTRHO_PLUGIN_WANT_STATE
