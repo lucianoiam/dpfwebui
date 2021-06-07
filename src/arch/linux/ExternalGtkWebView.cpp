@@ -56,10 +56,8 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewEventHandler& handler)
     conf.fd_r = fPipeFd[1][0];
     conf.fd_w = fPipeFd[0][1];
     fIpc = ipc_init(&conf);
-
     fIpcThread = new IpcReadThread(*this);
     fIpcThread->startThread();
-
     // BIN_BASENAME is defined in Makefile
     char rfd[10];
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
@@ -72,7 +70,6 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewEventHandler& handler)
         DISTRHO_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
     }
-    
     injectDefaultScripts(String(HOST_SHIM_JS));
 }
 
@@ -209,7 +206,6 @@ void IpcReadThread::run()
     fd_set rfds;
     struct timeval tv;
     tlv_t packet;
-
     while (true) {
         FD_ZERO(&rfds);
         FD_SET(fd, &rfds);

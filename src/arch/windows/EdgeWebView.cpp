@@ -59,7 +59,6 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
         0, 0, 0, 0
     );
     ::ShowWindow(fHelperHwnd,  SW_SHOWNOACTIVATE);
-    
     injectDefaultScripts(String(HOST_SHIM_JS));
 }
 
