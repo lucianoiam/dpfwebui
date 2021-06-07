@@ -17,6 +17,8 @@
  */
  */
 
+{ // start private namespace
+
 class DPF {
 
     editParameter(index, started) {
@@ -28,4 +30,9 @@ class DPF {
     }
 
 }
+
+window.DPF = new DPF;
+
+} // end private namespace
+
 )DPF_JS"
