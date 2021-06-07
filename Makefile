@@ -23,10 +23,11 @@ NAME = d_dpf_webui
 # Files to build
 
 SRC_FILES_DSP = \
-    WebPlugin.cpp
+    WebExamplePlugin.cpp
 
 SRC_FILES_UI  = \
-    WebUI.cpp \
+    WebExampleUI.cpp \
+    base/WebUI.cpp \
     base/BaseWebView.cpp
 
 # Note this is not DPF's Makefile.base.mk

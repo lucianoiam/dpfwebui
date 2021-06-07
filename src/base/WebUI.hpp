@@ -17,52 +17,51 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WEBPLUGIN_HPP
-#define WEBPLUGIN_HPP
+#ifndef WEBUI_HPP
+#define WEBUI_HPP
 
-#include "DistrhoPlugin.hpp"
+#include "DistrhoUI.hpp"
+
+#ifdef DISTRHO_OS_LINUX
+#include "arch/linux/ExternalGtkWebView.hpp"
+#endif
+#ifdef DISTRHO_OS_MAC
+#include "arch/macos/CocoaWebView.hpp"
+#endif
+#ifdef DISTRHO_OS_WINDOWS
+#include "arch/windows/EdgeWebView.hpp"
+#endif
 
 START_NAMESPACE_DISTRHO
 
-class WebPlugin : public Plugin
+class WebUI : public UI, protected WebViewEventHandler
 {
 public:
-    WebPlugin();
-    ~WebPlugin() {};
+    WebUI();
+    virtual ~WebUI() {};
 
-    const char* getLabel() const override
-    {
-        return "WebUI";
-    }
+protected:
 
-    const char* getMaker() const override
-    {
-        return "Luciano Iam";
-    }
+    void onDisplay() override;
+    void onResize(const ResizeEvent& ev) override;
 
-    const char* getLicense() const override
-    {
-        return "ISC";
-    }
+    void parameterChanged(uint32_t index, float value) override;
 
-    uint32_t getVersion() const override
-    {
-        return 0;
-    }
+    WEBVIEW_CLASS& webView() { return fWebView; }
 
-    int64_t getUniqueId() const override
-    {
-        return d_cconst('d', 'W', 'e', 'b');
-    }
+    void webViewPostMessage(const ScriptValueVector& args) { fWebView.postMessage(args); }
 
-    void  initParameter(uint32_t index, Parameter& parameter) override;
-    float getParameterValue(uint32_t index) const override;
-    void  setParameterValue(uint32_t index, float value) override;
+    // WebViewEventHandler
 
-    void run(const float** inputs, float** outputs, uint32_t frames) override;
+    virtual void webViewLoadFinished() override;
+    virtual bool webViewScriptMessageReceived(const ScriptValueVector& args) override;
+
+private:
+    WEBVIEW_CLASS fWebView;
+    uintptr_t     fParentWindowId;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBPLUGIN_HPP
+#endif  // WEBUI_HPP

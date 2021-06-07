@@ -17,27 +17,27 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "WebPlugin.hpp"
+#include "WebExamplePlugin.hpp"
 
 USE_NAMESPACE_DISTRHO
 
 Plugin* DISTRHO::createPlugin()
 {
-    return new WebPlugin;
+    return new WebExamplePlugin;
 }
 
-WebPlugin::WebPlugin()
+WebExamplePlugin::WebExamplePlugin()
     : Plugin(0, 0, 0)
 {}
 
-void WebPlugin::initParameter(uint32_t index, Parameter& parameter)
+void WebExamplePlugin::initParameter(uint32_t index, Parameter& parameter)
 {
     // unused
     (void)index;
     (void)parameter;
 }
 
-float WebPlugin::getParameterValue(uint32_t index) const
+float WebExamplePlugin::getParameterValue(uint32_t index) const
 {
     return 0;
 
@@ -45,14 +45,14 @@ float WebPlugin::getParameterValue(uint32_t index) const
     (void)index;
 }
 
-void WebPlugin::setParameterValue(uint32_t index, float value)
+void WebExamplePlugin::setParameterValue(uint32_t index, float value)
 {
     // unused
     (void)index;
     (void)value;
 }
 
-void WebPlugin::run(const float** inputs, float** outputs, uint32_t frames)
+void WebExamplePlugin::run(const float** inputs, float** outputs, uint32_t frames)
 {
     memcpy(outputs[0], inputs[0], frames * sizeof(float));
 }

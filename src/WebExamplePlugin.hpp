@@ -17,51 +17,52 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WEBUI_HPP
-#define WEBUI_HPP
+#ifndef WEBEXAMPLEPLUGIN_HPP
+#define WEBEXAMPLEPLUGIN_HPP
 
-#include "DistrhoUI.hpp"
-
-#ifdef DISTRHO_OS_LINUX
-#include "arch/linux/ExternalGtkWebView.hpp"
-#endif
-#ifdef DISTRHO_OS_MAC
-#include "arch/macos/CocoaWebView.hpp"
-#endif
-#ifdef DISTRHO_OS_WINDOWS
-#include "arch/windows/EdgeWebView.hpp"
-#endif
+#include "DistrhoPlugin.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class WebUI : public UI, protected WebViewEventHandler
+class WebExamplePlugin : public Plugin
 {
 public:
-    WebUI();
-    ~WebUI() {};
+    WebExamplePlugin();
+    ~WebExamplePlugin() {};
 
-    void onDisplay() override;
+    const char* getLabel() const override
+    {
+        return "WebUI";
+    }
 
-    void parameterChanged(uint32_t index, float value) override;
+    const char* getMaker() const override
+    {
+        return "Luciano Iam";
+    }
 
-protected:
-    void onResize(const ResizeEvent& ev) override;
+    const char* getLicense() const override
+    {
+        return "ISC";
+    }
 
-    WEBVIEW_CLASS& webView() { return fWebView; }
+    uint32_t getVersion() const override
+    {
+        return 0;
+    }
 
-    void webViewPostMessage(const ScriptValueVector& args) { fWebView.postMessage(args); }
+    int64_t getUniqueId() const override
+    {
+        return d_cconst('d', 'W', 'e', 'b');
+    }
 
-    // WebViewEventHandler
+    void  initParameter(uint32_t index, Parameter& parameter) override;
+    float getParameterValue(uint32_t index) const override;
+    void  setParameterValue(uint32_t index, float value) override;
 
-    virtual void webViewLoadFinished() override;
-    virtual bool webViewScriptMessageReceived(const ScriptValueVector& args) override;
-
-private:
-    WEBVIEW_CLASS fWebView;
-    uintptr_t     fParentWindowId;
+    void run(const float** inputs, float** outputs, uint32_t frames) override;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBUI_HPP
+#endif  // WEBEXAMPLEPLUGIN_HPP
