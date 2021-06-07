@@ -84,7 +84,7 @@ void WebUI::webViewLoadFinished()
 
 bool WebUI::webViewScriptMessageReceived(ScriptMessageArguments& args)
 {
-    if (SAFE_GET_STRING_ARG(args) != "WebUI") {
+    if (SAFE_GET_STRING_ARG(args) != "DPF") {
         return false;
     }
     SAFE_POP_ARG(args);
@@ -104,7 +104,7 @@ bool WebUI::webViewScriptMessageReceived(ScriptMessageArguments& args)
         // const char* key, const char* value
 #endif
     } else {
-        DISTRHO_LOG_STDERR_COLOR("Invalid call to WebUI");
+        DISTRHO_LOG_STDERR_COLOR("Invalid call to native DPF method");
     }
     return true;
 }
