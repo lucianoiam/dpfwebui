@@ -41,16 +41,16 @@ void BaseWebView::handleLoadFinished()
     fHandler.webViewLoadFinished();
 }
 
-void BaseWebView::sendScriptMessage(ScriptValueDeque& args)
+void BaseWebView::sendHostMessage(const ScriptValueVector& args)
 {
     // TODO
+    runScript(String("window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:456}));"));
 }
 
-void BaseWebView::handleScriptMessage(ScriptValueDeque& args)
+void BaseWebView::handleScriptMessage(ScriptValueVector& args)
 {
-    if (SAFE_GET_STRING(args) == "console.log") {
-        SAFE_POP_VALUE(args);
-        std::cerr << SAFE_GET_STRING(args) << std::endl;
+    if ((args.size() > 1) && (args[0].asString() == "console.log")) {
+        std::cerr << args[1].asString() << std::endl;
     } else {
         fHandler.webViewScriptMessageReceived(args);
     }

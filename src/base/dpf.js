@@ -21,20 +21,39 @@
 
 class DPF {
 
-    // UI::editParameter(uint32_t index, bool started)
-    editParameter(index, started) {
-        this._callNativeInternal('editParameter', index, started);
+    constructor() {
+        // TODO
+
+        this.addHostMessageListener((message) => {
+            console.log(message);
+        });
     }
 
-    // UI::webViewScriptMessageReceived(ScriptValueDeque& args)
-    callNative(...args) {
+    // UI::editParameter(uint32_t index, bool started)
+    editParameter(index, started) {
+        this._builtinCall('editParameter', index, started);
+    }
+
+    /**
+      Convenience methods
+     */
+
+    // WebViewEventHandler::webViewScriptMessageReceived(const ScriptValueVector& args)
+    postScriptMessage(...args) {
         window.webviewHost.postMessage([...args]);
     }
 
-    // Private methods
+    // BaseWebView::sendHostMessage(const ScriptValueVector& args)
+    addHostMessageListener(listener) {
+        window.webviewHost.addEventListener('message', (ev) => listener(ev.detail));
+    }
 
-    _callNativeInternal(method, ...args) {
-        this.callNative('DPF', method, ...args);
+    /**
+      Private methods
+     */
+
+    _builtinCall(method, ...args) {
+        this.postScriptMessage('DPF', method, ...args);
     }
 
 }
