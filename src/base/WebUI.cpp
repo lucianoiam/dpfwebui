@@ -36,10 +36,10 @@ WebUI::WebUI()
     glClearColor(DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
-    String dpfjs = String(
-#include "base/dpf.js"
+    String js = String(
+#include "base/webui.js"
     );
-    fWebView.injectScript(dpfjs);
+    fWebView.injectScript(js);
     fWebView.resize(getSize());
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
 }
@@ -67,7 +67,7 @@ void WebUI::onResize(const ResizeEvent& ev)
 
 void WebUI::parameterChanged(uint32_t index, float value)
 {
-    webViewPostMessage({"DPF", "parameterChanged", index, value});
+    webViewPostMessage({"WebUI", "parameterChanged", index, value});
 }
 
 void WebUI::webViewLoadFinished()
@@ -80,7 +80,7 @@ void WebUI::webViewLoadFinished()
 
 bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
 {
-    if ((args.size() < 4) || (args[0].getString() != "DPF")) {
+    if ((args.size() < 4) || (args[0].getString() != "WebUI")) {
         return false;
     }
     String method = args[1].getString();
@@ -96,7 +96,7 @@ bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
         // const char* key, const char* value
 #endif
     } else {
-        DISTRHO_LOG_STDERR_COLOR("Invalid call to native DPF method");
+        DISTRHO_LOG_STDERR_COLOR("Invalid call to native WebUI method");
     }
     return true;
 }
