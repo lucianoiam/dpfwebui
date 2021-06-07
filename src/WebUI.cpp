@@ -82,7 +82,7 @@ void WebUI::webViewLoadFinished()
     // TODO - send state
 
     // for testing purposes
-    webViewpostHostMessage({});
+    webViewPostMessage({});
 }
 
 bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
