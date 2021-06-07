@@ -1,3 +1,4 @@
+R"WEBUI_JS(
 /*
  * dpf-webui
  * Copyright (C) 2021 Luciano Iam <lucianoiam@protonmail.com>
@@ -14,22 +15,38 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-class WebExampleUI extends WebUI {
+class WebUI {
 
     constructor() {
-        super()
-        
-        const main = document.getElementById('main');
-        main.innerHTML = `<h1>Made with DPF</h1><pre>${navigator.userAgent}</pre>`;
-
-        // TEST CALL
-        this.editParameter(123,true);
+        window.webviewHost.addMessageListener((args) => {
+            if (args[0] == 'WebUI') {
+                this[args[1]](...args.slice(2));
+            } else {
+                this.messageReceived(args);
+            }
+        });
     }
 
+    // UI::editParameter(uint32_t index, bool started)
+    editParameter(index, started) {
+        this.postMessage('WebUI', 'editParameter', index, started);
+    }
+
+    // UI::parameterChanged(uint32_t index, float value)
     parameterChanged(index, value) {
-        console.log(`Web received parameterChanged(${index},${value})`);
+        // default empty implementation
+    }
+
+    // (cpp->js) BaseWebView::postMessage(const ScriptValueVector& args)
+    messageReceived(args) {
+        // default empty implementation
+    }
+
+    // (js->cpp) WebViewEventHandler::webViewScriptMessageReceived(const ScriptValueVector& args)
+    postMessage(...args) {
+        window.webviewHost.postMessage(args);
     }
 
 }
 
-new WebExampleUI;
+)WEBUI_JS"
