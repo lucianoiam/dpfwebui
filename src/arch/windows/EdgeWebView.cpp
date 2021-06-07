@@ -66,8 +66,7 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
 EdgeWebView::~EdgeWebView()
 {
     if (fWebViewBusy) {
-         // Avoid crash when opening and closing the UI too quickly
-        ::Sleep(1000);
+        ::Sleep(1000); // avoid crash when opening and closing the UI too quickly
     }
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
@@ -203,6 +202,7 @@ HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
     LPWSTR jsonStr;
     ICoreWebView2WebMessageReceivedEventArgs_get_WebMessageAsJson(eventArgs, &jsonStr);
     cJSON* jArgs = ::cJSON_Parse(_LPCSTR(jsonStr));
+    ::CoTaskMemFree(jsonStr);
     ScriptMessageArguments args;
     if (::cJSON_IsArray(jArgs)) {
         int numArgs = ::cJSON_GetArraySize(jArgs);
@@ -224,7 +224,6 @@ HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
         }
     }
     ::cJSON_free(jArgs);
-    ::CoTaskMemFree(jsonStr);
     handleScriptMessage(args);
     return S_OK;
 }
