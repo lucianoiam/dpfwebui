@@ -51,7 +51,7 @@ protected:
 
     WEBVIEW_CLASS& webView() { return fWebView; }
 
-    void webViewpostHostMessage(const ScriptValueVector& args) { fWebView.postHostMessage(args); }
+    void webViewPostMessage(const ScriptValueVector& args) { fWebView.postMessage(args); }
 
     // WebViewEventHandler
 

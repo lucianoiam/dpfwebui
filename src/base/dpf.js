@@ -24,7 +24,7 @@ class DPF {
     constructor() {
         // TODO
 
-        this.addHostMessageListener((message) => {
+        this.addMessageListener((message) => {
             console.log(message);
         });
     }
@@ -39,12 +39,12 @@ class DPF {
      */
 
     // WebViewEventHandler::webViewScriptMessageReceived(const ScriptValueVector& args)
-    postScriptMessage(...args) {
+    postMessage(...args) {
         window.webviewHost.postMessage([...args]);
     }
 
-    // BaseWebView::postHostMessage(const ScriptValueVector& args)
-    addHostMessageListener(listener) {
+    // BaseWebView::postMessage(const ScriptValueVector& args)
+    addMessageListener(listener) {
         window.webviewHost.addEventListener('message', (ev) => listener(ev.detail));
     }
 
@@ -53,7 +53,7 @@ class DPF {
      */
 
     _builtinCall(method, ...args) {
-        this.postScriptMessage('DPF', method, ...args);
+        this.postMessage('DPF', method, ...args);
     }
 
 }
