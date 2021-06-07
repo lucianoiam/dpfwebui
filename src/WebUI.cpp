@@ -77,15 +77,15 @@ void WebUI::onResize(const ResizeEvent& ev)
     fWebView.resize(ev.size);
 }
 
-void WebUI::handleWebViewLoadFinished()
+void WebUI::webViewLoadFinished()
 {
     // TODO - send state
 }
 
-void WebUI::handleWebViewScriptMessage(ScriptMessageArguments& args)
+bool WebUI::webViewScriptMessageReceived(ScriptMessageArguments& args)
 {
-    if (SAFE_GET_STRING_ARG(args) != "DPF") {
-        return;
+    if (SAFE_GET_STRING_ARG(args) != "WebUI") {
+        return false;
     }
     SAFE_POP_ARG(args);
     String method = SAFE_GET_STRING_ARG(args);
@@ -96,12 +96,15 @@ void WebUI::handleWebViewScriptMessage(ScriptMessageArguments& args)
         bool started = static_cast<bool>(SAFE_GET_BOOL_ARG(args));
         SAFE_POP_ARG(args);
         editParameter(index, started);
-        ::printf("Successful call to editParameter(%d, %s)\n", index, started ? "true" : "false");
+        ::printf("Successful call to WebUI::editParameter(%d, %s)\n", index, started ? "true" : "false");
     } else if (method == "setParameterValue") {
         // uint32_t index, float value
 #if DISTRHO_PLUGIN_WANT_STATE
     } else if (method == "setState") {
         // const char* key, const char* value
 #endif
+    } else {
+        DISTRHO_LOG_STDERR_COLOR("Invalid call to WebUI");
     }
+    return true;
 }

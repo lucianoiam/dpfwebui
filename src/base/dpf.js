@@ -22,11 +22,15 @@
 class DPF {
 
     editParameter(index, started) {
-        this._call('editParameter', index, started);
+        this._callWebUI('editParameter', index, started);
     }
 
-    _call(method, ...args) {
-        window.webviewHost.postMessage(['DPF', method, ...args]);
+    callNative(...args) {
+        window.webviewHost.postMessage([...args]);
+    }
+
+    _callWebUI(method, ...args) {
+        this.callNative('WebUI', method, ...args);
     }
 
 }
