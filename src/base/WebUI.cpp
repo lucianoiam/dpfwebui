@@ -86,7 +86,7 @@ bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
         uint32_t index = static_cast<uint32_t>(args[2].getDouble());
         bool started = static_cast<bool>(args[3].getBool());
         editParameter(index, started);
-        ::printf("Native received editParameter(%d,%s)\n", index, started ? "true" : "false");
+        ::printf("C++ received editParameter(%d,%s)\n", index, started ? "true" : "false");
     } else if (method == "setParameterValue") {
         // uint32_t index, float value
 #if DISTRHO_PLUGIN_WANT_STATE

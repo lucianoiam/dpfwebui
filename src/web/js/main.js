@@ -27,7 +27,7 @@ class WebExampleUI extends WebUI {
     }
 
     parameterChanged(index, value) {
-        console.log(`Web received parameterChanged(${index},${value})`);
+        console.log(`WEB received parameterChanged(${index},${value})`);
     }
 
 }
