@@ -23,7 +23,7 @@
 #define fWebView         ((WKWebView*)fView)
 #define fWebViewDelegate ((WebViewDelegate*)fDelegate)
 
-#define HOST_SHIM_JS "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
+#define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
 // NOTE: ARC is not available here
 
@@ -56,7 +56,7 @@ CocoaWebView::CocoaWebView(WebViewEventHandler& handler)
             NSLog(@"Could not set transparent color for web view");
         }
     }
-    injectDefaultScripts(String(HOST_SHIM_JS));
+    injectDefaultScripts(String(JS_POST_MESSAGE_SHIM));
 }
 
 CocoaWebView::~CocoaWebView()
