@@ -231,6 +231,7 @@ HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
 
 void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
 {
+	// TODO: it would be better to display a message within the window using DPF calls
     std::wstringstream ss;
     ss << "Make sure you have installed the Microsoft Edge WebView2 Runtime. "
        << "Error 0x" << std::hex << result;
