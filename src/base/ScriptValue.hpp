@@ -19,6 +19,8 @@
 #ifndef SCRIPTVALUE_HPP
 #define SCRIPTVALUE_HPP
 
+#include <ostream>
+
 #include "extra/String.hpp"
 
 #include "DistrhoPluginInfo.h"
@@ -27,12 +29,19 @@ START_NAMESPACE_DISTRHO
 
 class ScriptValue {
 public:
-    ScriptValue()         : fNull(true),  fB(false), fD(0) {};
-    ScriptValue(bool b)   : fNull(false), fB(b),     fD(0) {};
-    ScriptValue(double d) : fNull(false), fB(false), fD(d) {};
-    ScriptValue(String s) : fNull(false), fB(false), fD(0), fS(s) {};
+    enum Type {
+        TNull,
+        TBool,
+        TDouble,
+        TString
+    };
 
-    bool   isNull()    const { return fNull; }
+    ScriptValue()         : fT(TNull),   fB(false), fD(0)  {};
+    ScriptValue(bool b)   : fT(TBool),   fB(b),     fD(0)  {};
+    ScriptValue(double d) : fT(TDouble), fB(false), fD(d)  {};
+    ScriptValue(String s) : fT(TString), fB(false), fD(0), fS(s) {};
+
+    bool   isNull()    const { return fT == TNull; }
     bool   getBool()   const { return fB; }
     double getDouble() const { return fD; }
     String getString() const { return fS; }
@@ -41,8 +50,37 @@ public:
     operator double() const { return fD; }
     operator String() const { return fS; }
 
+    std::ostream& operator<<(std::ostream &os) {
+        switch (fT) {
+            case TNull:
+                os << "null";
+                break;
+            case TBool:
+                os << (fB ? "true" : "false");
+                break;
+            case TDouble:
+                os << fD;
+                break;
+            case TString: {
+                const char *buf = fS.buffer();
+                int len = fS.length();
+                for (int i = 0; i < len; i++) {
+                    if (buf[i] != '"') {
+                        os << buf[i];
+                    } else {
+                        os << "\\\"";
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
+        return os; 
+    }
+
 private:
-    bool   fNull;
+    Type   fT;
     bool   fB;
     double fD;
     String fS;
