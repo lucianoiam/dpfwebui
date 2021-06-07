@@ -18,28 +18,22 @@
 #define BASEWEBVIEW_HPP
 
 #include <cstdint>
-#include <deque>
+#include <vector>
 
 #include "dgl/Geometry.hpp"
 #include "extra/String.hpp"
 
 #include "ScriptValue.hpp"
 
-#define SAFE_GET_VALUE(d)   (d.empty() ? ScriptValue() : d.front())
-#define SAFE_GET_BOOL(d)    SAFE_GET_VALUE(d).asBool()
-#define SAFE_GET_DOUBLE(d)  SAFE_GET_VALUE(d).asDouble()
-#define SAFE_GET_STRING(d)  SAFE_GET_VALUE(d).asString()
-#define SAFE_POP_VALUE(d)   {if (!d.empty()) d.pop_front();}
-
 START_NAMESPACE_DISTRHO
 
-typedef std::deque<ScriptValue> ScriptValueDeque;
+typedef std::vector<ScriptValue> ScriptValueVector;
 
 class WebViewEventHandler
 {
 public:
     virtual void webViewLoadFinished() = 0;
-    virtual bool webViewScriptMessageReceived(ScriptValueDeque& args) = 0;
+    virtual bool webViewScriptMessageReceived(const ScriptValueVector& args) = 0;
 
 };
 
@@ -55,13 +49,13 @@ public:
     virtual void runScript(String source) = 0;
     virtual void injectScript(String source) = 0;
 
-    void sendScriptMessage(ScriptValueDeque& args);
+    void sendHostMessage(const ScriptValueVector& args);
 
 protected:
     void injectDefaultScripts(String platformSpecificScript);
     
     void handleLoadFinished();
-    void handleScriptMessage(ScriptValueDeque& args);
+    void handleScriptMessage(ScriptValueVector& args);
 
 private:
     void addStylesheet(String source);

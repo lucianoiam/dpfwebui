@@ -23,7 +23,8 @@
 #define fWebView         ((WKWebView*)fView)
 #define fWebViewDelegate ((WebViewDelegate*)fDelegate)
 
-#define HOST_SHIM_JS "window.webviewHost = {postMessage: (args) => window.webkit.messageHandlers.host.postMessage(args)};"
+#define HOST_SHIM_JS "window.webviewHost = new EventTarget;" \
+                     "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
 // NOTE: ARC is not available here
 
@@ -122,7 +123,7 @@ void CocoaWebView::injectScript(String source)
     if (![message.body isKindOfClass:[NSArray class]]) {
         return;
     }
-    ScriptValueDeque args;
+    ScriptValueVector args;
     for (id objcArg : (NSArray *)message.body) {
         if (CFGetTypeID(objcArg) == CFBooleanGetTypeID()) {
             args.push_back(ScriptValue(static_cast<bool>([objcArg boolValue])));

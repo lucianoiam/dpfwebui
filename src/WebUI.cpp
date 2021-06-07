@@ -17,6 +17,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <deque>
+
 #include "WebUI.hpp"
 #include "Window.hpp"
 
@@ -78,21 +80,20 @@ void WebUI::onResize(const ResizeEvent& ev)
 void WebUI::webViewLoadFinished()
 {
     // TODO - send state
+
+    // for testing purposes
+    webViewSendHostMessage({});
 }
 
-bool WebUI::webViewScriptMessageReceived(ScriptValueDeque& args)
+bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
 {
-    if (SAFE_GET_STRING(args) != "DPF") {
+    if ((args.size() < 4) || (args[0].asString() != "DPF")) {
         return false;
     }
-    SAFE_POP_VALUE(args);
-    String method = SAFE_GET_STRING(args);
-    SAFE_POP_VALUE(args);
+    String method = args[1].asString();
     if (method == "editParameter") {
-        uint32_t index = static_cast<uint32_t>(SAFE_GET_DOUBLE(args));
-        SAFE_POP_VALUE(args);
-        bool started = static_cast<bool>(SAFE_GET_BOOL(args));
-        SAFE_POP_VALUE(args);
+        uint32_t index = static_cast<uint32_t>(args[2].asDouble());
+        bool started = static_cast<bool>(args[3].asBool());
         editParameter(index, started);
         ::printf("Successful call to WebUI::editParameter(%d, %s)\n", index, started ? "true" : "false");
     } else if (method == "setParameterValue") {

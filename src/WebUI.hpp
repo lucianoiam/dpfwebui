@@ -49,12 +49,12 @@ protected:
 
     WEBVIEW_CLASS& webView() { return fWebView; }
 
-    void webViewSendScriptMessage(ScriptValueDeque& args) { fWebView.sendScriptMessage(args); }
+    void webViewSendHostMessage(const ScriptValueVector& args) { fWebView.sendHostMessage(args); }
 
     // WebViewEventHandler
 
     virtual void webViewLoadFinished() override;
-    virtual bool webViewScriptMessageReceived(ScriptValueDeque& args) override;
+    virtual bool webViewScriptMessageReceived(const ScriptValueVector& args) override;
 
 private:
     WEBVIEW_CLASS fWebView;
