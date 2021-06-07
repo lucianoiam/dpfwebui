@@ -19,6 +19,8 @@
 #ifndef SCRIPTVALUE_HPP
 #define SCRIPTVALUE_HPP
 
+#include <ostream>
+
 #include "extra/String.hpp"
 
 START_NAMESPACE_DISTRHO
