@@ -50,8 +50,8 @@ void BaseWebView::sendHostMessage(const ScriptValueVector& args)
 
 void BaseWebView::handleScriptMessage(const ScriptValueVector& args)
 {
-    if ((args.size() > 1) && (args[0].asString() == "console.log")) {
-        std::cerr << args[1].asString() << std::endl;
+    if ((args.size() > 1) && (args[0].getString() == "console.log")) {
+        std::cerr << args[1].getString() << std::endl;
     } else {
         fHandler.webViewScriptMessageReceived(args);
     }

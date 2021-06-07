@@ -89,13 +89,13 @@ void WebUI::webViewLoadFinished()
 
 bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
 {
-    if ((args.size() < 4) || (args[0].asString() != "DPF")) {
+    if ((args.size() < 4) || (args[0].getString() != "DPF")) {
         return false;
     }
-    String method = args[1].asString();
+    String method = args[1].getString();
     if (method == "editParameter") {
-        uint32_t index = static_cast<uint32_t>(args[2].asDouble());
-        bool started = static_cast<bool>(args[3].asBool());
+        uint32_t index = static_cast<uint32_t>(args[2].getDouble());
+        bool started = static_cast<bool>(args[3].getBool());
         editParameter(index, started);
         ::printf("Successful call to WebUI::editParameter(%d, %s)\n", index, started ? "true" : "false");
     } else if (method == "setParameterValue") {
