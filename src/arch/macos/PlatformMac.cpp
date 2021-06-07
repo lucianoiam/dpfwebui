@@ -70,7 +70,7 @@ String platform::getResourcePath()
             return String(::dirname(path)) + "/../Resources";
         }
     }
-    return getBinaryDirectoryPath() + RESOURCES_SUBDIR_STRING;
+    return getBinaryDirectoryPath() + kResourcesSubdirectoryString;
 }
 
 String platform::getTemporaryPath()

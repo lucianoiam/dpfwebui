@@ -21,9 +21,9 @@
 
 #include "extra/String.hpp"
 
-START_NAMESPACE_DISTRHO
+#include "macro.h"
 
-#define RESOURCES_SUBDIR_STRING  String("/" XSTR(BIN_BASENAME) "_resources");
+START_NAMESPACE_DISTRHO
 
 namespace platform {
 
@@ -40,6 +40,8 @@ namespace platform {
     // Helps scaling the web view on high density displays
 
     float getSystemDisplayScaleFactor();
+
+    const String kResourcesSubdirectoryString = String("/" XSTR(BIN_BASENAME) "_resources");
 
 }
 
