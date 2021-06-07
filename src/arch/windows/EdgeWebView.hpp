@@ -75,7 +75,7 @@ private:
     ICoreWebView2Controller* fController;
     ICoreWebView2*           fView;
 
-    // "P" means "pending"
+    // P means pending
     uintptr_t           fPWindowId;
     Size<uint>          fPSize;
     String              fPUrl;

@@ -25,11 +25,12 @@
 
 #include "ScriptValue.hpp"
 
-#define GET_ARGUMENT(args)        (args.empty() ? ScriptValue() : args.front())
-#define GET_BOOL_ARGUMENT(args)   GET_ARGUMENT(args).asBool()
-#define GET_DOUBLE_ARGUMENT(args) GET_ARGUMENT(args).asDouble()
-#define GET_STRING_ARGUMENT(args) GET_ARGUMENT(args).asString()
-#define POP_ARGUMENT(args)        {if (!args.empty()) args.pop_front();}
+// SV means ScriptValue
+#define DISTRHO_SAFE_GET_SV_ARG(args)           (args.empty() ? ScriptValue() : args.front())
+#define DISTRHO_SAFE_GET_SV_ARG_AS_BOOL(args)   DISTRHO_SAFE_GET_SV_ARG(args).asBool()
+#define DISTRHO_SAFE_GET_SV_ARG_AS_DOUBLE(args) DISTRHO_SAFE_GET_SV_ARG(args).asDouble()
+#define DISTRHO_SAFE_GET_SV_ARG_AS_STRING(args) DISTRHO_SAFE_GET_SV_ARG(args).asString()
+#define DISTRHO_SAFE_POP_SV_ARG(args)           {if (!args.empty()) args.pop_front();}
 
 START_NAMESPACE_DISTRHO
 
@@ -38,7 +39,7 @@ typedef std::deque<ScriptValue> ScriptMessageArguments;
 class WebViewEventHandler
 {
 public:
-	virtual void handleWebViewLoadFinished() = 0;
+    virtual void handleWebViewLoadFinished() = 0;
     virtual void handleWebViewScriptMessage(ScriptMessageArguments& args) = 0;
 
 };

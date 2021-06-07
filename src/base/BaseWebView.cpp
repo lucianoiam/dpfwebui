@@ -41,9 +41,9 @@ void BaseWebView::handleLoadFinished()
 
 void BaseWebView::handleScriptMessage(ScriptMessageArguments& args)
 {
-    if (GET_STRING_ARGUMENT(args) == "console.log") {
-        POP_ARGUMENT(args);
-        std::cerr << GET_STRING_ARGUMENT(args) << std::endl;
+    if (DISTRHO_SAFE_GET_SV_ARG_AS_STRING(args) == "console.log") {
+        DISTRHO_SAFE_POP_SV_ARG(args);
+        std::cerr << DISTRHO_SAFE_GET_SV_ARG_AS_STRING(args) << std::endl;
     } else {
         fHandler.handleWebViewScriptMessage(args);
     }
