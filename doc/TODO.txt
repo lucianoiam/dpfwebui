@@ -4,7 +4,8 @@ ALL PLATFORMS
 - Catch changes in res/ directory files and trigger Makefile 'resources' target
 - Persistent state handling
 - JavaScript alert(), confirm(), prompt()
-- Allow calling Window::openFileBrowser() from JavaScript 
+- Allow calling Window::openFileBrowser() from JavaScript
+- Launch system browser for http:// links
 
 
 LINUX

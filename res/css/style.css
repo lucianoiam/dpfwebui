@@ -7,20 +7,24 @@ html {
 }
 
 body {
-    background-color: #806080ff;
-    color: #fff;
-    font-family: sans-serif;
-    margin: 0;
-    padding: 30px;
     height: 100%;
-    overflow: hidden;
+    padding: 20px;
+    margin: 0;
+}
+
+pre {
+    white-space: pre-line;
 }
 
 #main {
+    height: 100%;
+    padding: 10px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100%;
-    border: dashed 2px #fff;
-    border-radius: 30px;
+    text-align: center;
+    background-color: #f0f0f0;
+    border: solid 1px #ddd;
+    overflow: hidden;
 }
