@@ -24,7 +24,6 @@
 #include <sys/wait.h>
 
 #include "base/Platform.hpp"
-#include "base/log.h"
 #include "base/macro.h"
 
 /*
@@ -46,11 +45,11 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewEventHandler& handler)
 {
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
     if (::pipe(fPipeFd[0]) == -1) {
-        LOG_STDERR_ERRNO("Could not create parent->helper pipe");
+        DISTRHO_LOG_STDERR_ERRNO("Could not create parent->helper pipe");
         return;
     }
     if (::pipe(fPipeFd[1]) == -1) {
-        LOG_STDERR_ERRNO("Could not create helper->parent pipe");
+        DISTRHO_LOG_STDERR_ERRNO("Could not create helper->parent pipe");
         return;
     }
     ipc_conf_t conf;
@@ -70,7 +69,7 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewEventHandler& handler)
     const char *argv[] = {helperPath, rfd, wfd, 0};
     int status = ::posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
     if (status != 0) {
-        LOG_STDERR_ERRNO("Could not spawn helper subprocess");
+        DISTRHO_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
     }
     
@@ -84,7 +83,7 @@ ExternalGtkWebView::~ExternalGtkWebView()
             int stat;
             ::waitpid(fPid, &stat, 0);
         } else {
-            LOG_STDERR_ERRNO("Could not terminate helper subprocess");
+            DISTRHO_LOG_STDERR_ERRNO("Could not terminate helper subprocess");
         }
         fPid = -1;
     }
@@ -99,7 +98,7 @@ ExternalGtkWebView::~ExternalGtkWebView()
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             if ((fPipeFd[i][j] != -1) && (close(fPipeFd[i][j]) == -1)) {
-                LOG_STDERR_ERRNO("Could not close pipe");
+                DISTRHO_LOG_STDERR_ERRNO("Could not close pipe");
             }
             fPipeFd[i][j] = -1;
         }
@@ -146,7 +145,7 @@ int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, in
     packet.v = payload;
     int retval;
     if ((retval = ipc_write(fIpc, &packet)) == -1) {
-        LOG_STDERR_ERRNO("Could not write to IPC channel");
+        DISTRHO_LOG_STDERR_ERRNO("Could not write to IPC channel");
     }
     return retval;
 }
@@ -218,7 +217,7 @@ void IpcReadThread::run()
         tv.tv_usec = 100000;
         int retval = ::select(fd + 1, &rfds, 0, 0, &tv);
         if (retval == -1) {
-            LOG_STDERR_ERRNO("Failed select() on IPC channel");
+            DISTRHO_LOG_STDERR_ERRNO("Failed select() on IPC channel");
             break;
         }
         if (shouldThreadExit()) {
@@ -228,7 +227,7 @@ void IpcReadThread::run()
             continue; // timeout
         }
         if (ipc_read(fView.ipc(), &packet) == -1) {
-            LOG_STDERR_ERRNO("Could not read from IPC channel");
+            DISTRHO_LOG_STDERR_ERRNO("Could not read from IPC channel");
             break;
         }
         fView.ipcReadCallback(packet);

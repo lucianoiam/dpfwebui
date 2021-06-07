@@ -23,7 +23,6 @@
 #include <winuser.h>
 
 #include "base/Platform.hpp"
-#include "base/log.h"
 #include "extra/cJSON.h"
 #include "DistrhoPluginInfo.h"
 
@@ -150,7 +149,7 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
 {
     if (FAILED(result)) {
         // Do not call MessageBox here, it makes the host crash if 'this' is being deleted
-        LOG_STDERR_INT("handleWebView2ControllerCompleted() called with HRESULT", result);
+        DISTRHO_LOG_STDERR_INT("handleWebView2ControllerCompleted() called with HRESULT", result);
         return result;
     }
     // TODO: there is some visible black flash while the window plugin is appearing and

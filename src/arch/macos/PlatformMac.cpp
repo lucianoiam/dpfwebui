@@ -21,7 +21,6 @@
 #include <sys/syslimits.h>
 
 #include "base/Platform.hpp"
-#include "base/log.h"
 #include "base/macro.h"
 
 USE_NAMESPACE_DISTRHO
@@ -37,7 +36,7 @@ String platform::getBinaryPath()
 {
     Dl_info dl_info;
     if (::dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
-        LOG_STDERR(::dlerror());
+        DISTRHO_LOG_STDERR(::dlerror());
         return String();
     } else {
         return String(dl_info.dli_fname);

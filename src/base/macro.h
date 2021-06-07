@@ -17,14 +17,34 @@
 #ifndef MACRO_H
 #define MACRO_H
 
+#include <errno.h>
+
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html
 #define XSTR(s) STR(s)
 #define STR(s) #s
 
-// Actually unpacks and normalizes
-#define UNPACK_RGBA(c,t) ( c >> 24)               / (t)(255), \
-                         ((c & 0x00ff0000) >> 16) / (t)(255), \
-                         ((c & 0x0000ff00) >> 8 ) / (t)(255), \
-                         ( c & 0x000000ff)        / (t)(255)
+#define DISTRHO_UNPACK_RGBA_NORM(c,t)  ( c >> 24)               / (t)(255), \
+                                       ((c & 0x00ff0000) >> 16) / (t)(255), \
+                                       ((c & 0x0000ff00) >> 8 ) / (t)(255), \
+                                       ( c & 0x000000ff)        / (t)(255)
+#ifdef __cplusplus
+
+#include "DistrhoUtils.hpp"
+
+#define DISTRHO_LOG_STDERR(msg)        d_stderr("%s : %s", __PRETTY_FUNCTION__, msg);
+#define DISTRHO_LOG_STDERR_INT(msg,n)  d_stderr("%s : %s - %x", __PRETTY_FUNCTION__, msg, n);
+#define DISTRHO_LOG_STDERR_ERRNO(msg)  d_stderr("%s : %s - %s", __PRETTY_FUNCTION__, msg, strerror(errno));
+#define DISTRHO_LOG_STDERR_COLOR(msg)  d_stderr2("%s : %s", __PRETTY_FUNCTION__, msg);
+
+#else
+
+#include <stdio.h>
+
+#define DISTRHO_LOG_STDERR(msg)        fprintf(stderr, "%s : %s\n", __PRETTY_FUNCTION__, msg);
+#define DISTRHO_LOG_STDERR_INT(msg,n)  fprintf(stderr, "%s : %s - %x\n", __PRETTY_FUNCTION__, msg, (unsigned int)n);
+#define DISTRHO_LOG_STDERR_ERRNO(msg)  fprintf(stderr, "%s : %s - %s\n", __PRETTY_FUNCTION__, msg, strerror(errno));
+#define DISTRHO_LOG_STDERR_COLOR(msg)  fprintf(stderr, "\x1b[31m%s : %s\x1b[0m\n", __PRETTY_FUNCTION__, msg);
+
+#endif
 
 #endif  // MACRO_H
