@@ -30,10 +30,10 @@ public:
     ScriptValue(double d) : fNull(false), fB(false), fD(d) {};
     ScriptValue(String s) : fNull(false), fB(false), fD(0), fS(s) {};
 
-    bool   isNull()   const { return fNull; }
-    bool   asBool()   const { return fB; }
-    double asDouble() const { return fD; }
-    String asString() const { return fS; }
+    bool   isNull()    const { return fNull; }
+    bool   getBool()   const { return fB; }
+    double getDouble() const { return fD; }
+    String getString() const { return fS; }
 
     operator bool()   const { return fB; }
     operator double() const { return fD; }
