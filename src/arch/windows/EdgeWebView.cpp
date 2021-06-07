@@ -30,7 +30,7 @@
 #define TO_LPCWSTR(s)  std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s).c_str()
 #define TO_LPCSTR(s)   std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(s).c_str()
 
-#define HOST_SHIM_JS  "window.webviewHost.postMessage = (args) => window.chrome.webview.postMessage(args);"
+#define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.chrome.webview.postMessage(args);"
 
 USE_NAMESPACE_DISTRHO
 
@@ -58,8 +58,8 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         0, 0, 0, 0
     );
-    ::ShowWindow(fHelperHwnd,  SW_SHOWNOACTIVATE);
-    injectDefaultScripts(String(HOST_SHIM_JS));
+    ::ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
+    injectDefaultScripts(String(JS_POST_MESSAGE_SHIM));
 }
 
 EdgeWebView::~EdgeWebView()

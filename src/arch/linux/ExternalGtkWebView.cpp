@@ -31,7 +31,7 @@
   plugins to UI toolkit libraries like GTK or QT is known to be problematic.
 */
 
-#define HOST_SHIM_JS "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
+#define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
 extern char **environ;
 
@@ -70,7 +70,7 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewEventHandler& handler)
         DISTRHO_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
     }
-    injectDefaultScripts(String(HOST_SHIM_JS));
+    injectDefaultScripts(String(JS_POST_MESSAGE_SHIM));
 }
 
 ExternalGtkWebView::~ExternalGtkWebView()
