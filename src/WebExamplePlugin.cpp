@@ -1,7 +1,4 @@
 /*
- * dpf-webui
- * Copyright (C) 2021 Luciano Iam <lucianoiam@protonmail.com>
- *
  * DISTRHO Plugin Framework (DPF)
  * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
