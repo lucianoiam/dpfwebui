@@ -23,6 +23,8 @@
 
 START_NAMESPACE_DISTRHO
 
+#define RESOURCES_SUBDIR_STRING  String("/" XSTR(BIN_BASENAME) "_resources");
+
 namespace platform {
 
     // The following functions help locating resource files and helper binaries
