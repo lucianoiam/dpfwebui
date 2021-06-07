@@ -30,7 +30,7 @@
 #define TO_LPCWSTR(s)  std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(s).c_str()
 #define TO_LPCSTR(s)   std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(s).c_str()
 
-#define HOST_SHIM_JS  "window.webviewHost = {postMessage: (args) => window.chrome.webview.postMessage(args)};"
+#define HOST_SHIM_JS  "window.webviewHost.postMessage = (args) => window.chrome.webview.postMessage(args);"
 
 USE_NAMESPACE_DISTRHO
 

@@ -49,13 +49,13 @@ public:
     virtual void runScript(String source) = 0;
     virtual void injectScript(String source) = 0;
 
-    void sendHostMessage(const ScriptValueVector& args);
+    void sendHostMessage(const ScriptValueVector& args); // native->js
 
 protected:
     void injectDefaultScripts(String platformSpecificScript);
     
     void handleLoadFinished();
-    void handleScriptMessage(ScriptValueVector& args);
+    void handleScriptMessage(ScriptValueVector& args); // js->native
 
 private:
     void addStylesheet(String source);
