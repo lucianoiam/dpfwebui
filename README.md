@@ -1,5 +1,5 @@
-[WIP] Template for building desktop VST audio plugins with HTML/JavaScript UIs
-------------------------------------------------------------------------------
+[WIP] Template for building multiplatform VST audio plugins with HTML/JavaScript UIs
+------------------------------------------------------------------------------------
 
 * Based on DPF: DISTRHO Plugin Framework
 * C++ for DSP code
