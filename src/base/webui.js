@@ -39,14 +39,14 @@ class WebUI {
         // default empty implementation
     }
 
-    // (cpp->js) BaseWebView::postMessage(const ScriptValueVector& args)
-    messageReceived(args) {
-        // default empty implementation
-    }
-
-    // (js->cpp) WebViewEventHandler::webViewScriptMessageReceived(const ScriptValueVector& args)
+    // BaseWebView::postMessage(const ScriptValueVector& args)
     postMessage(...args) {
         window.webviewHost.postMessage(args);
+    }
+
+    // WebViewEventHandler::webViewScriptMessageReceived(const ScriptValueVector& args)
+    messageReceived(args) {
+        // default empty implementation
     }
 
 }
