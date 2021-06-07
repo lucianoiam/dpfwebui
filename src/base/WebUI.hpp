@@ -40,14 +40,14 @@ class WebUI : public UI, protected WebViewEventHandler
 {
 public:
     WebUI();
-    ~WebUI() {};
-
-    void onDisplay() override;
-
-    void parameterChanged(uint32_t index, float value) override;
+    virtual ~WebUI() {};
 
 protected:
+
+    void onDisplay() override;
     void onResize(const ResizeEvent& ev) override;
+
+    void parameterChanged(uint32_t index, float value) override;
 
     WEBVIEW_CLASS& webView() { return fWebView; }
 

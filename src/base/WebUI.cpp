@@ -29,11 +29,6 @@
 
 USE_NAMESPACE_DISTRHO
 
-UI* DISTRHO::createUI()
-{
-    return new WebUI;
-}
-
 WebUI::WebUI()
     : fWebView(*this)
     , fParentWindowId(0)
@@ -68,20 +63,21 @@ void WebUI::onDisplay()
     }
 }
 
-void WebUI::parameterChanged(uint32_t index, float value)
-{
-    (void)index;
-    (void)value;
-}
-
 void WebUI::onResize(const ResizeEvent& ev)
 {
     fWebView.resize(ev.size);
 }
 
+void WebUI::parameterChanged(uint32_t index, float value)
+{
+    (void)index;
+    (void)value;
+    // TODO
+}
+
 void WebUI::webViewLoadFinished()
 {
-    // TODO - send state
+    // TODO - send state?
 
     // for testing purposes
     webViewPostMessage({});

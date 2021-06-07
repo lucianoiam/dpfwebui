@@ -19,42 +19,26 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "WebPlugin.hpp"
+#ifndef WEBEXAMPLEUI_HPP
+#define WEBEXAMPLEUI_HPP
 
-USE_NAMESPACE_DISTRHO
+#include "base/WebUI.hpp"
 
-Plugin* DISTRHO::createPlugin()
+START_NAMESPACE_DISTRHO
+
+class WebExampleUI : public WebUI
 {
-    return new WebPlugin;
-}
+public:
+    WebExampleUI();
+    ~WebExampleUI() {};
 
-WebPlugin::WebPlugin()
-    : Plugin(0, 0, 0)
-{}
+protected:
+    void webViewLoadFinished() override;
 
-void WebPlugin::initParameter(uint32_t index, Parameter& parameter)
-{
-    // unused
-    (void)index;
-    (void)parameter;
-}
+    bool webViewScriptMessageReceived(const ScriptValueVector& args) override;
 
-float WebPlugin::getParameterValue(uint32_t index) const
-{
-    return 0;
+};
 
-    // unused
-    (void)index;
-}
+END_NAMESPACE_DISTRHO
 
-void WebPlugin::setParameterValue(uint32_t index, float value)
-{
-    // unused
-    (void)index;
-    (void)value;
-}
-
-void WebPlugin::run(const float** inputs, float** outputs, uint32_t frames)
-{
-    memcpy(outputs[0], inputs[0], frames * sizeof(float));
-}
+#endif  // WEBEXAMPLEUI_HPP
