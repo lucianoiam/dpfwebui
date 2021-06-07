@@ -204,7 +204,7 @@ HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
     ICoreWebView2WebMessageReceivedEventArgs_get_WebMessageAsJson(eventArgs, &jsonStr);
     cJSON* jArgs = ::cJSON_Parse(TO_LPCSTR(jsonStr));
     ::CoTaskMemFree(jsonStr);
-    ScriptMessageArguments args;
+    ScriptValueDeque args;
     if (::cJSON_IsArray(jArgs)) {
         int numArgs = ::cJSON_GetArraySize(jArgs);
         if (numArgs > 0) {

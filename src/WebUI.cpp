@@ -82,19 +82,19 @@ void WebUI::webViewLoadFinished()
     // TODO - send state
 }
 
-bool WebUI::webViewScriptMessageReceived(ScriptMessageArguments& args)
+bool WebUI::webViewScriptMessageReceived(ScriptValueDeque& args)
 {
-    if (SAFE_GET_STRING_ARG(args) != "DPF") {
+    if (SAFE_GET_STRING(args) != "DPF") {
         return false;
     }
-    SAFE_POP_ARG(args);
-    String method = SAFE_GET_STRING_ARG(args);
-    SAFE_POP_ARG(args);
+    SAFE_POP_VALUE(args);
+    String method = SAFE_GET_STRING(args);
+    SAFE_POP_VALUE(args);
     if (method == "editParameter") {
-        uint32_t index = static_cast<uint32_t>(SAFE_GET_DOUBLE_ARG(args));
-        SAFE_POP_ARG(args);
-        bool started = static_cast<bool>(SAFE_GET_BOOL_ARG(args));
-        SAFE_POP_ARG(args);
+        uint32_t index = static_cast<uint32_t>(SAFE_GET_DOUBLE(args));
+        SAFE_POP_VALUE(args);
+        bool started = static_cast<bool>(SAFE_GET_BOOL(args));
+        SAFE_POP_VALUE(args);
         editParameter(index, started);
         ::printf("Successful call to WebUI::editParameter(%d, %s)\n", index, started ? "true" : "false");
     } else if (method == "setParameterValue") {
