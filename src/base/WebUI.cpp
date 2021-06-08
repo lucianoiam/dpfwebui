@@ -51,8 +51,8 @@ void WebUI::onDisplay()
     cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, double));
     cairo_paint(cr);
 #endif
-    // This is only needed for Edge WebView2. At this point UI initialization
-    // has settled down and it is safe to trigger Edge's asynchronous init.
+    // At this point UI initialization has settled down and it is safe to
+    // trigger Edge's asynchronous init. On Linux and Mac start() is a no-op.
     fWebView.start();
 }
 
