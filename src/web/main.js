@@ -17,7 +17,7 @@
 class WebExampleUI extends WebUI {
 
     constructor() {
-        super()
+        super();
 
         this.colors = ['#f00', '#0f0', '#00f'];
         this.colorIndex = 0;
