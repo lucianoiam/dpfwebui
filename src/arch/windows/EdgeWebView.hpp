@@ -44,6 +44,8 @@
 
 START_NAMESPACE_DISTRHO
 
+class WebView2EventHandlerImpl;
+
 class EdgeWebView : public BaseWebView, edge::WebView2EventHandler
 {
 public:
@@ -60,30 +62,87 @@ public:
     // WebView2EventHandler
 
     HRESULT handleWebView2EnvironmentCompleted(HRESULT result,
-                                               ICoreWebView2Environment* environment) override;
+                                    ICoreWebView2Environment* environment) override;
     HRESULT handleWebView2ControllerCompleted(HRESULT result,
-                                              ICoreWebView2Controller* controller) override;
+                                    ICoreWebView2Controller* controller) override;
     HRESULT handleWebView2NavigationCompleted(ICoreWebView2 *sender,
-                                              ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
+                                    ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
     HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
-                                             ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
+                                    ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
 private:
     void webViewLoaderErrorMessageBox(HRESULT result);
 
-    bool     fStarted;
-    bool     fBusy;
     WNDCLASS fHelperClass;
     HWND     fHelperHwnd;
 
-    ICoreWebView2Controller* fController;
-    ICoreWebView2*           fView;
+    WebView2EventHandlerImpl* fHandler;
+    ICoreWebView2Controller*  fController;
+    ICoreWebView2*            fView;
 
     // P means pending
     uintptr_t           fPWindowId;
     Size<uint>          fPSize;
     String              fPUrl;
     std::vector<String> fPInjectedScripts;
+
+};
+
+
+// The event handler lifetime cannot be bound to its owner lifetime, otherwise
+// the Edge WebView2 could callback a deleted object. That would happen for
+// example if the plugin UI is opened and suddenly closed before web content
+// finishes loading, or before WebView2 has not fully initialized itself.
+
+class WebView2EventHandlerImpl : public edge::WebView2EventHandler {
+public:
+    WebView2EventHandlerImpl(edge::WebView2EventHandler* owner) : fOwner(owner)
+    {}
+
+    void cancel() { fOwner = 0; }
+
+    HRESULT handleWebView2EnvironmentCompleted(HRESULT result,
+                                    ICoreWebView2Environment* environment) override
+    {
+        if (fOwner != 0) {
+            return fOwner->handleWebView2EnvironmentCompleted(result, environment);
+        } else {
+            return E_ABORT;
+        }
+    }
+
+    HRESULT handleWebView2ControllerCompleted(HRESULT result,
+                                    ICoreWebView2Controller* controller) override
+    {
+        if (fOwner != 0) {
+            return fOwner->handleWebView2ControllerCompleted(result, controller);
+        } else {
+            return E_ABORT;
+        }
+    }
+
+    HRESULT handleWebView2NavigationCompleted(ICoreWebView2 *sender,
+                                    ICoreWebView2NavigationCompletedEventArgs *eventArgs) override
+    {
+        if (fOwner != 0) {
+            return fOwner->handleWebView2NavigationCompleted(sender, eventArgs);
+        } else {
+            return E_ABORT;
+        }
+    }
+
+    HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
+                                    ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override
+    {
+        if (fOwner != 0) {
+            return fOwner->handleWebView2WebMessageReceived(sender, eventArgs);
+        } else {
+            return E_ABORT;
+        }
+    }
+
+private:
+    edge::WebView2EventHandler* fOwner;
 
 };
 

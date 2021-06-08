@@ -67,6 +67,12 @@ public:
         return S_OK;
     }
 
+    int incRefCount() { return ++fRefCount; }
+    int decRefCount() { return fRefCount == 0 ? 0 : --fRefCount; }
+
+private:
+    int fRefCount;
+
 };
 
 } // namespace edge
