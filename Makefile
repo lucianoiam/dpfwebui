@@ -58,9 +58,13 @@ FILES_UI = $(SRC_FILES_UI:%=src/%)
 
 # --------------------------------------------------------------
 # Do some magic
-ifneq ($(WINDOWS),true)
-# FIXME: Use OpenGL on all platforms, seems there are no window resize events with cairo backend?
-#UI_TYPE = cairo
+ifeq ($(MACOS),true)
+# On Mac, OpenGL colors look different compared to those displayed within the web
+# view, and probably by any native widget. Using cairo seems to skip UI::onResize()
+# calls but fortunately that is not needed on Mac thanks to WKWebView autoresizing.
+# On Linux and Windows the color shift issue does not seem to happen and on Linux
+# UI::onResize() is required to resize the external web view so use OpenGL there.
+UI_TYPE = cairo
 endif
 include $(DPF_CUSTOM_PATH)/Makefile.plugins.mk
 
