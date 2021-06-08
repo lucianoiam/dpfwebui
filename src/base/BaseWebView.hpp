@@ -46,13 +46,12 @@ public:
     virtual ~BaseWebView() {};
 
     virtual void start() {};
+    virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void reparent(uintptr_t windowId) = 0;
     virtual void resize(const DGL::Size<uint>& size) = 0;
     virtual void navigate(String url) = 0;
     virtual void runScript(String source) = 0;
     virtual void injectScript(String source) = 0;
-
-    virtual void setBackgroundColor(int color) { fBackgroundColor = color; }
 
     void postMessage(const ScriptValueVector& args); // native->js
 
@@ -66,7 +65,6 @@ private:
     void addStylesheet(String source);
 
     WebViewEventHandler& fHandler;
-    int fBackgroundColor;
 
 };
 
