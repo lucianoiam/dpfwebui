@@ -45,6 +45,7 @@ public:
     BaseWebView(WebViewEventHandler& handler) : fHandler(handler) {}
     virtual ~BaseWebView() {};
 
+    virtual void start() {};
     virtual void reparent(uintptr_t windowId) = 0;
     virtual void resize(const DGL::Size<uint>& size) = 0;
     virtual void navigate(String url) = 0;

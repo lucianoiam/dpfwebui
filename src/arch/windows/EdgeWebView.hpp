@@ -50,6 +50,7 @@ public:
     EdgeWebView(WebViewEventHandler& handler);
     ~EdgeWebView();
 
+    void start() override;
     void reparent(uintptr_t windowId) override;
     void resize(const Size<uint>& size) override;
     void navigate(String url) override;
@@ -70,7 +71,8 @@ public:
 private:
     void webViewLoaderErrorMessageBox(HRESULT result);
 
-    bool     fWebViewBusy;
+    bool     fStarted;
+    bool     fBusy;
     WNDCLASS fHelperClass;
     HWND     fHelperHwnd;
 
