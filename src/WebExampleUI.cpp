@@ -25,7 +25,7 @@
 
 // Color for painting the window background before the web content is ready.
 // Matching it to <html> background color ensures a smooth transition.
-#define INIT_BACKGROUND_RGBA 0xffffffff
+#define INIT_BACKGROUND_RGBA 0xB6EFD4FF
 
 USE_NAMESPACE_DISTRHO
 
