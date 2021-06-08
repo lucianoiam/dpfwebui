@@ -37,7 +37,8 @@ USE_NAMESPACE_DISTRHO
 
 EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
     : BaseWebView(handler)
-    , fWebViewBusy(false)
+    , fStarted(false)
+    , fBusy(false)
     , fHelperHwnd(0)
     , fController(0)
     , fView(0)
@@ -65,7 +66,7 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
 
 EdgeWebView::~EdgeWebView()
 {
-    if (fWebViewBusy) {
+    if (fBusy) {
         ::Sleep(1000); // avoid crash when opening and closing the UI too quickly
     }
     if (fController != 0) {
@@ -79,19 +80,8 @@ EdgeWebView::~EdgeWebView()
 
 void EdgeWebView::reparent(uintptr_t windowId)
 {
-    // WebView2 is created during reparent() if needed
     if (fController == 0) {
-        bool isInitializing = fPWindowId != 0;
         fPWindowId = windowId;
-        if (!isInitializing) {
-            fWebViewBusy = true;
-            // See handleWebViewControllerCompleted() below
-            HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
-                TO_LPCWSTR(platform::getTemporaryPath()), 0, this);
-            if (FAILED(result)) {
-                webViewLoaderErrorMessageBox(result);
-            }
-        }
         return; // later
     }
     ICoreWebView2Controller2_put_ParentWindow(fController, (HWND)windowId);
@@ -103,7 +93,7 @@ void EdgeWebView::navigate(String url)
         fPUrl = url;
         return; // later
     }
-    fWebViewBusy = true;
+    fBusy = true;
     ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
 }
 
@@ -132,6 +122,19 @@ void EdgeWebView::resize(const Size<uint>& size)
     bounds.right = size.getWidth();
     bounds.bottom = size.getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
+}
+
+void EdgeWebView::start()
+{
+    if (fStarted) {
+        return;
+    }
+    fStarted = true;
+    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
+        TO_LPCWSTR(platform::getTemporaryPath()), 0, this);
+    if (FAILED(result)) {
+        webViewLoaderErrorMessageBox(result);
+    }
 }
 
 HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
@@ -190,7 +193,7 @@ HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
             fPWindowId = 0;
         }
     }
-    fWebViewBusy = false;
+    fBusy = false;
     return S_OK;
 }
 

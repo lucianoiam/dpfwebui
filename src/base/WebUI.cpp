@@ -26,7 +26,6 @@ USE_NAMESPACE_DISTRHO
 
 WebUI::WebUI()
     : fWebView(*this)
-    , fParentWindowId(0)
 {
     float scaleFactor = platform::getSystemDisplayScaleFactor();
     setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
@@ -38,24 +37,21 @@ WebUI::WebUI()
 #include "base/webui.js"
     );
     fWebView.injectScript(js);
+    fWebView.reparent(getParentWindow().getWindowId());
     fWebView.resize(getSize());
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
 }
 
 void WebUI::onDisplay()
 {
-    const Window& window = getParentWindow();
 #if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_CAIRO)
-    cairo_t* cr = window.getGraphicsContext().cairo;
+    cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
     cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, double));
     cairo_paint(cr);
 #endif
-    // onDisplay() can be called multiple times during lifetime of instance
-    uintptr_t newParentWindowId = window.getWindowId();
-    if (fParentWindowId != newParentWindowId) {
-        fParentWindowId = newParentWindowId;
-        fWebView.reparent(fParentWindowId);
-    }
+    // This is only needed for Edge WebView2. At this point UI initialization
+    // has settled down and it is safe to trigger Edge's asynchronous init.
+    fWebView.start();
 }
 
 void WebUI::onResize(const ResizeEvent& ev)

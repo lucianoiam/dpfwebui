@@ -55,7 +55,6 @@ protected:
 
 private:
     WEBVIEW_CLASS fWebView;
-    uintptr_t     fParentWindowId;
 
 };
 
