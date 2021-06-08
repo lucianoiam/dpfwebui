@@ -24,6 +24,13 @@
 #include "base/Platform.hpp"
 #include "base/macro.h"
 
+#define INIT_WIDTH  600
+#define INIT_HEIGHT 300
+
+// Matching <html> background color to INIT_BACKGROUND_RGBA greatly reduces
+// flicker while the UI is being opened or resized.
+#define INIT_BACKGROUND_RGBA 0xffffffff
+
 USE_NAMESPACE_DISTRHO
 
 WebUI::WebUI()
@@ -32,20 +39,20 @@ WebUI::WebUI()
 {
     // Expand size if needed based on system display scaling configuration
     float scaleFactor = platform::getSystemDisplayScaleFactor();
-    setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
-#if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_OPENGL)
+    setSize(scaleFactor * INIT_WIDTH, scaleFactor * INIT_HEIGHT);
+#ifdef DGL_OPENGL
     // Clear background for OpenGL
-    glClearColor(DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, GLfloat));
+    glClearColor(DISTRHO_UNPACK_RGBA_NORM(INIT_BACKGROUND_RGBA, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 }
 
 void WebUI::onDisplay()
 {
-#if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_CAIRO)
+#ifdef DGL_CAIRO
     // Clear background for Cairo
     cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
-    cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, double));
+    cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(INIT_BACKGROUND_RGBA, double));
     cairo_paint(cr);
 #endif
     // onDisplay() is meant for drawing and will be called multiple times

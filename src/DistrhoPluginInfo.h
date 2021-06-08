@@ -14,32 +14,11 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// --- BEING CUSTOM dpf_webui DEFINES ---
-
-/**
-   An optional color in RGBA format. Matching the <html> background color to it
-   greatly reduces flicker while the UI is being opened or resized.
- */
-#define DISTRHO_UI_BACKGROUND_COLOR 0xffffffff
-
-/**
-   Initial size of the UI
-  */
-#define DISTRHO_UI_INITIAL_WIDTH 600
-
-/**
-   Initial height of the UI
-  */
-#define DISTRHO_UI_INITIAL_HEIGHT 300
-
 /**
     Whether the UI can be resized by the user
-    @note This is a standard setting but there is no description for it within the DPF examples
+    @note Standard setting but no description for it within the DPF examples
  */
 #define DISTRHO_UI_USER_RESIZABLE 1
-
-// ---- END CUSTOM dpf_webui DEFINES ----
-
 
 /**
    The plugin name.@n
