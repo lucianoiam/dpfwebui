@@ -40,7 +40,7 @@
   https://www.codeproject.com/Articles/13601/COM-in-plain-C
 */
 
-#define WEBVIEW_CLASS EdgeWebView
+#define DISTRHO_WEBVIEW_CLASS EdgeWebView
 
 START_NAMESPACE_DISTRHO
 
