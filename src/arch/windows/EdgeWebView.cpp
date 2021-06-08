@@ -69,7 +69,15 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
 EdgeWebView::~EdgeWebView()
 {
     if (fBusy) {
-        ::Sleep(1000); // avoid crash when opening and closing the UI too quickly
+        // Avoid crash when opening and closing the UI too quickly, caused by
+        // webview trying to callback a deleted this. Cannot block on a signal
+        // here because webview callbacks run on the same thread as the plugin
+        // UI. Sleep for a sensible time that is high enough for a slow machine
+        // but still tolerable for the user; better to wait rather than crash.
+        // This race condition could be triggered by some yet unknown non-user
+        // initiated reason so it is advisable to find a better solution,
+        // something like a weak pointer?
+        ::Sleep(3000);
     }
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
@@ -132,6 +140,7 @@ void EdgeWebView::start()
         return;
     }
     fStarted = true;
+    fBusy = true;
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
         TO_LPCWSTR(platform::getTemporaryPath()), 0, this);
     if (FAILED(result)) {
