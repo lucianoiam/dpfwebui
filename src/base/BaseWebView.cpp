@@ -19,13 +19,15 @@
 #include <iostream>
 #include <sstream>
 
+#define JS_DISABLE_CONTEXT_MENU  "window.oncontextmenu = (e) => e.preventDefault();"
 #define JS_CREATE_CONSOLE        "window.console = {log: (s) => window.webviewHost.postMessage(['console.log', String(s)])};"
 #define JS_CREATE_HOST_OBJECT    "window.webviewHost = new EventTarget;" \
                                  "window.webviewHost.addMessageListener = (lr) => {" \
-                                    "window.webviewHost.addEventListener('message', (ev) => lr(ev.detail)) };"
-#define JS_DISABLE_CONTEXT_MENU  "window.oncontextmenu = (e) => e.preventDefault();"
-#define CSS_DISABLE_PINCH_ZOOM   "body { touch-action: pan-x pan-y; }"
+                                    "window.webviewHost.addEventListener('message', (ev) => lr(ev.detail))" \
+                                 "};"
+#define CSS_DISABLE_DRAG         "* { user-drag: none; -webkit-user-drag: none; }"
 #define CSS_DISABLE_SELECTION    "body { user-select: none; -webkit-user-select: none; }"
+#define CSS_DISABLE_PINCH_ZOOM   "body { touch-action: pan-x pan-y; }"
 
 /**
    Keep this class generic, DPF specific functionality belongs to WebUI.
@@ -35,17 +37,21 @@ USE_NAMESPACE_DISTRHO
 
 void BaseWebView::injectDefaultScripts(String platformSpecificScript)
 {
-    injectScript(String(JS_CREATE_CONSOLE));
-    injectScript(String(JS_CREATE_HOST_OBJECT));
-    injectScript(String(JS_DISABLE_CONTEXT_MENU));
-    injectScript(platformSpecificScript);
+    String js;
+    js += String(JS_DISABLE_CONTEXT_MENU);
+    js += String(JS_CREATE_CONSOLE);
+    js += String(JS_CREATE_HOST_OBJECT);
+    js += platformSpecificScript;
+    injectScript(js);
 }
 
 void BaseWebView::handleLoadFinished()
 {
-    // User scripts may have started running already
-    addStylesheet(String(CSS_DISABLE_PINCH_ZOOM));
-    addStylesheet(String(CSS_DISABLE_SELECTION));
+    String css;
+    css += String(CSS_DISABLE_DRAG);
+    css += String(CSS_DISABLE_SELECTION);
+    css += String(CSS_DISABLE_PINCH_ZOOM);
+    addStylesheet(css);
     fHandler.webViewLoadFinished();
 }
 
