@@ -17,7 +17,7 @@
 #include "WebExampleUI.hpp"
 
 // These dimensions are scaled up according to the system display scaling
-// configuration on all platforms except Mac.
+// configuration on all platforms except Mac where it is not needed.
 #define INIT_WIDTH_PX  600
 #define INIT_HEIGHT_PX 300
 
