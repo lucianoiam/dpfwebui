@@ -16,11 +16,13 @@
 
 #include "WebExampleUI.hpp"
 
-#define INIT_WIDTH  600
-#define INIT_HEIGHT 300
+// These dimensions are scaled up according to the system display scaling
+// configuration on all platforms except Mac.
+#define INIT_WIDTH_PX  600
+#define INIT_HEIGHT_PX 300
 
-// Matching <html> background color to INIT_BACKGROUND_RGBA greatly reduces
-// flicker while the UI is being opened or resized.
+// Color for painting the window background before the web content is ready.
+// Matching it to <html> background color ensures a smooth transition.
 #define INIT_BACKGROUND_RGBA 0xffffffff
 
 USE_NAMESPACE_DISTRHO
@@ -31,7 +33,7 @@ UI* DISTRHO::createUI()
 }
 
 WebExampleUI::WebExampleUI()
-    : WebUI(INIT_WIDTH, INIT_HEIGHT, INIT_BACKGROUND_RGBA)
+    : WebUI(INIT_WIDTH_PX, INIT_HEIGHT_PX, INIT_BACKGROUND_RGBA)
 {
     // Web view is not guaranteed to be ready yet. Calls to webView().runScript()
     // or any mapped WebUI methods are forbidden. Mapped methods are those that

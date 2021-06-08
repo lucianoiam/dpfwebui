@@ -15,8 +15,8 @@
  */
 
 /**
-    Whether the UI can be resized by the user
-    @note Standard setting but no description for it within the DPF examples
+    Defines if the UI can be resized by the user
+    @note There is no description for this within the DPF examples
  */
 #define DISTRHO_UI_USER_RESIZABLE 1
 
