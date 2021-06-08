@@ -42,5 +42,3 @@ class WebExampleUI extends WebUI {
     }
 
 }
-
-new WebExampleUI;
