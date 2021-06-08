@@ -58,14 +58,14 @@ void WebUI::onDisplay()
         return;
     }
     fDisplayed = true;
-    // At this point UI initialization has settled down and it is safe to launch
-    // resource intensive tasks like starting child processes or loading a URL.
-    // It is also the appropriate place to trigger Edge's asynchronous init.
-    // On Linux and Mac, BaseWebView::start() is a no-op. Loading web content
-    // could be thought of as drawing the window and only needs to happen once,
-    // actual drawing is handled by the web view. WebUI() constructor is not
-    // the suitable place because it can be called successive times without the
-    // window ever being displayed.
+    // At this point UI initialization has settled down and it is time to launch
+    // resource intensive tasks like loading a URL. It is also the appropriate
+    // place for triggering Edge's asynchronous init. On Linux and Mac method
+    // BaseWebView::start() is a no-op. Loading web content could be thought of
+    // as drawing the window and only needs to happen once, real drawing is
+    // handled by the web views. WebUI() constructor is not a suitable place
+    // for calling BaseWebView::navigate() because ctor/ctor can be called
+    // successive times without the window ever being displayed (e.g. on Carla)
     String js = String(
 #include "base/webui.js"
     );
