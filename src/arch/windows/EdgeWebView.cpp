@@ -28,6 +28,8 @@
 #include "base/macro.h"
 #include "extra/cJSON.h"
 
+#include "DistrhoPluginInfo.h"
+
 #define WSTRING_CONVERTER std::wstring_convert<std::codecvt_utf8<wchar_t>>()
 #define TO_LPCWSTR(s)     WSTRING_CONVERTER.from_bytes(s).c_str()
 #define TO_LPCSTR(s)      WSTRING_CONVERTER.to_bytes(s).c_str()
