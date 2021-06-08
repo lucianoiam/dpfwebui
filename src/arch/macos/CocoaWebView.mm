@@ -45,17 +45,6 @@ CocoaWebView::CocoaWebView(WebViewEventHandler& handler)
     fWebViewDelegate.cppView = this;
     fWebView.navigationDelegate = fWebViewDelegate;
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
-    // Play safe when calling undocumented APIs
-    if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
-        @try {
-            NSNumber *no = [[NSNumber alloc] initWithBool:NO];
-            [fWebView setValue:no forKey: @"drawsBackground"];
-            [no release];
-        }
-        @catch (NSException *e) {
-            NSLog(@"Could not set transparent color for web view");
-        }
-    }
     injectDefaultScripts(String(JS_POST_MESSAGE_SHIM));
 }
 
@@ -64,6 +53,23 @@ CocoaWebView::~CocoaWebView()
     [fWebView removeFromSuperview];
     [fWebView release];
     [fWebViewDelegate release];
+}
+
+void CocoaWebView::setBackgroundColor(uint32_t rgba)
+{
+    // macOS WKWebView apparently does not offer a method for setting a background color, so the
+    // background is removed altogether to reveal the underneath window paint. Do it safely.
+    (void)rgba;
+    if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
+        @try {
+            NSNumber *no = [[NSNumber alloc] initWithBool:NO];
+            [fWebView setValue:no forKey:@"drawsBackground"];
+            [no release];
+        }
+        @catch (NSException *e) {
+            NSLog(@"Could not set transparent color for WKWebView");
+        }
+    }
 }
 
 void CocoaWebView::reparent(uintptr_t windowId)
