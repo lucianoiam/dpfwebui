@@ -44,8 +44,7 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
 {
     // EdgeWebView works a bit different compared to the other platforms due to
     // the async nature of the native web view initialization process
-    fHandler = new WebView2EventHandlerImpl(this);
-    fHandler->incRefCount();
+    fHandler = new EdgeWebViewInternalEventHandler(this);
     WCHAR className[256];
     ::swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
     ::ZeroMemory(&fHelperClass, sizeof(fHelperClass));
@@ -66,11 +65,7 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
 
 EdgeWebView::~EdgeWebView()
 {
-    fHandler->cancel();
-    if (fHandler->decRefCount() == 0) {
-        //DISTRHO_LOG_STDERR("RELEASE");
-        delete fHandler;
-    }
+    fHandler->release();
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
         ICoreWebView2_Release(fController);

@@ -42,7 +42,7 @@
 
 START_NAMESPACE_DISTRHO
 
-class WebView2EventHandlerImpl;
+class EdgeWebViewInternalEventHandler;
 
 class EdgeWebView : public BaseWebView, edge::WebView2EventHandler
 {
@@ -74,7 +74,7 @@ private:
     WNDCLASS fHelperClass;
     HWND     fHelperHwnd;
 
-    WebView2EventHandlerImpl* fHandler;
+    EdgeWebViewInternalEventHandler* fHandler;
     ICoreWebView2Controller*  fController;
     ICoreWebView2*            fView;
 
@@ -92,18 +92,28 @@ private:
 // example if the plugin UI is opened and suddenly closed before web content
 // finishes loading, or before WebView2 has not fully initialized itself.
 
-class WebView2EventHandlerImpl : public edge::WebView2EventHandler {
+class EdgeWebViewInternalEventHandler : public edge::WebView2EventHandler {
 public:
-    WebView2EventHandlerImpl(edge::WebView2EventHandler* owner) : fOwner(owner)
-    {}
+    EdgeWebViewInternalEventHandler(edge::WebView2EventHandler* weakOwner)
+        : fWeakOwner(weakOwner)
+    {
+        incRefCount();
+    }
 
-    void cancel() { fOwner = 0; }
+    void release()
+    {
+        fWeakOwner = 0;
+        if (decRefCount() == 0) {
+            //DISTRHO_LOG_STDERR("RELEASE");
+            delete this;
+        }
+    }
 
     HRESULT handleWebView2EnvironmentCompleted(HRESULT result,
                                     ICoreWebView2Environment* environment) override
     {
-        if (fOwner != 0) {
-            return fOwner->handleWebView2EnvironmentCompleted(result, environment);
+        if (fWeakOwner != 0) {
+            return fWeakOwner->handleWebView2EnvironmentCompleted(result, environment);
         } else {
             return E_ABORT;
         }
@@ -112,8 +122,8 @@ public:
     HRESULT handleWebView2ControllerCompleted(HRESULT result,
                                     ICoreWebView2Controller* controller) override
     {
-        if (fOwner != 0) {
-            return fOwner->handleWebView2ControllerCompleted(result, controller);
+        if (fWeakOwner != 0) {
+            return fWeakOwner->handleWebView2ControllerCompleted(result, controller);
         } else {
             return E_ABORT;
         }
@@ -122,8 +132,8 @@ public:
     HRESULT handleWebView2NavigationCompleted(ICoreWebView2 *sender,
                                     ICoreWebView2NavigationCompletedEventArgs *eventArgs) override
     {
-        if (fOwner != 0) {
-            return fOwner->handleWebView2NavigationCompleted(sender, eventArgs);
+        if (fWeakOwner != 0) {
+            return fWeakOwner->handleWebView2NavigationCompleted(sender, eventArgs);
         } else {
             return E_ABORT;
         }
@@ -132,15 +142,15 @@ public:
     HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override
     {
-        if (fOwner != 0) {
-            return fOwner->handleWebView2WebMessageReceived(sender, eventArgs);
+        if (fWeakOwner != 0) {
+            return fWeakOwner->handleWebView2WebMessageReceived(sender, eventArgs);
         } else {
             return E_ABORT;
         }
     }
 
 private:
-    edge::WebView2EventHandler* fOwner;
+    edge::WebView2EventHandler* fWeakOwner;
 
 };
 
