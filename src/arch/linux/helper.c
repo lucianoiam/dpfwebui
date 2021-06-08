@@ -89,11 +89,11 @@ static void create_webview(helper_context_t *ctx)
     // Set up callback so that if the main window is closed, the program will exit
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), ctx);
     // TODO: gtk_widget_override_background_color() is deprecated
-    GdkRGBA color = {DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, gdouble)};
+    /*GdkRGBA color = {DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, gdouble)};
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
-#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop*/
     gtk_widget_show(GTK_WIDGET(ctx->window));
     // Create web view
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
