@@ -18,9 +18,18 @@ class WebExampleUI extends WebUI {
 
     constructor() {
         super()
+
+        this.colors = ['#f00', '#0f0', '#00f'];
+        this.colorIndex = 0;
+
+        const elemById = (id) => document.getElementById(id);
         
-        const main = document.getElementById('main');
-        main.innerHTML = `<h1>Made with DPF</h1><pre>${navigator.userAgent}</pre>`;
+        elemById('ua').innerText = navigator.userAgent;
+
+        elemById('main').addEventListener('click', (ev) => {
+            const i = this.colorIndex++ % this.colors.length;
+            ev.currentTarget.style.borderColor = this.colors[i];
+        });
 
         // TEST CALL
         this.editParameter(123,true);
