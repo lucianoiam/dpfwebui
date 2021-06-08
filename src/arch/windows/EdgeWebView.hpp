@@ -53,6 +53,7 @@ public:
     ~EdgeWebView();
 
     void start() override;
+    void setBackgroundColor(uint32_t rgba) override;
     void reparent(uintptr_t windowId) override;
     void resize(const Size<uint>& size) override;
     void navigate(String url) override;
@@ -77,10 +78,11 @@ private:
     HWND     fHelperHwnd;
 
     EdgeWebViewInternalEventHandler* fHandler;
-    ICoreWebView2Controller*  fController;
-    ICoreWebView2*            fView;
+    ICoreWebView2Controller*         fController;
+    ICoreWebView2*                   fView;
 
     // P means pending
+    uint32_t            fPBackgroundColor;
     uintptr_t           fPWindowId;
     Size<uint>          fPSize;
     String              fPUrl;
