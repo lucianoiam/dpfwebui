@@ -14,8 +14,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <deque>
-
 #include "WebUI.hpp"
 #include "Window.hpp"
 
@@ -86,9 +84,6 @@ void WebUI::parameterChanged(uint32_t index, float value)
 void WebUI::webViewLoadFinished()
 {
     // TODO - send state?
-
-    // TEST CALL
-    parameterChanged(123, 4.5);
 }
 
 bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
@@ -101,12 +96,13 @@ bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
         uint32_t index = static_cast<uint32_t>(args[2].getDouble());
         bool started = static_cast<bool>(args[3].getBool());
         editParameter(index, started);
-        ::printf("C++ received editParameter(%d,%s)\n", index, started ? "true" : "false");
     } else if (method == "setParameterValue") {
-        // uint32_t index, float value
+        uint32_t index = static_cast<uint32_t>(args[2].getDouble());
+        float value = static_cast<float>(args[3].getDouble());
+        setParameterValue(index, value);
 #if DISTRHO_PLUGIN_WANT_STATE
     } else if (method == "setState") {
-        // const char* key, const char* value
+        // TODO - setState(const char* key, const char* value)
 #endif
     } else {
         DISTRHO_LOG_STDERR_COLOR("Invalid call to native WebUI method");

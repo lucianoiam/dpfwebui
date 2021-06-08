@@ -32,6 +32,11 @@ class WebUI {
         this.postMessage('WebUI', 'editParameter', index, started);
     }
 
+    // UI::setParameterValue(uint32_t index, float value)
+    setParameterValue(index, value) {
+        this.postMessage('WebUI', 'setParameterValue', index, value);
+    }
+
     // UI::parameterChanged(uint32_t index, float value)
     parameterChanged(index, value) {
         // default empty implementation
