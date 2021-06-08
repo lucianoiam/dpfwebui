@@ -96,17 +96,16 @@ private:
 
 class EdgeWebViewInternalEventHandler : public edge::WebView2EventHandler {
 public:
-    EdgeWebViewInternalEventHandler(edge::WebView2EventHandler* weakOwner)
-        : fWeakOwner(weakOwner)
+    EdgeWebViewInternalEventHandler(edge::WebView2EventHandler* ownerRef)
+        : fOwnerWeakRef(ownerRef)
     {
         incRefCount();
     }
 
     void release()
     {
-        fWeakOwner = 0;
+        fOwnerWeakRef = 0;
         if (decRefCount() == 0) {
-            //DISTRHO_LOG_STDERR("RELEASE");
             delete this;
         }
     }
@@ -114,8 +113,8 @@ public:
     HRESULT handleWebView2EnvironmentCompleted(HRESULT result,
                                     ICoreWebView2Environment* environment) override
     {
-        if (fWeakOwner != 0) {
-            return fWeakOwner->handleWebView2EnvironmentCompleted(result, environment);
+        if (fOwnerWeakRef != 0) {
+            return fOwnerWeakRef->handleWebView2EnvironmentCompleted(result, environment);
         } else {
             return E_ABORT;
         }
@@ -124,8 +123,8 @@ public:
     HRESULT handleWebView2ControllerCompleted(HRESULT result,
                                     ICoreWebView2Controller* controller) override
     {
-        if (fWeakOwner != 0) {
-            return fWeakOwner->handleWebView2ControllerCompleted(result, controller);
+        if (fOwnerWeakRef != 0) {
+            return fOwnerWeakRef->handleWebView2ControllerCompleted(result, controller);
         } else {
             return E_ABORT;
         }
@@ -134,8 +133,8 @@ public:
     HRESULT handleWebView2NavigationCompleted(ICoreWebView2 *sender,
                                     ICoreWebView2NavigationCompletedEventArgs *eventArgs) override
     {
-        if (fWeakOwner != 0) {
-            return fWeakOwner->handleWebView2NavigationCompleted(sender, eventArgs);
+        if (fOwnerWeakRef != 0) {
+            return fOwnerWeakRef->handleWebView2NavigationCompleted(sender, eventArgs);
         } else {
             return E_ABORT;
         }
@@ -144,15 +143,15 @@ public:
     HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override
     {
-        if (fWeakOwner != 0) {
-            return fWeakOwner->handleWebView2WebMessageReceived(sender, eventArgs);
+        if (fOwnerWeakRef != 0) {
+            return fOwnerWeakRef->handleWebView2WebMessageReceived(sender, eventArgs);
         } else {
             return E_ABORT;
         }
     }
 
 private:
-    edge::WebView2EventHandler* fWeakOwner;
+    edge::WebView2EventHandler* fOwnerWeakRef;
 
 };
 
