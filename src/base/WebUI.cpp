@@ -38,6 +38,7 @@ WebUI::WebUI(uint width, uint height, uint32_t backgroundColor)
     // Set web view background color as early as possible to reduce flicker
     fWebView.resize(getSize());
     fWebView.setBackgroundColor(fBackgroundColor);
+    fWebView.reparent(getParentWindow().getWindowId());
 }
 
 void WebUI::onDisplay()
@@ -60,17 +61,16 @@ void WebUI::onDisplay()
     fDisplayed = true;
     // At this point UI initialization has settled down and it is time to launch
     // resource intensive tasks like loading a URL. It is also the appropriate
-    // place for triggering Edge's asynchronous init. On Linux and Mac method
+    // place for triggering Edge's asynchronous init. On Linux and Mac, method
     // BaseWebView::start() is a no-op. Loading web content could be thought of
     // as drawing the window and only needs to happen once, real drawing is
     // handled by the web views. WebUI() constructor is not a suitable place
-    // for calling BaseWebView::navigate() because ctor/ctor can be called
+    // for calling BaseWebView::navigate() because ctor/dtor can be called
     // successive times without the window ever being displayed (e.g. on Carla)
     String js = String(
 #include "base/webui.js"
     );
     fWebView.injectScript(js);
-    fWebView.reparent(getParentWindow().getWindowId());
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
     fWebView.start();
 }
