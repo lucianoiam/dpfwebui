@@ -44,7 +44,7 @@ protected:
 
     void parameterChanged(uint32_t index, float value) override;
 
-    WEBVIEW_CLASS& webView() { return fWebView; }
+    DISTRHO_WEBVIEW_CLASS& webView() { return fWebView; }
 
     void webViewPostMessage(const ScriptValueVector& args) { fWebView.postMessage(args); }
 
@@ -54,9 +54,10 @@ protected:
     virtual bool webViewScriptMessageReceived(const ScriptValueVector& args) override;
 
 private:
-    WEBVIEW_CLASS fWebView;
-    uint32_t      fBackgroundColor;
-    bool          fDisplayed;
+    DISTRHO_WEBVIEW_CLASS fWebView;
+    
+    uint32_t fBackgroundColor;
+    bool     fDisplayed;
 
 };
 

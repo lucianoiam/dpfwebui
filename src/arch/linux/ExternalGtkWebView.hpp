@@ -27,7 +27,7 @@
 #include "extra/ipc.h"
 #include "helper.h"
 
-#define WEBVIEW_CLASS ExternalGtkWebView
+#define DISTRHO_WEBVIEW_CLASS ExternalGtkWebView
 
 START_NAMESPACE_DISTRHO
 

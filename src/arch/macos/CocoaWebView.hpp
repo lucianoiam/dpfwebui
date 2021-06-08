@@ -23,7 +23,7 @@
 // source files importing CocoaWebView.hpp to do so before any other project
 // headers to avoid symbol name collisions. Do not make any assumption.
 
-#define WEBVIEW_CLASS CocoaWebView
+#define DISTRHO_WEBVIEW_CLASS CocoaWebView
 
 START_NAMESPACE_DISTRHO
 
