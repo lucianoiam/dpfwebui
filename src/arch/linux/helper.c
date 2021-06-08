@@ -217,9 +217,6 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
         case OPC_SET_BACKGROUND_COLOR:
             set_background_color(ctx, *((uint32_t *)packet.v));
             break;
-        case OPC_NAVIGATE:
-            webkit_web_view_load_uri(ctx->webView, packet.v);
-            break;
         case OPC_REPARENT:
             reparent(ctx, *((uintptr_t *)packet.v));
             break;
@@ -228,6 +225,9 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             gtk_window_resize(ctx->window, size->width, size->height);
             break;
         }
+        case OPC_NAVIGATE:
+            webkit_web_view_load_uri(ctx->webView, packet.v);
+            break;
         case OPC_RUN_SCRIPT:
             webkit_web_view_run_javascript(ctx->webView, packet.v, NULL, NULL, NULL);
             break;

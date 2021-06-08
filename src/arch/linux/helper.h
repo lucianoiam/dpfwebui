@@ -22,9 +22,9 @@
 typedef enum {
     // Plugin -> web view
     OPC_SET_BACKGROUND_COLOR,
-    OPC_NAVIGATE,
     OPC_REPARENT,
     OPC_RESIZE,
+    OPC_NAVIGATE,
     OPC_RUN_SCRIPT,
     OPC_INJECT_SCRIPT,
     // Plugin <- web view
