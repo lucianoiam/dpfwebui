@@ -16,8 +16,6 @@
 
 #include "WebView2EventHandler.hpp"
 
-//#include "base/macro.h"
-
 using namespace edge;
 
 #define pInstance static_cast<WebView2EventHandler*>(This)
@@ -43,7 +41,6 @@ static ULONG STDMETHODCALLTYPE Impl_Release(T* This)
 {
     int refCount = pInstance->decRefCount();
     if (refCount == 0) {
-        //DISTRHO_LOG_STDERR("RELEASE");
         delete pInstance;
     }
     return refCount;
