@@ -1,8 +1,7 @@
 ALL PLATFORMS
 -------------
 
-- Catch changes in src/web directory files and trigger Makefile 'resources' target
-- Persistent state handling
+- Minimum set of API mappings, ideally include those related to persistent state
 - JavaScript alert(), confirm(), prompt()
 - Allow calling Window::openFileBrowser() from JavaScript
 - Launch system browser for HTTP links
@@ -17,6 +16,14 @@ LINUX
 WINDOWS
 -------
 
-- Find out if it is possible to get the WebView2 SDK files without Visual Studio and update build
-  docs https://stackoverflow.com/questions/38118548/how-to-install-nuget-from-command-line-on-linux
+- Find out if it is possible to get the WebView2 SDK files without Visual Studio
+  and update build docs
+  https://stackoverflow.com/questions/38118548/how-to-install-nuget-from-command-line-on-linux
+
+- Files plugin.manifest and WebView2Loader.manifest contain a hardcoded dummy
+  version of WebView2Loader.dll. It probably needs to be set to the real DLL
+  version the plugin is linking against, for the cases where the host or other
+  plugins try to load a different WebView2Loader.dll (not yet tested)
+  https://stackoverflow.com/questions/4396754/can-different-versions-of-dll-be-loaded-in-same-application
+
 - LV2 is currently broken, binary builds but TTL creation fails
