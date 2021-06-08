@@ -55,6 +55,7 @@ protected:
 
 private:
     WEBVIEW_CLASS fWebView;
+    bool          fDisplayed;
 
 };
 

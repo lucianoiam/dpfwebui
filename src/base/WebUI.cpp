@@ -26,13 +26,39 @@ USE_NAMESPACE_DISTRHO
 
 WebUI::WebUI()
     : fWebView(*this)
+    , fDisplayed(false)
 {
+    // Expand size if needed based on system display scaling configuration
     float scaleFactor = platform::getSystemDisplayScaleFactor();
     setSize(scaleFactor * DISTRHO_UI_INITIAL_WIDTH, scaleFactor * DISTRHO_UI_INITIAL_HEIGHT);
 #if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_OPENGL)
+    // Clear background for OpenGL
     glClearColor(DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
+}
+
+void WebUI::onDisplay()
+{
+#if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_CAIRO)
+    // Clear background for Cairo
+    cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
+    cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, double));
+    cairo_paint(cr);
+#endif
+    // onDisplay() is meant for drawing and will be called multiple times
+    if (fDisplayed) {
+        return;
+    }
+    fDisplayed = true;
+    // At this point UI initialization has settled down and it is safe to launch
+    // resource intensive tasks like starting child processes or loading a URL.
+    // It is also the appropriate place to trigger Edge's asynchronous init.
+    // On Linux and Mac, BaseWebView::start() is a no-op. Loading web content
+    // could be thought of as drawing the window and only needs to happen once,
+    // actual drawing is handled by the web view. WebUI() constructor is not
+    // the suitable place because it can be called successive times without the
+    // window ever being displayed.
     String js = String(
 #include "base/webui.js"
     );
@@ -40,17 +66,6 @@ WebUI::WebUI()
     fWebView.reparent(getParentWindow().getWindowId());
     fWebView.resize(getSize());
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
-}
-
-void WebUI::onDisplay()
-{
-#if defined(DISTRHO_UI_BACKGROUND_COLOR) && defined(DGL_CAIRO)
-    cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
-    cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, double));
-    cairo_paint(cr);
-#endif
-    // At this point UI initialization has settled down and it is safe to
-    // trigger Edge's asynchronous init. On Linux and Mac start() is a no-op.
     fWebView.start();
 }
 
