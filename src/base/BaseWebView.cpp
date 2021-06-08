@@ -31,6 +31,8 @@
 #define CSS_DISABLE_SELECTION    "body { user-select: none; -webkit-user-select: none; }"
 #define CSS_DISABLE_PINCH_ZOOM   "body { touch-action: pan-x pan-y; }"
 
+#define DEBUG_PRINT_TRAFFIC
+
 /**
    Keep this class generic, DPF specific functionality belongs to WebUI.
  */
@@ -67,18 +69,13 @@ void BaseWebView::postMessage(const ScriptValueVector& args)
     // calling custom JavaScript using a function provided by webviews on all platforms.
     // This method implements something like a "reverse" postMessage() aiming to keep the bridge
     // symmetrical. Global window.webviewHost is an EventTarget that can be listened for messages.
-    std::stringstream ss;
-    ss << '[';
-    for (ScriptValueVector::const_iterator it = args.cbegin(); it != args.cend(); ++it) {
-        if (it != args.cbegin()) {
-            ss << ',';
-        }
-        ss << *it;
-    }
-    ss << ']';
+    String payload = serializeScriptValues(args);
+#ifdef DEBUG_PRINT_TRAFFIC
+    std::cerr << "n -> js : " << payload.buffer() << std::endl;
+#endif
     String js;
     js += "window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:";
-    js += ss.str().c_str();
+    js += payload;
     js += "}));";
     runScript(js);
 }
@@ -88,13 +85,32 @@ void BaseWebView::handleScriptMessage(const ScriptValueVector& args)
     if ((args.size() > 1) && (args[0].getString() == "console.log")) {
         std::cerr << args[1].getString().buffer() << std::endl;
     } else {
+#ifdef DEBUG_PRINT_TRAFFIC
+    std::cerr << "n <- js : " << serializeScriptValues(args).buffer() << std::endl;
+#endif
         fHandler.webViewScriptMessageReceived(args);
     }
+}
+
+String BaseWebView::serializeScriptValues(const ScriptValueVector& args)
+{
+    std::stringstream ss;
+    ss << '[';
+    for (ScriptValueVector::const_iterator it = args.cbegin(); it != args.cend(); ++it) {
+        if (it != args.cbegin()) {
+            ss << ',';
+        }
+        ss << *it;
+    }
+    ss << ']';
+    return String(ss.str().c_str());
 }
 
 void BaseWebView::addStylesheet(String source)
 {
     String js;
-    js += "document.head.insertAdjacentHTML('beforeend', '<style>" + source + "</style>');";
+    js += "document.head.insertAdjacentHTML('beforeend', '<style>";
+    js += source;
+    js += "</style>');";
     runScript(js);
 }

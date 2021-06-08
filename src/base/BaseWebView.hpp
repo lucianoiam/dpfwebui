@@ -53,15 +53,17 @@ public:
     virtual void injectScript(String source) = 0;
     virtual void start() {};
     
-    void postMessage(const ScriptValueVector& args); // native->js
+    void postMessage(const ScriptValueVector& args);
 
 protected:
     void injectDefaultScripts(String platformSpecificScript);
     
     void handleLoadFinished();
-    void handleScriptMessage(const ScriptValueVector& args); // js->native
+    void handleScriptMessage(const ScriptValueVector& args);
 
 private:
+    String serializeScriptValues(const ScriptValueVector& args);
+
     void addStylesheet(String source);
 
     WebViewEventHandler& fHandler;
