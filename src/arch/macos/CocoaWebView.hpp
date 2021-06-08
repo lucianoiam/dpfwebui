@@ -33,6 +33,7 @@ public:
     CocoaWebView(WebViewEventHandler& handler);
     ~CocoaWebView();
 
+    void setBackgroundColor(uint32_t rgba) override;
     void reparent(uintptr_t windowId) override;
     void resize(const DGL::Size<uint>& size) override;
     void navigate(String url) override;

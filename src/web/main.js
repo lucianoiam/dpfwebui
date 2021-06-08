@@ -26,7 +26,7 @@ class WebExampleUI extends WebUI {
         
         elemById('ua').innerText = navigator.userAgent;
 
-        elemById('main').addEventListener('click', (ev) => {
+        elemById('main').addEventListener('mousedown', (ev) => {
             const i = this.colorIndex++ % this.colors.length;
             ev.currentTarget.style.borderColor = this.colors[i];
         });
