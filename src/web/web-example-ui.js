@@ -36,7 +36,10 @@ class WebExampleUI extends WebUI {
             ev.currentTarget.style.borderColor = this.colors[i];
         });
 
-        document.body.appendChild(main);
+        const body = document.body;
+
+        body.appendChild(main);
+        body.style.display = 'flex';
     }
 
     parameterChanged(index, value) {
