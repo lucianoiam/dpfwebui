@@ -174,9 +174,6 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     // impl->wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     fController = controller;
     ICoreWebView2Controller2_AddRef(fController);
-    //COREWEBVIEW2_COLOR clear = {};
-    //ICoreWebView2Controller2_put_DefaultBackgroundColor(
-    //    reinterpret_cast<ICoreWebView2Controller2 *>(fController), clear);
     ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
     ICoreWebView2_add_NavigationCompleted(fView, fHandler, 0);
     ICoreWebView2_add_WebMessageReceived(fView, fHandler, 0);
