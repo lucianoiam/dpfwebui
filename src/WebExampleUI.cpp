@@ -16,6 +16,13 @@
 
 #include "WebExampleUI.hpp"
 
+#define INIT_WIDTH  600
+#define INIT_HEIGHT 300
+
+// Matching <html> background color to INIT_BACKGROUND_RGBA greatly reduces
+// flicker while the UI is being opened or resized.
+#define INIT_BACKGROUND_RGBA 0xffffffff
+
 USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
@@ -24,6 +31,7 @@ UI* DISTRHO::createUI()
 }
 
 WebExampleUI::WebExampleUI()
+    : WebUI(INIT_WIDTH, INIT_HEIGHT, INIT_BACKGROUND_RGBA)
 {
     // Web view is not guaranteed to be ready yet. Calls to webView().runScript()
     // or any mapped WebUI methods are forbidden. Mapped methods are those that
@@ -42,6 +50,6 @@ void WebExampleUI::webViewLoadFinished()
 
 bool WebExampleUI::webViewScriptMessageReceived(const ScriptValueVector& args)
 {
-	// DOM is guaranteed to be ready here. Can override parent class behavior.
+    // DOM is guaranteed to be ready here. Can override parent class behavior.
     return WebUI::webViewScriptMessageReceived(args);
 }

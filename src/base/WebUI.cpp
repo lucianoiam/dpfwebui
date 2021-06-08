@@ -22,36 +22,33 @@
 #include "base/Platform.hpp"
 #include "base/macro.h"
 
-#define INIT_WIDTH  600
-#define INIT_HEIGHT 300
-
-// Matching <html> background color to INIT_BACKGROUND_RGBA greatly reduces
-// flicker while the UI is being opened or resized.
-#define INIT_BACKGROUND_RGBA 0xffffffff
-
 USE_NAMESPACE_DISTRHO
 
-WebUI::WebUI()
-    : fWebView(*this)
+WebUI::WebUI(uint width, uint height, uint32_t backgroundColor)
+    : UI(width, height)
+    , fWebView(*this)
+    , fBackgroundColor(backgroundColor)
     , fDisplayed(false)
 {
     // Expand size if needed based on system display scaling configuration
     float scaleFactor = platform::getSystemDisplayScaleFactor();
-    setSize(scaleFactor * INIT_WIDTH, scaleFactor * INIT_HEIGHT);
-#ifdef DGL_OPENGL
-    // Clear background for OpenGL
-    glClearColor(DISTRHO_UNPACK_RGBA_NORM(INIT_BACKGROUND_RGBA, GLfloat));
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#endif
-    fWebView.setBackgroundColor(INIT_BACKGROUND_RGBA);
+    setSize(scaleFactor * getWidth(), scaleFactor * getHeight());
+    // Set web view background color as early as possible to reduce flicker
+    fWebView.resize(getSize());
+    fWebView.setBackgroundColor(fBackgroundColor);
 }
 
 void WebUI::onDisplay()
 {
+#ifdef DGL_OPENGL
+    // Clear background for OpenGL
+    glClearColor(DISTRHO_UNPACK_RGBA_NORM(fBackgroundColor, GLfloat));
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
 #ifdef DGL_CAIRO
     // Clear background for Cairo
     cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
-    cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(INIT_BACKGROUND_RGBA, double));
+    cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(fBackgroundColor, double));
     cairo_paint(cr);
 #endif
     // onDisplay() is meant for drawing and will be called multiple times
@@ -67,12 +64,11 @@ void WebUI::onDisplay()
     // actual drawing is handled by the web view. WebUI() constructor is not
     // the suitable place because it can be called successive times without the
     // window ever being displayed.
-    fWebView.reparent(getParentWindow().getWindowId());
-    fWebView.resize(getSize());
     String js = String(
 #include "base/webui.js"
     );
     fWebView.injectScript(js);
+    fWebView.reparent(getParentWindow().getWindowId());
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
     fWebView.start();
 }
