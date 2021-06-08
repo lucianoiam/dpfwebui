@@ -41,8 +41,8 @@ public:
     ExternalGtkWebView(WebViewEventHandler& handler);
     ~ExternalGtkWebView();
 
-    void reparent(uintptr_t windowId) override;
     void setBackgroundColor(uint32_t rgba) override;
+    void reparent(uintptr_t windowId) override;
     void resize(const Size<uint>& size) override;
     void navigate(String url) override;
     void runScript(String source) override;

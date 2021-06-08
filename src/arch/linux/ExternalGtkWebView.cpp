@@ -104,14 +104,14 @@ ExternalGtkWebView::~ExternalGtkWebView()
     }
 }
 
-void ExternalGtkWebView::reparent(uintptr_t windowId)
-{
-    ipcWrite(OPC_REPARENT, &windowId, sizeof(windowId));
-}
-
 void ExternalGtkWebView::setBackgroundColor(uint32_t rgba)
 {
     ipcWrite(OPC_SET_BACKGROUND_COLOR, &rgba, sizeof(uint32_t));
+}
+
+void ExternalGtkWebView::reparent(uintptr_t windowId)
+{
+    ipcWrite(OPC_REPARENT, &windowId, sizeof(windowId));
 }
 
 void ExternalGtkWebView::resize(const Size<uint>& size)

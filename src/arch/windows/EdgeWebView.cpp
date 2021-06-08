@@ -79,51 +79,6 @@ EdgeWebView::~EdgeWebView()
     ::free((void*)fHelperClass.lpszClassName);
 }
 
-void EdgeWebView::reparent(uintptr_t windowId)
-{
-    if (fController == 0) {
-        fPWindowId = windowId;
-        return; // later
-    }
-    ICoreWebView2Controller2_put_ParentWindow(fController, (HWND)windowId);
-}
-
-void EdgeWebView::navigate(String url)
-{
-    if (fView == 0) {
-        fPUrl = url;
-        return; // later
-    }
-    ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
-}
-
-void EdgeWebView::runScript(String source)
-{
-    assert(fView != 0); // in the plugin specific case, fView==0 means a programming error
-    ICoreWebView2_ExecuteScript(fView, TO_LPCWSTR(source), 0);
-}
-
-void EdgeWebView::injectScript(String source)
-{
-    if (fController == 0) {
-        fPInjectedScripts.push_back(source);
-        return; // later
-    }
-    ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
-}
-
-void EdgeWebView::resize(const Size<uint>& size)
-{
-    if (fController == 0) {
-        fPSize = size;
-        return; // later
-    }
-    RECT bounds {};
-    bounds.right = size.getWidth();
-    bounds.bottom = size.getHeight();
-    ICoreWebView2Controller2_put_Bounds(fController, bounds);
-}
-
 void EdgeWebView::setBackgroundColor(uint32_t rgba)
 {
     if (fController == 0) {
@@ -138,6 +93,53 @@ void EdgeWebView::setBackgroundColor(uint32_t rgba)
     color.B = static_cast<BYTE>((rgba & 0x0000ff00) >> 8 );
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
+}
+
+void EdgeWebView::reparent(uintptr_t windowId)
+{
+    if (fController == 0) {
+        fPWindowId = windowId;
+        return; // later
+    }
+    ICoreWebView2Controller2_put_ParentWindow(fController, (HWND)windowId);
+}
+
+void EdgeWebView::resize(const Size<uint>& size)
+{
+    if (fController == 0) {
+        fPSize = size;
+        return; // later
+    }
+    RECT bounds {};
+    bounds.right = size.getWidth();
+    bounds.bottom = size.getHeight();
+    ICoreWebView2Controller2_put_Bounds(fController, bounds);
+}
+
+void EdgeWebView::navigate(String url)
+{
+    if (fView == 0) {
+        fPUrl = url;
+        return; // later
+    }
+    ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
+}
+
+void EdgeWebView::runScript(String source)
+{
+	// For the plugin specific use case fView==0 means a programming error.
+	// There is no point in queuing these, just wait for the view to become ready.
+    assert(fView != 0);
+    ICoreWebView2_ExecuteScript(fView, TO_LPCWSTR(source), 0);
+}
+
+void EdgeWebView::injectScript(String source)
+{
+    if (fController == 0) {
+        fPInjectedScripts.push_back(source);
+        return; // later
+    }
+    ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
 }
 
 void EdgeWebView::start()
@@ -212,7 +214,7 @@ HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
 HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                                       ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
 {
-    // Edge WebView2 does not provide access to JavaScriptCore values
+    // Edge WebView2 does not provide access to JSCore values
     (void)sender;
     LPWSTR jsonStr;
     ICoreWebView2WebMessageReceivedEventArgs_get_WebMessageAsJson(eventArgs, &jsonStr);
