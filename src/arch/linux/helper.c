@@ -36,6 +36,7 @@ typedef struct {
 } helper_context_t;
 
 static void create_webview(helper_context_t *ctx);
+static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t);
 static void reparent(const helper_context_t *ctx, uintptr_t parentId);
 static void inject_script(const helper_context_t *ctx, const char* js);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
@@ -88,12 +89,6 @@ static void create_webview(helper_context_t *ctx)
     }
     // Set up callback so that if the main window is closed, the program will exit
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), ctx);
-    // TODO: gtk_widget_override_background_color() is deprecated
-    /*GdkRGBA color = {DISTRHO_UNPACK_RGBA_NORM(DISTRHO_UI_BACKGROUND_COLOR, gdouble)};
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
-#pragma GCC diagnostic pop*/
     gtk_widget_show(GTK_WIDGET(ctx->window));
     // Create web view
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
@@ -103,6 +98,16 @@ static void create_webview(helper_context_t *ctx)
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
     g_signal_connect(manager, "script-message-received::host", G_CALLBACK(web_view_script_message_cb), ctx);
     webkit_user_content_manager_register_script_message_handler(manager, "host");
+}
+
+static void set_background_color(const helper_context_t *ctx, uint32_t rgba)
+{
+    // TODO: gtk_widget_override_background_color() is deprecated
+    GdkRGBA color = {DISTRHO_UNPACK_RGBA_NORM(rgba, gdouble)};
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
+#pragma GCC diagnostic pop
 }
 
 static void reparent(const helper_context_t *ctx, uintptr_t parentId)
@@ -211,6 +216,9 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     }
 
     switch (packet.t) {
+        case OPC_SET_BACKGROUND_COLOR:
+            set_background_color(ctx, *((uint32_t *)packet.v));
+            break;
         case OPC_NAVIGATE:
             webkit_web_view_load_uri(ctx->webView, packet.v);
             break;

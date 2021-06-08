@@ -43,6 +43,7 @@ WebUI::WebUI()
     glClearColor(DISTRHO_UNPACK_RGBA_NORM(INIT_BACKGROUND_RGBA, GLfloat));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
+    fWebView.setBackgroundColor(INIT_BACKGROUND_RGBA);
 }
 
 void WebUI::onDisplay()
@@ -66,13 +67,12 @@ void WebUI::onDisplay()
     // actual drawing is handled by the web view. WebUI() constructor is not
     // the suitable place because it can be called successive times without the
     // window ever being displayed.
+    fWebView.reparent(getParentWindow().getWindowId());
+    fWebView.resize(getSize());
     String js = String(
 #include "base/webui.js"
     );
     fWebView.injectScript(js);
-    fWebView.setBackgroundColor(INIT_BACKGROUND_RGBA);
-    fWebView.reparent(getParentWindow().getWindowId());
-    fWebView.resize(getSize());
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
     fWebView.start();
 }
