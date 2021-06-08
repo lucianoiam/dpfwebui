@@ -25,16 +25,23 @@ UI* DISTRHO::createUI()
 
 WebExampleUI::WebExampleUI()
 {
-    // Web view is not guaranteed to be ready yet
+    // Web view is not guaranteed to be ready yet. Calls to webView().runScript()
+    // or any mapped WebUI methods are forbidden. Mapped methods are those that
+    // have their JavaScript counterparts; they rely on message passing and
+    // ultimately webView().runScript(). Still can call webView().injectScript()
+    // to queue scripts that will run immediately after content finishes loading
+    // and before any referenced scripts (<script src="...">) start running.
 }
 
 void WebExampleUI::webViewLoadFinished()
 {
-    // Called when the main document finished loading
+    // Called when the main document finished loading and DOM is ready. It is now
+    // safe to call runScript() if needed. Can override parent class behavior.
     WebUI::webViewLoadFinished();
 }
 
 bool WebExampleUI::webViewScriptMessageReceived(const ScriptValueVector& args)
 {
+	// DOM is guaranteed to be ready here. Can override parent class behavior.
     return WebUI::webViewScriptMessageReceived(args);
 }
