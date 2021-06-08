@@ -37,14 +37,10 @@ class WebExampleUI extends WebUI {
         });
 
         document.body.appendChild(main);
-        
-        
-        // TEST CALL
-        this.editParameter(123,true);
     }
 
     parameterChanged(index, value) {
-        console.log(`WEB received parameterChanged(${index},${value})`);
+        // empty
     }
 
 }
