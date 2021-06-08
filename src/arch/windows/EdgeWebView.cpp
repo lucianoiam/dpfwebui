@@ -25,7 +25,6 @@
 #include "base/Platform.hpp"
 #include "base/macro.h"
 #include "extra/cJSON.h"
-#include "DistrhoPluginInfo.h"
 
 #define WSTRING_CONVERTER std::wstring_convert<std::codecvt_utf8<wchar_t>>()
 #define TO_LPCWSTR(s)     WSTRING_CONVERTER.from_bytes(s).c_str()
@@ -40,6 +39,7 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
     , fHelperHwnd(0)
     , fController(0)
     , fView(0)
+    , fPBackgroundColor(0)
     , fPWindowId(0)
 {
     // EdgeWebView works a bit different compared to the other platforms due to
@@ -120,6 +120,22 @@ void EdgeWebView::resize(const Size<uint>& size)
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
+void EdgeWebView::setBackgroundColor(uint32_t rgba)
+{
+    if (fController == 0) {
+        fPBackgroundColor = rgba;
+        return; // later
+    }
+    // WebView2 currently only supports alpha=0 or alpha=1
+    COREWEBVIEW2_COLOR color;
+    color.A = static_cast<BYTE>(rgba & 0x000000ff);
+    color.R = static_cast<BYTE>(rgba >> 24);
+    color.G = static_cast<BYTE>((rgba & 0x00ff0000) >> 16);
+    color.B = static_cast<BYTE>((rgba & 0x0000ff00) >> 8 );
+    ICoreWebView2Controller2_put_DefaultBackgroundColor(
+        reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
+}
+
 void EdgeWebView::start()
 {
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
@@ -162,10 +178,12 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     for (std::vector<String>::iterator it = fPInjectedScripts.begin(); it != fPInjectedScripts.end(); ++it) {
         injectScript(*it);
     }
+    setBackgroundColor(fPBackgroundColor);
     resize(fPSize);
     navigate(fPUrl);
     // Cleanup, handleWebViewControllerCompleted() will not be called again anyways
     fPInjectedScripts.clear();
+    fPBackgroundColor = 0;
     fPSize = {};
     fPUrl.clear();
     return S_OK;

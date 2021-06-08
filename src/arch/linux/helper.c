@@ -26,8 +26,6 @@
 #include "base/macro.h"
 #include "extra/ipc.h"
 
-#include "DistrhoPluginInfo.h"
-
 typedef struct {
     ipc_t*         ipc;
     Display*       display;
