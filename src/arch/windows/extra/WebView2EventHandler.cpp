@@ -16,6 +16,8 @@
 
 #include "WebView2EventHandler.hpp"
 
+//#include "base/macro.h"
+
 using namespace edge;
 
 #define pInstance static_cast<WebView2EventHandler*>(This)
@@ -31,17 +33,20 @@ static HRESULT STDMETHODCALLTYPE Null_QueryInterface(T* This, REFIID riid, void*
 }
 
 template <typename T>
-static ULONG STDMETHODCALLTYPE Null_AddRef(T* This)
+static ULONG STDMETHODCALLTYPE Impl_AddRef(T* This)
 {
-    (void)This;
-    return 1;
+    return pInstance->incRefCount();
 }
 
 template <typename T>
-static ULONG STDMETHODCALLTYPE Null_Release(T* This)
+static ULONG STDMETHODCALLTYPE Impl_Release(T* This)
 {
-    (void)This;
-    return 1;
+    int refCount = pInstance->decRefCount();
+    if (refCount == 0) {
+        //DISTRHO_LOG_STDERR("RELEASE");
+        delete pInstance;
+    }
+    return refCount;
 }
 
 
@@ -56,8 +61,8 @@ static HRESULT STDMETHODCALLTYPE Impl_EnvironmentCompletedHandler(
 
 static ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandlerVtbl Vtbl_EnvironmentCompletedHandler = {
     Null_QueryInterface,
-    Null_AddRef,
-    Null_Release,
+    Impl_AddRef,
+    Impl_Release,
     Impl_EnvironmentCompletedHandler,
 };
 
@@ -73,8 +78,8 @@ static HRESULT STDMETHODCALLTYPE Impl_ControllerCompletedHandler(
 
 static ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerVtbl Vtbl_ControllerCompletedHandler = {
     Null_QueryInterface,
-    Null_AddRef,
-    Null_Release,
+    Impl_AddRef,
+    Impl_Release,
     Impl_ControllerCompletedHandler,
 };
 
@@ -90,8 +95,8 @@ static HRESULT STDMETHODCALLTYPE Impl_NavigationCompletedEventHandler(
 
 static ICoreWebView2NavigationCompletedEventHandlerVtbl Vtbl_NavigationCompletedEventHandler = {
     Null_QueryInterface,
-    Null_AddRef,
-    Null_Release,
+    Impl_AddRef,
+    Impl_Release,
     Impl_NavigationCompletedEventHandler,
 };
 
@@ -107,8 +112,8 @@ static HRESULT STDMETHODCALLTYPE Impl_WebMessageReceivedEventHandler(
 
 static ICoreWebView2WebMessageReceivedEventHandlerVtbl Vtbl_WebMessageReceivedEventHandler = {
     Null_QueryInterface,
-    Null_AddRef,
-    Null_Release,
+    Impl_AddRef,
+    Impl_Release,
     Impl_WebMessageReceivedEventHandler,
 };
 
@@ -118,4 +123,5 @@ WebView2EventHandler::WebView2EventHandler()
     , ICoreWebView2CreateCoreWebView2ControllerCompletedHandler { &Vtbl_ControllerCompletedHandler }
     , ICoreWebView2NavigationCompletedEventHandler { &Vtbl_NavigationCompletedEventHandler }
     , ICoreWebView2WebMessageReceivedEventHandler { &Vtbl_WebMessageReceivedEventHandler }
+    , fRefCount(0)
 {}

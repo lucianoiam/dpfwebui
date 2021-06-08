@@ -37,8 +37,6 @@ USE_NAMESPACE_DISTRHO
 
 EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
     : BaseWebView(handler)
-    , fStarted(false)
-    , fBusy(false)
     , fHelperHwnd(0)
     , fController(0)
     , fView(0)
@@ -46,6 +44,8 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
 {
     // EdgeWebView works a bit different compared to the other platforms due to
     // the async nature of the native web view initialization process
+    fHandler = new WebView2EventHandlerImpl(this);
+    fHandler->incRefCount();
     WCHAR className[256];
     ::swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
     ::ZeroMemory(&fHelperClass, sizeof(fHelperClass));
@@ -66,16 +66,10 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
 
 EdgeWebView::~EdgeWebView()
 {
-    if (fBusy) {
-        // Avoid crash when opening and closing the UI too quickly, caused by
-        // webview trying to callback a deleted this. Cannot block on a signal
-        // here because webview callbacks run on the same thread as the plugin
-        // UI. Sleep for a sensible time that is high enough for a slow machine
-        // but still tolerable for the user; better to wait rather than crash.
-        // This race condition could be triggered by some yet unknown non-user
-        // initiated reason so it is advisable to find a better solution,
-        // something like a weak pointer?
-        ::Sleep(3000);
+    fHandler->cancel();
+    if (fHandler->decRefCount() == 0) {
+        //DISTRHO_LOG_STDERR("RELEASE");
+        delete fHandler;
     }
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
@@ -101,7 +95,6 @@ void EdgeWebView::navigate(String url)
         fPUrl = url;
         return; // later
     }
-    fBusy = true;
     ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
 }
 
@@ -134,13 +127,8 @@ void EdgeWebView::resize(const Size<uint>& size)
 
 void EdgeWebView::start()
 {
-    if (fStarted) {
-        return;
-    }
-    fStarted = true;
-    fBusy = true;
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
-        TO_LPCWSTR(platform::getTemporaryPath()), 0, this);
+        TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
     if (FAILED(result)) {
         webViewLoaderErrorMessageBox(result);
     }
@@ -153,7 +141,7 @@ HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
         webViewLoaderErrorMessageBox(result);
         return result;
     }
-    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fHelperHwnd, this);
+    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fHelperHwnd, fHandler);
     return S_OK;
 }
 
@@ -161,8 +149,7 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
                                                        ICoreWebView2Controller* controller)
 {
     if (FAILED(result)) {
-        // Calling MessageBox here makes the host crash if 'this' is being deleted
-        DISTRHO_LOG_STDERR_INT("handleWebView2ControllerCompleted() called with HRESULT", result);
+        webViewLoaderErrorMessageBox(result);
         return result;
     }
     // TODO: there is some visible black flash while the window plugin is appearing and
@@ -174,8 +161,8 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     //ICoreWebView2Controller2_put_DefaultBackgroundColor(
     //    reinterpret_cast<ICoreWebView2Controller2 *>(fController), clear);
     ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
-    ICoreWebView2_add_NavigationCompleted(fView, this, 0);
-    ICoreWebView2_add_WebMessageReceived(fView, this, 0);
+    ICoreWebView2_add_NavigationCompleted(fView, fHandler, 0);
+    ICoreWebView2_add_WebMessageReceived(fView, fHandler, 0);
     // Call pending setters
     for (std::vector<String>::iterator it = fPInjectedScripts.begin(); it != fPInjectedScripts.end(); ++it) {
         injectScript(*it);
@@ -202,7 +189,6 @@ HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
             fPWindowId = 0;
         }
     }
-    fBusy = false;
     return S_OK;
 }
 
