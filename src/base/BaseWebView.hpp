@@ -52,6 +52,8 @@ public:
     virtual void runScript(String source) = 0;
     virtual void injectScript(String source) = 0;
 
+    virtual void setBackgroundColor(int color) { fBackgroundColor = color; }
+
     void postMessage(const ScriptValueVector& args); // native->js
 
 protected:
@@ -64,6 +66,7 @@ private:
     void addStylesheet(String source);
 
     WebViewEventHandler& fHandler;
+    int fBackgroundColor;
 
 };
 

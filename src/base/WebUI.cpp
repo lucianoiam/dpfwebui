@@ -72,6 +72,7 @@ void WebUI::onDisplay()
 #include "base/webui.js"
     );
     fWebView.injectScript(js);
+    fWebView.setBackgroundColor(INIT_BACKGROUND_RGBA);
     fWebView.reparent(getParentWindow().getWindowId());
     fWebView.resize(getSize());
     fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
