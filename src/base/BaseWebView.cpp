@@ -27,7 +27,7 @@
                                  "window.webviewHost.addMessageListener = (lr) => {" \
                                     "window.webviewHost.addEventListener('message', (ev) => lr(ev.detail))" \
                                  "};"
-#define CSS_DISABLE_DRAG         "* { user-drag: none; -webkit-user-drag: none; }"
+#define CSS_DISABLE_IMAGE_DRAG   "img { user-drag: none; -webkit-user-drag: none; }"
 #define CSS_DISABLE_SELECTION    "body { user-select: none; -webkit-user-select: none; }"
 #define CSS_DISABLE_PINCH_ZOOM   "body { touch-action: pan-x pan-y; }"
 
@@ -50,7 +50,7 @@ void BaseWebView::injectDefaultScripts(String platformSpecificScript)
 void BaseWebView::handleLoadFinished()
 {
     String css;
-    css += String(CSS_DISABLE_DRAG);
+    css += String(CSS_DISABLE_IMAGE_DRAG);
     css += String(CSS_DISABLE_SELECTION);
     css += String(CSS_DISABLE_PINCH_ZOOM);
     addStylesheet(css);
