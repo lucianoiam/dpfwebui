@@ -15,7 +15,7 @@ NOTES FOR WINDOWS
 
 2. Native binaries can be built by cross-compiling on Linux or by installing the
    MinGW toolchain on Windows. Download MSYS2 from https://www.msys2.org/ then
-   follow website instructions to install the mingw-64 GCC. Once done run make.
+   follow website instructions to install the mingw-64 GCC.
 
 3. For building the Edge WebView2 SDK is required. It is available with name
    Microsoft.Web.WebView2 at the NuGet package repository. NuGet tool ships with
