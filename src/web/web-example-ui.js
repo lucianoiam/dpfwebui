@@ -16,8 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// See src/base/webui.js for class WebUI implementation. It is automatically
-// injected into the webview and guaranteed to be available on document.onload()
+// See src/base/webui.js for the WebUI class implementation, it shows which C++
+// methods are mapped. WebUI is automatically injected into the global namespace
+// and guaranteed to be available after the document load event fires.
 
 class WebExampleUI extends WebUI {
 
@@ -45,10 +46,6 @@ class WebExampleUI extends WebUI {
 
         body.appendChild(main);
         body.style.display = 'flex';
-    }
-
-    parameterChanged(index, value) {
-        // empty
     }
 
 }
