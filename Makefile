@@ -107,8 +107,8 @@ endif
 ifeq ($(WINDOWS),true)
 BASE_FLAGS += -I./lib/windows/Microsoft.Web.WebView2/build/native/include
 LINK_FLAGS += -L./lib/windows/Microsoft.Web.WebView2/build/native/x64 \
-              -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic \
-              -lpthread -lole32 -lShlwapi -lWebView2Loader.dll
+              -lole32 -lShlwapi -lWebView2Loader.dll -static-libgcc \
+              -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread
 endif
 
 # Reuse DISTRHO post-build scripts
