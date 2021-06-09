@@ -80,7 +80,7 @@ endif
 ifneq ($(MACOS_OR_WINDOWS),true)
 ifeq ($(HAVE_OPENGL),true)
 ifeq ($(HAVE_LIBLO),true)
-TARGETS += dssi
+#TARGETS += dssi
 endif
 endif
 endif
@@ -132,7 +132,7 @@ lxhelper: src/arch/linux/helper.c src/arch/linux/extra/ipc.c
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
 	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
-	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi
+#	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi
 
 clean: clean_lxhelper
 
@@ -202,10 +202,10 @@ resources:
 	@cp -r src/web/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
 	@cp -r src/web/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
-ifeq ($(LINUX),true)
-	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
-	@cp -r src/web/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
-endif
+#ifeq ($(LINUX),true)
+#	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
+#	@cp -r src/web/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
+#endif
 ifeq ($(MACOS),true)
 	@cp -r src/web/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst/Contents/Resources
 endif

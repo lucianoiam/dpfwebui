@@ -7,7 +7,7 @@ Yet another solution to plugin UI toolkits
 * C++ for DSP code
 * HTML/CSS/JS for UI code
 * Linux, macOS and Windows
-* VST2, LV2, DSSI and JACK standalone app
+* VST2, LV2 and JACK standalone app
 * Lightweight, just the (powerful) basics
 * Makefile based
 * BSD-like license
@@ -18,10 +18,10 @@ Example code:
 class WebExampleUI extends WebUI {
 
     constructor() {
+    	super();
     
         // Change a parameter...
-        this.setParameterValue(index, value);
-        
+        this.setParameterValue(1, 2.3);
     }
 
     parameterChanged(index, value) {
@@ -42,4 +42,4 @@ Do not forget to visit https://github.com/DISTRHO
 If you find libre software useful please support the developers
 
 
-![](https://user-images.githubusercontent.com/930494/121150965-42dc5780-c844-11eb-88ff-384728b017f7.png)
+![](https://user-images.githubusercontent.com/930494/121346399-595adf80-c926-11eb-9131-3269de4398b7.png)
