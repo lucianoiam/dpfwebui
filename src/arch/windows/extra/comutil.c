@@ -16,7 +16,7 @@
 
 #include <stdio.h>
 
-#include "com.h"
+#include "comutil.h"
 
 LPWSTR refiid2wstr(LPWSTR buf, REFIID riid)
 {

@@ -125,8 +125,8 @@ void EdgeWebView::navigate(String url)
 
 void EdgeWebView::runScript(String source)
 {
-	// For the plugin specific use case fView==0 means a programming error.
-	// There is no point in queuing these, just wait for the view to become ready.
+    // For the plugin specific use case fView==0 means a programming error.
+    // There is no point in queuing these, just wait for the view to become ready.
     assert(fView != 0);
     ICoreWebView2_ExecuteScript(fView, TO_LPCWSTR(source), 0);
 }

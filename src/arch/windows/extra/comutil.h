@@ -14,8 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef COM_H
-#define COM_H
+#ifndef COMUTIL_H
+#define COMUTIL_H
 
 #include <WinDef.h>
 
@@ -29,4 +29,4 @@ LPWSTR refiid2wstr(LPWSTR buf /* 37 bytes */, REFIID riid);
 }
 #endif
 
-#endif // COM_H
+#endif // COMUTIL_H
