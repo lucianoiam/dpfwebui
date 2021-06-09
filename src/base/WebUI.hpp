@@ -52,7 +52,7 @@ protected:
     void webPostMessage(const ScriptValueVector& args) { fWebView.postMessage(args); }
 
     virtual void webContentReady() {};
-    virtual void webMessageReceived(const ScriptValueVector& args) {};
+    virtual void webMessageReceived(const ScriptValueVector& args) { (void)args; };
 
 private:
     // WebViewEventHandler

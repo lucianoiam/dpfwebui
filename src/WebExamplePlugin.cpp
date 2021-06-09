@@ -66,6 +66,13 @@ void WebExamplePlugin::setState(const char* key, const char* value)
     (void)value;
 }
 
+String WebExamplePlugin::getState(const char* key) const
+{
+    // unused
+    (void)key;
+    return String();
+}
+
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
 void WebExamplePlugin::run(const float** inputs, float** outputs, uint32_t frames)
