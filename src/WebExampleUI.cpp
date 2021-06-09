@@ -54,4 +54,5 @@ void WebExampleUI::webContentReady()
 void WebExampleUI::webMessageReceived(const ScriptValueVector& args)
 {
     // Web view and DOM guaranteed are to be ready here.
+    (void)args;
 }

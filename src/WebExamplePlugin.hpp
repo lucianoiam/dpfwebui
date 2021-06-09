@@ -57,8 +57,9 @@ public:
     void  setParameterValue(uint32_t index, float value) override;
 
 #ifdef DISTRHO_PLUGIN_WANT_STATE
-    void initState(uint32_t index, String& stateKey, String& defaultStateValue) override;
-    void setState(const char* key, const char* value) override;
+    void   initState(uint32_t index, String& stateKey, String& defaultStateValue) override;
+    void   setState(const char* key, const char* value) override;
+    String getState(const char* key) const override;
 #endif
 
     void run(const float** inputs, float** outputs, uint32_t frames) override;
