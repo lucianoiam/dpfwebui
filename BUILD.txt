@@ -14,7 +14,7 @@ NOTES FOR WINDOWS
    MinGW toolchain on Windows. Download MSYS2 from https://www.msys2.org/ then
    follow website instructions to install the mingw-64 GCC.
 
-3. For building the Edge WebView2 SDK is required. It is available with name
+3. For building plugin, Edge WebView2 SDK is required. It is available with name
    Microsoft.Web.WebView2 at the NuGet package repository. NuGet tool ships with
    Visual Studio and it is also available as a single file download:
 
