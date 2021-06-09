@@ -6,7 +6,7 @@
 
 # Allow placing DPF in a random directory and include its Makefiles
 # These variables are not supported by the official release as of May '21
-DPF_CUSTOM_PATH = lib/dpf
+DPF_CUSTOM_PATH = ./lib/DPF
 DPF_CUSTOM_TARGET_DIR = ./bin
 DPF_CUSTOM_BUILD_DIR = ./build
 
@@ -31,7 +31,7 @@ SRC_FILES_UI  = \
     base/BaseWebView.cpp \
     base/ScriptValue.cpp
 
-# Note this is not DPF's Makefile.base.mk
+# Note this is not DPF's own Makefile.base.mk
 include Makefile.base.mk
 
 # Add platform-specific source files

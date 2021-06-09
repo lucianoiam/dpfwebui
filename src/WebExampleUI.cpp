@@ -18,8 +18,8 @@
 
 // These dimensions are scaled up according to the system display scaling
 // configuration on all platforms except Mac where it does not apply.
-#define INIT_WIDTH_PX  600
-#define INIT_HEIGHT_PX 300
+#define INIT_WIDTH_PX  1280
+#define INIT_HEIGHT_PX 768
 
 // Color for painting the window background before the web content is ready.
 // Matching it to <html> background color ensures a smooth transition.
