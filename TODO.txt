@@ -24,10 +24,6 @@ LINUX
 WINDOWS
 -------
 
-- Find out if it is possible to get the WebView2 SDK files without Visual Studio
-  and update build docs
-  https://stackoverflow.com/questions/38118548/how-to-install-nuget-from-command-line-on-linux
-
 - Files plugin.manifest and WebView2Loader.manifest contain a hardcoded dummy
   version for WebView2Loader.dll. It probably needs to be set to the real DLL
   version the plugin is linking against, for the cases where the host or other

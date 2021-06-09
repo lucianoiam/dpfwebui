@@ -23,7 +23,7 @@ WINDOWS=true
 endif
 
 ifeq ($(WINDOWS),true)
-ifeq (,$(wildcard ./lib/windows/WebView2))
+ifeq (,$(wildcard ./lib/windows/Microsoft.Web.WebView2))
 $(error WebView2 SDK not found, please have a look at BUILD.txt)
 endif
 endif
