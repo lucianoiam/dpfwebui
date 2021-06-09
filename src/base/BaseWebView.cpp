@@ -54,7 +54,7 @@ void BaseWebView::handleLoadFinished()
     css += String(CSS_DISABLE_SELECTION);
     css += String(CSS_DISABLE_PINCH_ZOOM);
     addStylesheet(css);
-    fHandler.webViewLoadFinished();
+    fHandler.handleWebViewLoadFinished();
 }
 
 void BaseWebView::postMessage(const ScriptValueVector& args)
@@ -86,7 +86,7 @@ void BaseWebView::handleScriptMessage(const ScriptValueVector& args)
 #ifdef DEBUG_PRINT_TRAFFIC
     std::cerr << "n <- js : " << serializeScriptValues(args).buffer() << std::endl;
 #endif
-        fHandler.webViewScriptMessageReceived(args);
+        fHandler.handleWebViewScriptMessageReceived(args);
     }
 }
 
