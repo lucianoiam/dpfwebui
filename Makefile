@@ -4,12 +4,12 @@
 # Created by falkTX
 # WebUI extensions by lucianoiam
 
-# Allow placing DPF in a custom directory and including its Makefiles
+# Allow placing DPF in a custom directory while including its Makefiles
 DPF_CUSTOM_PATH = ./lib/DPF
 DPF_CUSTOM_TARGET_DIR = ./bin
 DPF_CUSTOM_BUILD_DIR = ./build
 
-# Keep debug symbols (DPF Makefile.base.mk@148) and print full compiler output
+# Keep debug symbols and print full compiler output
 SKIP_STRIPPING = true
 VERBOSE = true
 
@@ -88,7 +88,7 @@ endif
 TARGETS += vst
 
 # --------------------------------------------------------------
-# Up to here follow example DISTRHO plugin Makefile, now begin dpf-webui secret sauce
+# Up to here follow example plugin Makefile, now begin dpf-webui secret sauce
 BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH) -DBIN_BASENAME=$(NAME)
 
 # Platform-specific build flags
@@ -105,7 +105,7 @@ LINK_FLAGS += -L./lib/windows/Microsoft.Web.WebView2/build/native/x64 \
               -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread
 endif
 
-# Reuse DISTRHO post-build scripts
+# Reuse DP post-build scripts
 ifneq ($(WINDOWS),true)
 TARGETS += utils
 
@@ -210,7 +210,7 @@ clean: clean_resources
 clean_resources:
 	@rm -rf $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
 
-# Target for building DPF's graphics library goes firstmost
+# Target for building DPF's graphics library inserted at first
 dgl:
 	make -C $(DPF_CUSTOM_PATH) dgl
 
