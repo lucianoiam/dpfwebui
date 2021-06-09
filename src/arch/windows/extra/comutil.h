@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef COM_H
-#define COM_H
+#ifndef COMUTIL_H
+#define COMUTIL_H
 
 #include <WinDef.h>
 
@@ -31,4 +31,4 @@ LPWSTR refiid2wstr(LPWSTR buf /* 37 bytes */, REFIID riid);
 }
 #endif
 
-#endif // COM_H
+#endif // COMUTIL_H
