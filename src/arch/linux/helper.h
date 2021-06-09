@@ -32,11 +32,6 @@ typedef enum {
     OPC_HANDLE_LOAD_FINISHED
 } helper_opcode_t;
 
-typedef struct {
-    unsigned width;
-    unsigned height;
-} helper_size_t;
-
 typedef enum {
     ARG_TYPE_NULL,
     ARG_TYPE_FALSE,
@@ -44,5 +39,10 @@ typedef enum {
     ARG_TYPE_DOUBLE,
     ARG_TYPE_STRING
 } helper_msg_arg_type_t;
+
+typedef struct {
+    unsigned width;
+    unsigned height;
+} helper_size_t;
 
 #endif  // HELPER_H
