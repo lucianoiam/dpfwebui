@@ -4,8 +4,7 @@
 # Created by falkTX
 # WebUI extensions by lucianoiam
 
-# Allow placing DPF in a random directory and include its Makefiles
-# These variables are not supported by the official release as of May '21
+# Allow placing DPF in a custom directory and include its Makefiles
 DPF_CUSTOM_PATH = ./lib/DPF
 DPF_CUSTOM_TARGET_DIR = ./bin
 DPF_CUSTOM_BUILD_DIR = ./build
