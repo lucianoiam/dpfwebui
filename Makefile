@@ -99,8 +99,8 @@ ifeq ($(MACOS),true)
 LINK_FLAGS += -framework WebKit 
 endif
 ifeq ($(WINDOWS),true)
-BASE_FLAGS += -I./lib/windows/Microsoft.Web.WebView2/build/native/include
-LINK_FLAGS += -L./lib/windows/Microsoft.Web.WebView2/build/native/x64 \
+BASE_FLAGS += -I$(EDGE_WEBVIEW2_PATH)/build/native/include
+LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
               -lole32 -lShlwapi -lWebView2Loader.dll -static-libgcc \
               -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread
 endif
@@ -156,7 +156,7 @@ endif
 # Windows requires compiling resource files and linking to WebView2, currently only 64-bit
 ifeq ($(WINDOWS),true)
 TARGETS += winlibs
-WEBVIEW_DLL = lib/windows/Microsoft.Web.WebView2/runtimes/win-x64/native/WebView2Loader.dll
+WEBVIEW_DLL = $(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll
 
 winlibs:
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
