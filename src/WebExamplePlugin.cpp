@@ -49,6 +49,25 @@ void WebExamplePlugin::setParameterValue(uint32_t index, float value)
     (void)value;
 }
 
+#ifdef DISTRHO_PLUGIN_WANT_STATE
+
+void WebExamplePlugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
+{
+    // unused
+    (void)index;
+    (void)stateKey;
+    (void)defaultStateValue;
+}
+
+void WebExamplePlugin::setState(const char* key, const char* value)
+{
+    // unused
+    (void)key;
+    (void)value;
+}
+
+#endif // DISTRHO_PLUGIN_WANT_STATE
+
 void WebExamplePlugin::run(const float** inputs, float** outputs, uint32_t frames)
 {
     memcpy(outputs[0], inputs[0], frames * sizeof(float));

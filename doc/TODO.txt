@@ -1,7 +1,6 @@
-ALL PLATFORMS
--------------
+GENERAL
+-------
 
-- Minimum set of API mappings, ideally include those related to persistent state
 - JavaScript alert(), confirm(), prompt()
 - Allow calling Window::openFileBrowser() from JavaScript
 - Launch system browser for HTTP links
@@ -11,7 +10,7 @@ LINUX
 -----
 
 - DSSI plugin currently builds but fails to start
-- UI not displaying at all on Gnome Shell even running on Xorg. Xembed related?
+- UI not displaying at all on Gnome Shell even running on Xorg. XEmbed related?
 
 
 WINDOWS

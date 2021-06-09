@@ -43,6 +43,9 @@ protected:
     void onResize(const ResizeEvent& ev) override;
 
     void parameterChanged(uint32_t index, float value) override;
+#if DISTRHO_PLUGIN_WANT_STATE
+    void stateChanged(const char* key, const char* value) override;
+#endif
 
     DISTRHO_WEBVIEW_CLASS& webView() { return fWebView; }
 
@@ -50,7 +53,7 @@ protected:
 
     // WebViewEventHandler
 
-    virtual void webViewLoadFinished() override;
+    virtual void webViewLoadFinished() override {};
     virtual bool webViewScriptMessageReceived(const ScriptValueVector& args) override;
 
 private:
