@@ -42,7 +42,7 @@ SRC_FILES_UI += arch/linux/ExternalGtkWebView.cpp \
 endif
 ifeq ($(MACOS),true)
 SRC_FILES_UI += arch/macos/CocoaWebView.mm \
-                arch/macos/PlatformMac.cpp
+                arch/macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
 SRC_FILES_UI += arch/windows/EdgeWebView.cpp \

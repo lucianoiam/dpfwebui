@@ -14,6 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#import <AppKit/AppKit.h>
+
 #include <cstring>
 #include <dlfcn.h>
 #include <libgen.h>
@@ -78,5 +80,5 @@ String platform::getTemporaryPath()
 
 float platform::getSystemDisplayScaleFactor()
 {
-    return 1.f; // not implemented
+    return [NSScreen mainScreen].backingScaleFactor;
 }
