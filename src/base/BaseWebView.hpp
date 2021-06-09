@@ -34,8 +34,8 @@ typedef std::vector<ScriptValue> ScriptValueVector;
 class WebViewEventHandler
 {
 public:
-    virtual void webViewLoadFinished() = 0;
-    virtual bool webViewScriptMessageReceived(const ScriptValueVector& args) = 0;
+    virtual void handleWebViewLoadFinished() = 0;
+    virtual void handleWebViewScriptMessageReceived(const ScriptValueVector& args) = 0;
 
 };
 

@@ -80,22 +80,29 @@ void WebUI::onResize(const ResizeEvent& ev)
 
 void WebUI::parameterChanged(uint32_t index, float value)
 {
-    webViewPostMessage({"WebUI", "parameterChanged", index, value});
+    webPostMessage({"WebUI", "parameterChanged", index, value});
 }
 
 #if DISTRHO_PLUGIN_WANT_STATE
 
 void WebUI::stateChanged(const char* key, const char* value)
 {
-    webViewPostMessage({"WebUI", "stateChanged", key, value});
+    webPostMessage({"WebUI", "stateChanged", key, value});
 }
 
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
-bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
+void WebUI::handleWebViewLoadFinished()
+{
+    // Currently no-op; let derived classes know about the event
+    webContentReady();
+}
+
+void WebUI::handleWebViewScriptMessageReceived(const ScriptValueVector& args)
 {
     if ((args.size() < 4) || (args[0].getString() != "WebUI")) {
-        return false;
+        webMessageReceived(args); // passthrough
+        return;
     }
     String method = args[1].getString();
     if (method == "editParameter") {
@@ -114,9 +121,8 @@ bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
             args[2].getString(), // key
             args[3].getString()  // value
         );
-#endif
+#endif // DISTRHO_PLUGIN_WANT_STATE
     } else {
         DISTRHO_LOG_STDERR_COLOR("Invalid call to native WebUI method");
     }
-    return true;
 }

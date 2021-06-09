@@ -33,7 +33,7 @@
 
 START_NAMESPACE_DISTRHO
 
-class WebUI : public UI, protected WebViewEventHandler
+class WebUI : public UI, private WebViewEventHandler
 {
 public:
     WebUI(uint width = 0, uint height = 0, uint32_t backgroundColor = 0xffffffff);
@@ -51,14 +51,17 @@ protected:
 
     DISTRHO_WEBVIEW_CLASS& webView() { return fWebView; }
 
-    void webViewPostMessage(const ScriptValueVector& args) { fWebView.postMessage(args); }
+    void webPostMessage(const ScriptValueVector& args) { fWebView.postMessage(args); }
 
-    // WebViewEventHandler
-
-    virtual void webViewLoadFinished() override {};
-    virtual bool webViewScriptMessageReceived(const ScriptValueVector& args) override;
+    virtual void webContentReady() {};
+    virtual void webMessageReceived(const ScriptValueVector& args) {};
 
 private:
+    // WebViewEventHandler
+
+    virtual void handleWebViewLoadFinished() override;
+    virtual void handleWebViewScriptMessageReceived(const ScriptValueVector& args) override;
+
     DISTRHO_WEBVIEW_CLASS fWebView;
     
     uint32_t fBackgroundColor;

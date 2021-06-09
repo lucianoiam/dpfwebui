@@ -30,9 +30,8 @@ public:
     ~WebExampleUI() {};
 
 protected:
-    void webViewLoadFinished() override;
-
-    bool webViewScriptMessageReceived(const ScriptValueVector& args) override;
+    void webContentReady() override;
+    void webMessageReceived(const ScriptValueVector& args) override;
 
 };
 
