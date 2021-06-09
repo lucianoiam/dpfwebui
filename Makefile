@@ -2,7 +2,7 @@
 # Makefile for DISTRHO Plugins #
 # ---------------------------- #
 # Created by falkTX
-# Web UI example by lucianoiam
+# WebUI extensions by lucianoiam
 
 # Allow placing DPF in a random directory and include its Makefiles
 # These variables are not supported by the official release as of May '21
