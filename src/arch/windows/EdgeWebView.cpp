@@ -46,7 +46,6 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
 {
     // EdgeWebView works a bit different compared to the other platforms due to
     // the async nature of the native web view initialization process
-    fHandler = new EdgeWebViewInternalEventHandler(this);
     WCHAR className[256];
     ::swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
     ::ZeroMemory(&fHelperClass, sizeof(fHelperClass));
@@ -63,6 +62,7 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
     );
     ::ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
     injectDefaultScripts(String(JS_POST_MESSAGE_SHIM));
+    fHandler = new EdgeWebViewInternalEventHandler(this);
 }
 
 EdgeWebView::~EdgeWebView()
@@ -167,8 +167,8 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
         webViewLoaderErrorMessageBox(result);
         return result;
     }
-    // TODO: there is some visible black flash while the window plugin is appearing and
-    //       Windows' window animations are enabled. Such color is set in pugl_win.cpp:
+    // TODO: there is some casual visible black flash while the window plugin is appearing
+    //       and Windows' window animations are enabled. Such color is set in pugl_win.cpp:
     // impl->wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     fController = controller;
     ICoreWebView2Controller2_AddRef(fController);
@@ -209,7 +209,7 @@ HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
 HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                                       ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
 {
-    // Edge WebView2 does not provide access to JSCore values
+    // Edge WebView2 does not provide access to JSCore values; resort to parsing JSON
     (void)sender;
     LPWSTR jsonStr;
     ICoreWebView2WebMessageReceivedEventArgs_get_WebMessageAsJson(eventArgs, &jsonStr);
@@ -242,7 +242,8 @@ HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
 
 void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
 {
-    // TODO: it would be better to display a message within the window using DPF calls
+    // TODO: Add clickable link to installer. It would be also better to display
+    // a message and button in the native window using DPF drawing methods.
     std::wstringstream ss;
     ss << "Make sure you have installed the Microsoft Edge WebView2 Runtime. "
        << "Error 0x" << std::hex << result;
