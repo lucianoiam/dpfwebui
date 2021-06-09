@@ -1,7 +1,7 @@
-[WIP] Multiplatform VST audio plugins with HTML/JavaScript UI
--------------------------------------------------------------
+Multiplatform VST audio plugins with HTML/JavaScript UI
+-------------------------------------------------------
 
-What if the UI toolkit was a web UI toolkit?
+Yet another solution to plugin UI toolkits
 
 * Based on DPF: DISTRHO Plugin Framework
 * C++ for DSP code
@@ -12,24 +12,28 @@ What if the UI toolkit was a web UI toolkit?
 * Makefile based
 * BSD-like license
 
-Example code (unstable API):
+Example code:
 
 ```JavaScript
 class WebExampleUI extends WebUI {
 
-    setParameterValue(index, value) {
+    constructor() {
+    
         // Change a parameter...
-        super.setParameterValue(index, value);
+        this.setParameterValue(index, value);
+        
     }
 
     parameterChanged(index, value) {
+    
         // ...a parameter has changed
+        
     }
     
 }
 ```
 
-This is work in progress ( nearly 80% complete )
+This is alpha software, a working plugin will be released soon to demo its capabilities.
 
 **"DPF is designed to make development of new plugins an easy and enjoyable task"**
 
