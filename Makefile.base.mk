@@ -2,7 +2,7 @@ ifeq (,$(wildcard $(DPF_CUSTOM_PATH)/Makefile))
 _:=$(shell git submodule update --init --recursive)
 endif
 
-# This is needed until the DPF_CUSTOM_PATH support patch is merged into DPF
+# Currently tracking the latest DPF updates, sync to master after stable release.
 ifeq (,$(findstring develop,$(shell git -C $(DPF_CUSTOM_PATH) branch --show-current)))
 _:=$(shell git -C $(DPF_CUSTOM_PATH) checkout develop)
 endif
