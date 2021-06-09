@@ -2,6 +2,6 @@ build
 bin
 utils
 
-lib/windows/Microsoft.Web.WebView2
+lib/windows/Microsoft.Web.WebView2*
 
 .DS_Store
