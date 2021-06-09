@@ -7,44 +7,28 @@ BUILD INSTRUCTIONS
 NOTES FOR WINDOWS
 -----------------
 
-1. For running the plugin the Microsoft Edge WebView2 Runtime must be installed
-   on the host machine https://developer.microsoft.com/microsoft-edge/webview2
+1. Native binaries can be built by cross-compiling on Linux or by installing the
+   MinGW toolchain on Windows. For the latter option first download MSYS2 from
+   https://www.msys2.org/ and then follow website instructions on how to install
+   the mingw-64 GCC.
 
-2. Native binaries can be built by cross-compiling on Linux or by installing the
-   MinGW toolchain on Windows. Download MSYS2 from https://www.msys2.org/ then
-   follow website instructions to install the mingw-64 GCC.
+2. For building the plugin, Edge WebView2 SDK is required. Makefile will try to
+   download the SDK if the NuGet tool is already present. If not, NuGet will be
+   automatically downloaded for MinGW but on Linux that could need extra work
+   https://docs.microsoft.com/en-us/nuget/install-nuget-client-tools
+   Some distros like Ubuntu already offer it: sudo apt install nuget
 
-3. For building plugin, Edge WebView2 SDK is required. It is available with name
-   Microsoft.Web.WebView2 at the NuGet package repository. NuGet tool ships with
-   Visual Studio and it is also available as a single file download:
+   Running MinGW on Windows 7 can cause nuget.exe to fail due to a TLS error, in
+   such case here is the fix: https://github.com/NuGet/NuGetGallery/issues/8176
 
-   wget -P /usr/bin https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
-
-   When cross-compiling it is also possible to install NuGet on Linux following
-   instructions here https://docs.microsoft.com/en-us/nuget/install-nuget-client-tools
-   Ubuntu repositories already offer a nuget package, check your distro repos.
-
-   Once NuGet is installed:
-
-   nuget install Microsoft.Web.WebView2 -OutputDirectory lib/windows
-   ln -rs lib/windows/Microsoft.Web.WebView2.* lib/windows/Microsoft.Web.WebView2
-
-   Note that the default behavior of ln -s on MinGW is to copy files rather than
-   symlinking. Enabling symlinks on MinGW is possible but then requires to run
-   bash as administrator and setting an environment variable:
-
-   export MSYS=winsymlinks:nativestrict
-
-   It is probably easier to just rename the downloaded directory :)
-
-   If nuget.exe fails due to a TLS error on Windows 7 follow the instructions
-   here: https://github.com/NuGet/NuGetGallery/issues/8176
-
-   How to get SDK using Visual Studio or the free Visual Studio Community IDE:
+   The SDK can also be downloaded using the free Visual Studio Community IDE:
 
    - Create Project
    - Right click on solution
    - Manage NuGet packages
    - Find and install Microsoft.Web.WebView2
    - Copy < SOLUTION_DIR >/packages/Microsoft.Web.WebView2.< VERSION > to
-     < PLUGIN_DIR >/lib/windows/Microsoft.Web.WebView2
+     < PLUGIN_DIR >/lib/Microsoft.Web.WebView2  (version suffix stripped)
+
+3. For running the plugin, the Microsoft Edge WebView2 Runtime must be installed
+   on the host machine https://developer.microsoft.com/microsoft-edge/webview2
