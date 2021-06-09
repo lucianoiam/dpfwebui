@@ -4,7 +4,7 @@
 # Created by falkTX
 # WebUI extensions by lucianoiam
 
-# Allow placing DPF in a custom directory and include its Makefiles
+# Allow placing DPF in a custom directory and including its Makefiles
 DPF_CUSTOM_PATH = ./lib/DPF
 DPF_CUSTOM_TARGET_DIR = ./bin
 DPF_CUSTOM_BUILD_DIR = ./build
@@ -57,12 +57,7 @@ FILES_UI = $(SRC_FILES_UI:%=src/%)
 
 # --------------------------------------------------------------
 # Do some magic
-ifeq ($(MACOS),true)
-# On Mac, OpenGL colors look different compared to those displayed within the web
-# view, and probably by any native widget. Using cairo seems to skip UI::onResize()
-# calls but fortunately that is not needed on Mac thanks to WKWebView autoresizing.
-# On Linux and Windows the color shift issue does not seem to happen and on Linux
-# UI::onResize() is required to resize the external web view so use OpenGL there.
+ifneq ($(WINDOWS),true)
 UI_TYPE = cairo
 endif
 include $(DPF_CUSTOM_PATH)/Makefile.plugins.mk
