@@ -1,5 +1,5 @@
-ifeq (,$(wildcard $(DPF_CUSTOM_PATH)))
-_:=$(shell git clone --recurse-submodule -b develop https://github.com/DISTRHO/DPF.git lib/DPF)
+ifeq (,$(wildcard $(DPF_CUSTOM_PATH)/Makefile))
+_:=$(shell git submodule update --init --recursive)
 endif
 
 # This is needed until the DPF_CUSTOM_PATH support patch is merged into DPF
