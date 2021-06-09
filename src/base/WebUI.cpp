@@ -36,7 +36,7 @@ WebUI::WebUI(uint width, uint height, uint32_t backgroundColor)
     // Set web view background color as early as possible to reduce flicker
     fWebView.resize(getSize());
     fWebView.setBackgroundColor(fBackgroundColor);
-    fWebView.reparent(getParentWindow().getWindowId());
+    fWebView.reparent(getWindow().getNativeWindowHandle());
 }
 
 void WebUI::onDisplay()
@@ -48,7 +48,7 @@ void WebUI::onDisplay()
 #endif
 #ifdef DGL_CAIRO
     // Clear background for Cairo
-    cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
+    cairo_t* cr = ((CairoGraphicsContext&)getWindow().getGraphicsContext()).handle;
     cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(fBackgroundColor, double));
     cairo_paint(cr);
 #endif

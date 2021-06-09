@@ -1,10 +1,7 @@
 BUILD INSTRUCTIONS
 ------------------
 
-1. DPF is linked as a git submodule. Make sure it was cloned to lib/dpf and
-   the selected branch is develop.
-
-2. make
+1. make
 
 
 NOTES FOR WINDOWS
