@@ -57,7 +57,6 @@ int main(int argc, char* argv[])
         DISTRHO_LOG_STDERR("Invalid file descriptor");
         return -1;
     }
-
     ctx.ipc = ipc_init(&conf);
     gtk_init(0, NULL);
     if (GDK_IS_X11_DISPLAY(gdk_display_get_default())
@@ -65,7 +64,6 @@ int main(int argc, char* argv[])
         DISTRHO_LOG_STDERR("Cannot open display");
         return -1;
     }
-
     create_webview(&ctx);
     channel = g_io_channel_unix_new(conf.fd_r);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
@@ -74,7 +72,6 @@ int main(int argc, char* argv[])
 
     g_io_channel_shutdown(channel, TRUE, NULL);
     ipc_destroy(ctx.ipc);
-
     return 0;
 }
 
