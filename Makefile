@@ -124,7 +124,7 @@ endif
 # Linux requires a helper binary
 ifeq ($(LINUX),true)
 TARGETS += lxhelper
-HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_helper
+HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_ui
 
 lxhelper: src/arch/linux/helper.c src/arch/linux/extra/ipc.c
 	@echo "Creating helper"
