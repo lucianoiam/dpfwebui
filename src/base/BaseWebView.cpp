@@ -29,6 +29,7 @@
 #define CSS_DISABLE_SELECTION    "body { user-select: none; -webkit-user-select: none; }"
 #define CSS_DISABLE_PINCH_ZOOM   "body { touch-action: pan-x pan-y; }"
 
+// Uncomment for printing messages crossing the js/native bridge to stderr
 #define DEBUG_PRINT_TRAFFIC
 
 /**
@@ -65,7 +66,7 @@ void BaseWebView::postMessage(const ScriptValueVector& args)
     // WebView2 only JSON is available, see EdgeWebView::handleWebView2WebMessageReceived().
     // There is no equivalent inverse mechanism for passing messages from native to JS, other than
     // calling custom JavaScript using a function provided by webviews on all platforms.
-    // This method implements something like a "reverse" postMessage() aiming to keep the bridge
+    // This method implements something like a "reverse postMessage()" aiming to keep the bridge
     // symmetrical. Global window.webviewHost is an EventTarget that can be listened for messages.
     String payload = serializeScriptValues(args);
 #ifdef DEBUG_PRINT_TRAFFIC
