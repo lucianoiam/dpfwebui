@@ -16,10 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// See src/base/webui.js for class WebUI implementation. It is automatically
+// injected into the webview and guaranteed to be available on document.onload()
+
 class WebExampleUI extends WebUI {
 
     constructor() {
-        super();
+        super(); // do not forget to call
 
         this.colors     = Object.freeze(['#f00', '#0f0', '#00f']);
         this.colorIndex = 0;
