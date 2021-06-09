@@ -66,12 +66,16 @@ void WebExamplePlugin::setState(const char* key, const char* value)
     (void)value;
 }
 
+#ifdef DISTRHO_PLUGIN_WANT_FULL_STATE
+
 String WebExamplePlugin::getState(const char* key) const
 {
     // unused
     (void)key;
     return String();
 }
+
+#endif // DISTRHO_PLUGIN_WANT_FULL_STATE
 
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
