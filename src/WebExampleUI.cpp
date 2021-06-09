@@ -48,8 +48,7 @@ WebExampleUI::WebExampleUI()
 void WebExampleUI::webViewLoadFinished()
 {
     // Called when the main document finished loading and DOM is ready. It is now
-    // safe to call runScript() if needed. Can override parent class behavior.
-    WebUI::webViewLoadFinished();
+    // safe to call runScript() if needed.
 }
 
 bool WebExampleUI::webViewScriptMessageReceived(const ScriptValueVector& args)

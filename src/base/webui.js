@@ -39,8 +39,18 @@ class WebUI {
         this.postMessage('WebUI', 'setParameterValue', index, value);
     }
 
+    // UI::setState(const char* key, const char* value)
+    setState(key, value) {
+        this.postMessage('WebUI', 'setState', key, value);
+    }
+
     // UI::parameterChanged(uint32_t index, float value)
     parameterChanged(index, value) {
+        // default empty implementation
+    }
+
+    // UI::stateChanged(const char* key, const char* value)
+    stateChanged(key, value) {
         // default empty implementation
     }
 

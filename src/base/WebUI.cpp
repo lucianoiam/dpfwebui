@@ -83,10 +83,14 @@ void WebUI::parameterChanged(uint32_t index, float value)
     webViewPostMessage({"WebUI", "parameterChanged", index, value});
 }
 
-void WebUI::webViewLoadFinished()
+#if DISTRHO_PLUGIN_WANT_STATE
+
+void WebUI::stateChanged(const char* key, const char* value)
 {
-    // TODO - send state?
+    webViewPostMessage({"WebUI", "stateChanged", key, value});
 }
+
+#endif // DISTRHO_PLUGIN_WANT_STATE
 
 bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
 {
@@ -95,16 +99,21 @@ bool WebUI::webViewScriptMessageReceived(const ScriptValueVector& args)
     }
     String method = args[1].getString();
     if (method == "editParameter") {
-        uint32_t index = static_cast<uint32_t>(args[2].getDouble());
-        bool started = static_cast<bool>(args[3].getBool());
-        editParameter(index, started);
+        editParameter(
+            static_cast<uint32_t>(args[2].getDouble()), // index
+            static_cast<bool>(args[3].getBool())        // started
+        );
     } else if (method == "setParameterValue") {
-        uint32_t index = static_cast<uint32_t>(args[2].getDouble());
-        float value = static_cast<float>(args[3].getDouble());
-        setParameterValue(index, value);
+        setParameterValue(
+            static_cast<uint32_t>(args[2].getDouble()), // index
+            static_cast<float>(args[3].getDouble())     // value
+        );
 #if DISTRHO_PLUGIN_WANT_STATE
     } else if (method == "setState") {
-        // TODO - setState(const char* key, const char* value)
+        setState(
+            args[2].getString(), // key
+            args[3].getString()  // value
+        );
 #endif
     } else {
         DISTRHO_LOG_STDERR_COLOR("Invalid call to native WebUI method");
