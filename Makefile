@@ -105,9 +105,10 @@ ifeq ($(MACOS),true)
 LINK_FLAGS += -framework WebKit 
 endif
 ifeq ($(WINDOWS),true)
-BASE_FLAGS += -I./lib/windows/WebView2/build/native/include
-LINK_FLAGS += -L./lib/windows/WebView2/build/native/x64 -lole32 -lShlwapi -lWebView2Loader.dll \
-              -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
+BASE_FLAGS += -I./lib/windows/Microsoft.Web.WebView2/build/native/include
+LINK_FLAGS += -L./lib/windows/Microsoft.Web.WebView2/build/native/x64 \
+              -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic \
+              -lpthread -lole32 -lShlwapi -lWebView2Loader.dll
 endif
 
 # Reuse DISTRHO post-build scripts
@@ -161,7 +162,7 @@ endif
 # Windows requires compiling resource files and linking to WebView2, currently only 64-bit
 ifeq ($(WINDOWS),true)
 TARGETS += winlibs
-WEBVIEW_DLL = lib/windows/WebView2/runtimes/win-x64/native/WebView2Loader.dll
+WEBVIEW_DLL = lib/windows/Microsoft.Web.WebView2/runtimes/win-x64/native/WebView2Loader.dll
 
 winlibs:
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
