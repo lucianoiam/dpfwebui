@@ -114,9 +114,9 @@ $(DPF_CUSTOM_PATH)/build/libdgl.a:
 
 # Reuse DPF post-build scripts
 ifneq ($(WINDOWS),true)
-TARGETS += $(DPF_CUSTOM_PATH)/utils
+TARGETS += ./utils
 
-$(DPF_CUSTOM_PATH)/utils:
+./utils:
 	@eval $(MSYS_MINGW_SYMLINKS)
 	@ln -s $(DPF_CUSTOM_PATH)/utils .
 endif
