@@ -107,15 +107,6 @@ LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
               -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread
 endif
 
-# Switch to DPF develop if specified
-ifeq ($(USE_DPF_DEVELOP_BRANCH),true)
-ifeq (,$(wildcard $(DPF_CUSTOM_PATH)/Makefile))
-ifeq (,$(findstring develop,$(shell git -C $(DPF_CUSTOM_PATH) branch --show-current)))
-_:=$(shell git -C $(DPF_CUSTOM_PATH) checkout develop)
-endif
-endif
-endif
-
 # Target for DPF graphics library
 DEP_TARGETS += dgl
 
