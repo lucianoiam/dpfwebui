@@ -33,7 +33,7 @@ class WebExampleUI extends WebUI {
         
         main.innerHTML = `
             <h1>Made with DPF</h1>
-            <img src="music.gif">
+            <img style="width:32px; height:25px;" src="music.gif">
             <pre id="ua">${navigator.userAgent}</pre>
         `;
 
@@ -45,7 +45,7 @@ class WebExampleUI extends WebUI {
         const body = document.body;
 
         body.appendChild(main);
-        body.style.display = 'flex';
+        body.style.visibility = 'visible';
     }
 
 }
