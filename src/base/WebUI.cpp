@@ -25,15 +25,12 @@
 USE_NAMESPACE_DISTRHO
 
 WebUI::WebUI(uint width, uint height, uint32_t backgroundColor)
-    : UI(width, height)
+    : UI(platform::getSystemDisplayScaleFactor() * width,
+         platform::getSystemDisplayScaleFactor() * height)
     , fWebView(*this)
     , fBackgroundColor(backgroundColor)
     , fDisplayed(false)
 {
-    // Expand size if needed based on system display scaling configuration
-    float scaleFactor = platform::getSystemDisplayScaleFactor();
-    setSize(scaleFactor * getWidth(), scaleFactor * getHeight());
-    // Set web view background color as early as possible to reduce flicker
     fWebView.resize(getSize());
     fWebView.setBackgroundColor(fBackgroundColor);
     fWebView.reparent(getWindow().getNativeWindowHandle());
