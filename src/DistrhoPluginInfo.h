@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// dpf/distrho/DistrhoInfo.hpp
+// lib/DPF/distrho/DistrhoInfo.hpp
 
 /**
    The plugin name.@n
