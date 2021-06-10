@@ -170,7 +170,7 @@ $(BUILD_DIR)/%.mm.o: %.mm
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 endif
 
-# Windows requires compiling resource files and linking to WebView2
+# Windows requires compiling resource files and linking to Edge WebView2
 # The current Makefile is too lazy to support 32-bit but DLL is also available
 ifeq ($(WINDOWS),true)
 EDGE_WEBVIEW2_PATH=./lib/Microsoft.Web.WebView2
@@ -209,7 +209,7 @@ endif
 
 /usr/bin/nuget.exe:
 	@echo Downloading NuGet...
-	@wget -P /usr/bin https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+	@wget -P /usr/bin $(WINNUGET_DOWNLOAD_URL)
 
 $(BUILD_DIR)/%.rc.o: %.rc
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"

@@ -1,4 +1,6 @@
 # Created by lucianoiam
+WINNUGET_DOWNLOAD_URL=https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+
 TARGET_MACHINE := $(shell gcc -dumpmachine)
 
 ifneq (,$(findstring linux,$(TARGET_MACHINE)))
@@ -19,7 +21,7 @@ endif
 
 ifeq ($(MSYS_MINGW),true)
 ifeq ($(shell cmd /c "net.exe session 1>NUL 2>NUL || exit /b 1"; echo $$?),1)
-$(info For real symlink support re-run MSYS as administrator)
+$(info MSYS is not running as administrator, ln -s will copy files instead of symlinking)
 MSYS_MINGW_SYMLINKS=:
 else
 MSYS_MINGW_SYMLINKS=export MSYS=winsymlinks:nativestrict
