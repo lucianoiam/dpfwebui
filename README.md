@@ -1,7 +1,7 @@
 Multiplatform VST audio plugins with HTML/JavaScript UI
 -------------------------------------------------------
 
-Yet another solution to plugin graphics
+An alternate approach to plugin graphics
 
 * Based on DPF: DISTRHO Plugin Framework
 * C++ for DSP code

@@ -89,8 +89,8 @@ endif
 TARGETS += vst
 
 # --------------------------------------------------------------
-# Up to here follow almost intact example plugin Makefile structure
-# Now begin dpf-webui secret sauce
+# Up to here follow almost intact example DPF plugin Makefile
+# Now add dpf-webui's own magic
 BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH) -DBIN_BASENAME=$(NAME)
 
 # Platform-specific build flags
@@ -107,6 +107,23 @@ LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
               -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread
 endif
 
+# Switch to DPF develop if specified
+ifeq ($(USE_DPF_DEVELOP_BRANCH),true)
+ifeq (,$(wildcard $(DPF_CUSTOM_PATH)/Makefile))
+ifeq (,$(findstring develop,$(shell git -C $(DPF_CUSTOM_PATH) branch --show-current)))
+_:=$(shell git -C $(DPF_CUSTOM_PATH) checkout develop)
+endif
+endif
+endif
+
+# Target for DPF graphics library
+DEP_TARGETS += dgl
+
+dgl: $(DPF_CUSTOM_PATH)/build/libdgl.a
+
+$(DPF_CUSTOM_PATH)/build/libdgl.a:
+	make -C $(DPF_CUSTOM_PATH) dgl
+
 # Reuse DPF post-build scripts
 ifneq ($(WINDOWS),true)
 TARGETS += utils
@@ -114,6 +131,17 @@ TARGETS += utils
 utils:
 	@$(MSYS_MINGW_SYMLINKS)
 	@ln -s $(DPF_CUSTOM_PATH)/utils .
+endif
+
+# Target for generating LV2 TTL files
+ifeq ($(CAN_GENERATE_TTL),true)
+TARGETS += lv2ttl
+
+lv2ttl: utils/lv2_ttl_generator
+	@$(CURDIR)/utils/generate-ttl.sh
+
+utils/lv2_ttl_generator:
+	$(MAKE) -C utils/lv2-ttl-generator
 endif
 
 # Linux requires a helper binary
@@ -154,12 +182,20 @@ $(BUILD_DIR)/%.mm.o: %.mm
 endif
 
 # Windows requires compiling resource files and linking to WebView2
-# Currently only the 64-bit DLL is supported
+# The current Makefile is too lazy to support 32-bit but DLL is also available
 ifeq ($(WINDOWS),true)
-TARGETS += winlibs
-WEBVIEW_DLL = $(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll
+EDGE_WEBVIEW2_PATH=./lib/Microsoft.Web.WebView2
+DEP_TARGETS += $(EDGE_WEBVIEW2_PATH)
+TARGETS += copywindll
 
-winlibs:
+ifeq (,$(shell which nuget 2>/dev/null))
+ifneq ($(MSYS_MINGW),true)
+$(error NuGet not found, try sudo apt install nuget or the equivalent for your distro)
+endif
+endif
+
+copywindll:
+	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
 	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
 	@cp src/arch/windows/res/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
@@ -167,26 +203,29 @@ winlibs:
 	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
 	@cp src/arch/windows/res/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
 
-clean: clean_winlibs
+clean: clean_windll
 
-clean_winlibs:
+clean_windll:
 	@rm -rf $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+
+ifeq ($(MSYS_MINGW),true)
+$(EDGE_WEBVIEW2_PATH): /usr/bin/nuget.exe
+else
+$(EDGE_WEBVIEW2_PATH):
+endif
+	@echo Downloading Edge WebView2 SDK...
+	@$(MSYS_MINGW_SYMLINKS)
+	@nuget install Microsoft.Web.WebView2 -OutputDirectory lib
+	@ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH)
+
+/usr/bin/nuget.exe:
+	@echo Downloading NuGet...
+	@wget -P /usr/bin https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 
 $(BUILD_DIR)/%.rc.o: %.rc
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	@windres --input $< --output $@ --output-format=coff
-endif
-
-# Target for generating LV2 TTL files
-ifeq ($(CAN_GENERATE_TTL),true)
-TARGETS += lv2ttl
-
-lv2ttl: utils/lv2_ttl_generator
-	@$(CURDIR)/utils/generate-ttl.sh
-
-utils/lv2_ttl_generator:
-	$(MAKE) -C utils/lv2-ttl-generator
 endif
 
 # Target for copying web UI files appended last
@@ -211,10 +250,6 @@ clean: clean_resources
 clean_resources:
 	@rm -rf $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
 
-# Target for building DPF's graphics library inserted first
-dgl:
-	make -C $(DPF_CUSTOM_PATH) dgl
-
-all: dgl $(TARGETS)
+all: $(DEP_TARGETS) $(TARGETS)
 
 # --------------------------------------------------------------
