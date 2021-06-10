@@ -167,9 +167,6 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
         webViewLoaderErrorMessageBox(result);
         return result;
     }
-    // TODO: there is some casual visible black flash while the window plugin is appearing
-    //       and Windows' window animations are enabled. Such color is set in pugl_win.cpp:
-    // impl->wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     fController = controller;
     ICoreWebView2Controller2_AddRef(fController);
     ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
