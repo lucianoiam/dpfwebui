@@ -42,10 +42,10 @@ ifeq ($(WINDOWS),true)
       else
          $(error NuGet not found, try sudo apt install nuget or the equivalent for your distro.)
       endif
-      $(info Downloading Edge WebView2 SDK...)
-      _:=$(shell nuget install Microsoft.Web.WebView2 -OutputDirectory lib)
-      _:=$(shell ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH))
     endif
+    $(info Downloading Edge WebView2 SDK...)
+    _:=$(shell nuget install Microsoft.Web.WebView2 -OutputDirectory lib)
+    _:=$(shell export MSYS=winsymlinks:nativestrict; ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH))
   endif
 endif
 
