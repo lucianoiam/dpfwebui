@@ -120,7 +120,7 @@ ifneq ($(WINDOWS),true)
 TARGETS += utils
 
 utils:
-	@$(MSYS_MINGW_SYMLINKS)
+	@eval $(MSYS_MINGW_SYMLINKS)
 	@ln -s $(DPF_CUSTOM_PATH)/utils .
 endif
 
@@ -205,7 +205,7 @@ else
 $(EDGE_WEBVIEW2_PATH):
 endif
 	@echo Downloading Edge WebView2 SDK...
-	@$(MSYS_MINGW_SYMLINKS)
+	@eval $(MSYS_MINGW_SYMLINKS)
 	@nuget install Microsoft.Web.WebView2 -OutputDirectory lib
 	@ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH)
 
