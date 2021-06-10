@@ -1,12 +1,3 @@
-ifeq (,$(wildcard $(DPF_CUSTOM_PATH)/Makefile))
-_:=$(shell git submodule update --init --recursive)
-endif
-
-# Currently tracking the latest DPF updates, lock to master after stable release.
-ifeq (,$(findstring develop,$(shell git -C $(DPF_CUSTOM_PATH) branch --show-current)))
-_:=$(shell git -C $(DPF_CUSTOM_PATH) checkout develop)
-endif
-
 TARGET_MACHINE := $(shell gcc -dumpmachine)
 
 ifneq (,$(findstring linux,$(TARGET_MACHINE)))
@@ -27,7 +18,17 @@ endif
 
 ifeq ($(MSYS_MINGW),true)
 ifeq ($(shell cmd /c "net.exe session 1>NUL 2>NUL || exit /b 1"; echo $$?),1)
-#$(error Need to create symlinks, please run MSYS as administrator)
+$(info If you want real symlink support re-run MSYS as administrator)
+endif
+endif
+
+ifeq (,$(wildcard $(DPF_CUSTOM_PATH)/Makefile))
+_:=$(shell git submodule update --init --recursive)
+endif
+
+ifeq ($(USE_DPF_DEVELOP_BRANCH),true)
+ifeq (,$(findstring develop,$(shell git -C $(DPF_CUSTOM_PATH) branch --show-current)))
+_:=$(shell git -C $(DPF_CUSTOM_PATH) checkout develop)
 endif
 endif
 

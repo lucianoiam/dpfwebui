@@ -2,7 +2,7 @@
 # Makefile for DISTRHO Plugins #
 # ---------------------------- #
 # Created by falkTX
-# WebUI extensions by lucianoiam
+# WebUI graphics by lucianoiam
 
 # Allow placing DPF in a custom directory while including its Makefiles
 DPF_CUSTOM_PATH = ./lib/DPF
@@ -12,6 +12,10 @@ DPF_CUSTOM_BUILD_DIR = ./build
 # Keep debug symbols and print full compiler output
 SKIP_STRIPPING = true
 VERBOSE = true
+
+# Note this is not DPF's own Makefile.base.mk
+USE_DPF_DEVELOP_BRANCH=true
+include Makefile.base.mk
 
 # --------------------------------------------------------------
 # DISTRHO project name, used for binaries
@@ -29,9 +33,6 @@ SRC_FILES_UI  = \
     base/WebUI.cpp \
     base/BaseWebView.cpp \
     base/ScriptValue.cpp
-
-# Note this is not DPF's own Makefile.base.mk
-include Makefile.base.mk
 
 # Add platform-specific source files
 ifeq ($(LINUX),true)
@@ -88,7 +89,8 @@ endif
 TARGETS += vst
 
 # --------------------------------------------------------------
-# Up to here follow example plugin Makefile, now begin dpf-webui secret sauce
+# Up to here follow almost intact example plugin Makefile structure
+# Now begin dpf-webui secret sauce
 BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH) -DBIN_BASENAME=$(NAME)
 
 # Platform-specific build flags
@@ -105,7 +107,7 @@ LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
               -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread
 endif
 
-# Reuse DP post-build scripts
+# Reuse DPF post-build scripts
 ifneq ($(WINDOWS),true)
 TARGETS += utils
 
@@ -153,7 +155,8 @@ $(BUILD_DIR)/%.mm.o: %.mm
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 endif
 
-# Windows requires compiling resource files and linking to WebView2, currently only 64-bit
+# Windows requires compiling resource files and linking to WebView2
+# Currently only the 64-bit DLL is supported
 ifeq ($(WINDOWS),true)
 TARGETS += winlibs
 WEBVIEW_DLL = $(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll
@@ -188,7 +191,7 @@ utils/lv2_ttl_generator:
 	$(MAKE) -C utils/lv2-ttl-generator
 endif
 
-# Target for copying web UI files comes last
+# Target for copying web UI files appended last
 TARGETS += resources
 
 resources:
@@ -210,7 +213,7 @@ clean: clean_resources
 clean_resources:
 	@rm -rf $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
 
-# Target for building DPF's graphics library inserted at first
+# Target for building DPF's graphics library inserted first
 dgl:
 	make -C $(DPF_CUSTOM_PATH) dgl
 
