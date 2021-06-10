@@ -1,8 +1,7 @@
 #!/usr/bin/make -f
 # Makefile for DISTRHO Plugins #
 # ---------------------------- #
-# Created by falkTX
-# WebUI graphics by lucianoiam
+# Created by by lucianoiam
 
 # Allow placing DPF in a custom directory while including its Makefiles
 DPF_CUSTOM_PATH = ./lib/DPF
