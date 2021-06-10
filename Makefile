@@ -220,17 +220,17 @@ endif
 TARGETS += resources
 
 resources:
-	@echo "Copying web resource files"
+	@echo "Copying web UI resource files"
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
-	@cp -r src/web/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
+	@cp -r src/ui/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
-	@cp -r src/web/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
+	@cp -r src/ui/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
 #ifeq ($(LINUX),true)
 #	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
-#	@cp -r src/web/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
+#	@cp -r src/ui/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
 #endif
 ifeq ($(MACOS),true)
-	@cp -r src/web/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst/Contents/Resources
+	@cp -r src/ui/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst/Contents/Resources
 endif
 
 clean: clean_resources
