@@ -19,6 +19,9 @@ endif
 ifeq ($(MSYS_MINGW),true)
 ifeq ($(shell cmd /c "net.exe session 1>NUL 2>NUL || exit /b 1"; echo $$?),1)
 $(info If you want real symlink support re-run MSYS as administrator)
+MSYS_MINGW_SYMLINKS=:
+else
+MSYS_MINGW_SYMLINKS=export MSYS=winsymlinks:nativestrict
 endif
 endif
 
@@ -45,7 +48,7 @@ ifeq ($(WINDOWS),true)
     endif
     $(info Downloading Edge WebView2 SDK...)
     _:=$(shell nuget install Microsoft.Web.WebView2 -OutputDirectory lib)
-    _:=$(shell export MSYS=winsymlinks:nativestrict; ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH))
+    _:=$(shell $(MSYS_MINGW_SYMLINKS); ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH))
   endif
 endif
 

@@ -112,9 +112,7 @@ ifneq ($(WINDOWS),true)
 TARGETS += utils
 
 utils:
-ifeq ($(MSYS_MINGW),true)
-	@MSYS=winsymlinks:nativestrict
-endif
+	@$(MSYS_MINGW_SYMLINKS)
 	@ln -s $(DPF_CUSTOM_PATH)/utils .
 endif
 
