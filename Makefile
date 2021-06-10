@@ -108,18 +108,16 @@ LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
 endif
 
 # Target for DPF graphics library
-DEP_TARGETS += dgl
-
-dgl: $(DPF_CUSTOM_PATH)/build/libdgl.a
+DEP_TARGETS += $(DPF_CUSTOM_PATH)/build/libdgl.a
 
 $(DPF_CUSTOM_PATH)/build/libdgl.a:
 	make -C $(DPF_CUSTOM_PATH) dgl
 
 # Reuse DPF post-build scripts
 ifneq ($(WINDOWS),true)
-TARGETS += utils
+TARGETS += $(DPF_CUSTOM_PATH)/utils
 
-utils:
+$(DPF_CUSTOM_PATH)/utils:
 	@eval $(MSYS_MINGW_SYMLINKS)
 	@ln -s $(DPF_CUSTOM_PATH)/utils .
 endif
@@ -137,28 +135,28 @@ endif
 
 # Linux requires a helper binary
 ifeq ($(LINUX),true)
-TARGETS += lxhelper
-HELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_ui
+LXHELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_ui
+TARGETS += $(LXHELPER_BIN)
 
-lxhelper: src/arch/linux/helper.c src/arch/linux/extra/ipc.c
+$(LXHELPER_BIN): src/arch/linux/helper.c src/arch/linux/extra/ipc.c
 	@echo "Creating helper"
-	$(SILENT)$(CC) $^ -Isrc -o $(HELPER_BIN) -lX11 \
+	$(SILENT)$(CC) $^ -Isrc -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
-	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
-#	@cp $(HELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi
+	@cp $(LXHELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
+#	@cp $(LXHELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi
 
 clean: clean_lxhelper
 
 clean_lxhelper:
-	rm -rf $(HELPER_BIN)
+	rm -rf $(LXHELPER_BIN)
 endif
 
 # Mac requires compiling Objective-C++ and creating a VST bundle
 ifeq ($(MACOS),true)
-TARGETS += macvst
+TARGETS += $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst
 
-macvst:
+$(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst:
 	@$(CURDIR)/utils/generate-vst-bundles.sh
 
 clean: clean_macvst
@@ -219,7 +217,7 @@ $(BUILD_DIR)/%.rc.o: %.rc
 	@windres --input $< --output $@ --output-format=coff
 endif
 
-# Target for copying web UI files appended last
+# Always copy web UI files
 TARGETS += resources
 
 resources:
