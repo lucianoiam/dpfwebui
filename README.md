@@ -42,15 +42,13 @@ appear detached.
 - On macOS WKWebView is used.
 
 - On Windows Edge WebView2 is used. This needs installing a runtime on the user
-computer that is likely to become bundled into Windows soon:
-
-https://developer.microsoft.com/microsoft-edge/webview2
+computer that is likely to become bundled into Windows soon https://developer.microsoft.com/microsoft-edge/webview2
 
 Usage of JS frameworks is up to the developer. A small JS wrapper around the C++
 `DISTRHO::UI` class is provided for convenience. New integrations between C++
 and JS code can be easily built leveraging the standard `postMessage()` call.
 For Linux and Mac a message handler called `host` is installed, thus providing
-access to a native callback through this function:
+access to a native callback through the function:
 
 `window.webkit.messageHandlers.host.postMessage()`
 
@@ -69,8 +67,8 @@ is created as a `EventTarget` instance that can listened for events named
 
 `window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:args}))`
 
-The `DISTRHO::WebUI` and JS `WebUI` classes use the above to map some useful
-plugin methods like shown in the example code above.
+The `DISTRHO::WebUI` and JS `WebUI` classes use the above mechanism to map some
+useful plugin methods like shown in the example code above.
 
 Summarizing:
 
