@@ -113,13 +113,11 @@ $(DPF_CUSTOM_PATH)/build/libdgl.a:
 	make -C $(DPF_CUSTOM_PATH) dgl
 
 # Reuse DPF post-build scripts
-ifneq ($(WINDOWS),true)
 TARGETS += ./utils
 
 ./utils:
 	@eval $(MSYS_MINGW_SYMLINKS)
 	@ln -s $(DPF_CUSTOM_PATH)/utils .
-endif
 
 # Target for generating LV2 TTL files
 ifeq ($(CAN_GENERATE_TTL),true)

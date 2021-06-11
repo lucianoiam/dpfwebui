@@ -28,12 +28,10 @@ MSYS_MINGW_SYMLINKS=export MSYS=winsymlinks:nativestrict
 endif
 endif
 
-ifneq ($(MSYS_MINGW),true)
 ifneq ($(CROSS_COMPILING),true)
 CAN_GENERATE_TTL = true
 else ifneq ($(EXE_WRAPPER),)
 CAN_GENERATE_TTL = true
-endif
 endif
 
 ifeq (,$(wildcard $(DPF_CUSTOM_PATH)/Makefile))
