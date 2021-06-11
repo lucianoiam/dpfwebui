@@ -38,9 +38,9 @@ public:
     void setBackgroundColor(uint32_t rgba) override;
     void reparent(uintptr_t windowId) override;
     void resize(const DGL::Size<uint>& size) override;
-    void navigate(String url) override;
-    void runScript(String source) override;
-    void injectScript(String source) override;
+    void navigate(String& url) override;
+    void runScript(String& source) override;
+    void injectScript(String& source) override;
     
     // Allow calling some protected methods from the ObjC WKNavigationDelegate
     

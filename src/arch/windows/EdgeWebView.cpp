@@ -63,7 +63,8 @@ EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
         0, 0, 0, 0
     );
     ::ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
-    injectDefaultScripts(String(JS_POST_MESSAGE_SHIM));
+    String js = String(JS_POST_MESSAGE_SHIM);
+    injectDefaultScripts(js);
     fHandler = new EdgeWebViewInternalEventHandler(this);
 }
 
@@ -116,7 +117,7 @@ void EdgeWebView::resize(const Size<uint>& size)
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
-void EdgeWebView::navigate(String url)
+void EdgeWebView::navigate(String& url)
 {
     if (fView == 0) {
         fPUrl = url;
@@ -125,7 +126,7 @@ void EdgeWebView::navigate(String url)
     ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
 }
 
-void EdgeWebView::runScript(String source)
+void EdgeWebView::runScript(String& source)
 {
     // For the plugin specific use case fView==0 means a programming error.
     // There is no point in queuing these, just wait for the view to become ready.
@@ -133,7 +134,7 @@ void EdgeWebView::runScript(String source)
     ICoreWebView2_ExecuteScript(fView, TO_LPCWSTR(source), 0);
 }
 
-void EdgeWebView::injectScript(String source)
+void EdgeWebView::injectScript(String& source)
 {
     if (fController == 0) {
         fPInjectedScripts.push_back(source);

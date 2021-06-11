@@ -45,7 +45,8 @@ CocoaWebView::CocoaWebView(WebViewEventHandler& handler)
     fWebViewDelegate.cppView = this;
     fWebView.navigationDelegate = fWebViewDelegate;
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
-    injectDefaultScripts(String(JS_POST_MESSAGE_SHIM));
+    String js = String(JS_POST_MESSAGE_SHIM);
+    injectDefaultScripts(js);
 }
 
 CocoaWebView::~CocoaWebView()
@@ -89,7 +90,7 @@ void CocoaWebView::resize(const DGL::Size<uint>& size)
     (void)size;
 }
 
-void CocoaWebView::navigate(String url)
+void CocoaWebView::navigate(String& url)
 {
     NSString *urlStr = [[NSString alloc] initWithCString:url encoding:NSUTF8StringEncoding];
     NSURL *urlObj = [[NSURL alloc] initWithString:urlStr];
@@ -98,14 +99,14 @@ void CocoaWebView::navigate(String url)
     [urlStr release];
 }
 
-void CocoaWebView::runScript(String source)
+void CocoaWebView::runScript(String& source)
 {
     NSString *js = [[NSString alloc] initWithCString:source encoding:NSUTF8StringEncoding];
     [fWebView evaluateJavaScript:js completionHandler: nil];
     [js release];
 }
 
-void CocoaWebView::injectScript(String source)
+void CocoaWebView::injectScript(String& source)
 {
     NSString *js = [[NSString alloc] initWithCString:source encoding:NSUTF8StringEncoding];
     WKUserScript *script = [[WKUserScript alloc] initWithSource:js

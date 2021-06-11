@@ -48,15 +48,15 @@ public:
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void reparent(uintptr_t windowId) = 0;
     virtual void resize(const DGL::Size<uint>& size) = 0;
-    virtual void navigate(String url) = 0;
-    virtual void runScript(String source) = 0;
-    virtual void injectScript(String source) = 0;
+    virtual void navigate(String& url) = 0;
+    virtual void runScript(String& source) = 0;
+    virtual void injectScript(String& source) = 0;
     virtual void start() {};
     
     void postMessage(const ScriptValueVector& args);
 
 protected:
-    void injectDefaultScripts(String platformSpecificScript);
+    void injectDefaultScripts(String& platformSpecificScript);
     
     void handleLoadFinished();
     void handleScriptMessage(const ScriptValueVector& args);
@@ -64,7 +64,7 @@ protected:
 private:
     String serializeScriptValues(const ScriptValueVector& args);
 
-    void addStylesheet(String source);
+    void addStylesheet(String& source);
 
     WebViewEventHandler& fHandler;
 
