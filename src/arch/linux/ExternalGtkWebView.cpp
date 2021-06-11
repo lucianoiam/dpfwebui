@@ -70,7 +70,8 @@ ExternalGtkWebView::ExternalGtkWebView(WebViewEventHandler& handler)
         DISTRHO_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
     }
-    injectDefaultScripts(String(JS_POST_MESSAGE_SHIM));
+    String js = String(JS_POST_MESSAGE_SHIM);
+    injectDefaultScripts(js);
 }
 
 ExternalGtkWebView::~ExternalGtkWebView()
@@ -118,17 +119,17 @@ void ExternalGtkWebView::resize(const Size<uint>& size)
     ipcWrite(OPC_RESIZE, &sizePkt, sizeof(sizePkt));
 }
 
-void ExternalGtkWebView::navigate(String url)
+void ExternalGtkWebView::navigate(String& url)
 {
     ipcWriteString(OPC_NAVIGATE, url);
 }
 
-void ExternalGtkWebView::runScript(String source)
+void ExternalGtkWebView::runScript(String& source)
 {
     ipcWriteString(OPC_RUN_SCRIPT, source);
 }
 
-void ExternalGtkWebView::injectScript(String source)
+void ExternalGtkWebView::injectScript(String& source)
 {
     ipcWriteString(OPC_INJECT_SCRIPT, source);
 }

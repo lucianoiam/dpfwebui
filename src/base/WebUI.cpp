@@ -64,7 +64,8 @@ void WebUI::onDisplay()
 #include "base/webui.js"
     );
     fWebView.injectScript(js);
-    fWebView.navigate("file://" + platform::getResourcePath() + "/index.html");
+    String url = "file://" + platform::getResourcePath() + "/index.html";
+    fWebView.navigate(url);
     fWebView.start();
 }
 

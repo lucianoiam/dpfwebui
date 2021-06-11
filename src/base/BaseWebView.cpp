@@ -38,7 +38,7 @@
 
 USE_NAMESPACE_DISTRHO
 
-void BaseWebView::injectDefaultScripts(String platformSpecificScript)
+void BaseWebView::injectDefaultScripts(String& platformSpecificScript)
 {
     String js;
     js += String(JS_DISABLE_CONTEXT_MENU);
@@ -105,7 +105,7 @@ String BaseWebView::serializeScriptValues(const ScriptValueVector& args)
     return String(ss.str().c_str());
 }
 
-void BaseWebView::addStylesheet(String source)
+void BaseWebView::addStylesheet(String& source)
 {
     String js;
     js += "document.head.insertAdjacentHTML('beforeend', '<style>";
