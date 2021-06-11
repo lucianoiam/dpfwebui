@@ -2,10 +2,12 @@ GENERAL
 -------
 
 - Allow calling Window::openFileBrowser() from JavaScript
-
 - Map alert(), confirm(), prompt() to native dialogs
-
 - Launch system browser for HTTP links
+
+New features should strictly relate to controlling the plugin or adding any
+missing UI tool that makes sense in an audio plugin context, bridging DPF C++
+code first when available.
 
 
 LINUX
