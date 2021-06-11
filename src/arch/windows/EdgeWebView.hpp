@@ -94,7 +94,7 @@ private:
 // The event handler lifetime cannot be bound to its owner lifetime, otherwise
 // the Edge WebView2 could callback a deleted object. That would happen for
 // example if the plugin UI is opened and suddenly closed before web content
-// finishes loading, or before WebView2 has not fully initialized itself.
+// finishes loading, or before WebView2 has fully initialized itself.
 
 class EdgeWebViewInternalEventHandler : public edge::WebView2EventHandler {
 public:
