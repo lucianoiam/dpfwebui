@@ -34,7 +34,7 @@ class WebExampleUI extends WebUI {
 
 JavaScript and rendering are provided by system libraries:
 
-- On Linux a WebKitGTK web view instance runs on separate process to keep the
+- On Linux a WebKitGTK web view instance runs in a separate process to keep the
 plugin free of references to libgtk. Note that this approach relies on XEmbed,
 which is not supported by Wayland. On that platform the plugin window will
 appear detached.

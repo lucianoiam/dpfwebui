@@ -33,5 +33,3 @@ WINDOWS
 - As of Jun '21 Windows does not ship with the Edge runtime pre-installed. The
   plugin detects this and pops a message box, most users will figure out what
   to do but still it would be nice to present a link to the installer page.
-
-- LV2 is currently broken, binary builds but TTL creation fails
