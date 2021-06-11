@@ -36,13 +36,14 @@ JavaScript and rendering are provided by system libraries:
 
 - On Linux a WebKitGTK web view instance runs in a separate process to keep the
 plugin free of references to libgtk. Note that this approach relies on XEmbed,
-which is not supported by Wayland. On that platform the plugin window will
+which is not supported by Wayland. On such platform the plugin window will
 appear detached.
 
 - On macOS WKWebView is used.
 
-- On Windows Edge WebView2 is used. This needs installing a runtime on the user
-computer that is likely to become bundled into Windows soon https://developer.microsoft.com/microsoft-edge/webview2
+- On Windows Edge WebView2 is used. The user needs to install a runtime library
+https://developer.microsoft.com/microsoft-edge/webview2. This might not sound
+ideal but it is expected for MS to bundle it soon into Windows.
 
 Usage of JS frameworks is up to the developer. A small JS wrapper around the C++
 `DISTRHO::UI` class is provided for convenience. New integrations between C++
@@ -67,8 +68,9 @@ is created as a `EventTarget` instance that can listened for events named
 
 `window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:args}))`
 
-The `DISTRHO::WebUI` and JS `WebUI` classes use the above mechanism to map some
-useful plugin methods like shown in the example code above.
+The provided `DISTRHO::WebUI` and JS `WebUI` classes use the above mechanism to
+map some useful plugin methods, like the ones shown in the first code example of
+this README.
 
 Summarizing:
 
@@ -94,13 +96,13 @@ window.webviewHost.addMessageListener((args) => {
 });
 ```
 
-The message arguments must be an array/vector containing values with primitive
-data types. These values are wrapped in `DISTRHO::ScriptValue` instances. The
-following JS types are supported: boolan, number, string. Any other types are
+The message arguments must be an array/vector containing values of primitive
+data types. These values are wrapped by `DISTRHO::ScriptValue` instances. The
+following JS types are supported: boolean, number, string. Any other types are
 mapped to null.
 
-For the available C++ interfaces check https://github.com/DISTRHO/DPF and its
-plugin examples.
+For the C++ interfaces to plugin features check https://github.com/DISTRHO/DPF,
+it is included as a git submodule in `lib/DPF`.
 
 **"DPF is designed to make development of new plugins an easy and enjoyable task"**
 
