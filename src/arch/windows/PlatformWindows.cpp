@@ -85,7 +85,7 @@ String platform::getTemporaryPath()
     }
     LPSTR exeFilename = ::PathFindFileName(exePath);
     // The following call relies on a further Windows library called Pathcch, which is implemented
-    // in in api-ms-win-core-path-l1-1-0.dll and requires Windows 8.
+    // in api-ms-win-core-path-l1-1-0.dll and requires Windows 8.
     // Since the minimum plugin target is Windows 7 it is acceptable to use a deprecated function.
     //::PathCchRemoveExtension(exeFilename, sizeof(exeFilename));
     ::PathRemoveExtension(exeFilename);
