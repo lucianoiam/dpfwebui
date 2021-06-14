@@ -151,9 +151,9 @@ endif
 
 # Mac requires compiling Objective-C++ and creating a VST bundle
 ifeq ($(MACOS),true)
-TARGETS += $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst
+TARGETS += macvst
 
-$(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst:
+macvst:
 	@$(CURDIR)/utils/generate-vst-bundles.sh
 
 clean: clean_macvst
