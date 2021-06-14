@@ -11,6 +11,8 @@ An alternate approach to plugin graphics.
 * Makefile based
 * BSD-like license
 
+A proof of concept plugin is being developed at https://github.com/lucianoiam/castello-rev
+
 Example code:
 
 ```JavaScript
