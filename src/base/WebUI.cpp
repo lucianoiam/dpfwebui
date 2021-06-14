@@ -25,12 +25,17 @@
 USE_NAMESPACE_DISTRHO
 
 WebUI::WebUI(uint width, uint height, uint32_t backgroundColor)
-    : UI(platform::getSystemDisplayScaleFactor() * width,
-         platform::getSystemDisplayScaleFactor() * height)
+    : UI(width, height)
     , fWebView(*this)
     , fBackgroundColor(backgroundColor)
     , fDisplayed(false)
 {
+    float k = platform::getSystemDisplayScaleFactor();
+    width *= k;
+    height *= k;
+    setGeometryConstraints(width, height, true);
+    setWidth(width);
+    setHeight(height);
     fWebView.resize(getSize());
     fWebView.setBackgroundColor(fBackgroundColor);
     fWebView.reparent(getWindow().getNativeWindowHandle());
