@@ -80,12 +80,5 @@ String platform::getTemporaryPath()
 
 float platform::getSystemDisplayScaleFactor()
 {
-    // FIXME ☢️ this is an extremely ugly workaround to detect when running
-    //          standalone, seems there is a discrepancy between running under
-    //          such mode and running as plugin in terms of scaling.
-    //          Need to find the root cause -- DPF bug?
-    /*if (getBinaryPath().endsWith(".dylib") || getBinaryPath().contains(".vst")) {
-        return 1.f;
-    }*/
     return [NSScreen mainScreen].backingScaleFactor;
 }
