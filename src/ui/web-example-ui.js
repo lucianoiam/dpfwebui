@@ -16,12 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// See src/base/webui.js for the WebUI class implementation, it shows which C++
-// methods are mapped. WebUI is automatically injected into the global namespace
-// and guaranteed to be available after the document load event fires and before
-// any referenced script starts running.
+// See src/base/webui.js for the DISTRHO_WebUI class implementation, it shows
+// which C++ methods are mapped. The class is automatically injected into the
+// global namespace and guaranteed to be available after the document load event
+// fires and before any referenced script starts running.
 
-class WebExampleUI extends WebUI {
+class WebExampleUI extends DISTRHO_WebUI {
 
     constructor() {
         super(); // do not forget to call

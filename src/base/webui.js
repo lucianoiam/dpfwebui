@@ -17,7 +17,7 @@
  */
  */
 
-class WebUI {
+class DISTRHO_WebUI {
 
     constructor() {
         window.webviewHost.addMessageListener((args) => {
