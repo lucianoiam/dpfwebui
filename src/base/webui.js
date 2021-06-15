@@ -29,6 +29,11 @@ class WebUI {
         });
     }
 
+    // WebUI::flushInitMessageQueue()
+    flushInitMessageQueue() {
+        this.postMessage('WebUI', 'flushInitMessageQueue');
+    }
+
     // UI::editParameter(uint32_t index, bool started)
     editParameter(index, started) {
         this.postMessage('WebUI', 'editParameter', index, started);

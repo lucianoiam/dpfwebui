@@ -29,6 +29,7 @@ WebUI::WebUI(uint width, uint height, uint32_t backgroundColor)
     , fWebView(*this)
     , fBackgroundColor(backgroundColor)
     , fDisplayed(false)
+    , fInitContentReady(false)
 {
     float k = platform::getSystemDisplayScaleFactor();
     width *= k;
@@ -39,6 +40,10 @@ WebUI::WebUI(uint width, uint height, uint32_t backgroundColor)
     fWebView.resize(getSize());
     fWebView.setBackgroundColor(fBackgroundColor);
     fWebView.reparent(getWindow().getNativeWindowHandle());
+    String js = String(
+#include "base/webui.js"
+    );
+    fWebView.injectScript(js);
 }
 
 void WebUI::onDisplay()
@@ -67,10 +72,6 @@ void WebUI::onDisplay()
     // handled by the web views. WebUI() constructor is not a suitable place
     // for calling BaseWebView::navigate() because ctor/dtor can be called
     // successive times without the window ever being displayed (e.g. on Carla)
-    String js = String(
-#include "base/webui.js"
-    );
-    fWebView.injectScript(js);
     String url = "file://" + platform::getResourcePath() + "/index.html";
     fWebView.navigate(url);
     fWebView.start();
@@ -95,31 +96,50 @@ void WebUI::stateChanged(const char* key, const char* value)
 
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
+void WebUI::webPostMessage(const ScriptValueVector& args) {
+    if (fInitContentReady) {
+        fWebView.postMessage(args);
+    } else {
+        fInitMsgQueue.push_back(args);
+    }
+}
+
+void WebUI::flushInitMessageQueue()
+{
+    for (InitMessageQueue::iterator it = fInitMsgQueue.begin(); it != fInitMsgQueue.end(); ++it) {
+        fWebView.postMessage(*it);
+    }
+    fInitMsgQueue.clear();
+}
+
 void WebUI::handleWebViewLoadFinished()
 {
-    // Currently no-op; let derived classes know about the event
+    fInitContentReady = true;
     webContentReady();
 }
 
 void WebUI::handleWebViewScriptMessageReceived(const ScriptValueVector& args)
 {
-    if ((args.size() < 4) || (args[0].getString() != "WebUI")) {
+    if (args[0].getString() != "WebUI") {
         webMessageReceived(args); // passthrough
         return;
     }
     String method = args[1].getString();
-    if (method == "editParameter") {
+    int argc = args.size() - 2;
+    if (method == "flushInitMessageQueue") {
+        flushInitMessageQueue();
+    } else if ((method == "editParameter") && (argc == 2)) {
         editParameter(
             static_cast<uint32_t>(args[2].getDouble()), // index
             static_cast<bool>(args[3].getBool())        // started
         );
-    } else if (method == "setParameterValue") {
+    } else if ((method == "setParameterValue") && (argc == 2)) {
         setParameterValue(
             static_cast<uint32_t>(args[2].getDouble()), // index
             static_cast<float>(args[3].getDouble())     // value
         );
 #if DISTRHO_PLUGIN_WANT_STATE
-    } else if (method == "setState") {
+    } else if ((method == "setState") && (argc == 2)) {
         setState(
             args[2].getString(), // key
             args[3].getString()  // value
