@@ -1,4 +1,18 @@
-# Created by lucianoiam
+# Filename: Makefile.base.mk
+# Author:   oss@lucianoiam.com
+
+# Allow placing DPF in a custom directory while including its Makefiles
+DPF_CUSTOM_PATH = ./lib/DPF
+DPF_CUSTOM_TARGET_DIR = ./bin
+DPF_CUSTOM_BUILD_DIR = ./build
+
+# Keep debug symbols and print full compiler output
+SKIP_STRIPPING = true
+VERBOSE = true
+
+# Custom dpf-webui setting
+USE_DPF_DEVELOP_BRANCH=true
+
 WINNUGET_DOWNLOAD_URL=https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 
 TARGET_MACHINE := $(shell gcc -dumpmachine)
