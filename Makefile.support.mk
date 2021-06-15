@@ -1,4 +1,4 @@
-# Filename: Makefile.webui.mk
+# Filename: Makefile.support.mk
 # Author:   oss@lucianoiam.com
 
 BASE_FLAGS += -Isrc -I$(DPF_CUSTOM_PATH) -DBIN_BASENAME=$(NAME)
