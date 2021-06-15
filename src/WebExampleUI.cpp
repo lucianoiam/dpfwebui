@@ -17,8 +17,8 @@
 #include "WebExampleUI.hpp"
 
 // These dimensions are scaled up according to the system display scale factor
-#define INIT_WIDTH_PX  600
-#define INIT_HEIGHT_PX 300
+#define BASE_WIDTH_PX  600
+#define BASE_HEIGHT_PX 300
 
 // Color for painting the window background before the web content is ready.
 // Matching it to <html> background color ensures a smooth transition.
@@ -32,14 +32,14 @@ UI* DISTRHO::createUI()
 }
 
 WebExampleUI::WebExampleUI()
-    : WebUI(INIT_WIDTH_PX, INIT_HEIGHT_PX, INIT_BACKGROUND_RGBA)
+    : WebUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA)
 {
     // Web view not guaranteed to be ready yet. Calls to webView().runScript()
     // or any DPF methods mapped by WebUI are forbidden. Mapped methods are
     // those that have their JavaScript counterparts; they rely on message
     // passing and ultimately webView().runScript(). Still it is safe to call
     // webView().injectScript() to queue scripts that will run immediately after
-    // web content finishes loading and before any other <script> starts running.
+    // web content finishes loading and before any referenced <script> runs.
 }
 
 void WebExampleUI::webContentReady()
