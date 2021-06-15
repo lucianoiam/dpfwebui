@@ -182,6 +182,7 @@ endif
 
 copywindll:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
+	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR) # only for standalone
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
 	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
 	@cp src/arch/windows/res/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
