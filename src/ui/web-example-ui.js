@@ -16,7 +16,8 @@
 
 // See src/base/webui.js for the WebUI class implementation, it shows which C++
 // methods are mapped. WebUI is automatically injected into the global namespace
-// and guaranteed to be available after the document load event fires.
+// and guaranteed to be available after the document load event fires and before
+// any referenced script starts running.
 
 class WebExampleUI extends WebUI {
 
@@ -44,6 +45,12 @@ class WebExampleUI extends WebUI {
 
         body.appendChild(main);
         body.style.visibility = 'visible';
+
+        // Not needed for this demo but any plugin implementing parameters
+        // should call this to trigger any parameter change callbacks that may
+        // have accumulated while the web view was still loading. 
+        // TODO: probably the same goes for state callacks -- need to try
+        this.flushInitMessageQueue();
     }
 
 }
