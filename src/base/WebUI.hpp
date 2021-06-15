@@ -36,7 +36,7 @@ START_NAMESPACE_DISTRHO
 class WebUI : public UI, private WebViewEventHandler
 {
 public:
-    WebUI(uint width = 0, uint height = 0, uint32_t backgroundColor = 0xffffffff);
+    WebUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
     virtual ~WebUI() {};
 
 protected:
