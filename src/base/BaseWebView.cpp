@@ -31,9 +31,6 @@
 #define CSS_DISABLE_SELECTION    "body { user-select: none; -webkit-user-select: none; }"
 #define CSS_DISABLE_PINCH_ZOOM   "body { touch-action: pan-x pan-y; }"
 
-// Uncomment for printing messages crossing the js/native bridge to stderr
-#define DEBUG_PRINT_TRAFFIC
-
 /**
    Keep this class generic, DPF specific functionality belongs to WebUI.
  */
