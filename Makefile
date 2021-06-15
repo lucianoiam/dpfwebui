@@ -74,7 +74,7 @@ endif
 ifneq ($(MACOS_OR_WINDOWS),true)
 ifeq ($(HAVE_OPENGL),true)
 ifeq ($(HAVE_LIBLO),true)
-#TARGETS += dssi
+TARGETS += dssi
 endif
 endif
 endif
@@ -132,7 +132,7 @@ endif
 
 # Linux requires a helper binary
 ifeq ($(LINUX),true)
-LXHELPER_BIN = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_ui
+LXHELPER_BIN = /tmp/$(NAME)_ui
 TARGETS += $(LXHELPER_BIN)
 
 $(LXHELPER_BIN): src/arch/linux/helper.c src/arch/linux/extra/ipc.c
@@ -140,8 +140,19 @@ $(LXHELPER_BIN): src/arch/linux/helper.c src/arch/linux/extra/ipc.c
 	$(SILENT)$(CC) $^ -Isrc -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
+ifneq ($(filter jack,$(TARGETS)),)
+	@cp $(LXHELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)
+endif
+ifneq (,$(findstring lv2,$(shell echo $(TARGETS)[@])))
 	@cp $(LXHELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
-#	@cp $(LXHELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi
+endif
+ifneq ($(filter dssi,$(TARGETS)),)
+	@cp $(LXHELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi
+endif
+ifneq ($(filter vst,$(TARGETS)),)
+	@cp -n $(LXHELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)
+endif
+	@rm $(LXHELPER_BIN)
 
 clean: clean_lxhelper
 
@@ -180,15 +191,22 @@ $(error NuGet not found, try sudo apt install nuget or the equivalent for your d
 endif
 endif
 
+# The standalone Windows version requires a "bare" DLL instead of the assembly
 copywindll:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
-	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR) # only for standalone
-	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
-	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
-	@cp src/arch/windows/res/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+ifneq ($(filter jack,$(TARGETS)),)
+	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)
+endif
+ifneq (,$(findstring lv2,$(shell echo $(TARGETS)[@])))
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
 	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
 	@cp src/arch/windows/res/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
+endif
+ifneq ($(filter vst,$(TARGETS)),)
+	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+	@cp src/arch/windows/res/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+endif
 
 clean: clean_windll
 
@@ -220,16 +238,26 @@ TARGETS += resources
 
 resources:
 	@echo "Copying web UI resource files"
+ifneq ($(filter jack,$(TARGETS)),)
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
 	@cp -r src/ui/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
+endif
+ifneq (,$(findstring lv2,$(shell echo $(TARGETS)[@])))
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
 	@cp -r src/ui/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/$(NAME)_resources
-#ifeq ($(LINUX),true)
-#	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
-#	@cp -r src/ui/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
-#endif
+endif
+ifneq ($(filter dssi,$(TARGETS)),)
+	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
+	@cp -r src/ui/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi/$(NAME)_resources
+endif
+ifneq ($(filter vst,$(TARGETS)),)
 ifeq ($(MACOS),true)
 	@cp -r src/ui/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst/Contents/Resources
+endif
+ifeq ($(WINDOWS),true)
+	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
+	@cp -rn src/ui/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
+endif
 endif
 
 clean: clean_resources

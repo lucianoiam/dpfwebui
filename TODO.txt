@@ -11,8 +11,7 @@ GENERAL
 LINUX
 -----
 
-- DSSI plugin currently builds but fails to start. It is disabled anyways, as
-  the format is not compatible with DISTRHO_PLUGIN_WANT_FULL_STATE.
+- DSSI plugin currently builds but fails to start
 
 - UI not displaying at all on Gnome Shell even running on Xorg. XEmbed related?
 
