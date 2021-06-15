@@ -14,7 +14,7 @@ An alternate approach to plugin graphics.
 Example code:
 
 ```JavaScript
-class WebExampleUI extends WebUI {
+class WebExampleUI extends DISTRHO_WebUI {
 
     constructor() {
     	super();
@@ -70,7 +70,7 @@ is created as a `EventTarget` instance that can listened for events named
 
 `window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:args}))`
 
-The provided `DISTRHO::WebUI` and JS `WebUI` classes use the above mechanism to
+The `DISTRHO::WebUI` and JS `DISTRHO_WebUI` classes use the above mechanism to
 map some useful plugin methods, like the ones shown in the first code example of
 this README.
 

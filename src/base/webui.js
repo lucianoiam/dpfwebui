@@ -15,7 +15,7 @@ R"WEBUI_JS(
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-class WebUI {
+class DISTRHO_WebUI {
 
     constructor() {
         window.webviewHost.addMessageListener((args) => {
