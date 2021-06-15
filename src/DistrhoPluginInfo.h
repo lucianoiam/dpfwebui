@@ -99,7 +99,7 @@
    @see Plugin::initState(uint32_t, String&, String&)
    @see Plugin::setState(const char*, const char*)
  */
-#define DISTRHO_PLUGIN_WANT_STATE 1
+#define DISTRHO_PLUGIN_WANT_STATE 0
 
 /**
    Wherever the plugin implements the full state API.
@@ -109,7 +109,7 @@
    @note this macro is automatically enabled if a plugin has programs and state, as the key-value state pairs need to be updated when the current program changes.
    @see Plugin::getState(const char*)
  */
-#define DISTRHO_PLUGIN_WANT_FULL_STATE 1
+#define DISTRHO_PLUGIN_WANT_FULL_STATE 0
 
 /**
    Wherever the plugin wants time position information from the host.
