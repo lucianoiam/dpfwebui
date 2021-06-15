@@ -7,7 +7,7 @@ DPF_CUSTOM_TARGET_DIR = ./bin
 DPF_CUSTOM_BUILD_DIR = ./build
 
 # Note this is not the DPF version of Makefile.base.mk
-USE_DPF_DEVELOP_BRANCH=true
+DPF_BRANCH=develop
 include Makefile.base.mk
 
 # Add WebUI files
