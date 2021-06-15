@@ -3,8 +3,11 @@ GENERAL
 
 - Web view should not steal keyboard events. This interferes with the virtual
   keyboard in Live. Tested on Mac, behavior not yet tested on others.
+
 - Allow calling Window::openFileBrowser() from JavaScript
+
 - Map alert(), confirm(), prompt() to native dialogs
+
 - Launch system browser for HTTP links
 
 
@@ -23,8 +26,9 @@ LINUX
 MACOS
 -----
 
-- Focus clicks should not be consumed, e.g. a plugin window having a slider
-  requires a click before dragging the slider when the window is not focused
+- Focus clicks should not be swallowed, e.g. a plugin window containing a slider
+  requires a click before dragging the slider when the window is not initially
+  focused. WebKitGTK and EdgeWebView2 do not exhibit this behavior.
 
 
 WINDOWS
