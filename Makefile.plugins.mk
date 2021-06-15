@@ -1,6 +1,11 @@
 # Filename: Makefile.plugins.mk
 # Author:   oss@lucianoiam.com
 
+# Allow placing DPF in a custom directory while including its Makefiles
+DPF_CUSTOM_PATH = ./lib/DPF
+DPF_CUSTOM_TARGET_DIR = ./bin
+DPF_CUSTOM_BUILD_DIR = ./build
+
 # Note this is not the DPF version of Makefile.base.mk
 USE_DPF_DEVELOP_BRANCH=true
 include Makefile.base.mk
@@ -29,12 +34,9 @@ FILES_UI = $(SRC_FILES_UI:%=src/%)
 
 ifneq ($(WINDOWS),true)
 UI_TYPE = cairo
+else
+UI_TYPE = opengl
 endif
-
-# Allow placing DPF in a custom directory while including its Makefiles
-DPF_CUSTOM_PATH = ./lib/DPF
-DPF_CUSTOM_TARGET_DIR = ./bin
-DPF_CUSTOM_BUILD_DIR = ./build
 
 # Keep debug symbols and print full compiler output
 SKIP_STRIPPING = true
