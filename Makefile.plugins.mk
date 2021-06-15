@@ -38,9 +38,5 @@ else
 UI_TYPE = opengl
 endif
 
-# Keep debug symbols and print full compiler output
-SKIP_STRIPPING = true
-VERBOSE = true
-
 # Now the magic
 include $(DPF_CUSTOM_PATH)/Makefile.plugins.mk
