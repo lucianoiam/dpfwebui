@@ -41,7 +41,7 @@ namespace platform {
 
     float getSystemDisplayScaleFactor();
 
-    const String kDefaultResourcesSubdirectory = String("/" XSTR(BIN_BASENAME) "_resources");
+    const String kDefaultResourcesSubdirectory = String(XSTR(BIN_BASENAME) "_resources");
 
 }
 

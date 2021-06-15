@@ -39,20 +39,22 @@ USE_NAMESPACE_DISTRHO
 
 void BaseWebView::injectDefaultScripts(String& platformSpecificScript)
 {
-    String js;
-    js += String(JS_DISABLE_CONTEXT_MENU);
-    js += String(JS_CREATE_CONSOLE);
-    js += String(JS_CREATE_HOST_OBJECT);
-    js += platformSpecificScript;
+    String js = String()
+        + String(JS_DISABLE_CONTEXT_MENU)
+        + String(JS_CREATE_CONSOLE)
+        + String(JS_CREATE_HOST_OBJECT)
+        + platformSpecificScript
+    ;
     injectScript(js);
 }
 
 void BaseWebView::handleLoadFinished()
 {
-    String css;
-    css += String(CSS_DISABLE_IMAGE_DRAG);
-    css += String(CSS_DISABLE_SELECTION);
-    css += String(CSS_DISABLE_PINCH_ZOOM);
+    String css = String()
+        + String(CSS_DISABLE_IMAGE_DRAG)
+        + String(CSS_DISABLE_SELECTION)
+        + String(CSS_DISABLE_PINCH_ZOOM)
+    ;
     addStylesheet(css);
     fHandler.handleWebViewLoadFinished();
 }
@@ -71,10 +73,7 @@ void BaseWebView::postMessage(const ScriptValueVector& args)
 #ifdef DEBUG_PRINT_TRAFFIC
     std::cerr << "n -> js : " << payload.buffer() << std::endl;
 #endif
-    String js;
-    js += "window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:";
-    js += payload;
-    js += "}));";
+    String js = "window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:" + payload + "}));";
     runScript(js);
 }
 
@@ -106,9 +105,6 @@ String BaseWebView::serializeScriptValues(const ScriptValueVector& args)
 
 void BaseWebView::addStylesheet(String& source)
 {
-    String js;
-    js += "document.head.insertAdjacentHTML('beforeend', '<style>";
-    js += source;
-    js += "</style>');";
+    String js = "document.head.insertAdjacentHTML('beforeend', '<style>" + source + "</style>');";
     runScript(js);
 }
