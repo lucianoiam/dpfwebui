@@ -49,7 +49,7 @@ void WebExamplePlugin::setParameterValue(uint32_t index, float value)
     (void)value;
 }
 
-#ifdef DISTRHO_PLUGIN_WANT_STATE
+#if (DISTRHO_PLUGIN_WANT_STATE == 1)
 
 void WebExamplePlugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
 {
@@ -66,7 +66,7 @@ void WebExamplePlugin::setState(const char* key, const char* value)
     (void)value;
 }
 
-#ifdef DISTRHO_PLUGIN_WANT_FULL_STATE
+#if (DISTRHO_PLUGIN_WANT_FULL_STATE == 1)
 
 String WebExamplePlugin::getState(const char* key) const
 {
@@ -75,9 +75,9 @@ String WebExamplePlugin::getState(const char* key) const
     return String();
 }
 
-#endif // DISTRHO_PLUGIN_WANT_FULL_STATE
+#endif // DISTRHO_PLUGIN_WANT_FULL_STATE == 1
 
-#endif // DISTRHO_PLUGIN_WANT_STATE
+#endif // DISTRHO_PLUGIN_WANT_STATE == 1
 
 void WebExamplePlugin::run(const float** inputs, float** outputs, uint32_t frames)
 {
