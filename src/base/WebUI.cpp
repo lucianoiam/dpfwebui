@@ -95,14 +95,14 @@ void WebUI::parameterChanged(uint32_t index, float value)
     webPostMessage({"WebUI", "parameterChanged", index, value});
 }
 
-#if DISTRHO_PLUGIN_WANT_STATE
+#if (DISTRHO_PLUGIN_WANT_STATE == 1)
 
 void WebUI::stateChanged(const char* key, const char* value)
 {
     webPostMessage({"WebUI", "stateChanged", key, value});
 }
 
-#endif // DISTRHO_PLUGIN_WANT_STATE
+#endif // DISTRHO_PLUGIN_WANT_STATE == 1
 
 void WebUI::webPostMessage(const ScriptValueVector& args) {
     if (fInitContentReady) {
@@ -146,13 +146,13 @@ void WebUI::handleWebViewScriptMessageReceived(const ScriptValueVector& args)
             static_cast<uint32_t>(args[2].getDouble()), // index
             static_cast<float>(args[3].getDouble())     // value
         );
-#if DISTRHO_PLUGIN_WANT_STATE
+#if (DISTRHO_PLUGIN_WANT_STATE == 1)
     } else if ((method == "setState") && (argc == 2)) {
         setState(
             args[2].getString(), // key
             args[3].getString()  // value
         );
-#endif // DISTRHO_PLUGIN_WANT_STATE
+#endif // DISTRHO_PLUGIN_WANT_STATE == 1
     } else {
         DISTRHO_LOG_STDERR_COLOR("Invalid call to native WebUI method");
     }
