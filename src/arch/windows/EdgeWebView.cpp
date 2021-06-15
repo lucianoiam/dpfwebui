@@ -244,8 +244,10 @@ void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
 {
     // TODO: Add clickable link to installer. It would be also better to display
     // a message and button in the native window using DPF drawing methods.
-    std::wstringstream ss;
-    ss << "Make sure you have installed the Microsoft Edge WebView2 Runtime. "
-       << "Error 0x" << std::hex << result;
-    ::MessageBox(0, ss.str().c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
+    std::wstringstream wss;
+    wss << "Make sure you have installed the Microsoft Edge WebView2 Runtime. "
+        << "Error 0x" << std::hex << result;
+    std::wstring ws = wss.str();
+    DISTRHO_LOG_STDERR_COLOR(TO_LPCSTR(ws));
+    ::MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
 }
