@@ -24,19 +24,27 @@
 
 USE_NAMESPACE_DISTRHO
 
+// TODO - why the special case?
+#ifdef DISTRHO_OS_WINDOWS
+#define INIT_SCALE_FACTOR platform::getSystemDisplayScaleFactor()
+#else
+#define INIT_SCALE_FACTOR 1.f
+#endif
+
 WebUI::WebUI(uint width, uint height, uint32_t backgroundColor)
-    : UI(width, height)
+    : UI(INIT_SCALE_FACTOR * width, INIT_SCALE_FACTOR * height)
     , fWebView(*this)
     , fBackgroundColor(backgroundColor)
     , fDisplayed(false)
     , fInitContentReady(false)
 {
+    // Automatically scale up the webview so its contents do not look tiny
+    // on high pixel density displays (HiDPI / Retina / whatever)
     float k = platform::getSystemDisplayScaleFactor();
     width *= k;
     height *= k;
     setGeometryConstraints(width, height, true);
-    setWidth(width);
-    setHeight(height);
+    setSize(width, height);
     fWebView.resize(getSize());
     fWebView.setBackgroundColor(fBackgroundColor);
     fWebView.reparent(getWindow().getNativeWindowHandle());
