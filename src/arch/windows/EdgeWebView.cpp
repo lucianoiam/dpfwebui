@@ -160,6 +160,10 @@ HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
         return result;
     }
     ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fHelperHwnd, fHandler);
+    // FIXME: handleWebView2ControllerCompleted() is never called when running standalone
+    //        unless the app window border is clicked, looks like messages get stuck somewhere
+    //        and does not seem related to the usage of the fHelperHwnd, passing fPWindowId
+    //        above results in the same result
     return S_OK;
 }
 
