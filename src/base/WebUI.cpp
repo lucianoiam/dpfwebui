@@ -38,8 +38,8 @@ WebUI::WebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     , fDisplayed(false)
     , fInitContentReady(false)
 {
-    // Automatically scale up the webview so its contents do not look tiny
-    // on high pixel density displays (HiDPI / Retina / whatever)
+    // Automatically scale up the webview so its contents do not look small
+    // on high pixel density displays (HiDPI / Retina)
     float k = platform::getSystemDisplayScaleFactor();
     uint width = k * baseWidth;
     uint height = k * baseHeight;
