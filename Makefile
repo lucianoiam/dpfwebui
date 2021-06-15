@@ -51,7 +51,7 @@ endif
 
 TARGETS += vst
 
-include Makefile.webui.mk
+include Makefile.support.mk
 
 all: $(DEP_TARGETS) $(TARGETS)
 
