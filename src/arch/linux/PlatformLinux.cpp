@@ -74,7 +74,7 @@ String platform::getExecutablePath()
 
 String platform::getResourcePath()
 {
-    return getBinaryDirectoryPath() + kDefaultResourcesSubdirectory;
+    return getBinaryDirectoryPath() + "/" + kDefaultResourcesSubdirectory;
 }
 
 String platform::getTemporaryPath()
