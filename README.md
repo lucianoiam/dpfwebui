@@ -11,8 +11,6 @@ An alternate approach to plugin graphics.
 * Makefile based
 * BSD-like license
 
-A proof of concept plugin is being developed at https://github.com/lucianoiam/castello-rev
-
 Example code:
 
 ```JavaScript
@@ -33,6 +31,8 @@ class WebExampleUI extends WebUI {
     
 }
 ```
+
+A proof of concept plugin is being developed at https://github.com/lucianoiam/castello-rev
 
 JavaScript and rendering are provided by system libraries:
 
@@ -102,6 +102,10 @@ The message arguments must be an array/vector containing values of primitive
 data types. These values are wrapped by `DISTRHO::ScriptValue` instances. The
 following JS types are supported: boolean, number, string. Any other types are
 mapped to null.
+
+New features should strictly relate to controlling the plugin or adding any
+missing UI tool that makes sense in an audio plugin context, bridging DPF C++
+code first when available.
 
 For the C++ interfaces to plugin features check https://github.com/DISTRHO/DPF,
 it is included as a git submodule in `lib/DPF`.
