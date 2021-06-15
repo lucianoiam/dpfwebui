@@ -31,10 +31,10 @@
 
 #include "DistrhoUtils.hpp"
 
-#define DISTRHO_LOG_STDERR(msg)        d_stderr("%s : %s", __PRETTY_FUNCTION__, msg);
-#define DISTRHO_LOG_STDERR_INT(msg,n)  d_stderr("%s : %s - %x", __PRETTY_FUNCTION__, msg, n);
-#define DISTRHO_LOG_STDERR_ERRNO(msg)  d_stderr("%s : %s - %s", __PRETTY_FUNCTION__, msg, strerror(errno));
-#define DISTRHO_LOG_STDERR_COLOR(msg)  d_stderr2("%s : %s", __PRETTY_FUNCTION__, msg);
+#define DISTRHO_LOG_STDERR(msg)        d_stderr("%s : %s", __PRETTY_FUNCTION__, msg); fflush(stderr);
+#define DISTRHO_LOG_STDERR_INT(msg,n)  d_stderr("%s : %s - %x", __PRETTY_FUNCTION__, msg, n); fflush(stderr);
+#define DISTRHO_LOG_STDERR_ERRNO(msg)  d_stderr("%s : %s - %s", __PRETTY_FUNCTION__, msg, strerror(errno)); fflush(stderr);
+#define DISTRHO_LOG_STDERR_COLOR(msg)  d_stderr2("%s : %s", __PRETTY_FUNCTION__, msg); fflush(stderr);
 
 #else
 
