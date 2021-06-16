@@ -39,7 +39,7 @@ extern char **environ;
 
 USE_NAMESPACE_DISTRHO
 
-ExternalGtkWebView::ExternalGtkWebView(WebViewEventHandler& handler)
+ExternalGtkWebView::ExternalGtkWebView(WebWidgetEventHandler& handler)
     : BaseWebWidget(handler)
     , fPid(-1)
     , fIpc(nullptr)

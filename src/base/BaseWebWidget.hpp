@@ -33,7 +33,7 @@ START_NAMESPACE_DISTRHO
 
 typedef std::vector<ScriptValue> ScriptValueVector;
 
-class WebViewEventHandler
+class WebWidgetEventHandler
 {
 public:
     virtual void handleWebViewLoadFinished() = 0;
@@ -44,7 +44,7 @@ public:
 class BaseWebWidget : public TopLevelWidget
 {
 public:
-    BaseWebWidget(Window& windowToMapTo, WebViewEventHandler& handler);
+    BaseWebWidget(Window& windowToMapTo, WebWidgetEventHandler& handler);
     virtual ~BaseWebWidget() {};
 
     void onDisplay() override {};
@@ -70,7 +70,7 @@ private:
 
     void addStylesheet(String& source);
 
-    WebViewEventHandler& fHandler;
+    WebWidgetEventHandler& fHandler;
 
 };
 

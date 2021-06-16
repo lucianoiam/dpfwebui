@@ -35,7 +35,7 @@
 
 START_NAMESPACE_DISTRHO
 
-class WebUI : public UI, private WebViewEventHandler
+class WebUI : public UI, private WebWidgetEventHandler
 {
 public:
     WebUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
@@ -61,7 +61,7 @@ protected:
     virtual void webMessageReceived(const ScriptValueVector& args) { (void)args; };
 
 private:
-    // WebViewEventHandler
+    // WebWidgetEventHandler
 
     virtual void handleWebViewLoadFinished() override;
     virtual void handleWebViewScriptMessageReceived(const ScriptValueVector& args) override;

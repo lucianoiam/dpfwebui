@@ -49,7 +49,7 @@ class EdgeWebViewInternalEventHandler;
 class EdgeWebView : public BaseWebWidget, edge::WebView2EventHandler
 {
 public:
-    EdgeWebView(WebViewEventHandler& handler);
+    EdgeWebView(WebWidgetEventHandler& handler);
     ~EdgeWebView();
 
     void setBackgroundColor(uint32_t rgba) override;
