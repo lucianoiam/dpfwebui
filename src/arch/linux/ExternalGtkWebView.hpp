@@ -29,8 +29,6 @@
 #include "extra/ipc.h"
 #include "helper.h"
 
-#define DISTRHO_WEBVIEW_CLASS ExternalGtkWebView
-
 START_NAMESPACE_DISTRHO
 
 class ExternalGtkWebView : public BaseWebWidget
@@ -74,6 +72,8 @@ private:
     ExternalGtkWebView& fView;
 
 };
+
+typedef ExternalGtkWebView PlatformWebWidget;
 
 END_NAMESPACE_DISTRHO
 

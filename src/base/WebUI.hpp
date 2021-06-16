@@ -51,7 +51,7 @@ protected:
     void stateChanged(const char* key, const char* value) override;
 #endif
 
-    DISTRHO_WEBVIEW_CLASS& webView() { return fWebView; }
+    PlatformWebWidget& webView() { return fWebView; }
 
     void webPostMessage(const ScriptValueVector& args);
 
@@ -68,7 +68,7 @@ private:
 
     typedef std::vector<ScriptValueVector> InitMessageQueue;
 
-    DISTRHO_WEBVIEW_CLASS fWebView;
+    PlatformWebWidget     fWebView;
     uint32_t              fBackgroundColor;
     bool                  fDisplayed;
     bool                  fInitContentReady;
