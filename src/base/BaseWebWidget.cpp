@@ -37,11 +37,6 @@
 
 USE_NAMESPACE_DISTRHO
 
-BaseWebWidget::BaseWebWidget(Window& windowToMapTo, WebWidgetEventHandler& handler)
-    : TopLevelWidget(windowToMapTo)
-    , fHandler(handler)
-{}
-
 void BaseWebWidget::injectDefaultScripts(String& platformSpecificScript)
 {
     String js = String()
@@ -61,7 +56,9 @@ void BaseWebWidget::handleLoadFinished()
         + String(CSS_DISABLE_PINCH_ZOOM)
     ;
     addStylesheet(css);
-    fHandler.handleWebViewLoadFinished();
+    if (fHandler != 0) {
+        fHandler->handleWebViewLoadFinished();
+    }
 }
 
 void BaseWebWidget::postMessage(const ScriptValueVector& args)
@@ -90,7 +87,9 @@ void BaseWebWidget::handleScriptMessage(const ScriptValueVector& args)
 #ifdef DEBUG_PRINT_TRAFFIC
     std::cerr << "n <- js : " << serializeScriptValues(args).buffer() << std::endl;
 #endif
-        fHandler.handleWebViewScriptMessageReceived(args);
+        if (fHandler != 0) {
+            fHandler->handleWebViewScriptMessageReceived(args);
+        }
     }
 }
 
