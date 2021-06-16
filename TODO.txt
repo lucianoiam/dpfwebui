@@ -1,7 +1,7 @@
 GENERAL
 -------
 
-- Web view should not steal keyboard events. This interferes with the virtual
+- Web widgets should not steal keyboard events. This interferes with the virtual
   keyboard in Live. Tested on Mac, behavior not yet tested on others.
 
 - Allow calling Window::openFileBrowser() from JavaScript
