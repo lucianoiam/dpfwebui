@@ -34,7 +34,7 @@ USE_NAMESPACE_DISTRHO
 @end
 
 CocoaWebView::CocoaWebView(Window& windowToMapTo, WebViewEventHandler& handler)
-    : BaseWebView(windowToMapTo, handler)
+    : BaseWebWidget(windowToMapTo, handler)
 {
     // Create web view
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];

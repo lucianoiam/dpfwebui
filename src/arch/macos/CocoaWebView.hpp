@@ -19,7 +19,7 @@
 #ifndef COCOAWEBVIEW_HPP
 #define COCOAWEBVIEW_HPP
 
-#include "base/BaseWebView.hpp"
+#include "base/BaseWebWidget.hpp"
 
 // While it is possible to #import Obj-C headers here, that would force all
 // source files importing CocoaWebView.hpp to do so before any other project
@@ -29,7 +29,7 @@
 
 START_NAMESPACE_DISTRHO
 
-class CocoaWebView : public BaseWebView
+class CocoaWebView : public BaseWebWidget
 {
 public:
     CocoaWebView(Window& windowToMapTo, WebViewEventHandler& handler);

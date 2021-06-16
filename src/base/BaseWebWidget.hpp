@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef BASEWEBVIEW_HPP
-#define BASEWEBVIEW_HPP
+#ifndef BASEWEBWIDGET_HPP
+#define BASEWEBWIDGET_HPP
 
 #include <cstdint>
 #include <vector>
@@ -41,11 +41,11 @@ public:
 
 };
 
-class BaseWebView : public TopLevelWidget
+class BaseWebWidget : public TopLevelWidget
 {
 public:
-    BaseWebView(Window& windowToMapTo, WebViewEventHandler& handler);
-    virtual ~BaseWebView() {};
+    BaseWebWidget(Window& windowToMapTo, WebViewEventHandler& handler);
+    virtual ~BaseWebWidget() {};
 
     void onDisplay() override {};
 
@@ -76,4 +76,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif // BASEWEBVIEW_HPP
+#endif // BASEWEBWIDGET_HPP

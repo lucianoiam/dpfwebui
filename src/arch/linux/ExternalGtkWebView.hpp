@@ -24,7 +24,7 @@
 
 #include "extra/Thread.hpp"
 
-#include "base/BaseWebView.hpp"
+#include "base/BaseWebWidget.hpp"
 
 #include "extra/ipc.h"
 #include "helper.h"
@@ -33,7 +33,7 @@
 
 START_NAMESPACE_DISTRHO
 
-class ExternalGtkWebView : public BaseWebView
+class ExternalGtkWebView : public BaseWebWidget
 {
 friend class IpcReadThread;
 
