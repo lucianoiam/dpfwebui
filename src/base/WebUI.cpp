@@ -30,7 +30,7 @@ USE_NAMESPACE_DISTRHO
 
 WebUI::WebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
-    , fWebView(getWindow())
+    , fWebWidget(getWindow())
     , fBackgroundColor(backgroundColor)
     , fDisplayed(false)
     , fInitContentReady(false)
@@ -42,13 +42,13 @@ WebUI::WebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     uint height = k * baseHeight;
     setGeometryConstraints(width, height, true);
     setSize(width, height);
-    fWebView.setEventHandler(this);
-    fWebView.resize(getSize());
-    fWebView.setBackgroundColor(fBackgroundColor);
+    fWebWidget.setEventHandler(this);
+    fWebWidget.resize(getSize());
+    fWebWidget.setBackgroundColor(fBackgroundColor);
     String js = String(
 #include "base/webui.js"
     );
-    fWebView.injectScript(js);
+    fWebWidget.injectScript(js);
 }
 
 void WebUI::onDisplay()
@@ -78,13 +78,13 @@ void WebUI::onDisplay()
     // for calling BaseWebWidget::navigate() because ctor/dtor can be called
     // successive times without the window ever being displayed (e.g. on Carla)
     String url = "file://" + platform::getResourcePath() + "/index.html";
-    fWebView.navigate(url);
-    fWebView.start();
+    fWebWidget.navigate(url);
+    fWebWidget.start();
 }
 
 void WebUI::onResize(const ResizeEvent& ev)
 {
-    fWebView.resize(ev.size);
+    fWebWidget.resize(ev.size);
 }
 
 void WebUI::parameterChanged(uint32_t index, float value)
@@ -103,7 +103,7 @@ void WebUI::stateChanged(const char* key, const char* value)
 
 void WebUI::webPostMessage(const ScriptValueVector& args) {
     if (fInitContentReady) {
-        fWebView.postMessage(args);
+        fWebWidget.postMessage(args);
     } else {
         fInitMsgQueue.push_back(args);
     }
@@ -112,7 +112,7 @@ void WebUI::webPostMessage(const ScriptValueVector& args) {
 void WebUI::flushInitMessageQueue()
 {
     for (InitMessageQueue::iterator it = fInitMsgQueue.begin(); it != fInitMsgQueue.end(); ++it) {
-        fWebView.postMessage(*it);
+        fWebWidget.postMessage(*it);
     }
     fInitMsgQueue.clear();
 }
