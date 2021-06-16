@@ -119,13 +119,13 @@ void WebUI::flushInitMessageQueue()
     fInitMsgQueue.clear();
 }
 
-void WebUI::handleWebViewLoadFinished()
+void WebUI::handleWebWidgetContentLoadFinished()
 {
     fInitContentReady = true;
     webContentReady();
 }
 
-void WebUI::handleWebViewScriptMessageReceived(const ScriptValueVector& args)
+void WebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& args)
 {
     if (args[0].getString() != "WebUI") {
         webMessageReceived(args); // passthrough
