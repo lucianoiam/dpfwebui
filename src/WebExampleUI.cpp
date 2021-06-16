@@ -32,10 +32,10 @@ UI* DISTRHO::createUI()
 }
 
 WebExampleUI::WebExampleUI()
-    : WebUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA)
+    : ProxyWebUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA)
 {
     // Web view not guaranteed to be ready yet. Calls to webWidget().runScript()
-    // or any DPF methods mapped by WebUI are forbidden. Mapped methods are
+    // or any DPF methods mapped by ProxyWebUI are forbidden. Mapped methods are
     // those that have their JavaScript counterparts; they rely on message
     // passing and ultimately webWidget().runScript(). Still it is safe to call
     // webWidget().injectScript() to queue scripts that will run immediately

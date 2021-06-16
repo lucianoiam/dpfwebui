@@ -17,11 +17,11 @@
 #ifndef WEBEXAMPLEUI_HPP
 #define WEBEXAMPLEUI_HPP
 
-#include "base/WebUI.hpp"
+#include "base/ProxyWebUI.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class WebExampleUI : public WebUI
+class WebExampleUI : public ProxyWebUI
 {
 public:
     WebExampleUI();

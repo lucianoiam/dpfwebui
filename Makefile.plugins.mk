@@ -10,11 +10,11 @@ DPF_CUSTOM_BUILD_DIR = ./build
 DPF_GIT_BRANCH=develop
 include Makefile.base.mk
 
-SRC_FILES_UI += base/WebUI.cpp \
+SRC_FILES_UI += base/ProxyWebUI.cpp \
                 base/BaseWebWidget.cpp \
                 base/ScriptValue.cpp
 
-# Add WebUI files
+# Add ProxyWebUI files
 ifeq ($(LINUX),true)
 SRC_FILES_UI += arch/linux/ExternalGtkWebWidget.cpp \
                 arch/linux/PlatformLinux.cpp \

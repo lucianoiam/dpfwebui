@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "WebUI.hpp"
+#include "ProxyWebUI.hpp"
 
 #include "base/Platform.hpp"
 #include "base/macro.h"
@@ -28,7 +28,7 @@ USE_NAMESPACE_DISTRHO
 #define INIT_SCALE_FACTOR 1.f
 #endif
 
-WebUI::WebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
+ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
     , fWebWidget(getWindow())
     , fBackgroundColor(backgroundColor)
@@ -51,7 +51,7 @@ WebUI::WebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     fWebWidget.injectScript(js);
 }
 
-void WebUI::onDisplay()
+void ProxyWebUI::onDisplay()
 {
 #ifdef DGL_OPENGL
     // Clear background for OpenGL
@@ -74,7 +74,7 @@ void WebUI::onDisplay()
     // place for triggering Edge's asynchronous init. On Linux and Mac, method
     // BaseWebWidget::start() is a no-op. Loading web content could be thought of
     // as drawing the window and only needs to happen once, real drawing is
-    // handled by the web views. WebUI() constructor is not a suitable place
+    // handled by the web views. ProxyWebUI() constructor is not a suitable place
     // for calling BaseWebWidget::navigate() because ctor/dtor can be called
     // successive times without the window ever being displayed (e.g. on Carla)
     String url = "file://" + platform::getResourcePath() + "/index.html";
@@ -82,26 +82,26 @@ void WebUI::onDisplay()
     fWebWidget.start();
 }
 
-void WebUI::onResize(const ResizeEvent& ev)
+void ProxyWebUI::onResize(const ResizeEvent& ev)
 {
     fWebWidget.resize(ev.size);
 }
 
-void WebUI::parameterChanged(uint32_t index, float value)
+void ProxyWebUI::parameterChanged(uint32_t index, float value)
 {
     webPostMessage({"WebUI", "parameterChanged", index, value});
 }
 
 #if (DISTRHO_PLUGIN_WANT_STATE == 1)
 
-void WebUI::stateChanged(const char* key, const char* value)
+void ProxyWebUI::stateChanged(const char* key, const char* value)
 {
     webPostMessage({"WebUI", "stateChanged", key, value});
 }
 
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
 
-void WebUI::webPostMessage(const ScriptValueVector& args) {
+void ProxyWebUI::webPostMessage(const ScriptValueVector& args) {
     if (fInitContentReady) {
         fWebWidget.postMessage(args);
     } else {
@@ -109,7 +109,7 @@ void WebUI::webPostMessage(const ScriptValueVector& args) {
     }
 }
 
-void WebUI::flushInitMessageQueue()
+void ProxyWebUI::flushInitMessageQueue()
 {
     for (InitMessageQueue::iterator it = fInitMsgQueue.begin(); it != fInitMsgQueue.end(); ++it) {
         fWebWidget.postMessage(*it);
@@ -117,13 +117,13 @@ void WebUI::flushInitMessageQueue()
     fInitMsgQueue.clear();
 }
 
-void WebUI::handleWebWidgetContentLoadFinished()
+void ProxyWebUI::handleWebWidgetContentLoadFinished()
 {
     fInitContentReady = true;
     webContentReady();
 }
 
-void WebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& args)
+void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& args)
 {
     if (args[0].getString() != "WebUI") {
         webMessageReceived(args); // passthrough
@@ -151,6 +151,6 @@ void WebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& args)
         );
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
     } else {
-        DISTRHO_LOG_STDERR_COLOR("Invalid call to native WebUI method");
+        DISTRHO_LOG_STDERR_COLOR("Invalid call to ProxyWebUI method");
     }
 }
