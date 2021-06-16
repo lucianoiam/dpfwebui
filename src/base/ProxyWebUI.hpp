@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBUI_HPP
-#define WEBUI_HPP
+#ifndef PROXYWEBUI_HPP
+#define PROXYWEBUI_HPP
 
 #include "DistrhoUI.hpp"
 
@@ -35,11 +35,11 @@
 
 START_NAMESPACE_DISTRHO
 
-class WebUI : public UI, private WebWidgetEventHandler
+class ProxyWebUI : public UI, private WebWidgetEventHandler
 {
 public:
-    WebUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
-    virtual ~WebUI() {};
+    ProxyWebUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    virtual ~ProxyWebUI() {};
 
 protected:
 
@@ -78,4 +78,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBUI_HPP
+#endif  // PROXYWEBUI_HPP

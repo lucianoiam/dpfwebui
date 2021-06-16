@@ -73,9 +73,9 @@ is created as a `EventTarget` instance that can listened for events named
 
 `window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:args}))`
 
-The `DISTRHO::WebUI` and JS `DISTRHO_WebUI` classes use the above mechanism to
-map some useful plugin methods, like the ones shown in the first code example of
-this README.
+The `DISTRHO::ProxyWebUI` and JS `DISTRHO_WebUI` classes use the above mechanism
+to map some useful plugin methods, like the ones shown in the first code example
+of this README.
 
 The bridge in a nutshell:
 
@@ -84,7 +84,7 @@ The bridge in a nutshell:
 
 window.webviewHost.postMessage([...]);
 
-void WebUI::webMessageReceived(const ScriptValueVector&) {
+void ProxyWebUI::webMessageReceived(const ScriptValueVector&) {
 
    // Receive
 
@@ -92,7 +92,7 @@ void WebUI::webMessageReceived(const ScriptValueVector&) {
 
 // Send ( cpp → js )
 
-WebUI::webPostMessage({...});
+ProxyWebUI::webPostMessage({...});
 
 window.webviewHost.addMessageListener((args) => {
     
