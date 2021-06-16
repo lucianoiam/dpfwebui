@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef EXTERNALGTKWEBVIEW_HPP
-#define EXTERNALGTKWEBVIEW_HPP
+#ifndef EXTERNALGTKWEBWIDGET_HPP
+#define EXTERNALGTKWEBWIDGET_HPP
 
 #include <cstdint>
 #include <sys/types.h>
@@ -31,16 +31,16 @@
 
 START_NAMESPACE_DISTRHO
 
-class ExternalGtkWebView : public BaseWebWidget
+class ExternalGtkWebWidget : public BaseWebWidget
 {
 friend class IpcReadThread;
 
 public:
-    ExternalGtkWebView(WebWidgetEventHandler& handler);
-    ~ExternalGtkWebView();
+    ExternalGtkWebWidget(Window& windowToMapTo);
+    ~ExternalGtkWebWidget();
 
     void setBackgroundColor(uint32_t rgba) override;
-    void reparent(uintptr_t windowId) override;
+    void reparent(Window& windowToMapTo) override;
     void resize(const Size<uint>& size) override;
     void navigate(String& url) override;
     void runScript(String& source) override;
@@ -64,17 +64,17 @@ private:
 class IpcReadThread : public Thread
 {
 public:
-    IpcReadThread(ExternalGtkWebView& view);
+    IpcReadThread(ExternalGtkWebWidget& view);
     
     void run() override;
 
 private:
-    ExternalGtkWebView& fView;
+    ExternalGtkWebWidget& fView;
 
 };
 
-typedef ExternalGtkWebView PlatformWebWidget;
+typedef ExternalGtkWebWidget PlatformWebWidget;
 
 END_NAMESPACE_DISTRHO
 
-#endif  // EXTERNALGTKWEBVIEW_HPP
+#endif  // EXTERNALGTKWEBWIDGET_HPP
