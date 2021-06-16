@@ -36,7 +36,7 @@
 
 USE_NAMESPACE_DISTRHO
 
-EdgeWebView::EdgeWebView(WebViewEventHandler& handler)
+EdgeWebView::EdgeWebView(WebWidgetEventHandler& handler)
     : BaseWebWidget(handler)
     , fHelperHwnd(0)
     , fController(0)

@@ -36,7 +36,7 @@ class ExternalGtkWebView : public BaseWebWidget
 friend class IpcReadThread;
 
 public:
-    ExternalGtkWebView(WebViewEventHandler& handler);
+    ExternalGtkWebView(WebWidgetEventHandler& handler);
     ~ExternalGtkWebView();
 
     void setBackgroundColor(uint32_t rgba) override;

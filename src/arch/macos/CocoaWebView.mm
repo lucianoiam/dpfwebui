@@ -33,7 +33,7 @@ USE_NAMESPACE_DISTRHO
 @property (assign, nonatomic) CocoaWebView *cppView;
 @end
 
-CocoaWebView::CocoaWebView(Window& windowToMapTo, WebViewEventHandler& handler)
+CocoaWebView::CocoaWebView(Window& windowToMapTo, WebWidgetEventHandler& handler)
     : BaseWebWidget(windowToMapTo, handler)
 {
     // Create web view

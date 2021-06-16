@@ -35,7 +35,7 @@
 
 USE_NAMESPACE_DISTRHO
 
-BaseWebWidget::BaseWebWidget(Window& windowToMapTo, WebViewEventHandler& handler)
+BaseWebWidget::BaseWebWidget(Window& windowToMapTo, WebWidgetEventHandler& handler)
     : TopLevelWidget(windowToMapTo)
     , fHandler(handler)
 {}

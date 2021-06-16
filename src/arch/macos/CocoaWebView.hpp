@@ -30,7 +30,7 @@ START_NAMESPACE_DISTRHO
 class CocoaWebView : public BaseWebWidget
 {
 public:
-    CocoaWebView(Window& windowToMapTo, WebViewEventHandler& handler);
+    CocoaWebView(Window& windowToMapTo, WebWidgetEventHandler& handler);
     ~CocoaWebView();
 
     void setBackgroundColor(uint32_t rgba) override;
