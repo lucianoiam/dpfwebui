@@ -48,6 +48,7 @@ public:
     EdgeWebWidget(Window& windowToMapTo);
     ~EdgeWebWidget();
 
+    void onDisplay() override;
     void onResize(const ResizeEvent& ev) override;
 
     void setBackgroundColor(uint32_t rgba) override;
@@ -55,7 +56,6 @@ public:
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;
-    void start() override;
 
     // WebView2EventHandler
 
@@ -69,10 +69,13 @@ public:
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
 private:
+    void initWebView2();
+
     void webViewLoaderErrorMessageBox(HRESULT result);
 
     WNDCLASS fHelperClass;
     HWND     fHelperHwnd;
+    bool     fDisplayed;
 
     InternalWebView2EventHandler* fHandler;
     ICoreWebView2Controller*      fController;
