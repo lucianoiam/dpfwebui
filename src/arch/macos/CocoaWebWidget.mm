@@ -45,9 +45,9 @@ CocoaWebWidget::CocoaWebWidget(Window& windowToMapTo)
     fWebViewDelegate.cppView = this;
     fWebView.navigationDelegate = fWebViewDelegate;
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
+    reparent(windowToMapTo);
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
-    reparent(windowToMapTo);
 }
 
 CocoaWebWidget::~CocoaWebWidget()

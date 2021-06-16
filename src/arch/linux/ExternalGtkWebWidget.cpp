@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "ExternalGtkWebView.hpp"
+#include "ExternalGtkWebWidget.hpp"
 
 #include <cstdio>
 #include <signal.h>
@@ -37,8 +37,8 @@ extern char **environ;
 
 USE_NAMESPACE_DISTRHO
 
-ExternalGtkWebView::ExternalGtkWebView(WebWidgetEventHandler& handler)
-    : BaseWebWidget(handler)
+ExternalGtkWebWidget::ExternalGtkWebWidget(Window& windowToMapTo)
+    : BaseWebWidget(windowToMapTo)
     , fPid(-1)
     , fIpc(nullptr)
     , fIpcThread(nullptr)
@@ -70,11 +70,12 @@ ExternalGtkWebView::ExternalGtkWebView(WebWidgetEventHandler& handler)
         DISTRHO_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
     }
+    reparent(windowToMapTo);
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
 }
 
-ExternalGtkWebView::~ExternalGtkWebView()
+ExternalGtkWebWidget::~ExternalGtkWebWidget()
 {
     if (fPid != -1) {
         if (kill(fPid, SIGTERM) == 0) {
@@ -103,44 +104,45 @@ ExternalGtkWebView::~ExternalGtkWebView()
     }
 }
 
-void ExternalGtkWebView::setBackgroundColor(uint32_t rgba)
+void ExternalGtkWebWidget::setBackgroundColor(uint32_t rgba)
 {
     ipcWrite(OPC_SET_BACKGROUND_COLOR, &rgba, sizeof(uint32_t));
 }
 
-void ExternalGtkWebView::reparent(uintptr_t windowId)
+void ExternalGtkWebWidget::reparent(Window& windowToMapTo)
 {
+    int windowId = static_cast<int>(windowToMapTo.getNativeWindowHandle());
     ipcWrite(OPC_REPARENT, &windowId, sizeof(windowId));
 }
 
-void ExternalGtkWebView::resize(const Size<uint>& size)
+void ExternalGtkWebWidget::resize(const Size<uint>& size)
 {
     helper_size_t sizePkt = {size.getWidth(), size.getHeight()};
     ipcWrite(OPC_RESIZE, &sizePkt, sizeof(sizePkt));
 }
 
-void ExternalGtkWebView::navigate(String& url)
+void ExternalGtkWebWidget::navigate(String& url)
 {
     ipcWriteString(OPC_NAVIGATE, url);
 }
 
-void ExternalGtkWebView::runScript(String& source)
+void ExternalGtkWebWidget::runScript(String& source)
 {
     ipcWriteString(OPC_RUN_SCRIPT, source);
 }
 
-void ExternalGtkWebView::injectScript(String& source)
+void ExternalGtkWebWidget::injectScript(String& source)
 {
     ipcWriteString(OPC_INJECT_SCRIPT, source);
 }
 
-int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str) const
+int ExternalGtkWebWidget::ipcWriteString(helper_opcode_t opcode, String str) const
 {
     const char *cStr = static_cast<const char *>(str);
     return ipcWrite(opcode, cStr, ::strlen(cStr) + 1);
 }
 
-int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize) const
+int ExternalGtkWebWidget::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize) const
 {
     tlv_t packet;
     packet.t = static_cast<short>(opcode);
@@ -153,7 +155,7 @@ int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, in
     return retval;
 }
 
-void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
+void ExternalGtkWebWidget::ipcReadCallback(const tlv_t& packet)
 {
     switch (static_cast<helper_opcode_t>(packet.t)) {
         case OPC_HANDLE_LOAD_FINISHED:
@@ -167,7 +169,7 @@ void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
     }
 }
 
-void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payloadSize)
+void ExternalGtkWebWidget::handleHelperScriptMessage(const char *payload, int payloadSize)
 {
     // Should validate payload is never read past payloadSize 
     ScriptValueVector args;
@@ -201,7 +203,7 @@ void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payl
     handleScriptMessage(args);
 }
 
-IpcReadThread::IpcReadThread(ExternalGtkWebView& view)
+IpcReadThread::IpcReadThread(ExternalGtkWebWidget& view)
     : Thread("ipc_read")
     , fView(view)
 {}

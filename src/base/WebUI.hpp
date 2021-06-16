@@ -22,7 +22,7 @@
 #include <vector>
 
 #ifdef DISTRHO_OS_LINUX
-#include "arch/linux/ExternalGtkWebView.hpp"
+#include "arch/linux/ExternalGtkWebWidget.hpp"
 #endif
 #ifdef DISTRHO_OS_MAC
 #include "arch/macos/CocoaWebWidget.hpp"

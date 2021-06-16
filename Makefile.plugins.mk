@@ -16,7 +16,7 @@ SRC_FILES_UI += base/WebUI.cpp \
 
 # Add WebUI files
 ifeq ($(LINUX),true)
-SRC_FILES_UI += arch/linux/ExternalGtkWebView.cpp \
+SRC_FILES_UI += arch/linux/ExternalGtkWebWidget.cpp \
                 arch/linux/PlatformLinux.cpp \
                 arch/linux/extra/ipc.c
 endif
