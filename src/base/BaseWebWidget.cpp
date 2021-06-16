@@ -32,7 +32,7 @@
 #define CSS_DISABLE_PINCH_ZOOM   "body { touch-action: pan-x pan-y; }"
 
 /**
-   Keep this class generic, DPF specific functionality belongs to WebUI.
+   Keep this class generic, DPF specific functionality belongs to ProxyWebUI.
  */
 
 USE_NAMESPACE_DISTRHO
