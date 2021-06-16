@@ -41,7 +41,6 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     , fHelperHwnd(0)
     , fController(0)
     , fView(0)
-    , fPParentWindow(0)
     , fPBackgroundColor(0)
 {
     // EdgeWebWidget works a bit different compared to the other platforms due
@@ -82,7 +81,6 @@ EdgeWebWidget::~EdgeWebWidget()
 void EdgeWebWidget::onResize(const ResizeEvent& ev)
 {
     if (fController == 0) {
-        fPSize = ev.size;
         return; // later
     }
     RECT bounds {};
@@ -110,7 +108,6 @@ void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
 void EdgeWebWidget::reparent(Window& windowToMapTo)
 {
     if (fController == 0) {
-        fPParentWindow = &windowToMapTo;
         return; // later
     }
 	HWND hWnd = reinterpret_cast<HWND>(windowToMapTo.getNativeWindowHandle());
@@ -184,16 +181,16 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
         injectScript(*it);
     }
     setBackgroundColor(fPBackgroundColor);
-    // FIXME - this is now repeated code from onResize()
+    // FIXME - for some reason getWidth() and getHeight() are returning 0 only on Windows
+    //         Windows is the only platform running cairo, is it a TopLevelWidget/Cairo bug?
     RECT bounds {};
-    bounds.right = fPSize.getWidth();
-    bounds.bottom = fPSize.getHeight();
+    bounds.right = getWindow().getWidth();
+    bounds.bottom = getWindow().getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
     navigate(fPUrl);
     // Cleanup, handleWebViewControllerCompleted() will not be called again anyways
     fPInjectedScripts.clear();
     fPBackgroundColor = 0;
-    fPSize = {};
     fPUrl.clear();
     return S_OK;
 }
@@ -205,11 +202,7 @@ HRESULT EdgeWebWidget::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
     (void)eventArgs;
     if (fController != 0) {
         handleLoadFinished();
-        if (fPParentWindow != 0) {
-            reparent(*fPParentWindow);
-            // handleWebViewNavigationCompleted() could be called again
-            fPParentWindow = 0;
-        }
+        reparent(getWindow());
     }
     return S_OK;
 }
