@@ -75,18 +75,16 @@ private:
 
     void webViewLoaderErrorMessageBox(HRESULT result);
 
-    WNDCLASS fHelperClass;
-    HWND     fHelperHwnd;
-    bool     fDisplayed;
-
+    WNDCLASS            fHelperClass;
+    HWND                fHelperHwnd;
+    bool                fDisplayed;
+    uint32_t            fBackgroundColor;
+    std::vector<String> fInjectedScripts;
+    String              fUrl;
+    
     InternalWebView2EventHandler* fHandler;
     ICoreWebView2Controller*      fController;
     ICoreWebView2*                fView;
-
-    // P means pending
-    uint32_t            fPBackgroundColor;
-    String              fPUrl;
-    std::vector<String> fPInjectedScripts;
 
 };
 
