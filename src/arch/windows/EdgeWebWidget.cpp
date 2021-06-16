@@ -46,8 +46,8 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     , fPParentWindow(0)
     , fPBackgroundColor(0)
 {
-    // EdgeWebWidget works a bit different compared to the other platforms due to
-    // the async nature of the native web view initialization process
+    // EdgeWebWidget works a bit different compared to the other platforms due
+    // to the async nature of the native web view initialization process
     WCHAR className[256];
     ::swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
     ::ZeroMemory(&fHelperClass, sizeof(fHelperClass));
@@ -131,7 +131,8 @@ void EdgeWebWidget::navigate(String& url)
 void EdgeWebWidget::runScript(String& source)
 {
     // For the plugin specific use case fView==0 means a programming error.
-    // There is no point in queuing these, just wait for the view to become ready.
+    // There is no point in queuing these, just wait for the view to become
+    // ready before trying to run scripts.
     assert(fView != 0);
     ICoreWebView2_ExecuteScript(fView, TO_LPCWSTR(source), 0);
 }
