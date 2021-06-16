@@ -40,9 +40,10 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     : BaseWebWidget(windowToMapTo)
     , fHelperHwnd(0)
     , fDisplayed(false)
+    , fBackgroundColor(0)
+    , fHandler(0)
     , fController(0)
     , fView(0)
-    , fPBackgroundColor(0)
 {
     // EdgeWebWidget works a bit different compared to the other platforms due
     // to the async nature of the native web view initialization process
@@ -103,7 +104,7 @@ void EdgeWebWidget::onResize(const ResizeEvent& ev)
 void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
 {
     if (fController == 0) {
-        fPBackgroundColor = rgba;
+        fBackgroundColor = rgba;
         return; // later
     }
     // WebView2 currently only supports alpha=0 or alpha=1
@@ -128,7 +129,7 @@ void EdgeWebWidget::reparent(Window& windowToMapTo)
 void EdgeWebWidget::navigate(String& url)
 {
     if (fView == 0) {
-        fPUrl = url;
+        fUrl = url;
         return; // later
     }
     ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
@@ -146,7 +147,7 @@ void EdgeWebWidget::runScript(String& source)
 void EdgeWebWidget::injectScript(String& source)
 {
     if (fController == 0) {
-        fPInjectedScripts.push_back(source);
+        fInjectedScripts.push_back(source);
         return; // later
     }
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
@@ -188,21 +189,21 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
     ICoreWebView2_add_NavigationCompleted(fView, fHandler, 0);
     ICoreWebView2_add_WebMessageReceived(fView, fHandler, 0);
     // Call pending setters
-    for (std::vector<String>::iterator it = fPInjectedScripts.begin(); it != fPInjectedScripts.end(); ++it) {
+    for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
         injectScript(*it);
     }
-    setBackgroundColor(fPBackgroundColor);
+    setBackgroundColor(fBackgroundColor);
     // FIXME - for some reason getWidth() and getHeight() are returning 0 only on Windows
     //         Windows is the only platform running cairo, is it a TopLevelWidget/Cairo bug?
     RECT bounds {};
     bounds.right = getWindow().getWidth();
     bounds.bottom = getWindow().getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
-    navigate(fPUrl);
+    navigate(fUrl);
     // Cleanup, handleWebViewControllerCompleted() will not be called again anyways
-    fPInjectedScripts.clear();
-    fPBackgroundColor = 0;
-    fPUrl.clear();
+    fInjectedScripts.clear();
+    fBackgroundColor = 0;
+    fUrl.clear();
     return S_OK;
 }
 

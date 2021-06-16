@@ -128,7 +128,7 @@ new plugins an easy and enjoyable task". It is a low footprint yet powerful tool
 that allows the developer to focus on productivity by already solving many not
 trivial issues commonly found in the audio plugins domain.
 
-What makes it different?
+What makes it great?
 
 - It bears a clear libre license
 - Relies on standard build tools
