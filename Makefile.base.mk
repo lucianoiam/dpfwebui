@@ -40,8 +40,8 @@ ifeq (,$(wildcard $(DPF_CUSTOM_PATH)/Makefile))
 _:=$(shell git submodule update --init --recursive)
 endif
 
-ifneq (,$(DPF_BRANCH))
-ifeq (,$(findstring $(DPF_BRANCH),$(shell git -C $(DPF_CUSTOM_PATH) branch --show-current)))
-_:=$(shell git -C $(DPF_CUSTOM_PATH) checkout $(DPF_BRANCH))
+ifneq (,$(DPF_GIT_BRANCH))
+ifeq (,$(findstring $(DPF_GIT_BRANCH),$(shell git -C $(DPF_CUSTOM_PATH) branch --show-current)))
+_:=$(shell git -C $(DPF_CUSTOM_PATH) checkout $(DPF_GIT_BRANCH))
 endif
 endif
