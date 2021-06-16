@@ -104,6 +104,12 @@ ExternalGtkWebWidget::~ExternalGtkWebWidget()
     }
 }
 
+void ExternalGtkWebWidget::onResize(const ResizeEvent& ev)
+{
+    helper_size_t sizePkt = {ev.size.getWidth(), ev.size.getHeight()};
+    ipcWrite(OPC_RESIZE, &sizePkt, sizeof(sizePkt));
+}
+
 void ExternalGtkWebWidget::setBackgroundColor(uint32_t rgba)
 {
     ipcWrite(OPC_SET_BACKGROUND_COLOR, &rgba, sizeof(uint32_t));
@@ -113,12 +119,6 @@ void ExternalGtkWebWidget::reparent(Window& windowToMapTo)
 {
     int windowId = static_cast<int>(windowToMapTo.getNativeWindowHandle());
     ipcWrite(OPC_REPARENT, &windowId, sizeof(windowId));
-}
-
-void ExternalGtkWebWidget::resize(const Size<uint>& size)
-{
-    helper_size_t sizePkt = {size.getWidth(), size.getHeight()};
-    ipcWrite(OPC_RESIZE, &sizePkt, sizeof(sizePkt));
 }
 
 void ExternalGtkWebWidget::navigate(String& url)
