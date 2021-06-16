@@ -42,7 +42,6 @@ public:
 protected:
 
     void onDisplay() override;
-    void onResize(const ResizeEvent& ev) override;
 
     void parameterChanged(uint32_t index, float value) override;
 #if (DISTRHO_PLUGIN_WANT_STATE == 1)

@@ -79,6 +79,18 @@ EdgeWebWidget::~EdgeWebWidget()
     ::free((void*)fHelperClass.lpszClassName);
 }
 
+void EdgeWebWidget::onResize(const ResizeEvent& ev)
+{
+    if (fController == 0) {
+        fPSize = ev.size;
+        return; // later
+    }
+    RECT bounds {};
+    bounds.right = ev.size.getWidth();
+    bounds.bottom = ev.size.getHeight();
+    ICoreWebView2Controller2_put_Bounds(fController, bounds);
+}
+
 void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
 {
     if (fController == 0) {
@@ -103,18 +115,6 @@ void EdgeWebWidget::reparent(Window& windowToMapTo)
     }
 	HWND hWnd = reinterpret_cast<HWND>(windowToMapTo.getNativeWindowHandle());
     ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
-}
-
-void EdgeWebWidget::resize(const Size<uint>& size)
-{
-    if (fController == 0) {
-        fPSize = size;
-        return; // later
-    }
-    RECT bounds {};
-    bounds.right = size.getWidth();
-    bounds.bottom = size.getHeight();
-    ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
 void EdgeWebWidget::navigate(String& url)
@@ -184,7 +184,11 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
         injectScript(*it);
     }
     setBackgroundColor(fPBackgroundColor);
-    resize(fPSize);
+    // FIXME - this is now repeated code from onResize()
+    RECT bounds {};
+    bounds.right = fPSize.getWidth();
+    bounds.bottom = fPSize.getHeight();
+    ICoreWebView2Controller2_put_Bounds(fController, bounds);
     navigate(fPUrl);
     // Cleanup, handleWebViewControllerCompleted() will not be called again anyways
     fPInjectedScripts.clear();
