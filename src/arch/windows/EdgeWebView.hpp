@@ -25,7 +25,7 @@
 
 #include "WebView2.h"
 
-#include "base/BaseWebView.hpp"
+#include "base/BaseWebWidget.hpp"
 #include "extra/WebView2EventHandler.hpp"
 
 /*
@@ -44,7 +44,7 @@ START_NAMESPACE_DISTRHO
 
 class EdgeWebViewInternalEventHandler;
 
-class EdgeWebView : public BaseWebView, edge::WebView2EventHandler
+class EdgeWebView : public BaseWebWidget, edge::WebView2EventHandler
 {
 public:
     EdgeWebView(WebViewEventHandler& handler);

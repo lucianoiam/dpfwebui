@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "BaseWebView.hpp"
+#include "BaseWebWidget.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -35,12 +35,12 @@
 
 USE_NAMESPACE_DISTRHO
 
-BaseWebView::BaseWebView(Window& windowToMapTo, WebViewEventHandler& handler)
+BaseWebWidget::BaseWebWidget(Window& windowToMapTo, WebViewEventHandler& handler)
     : TopLevelWidget(windowToMapTo)
     , fHandler(handler)
 {}
 
-void BaseWebView::injectDefaultScripts(String& platformSpecificScript)
+void BaseWebWidget::injectDefaultScripts(String& platformSpecificScript)
 {
     String js = String()
         + String(JS_DISABLE_CONTEXT_MENU)
@@ -51,7 +51,7 @@ void BaseWebView::injectDefaultScripts(String& platformSpecificScript)
     injectScript(js);
 }
 
-void BaseWebView::handleLoadFinished()
+void BaseWebWidget::handleLoadFinished()
 {
     String css = String()
         + String(CSS_DISABLE_IMAGE_DRAG)
@@ -62,7 +62,7 @@ void BaseWebView::handleLoadFinished()
     fHandler.handleWebViewLoadFinished();
 }
 
-void BaseWebView::postMessage(const ScriptValueVector& args)
+void BaseWebWidget::postMessage(const ScriptValueVector& args)
 {
     // WebKit-based webviews implement a standard mechanism for transferring messages from JS to the
     // native side, carrying a payload of JavaScript values that can be accessed through jsc_value_*
@@ -80,7 +80,7 @@ void BaseWebView::postMessage(const ScriptValueVector& args)
     runScript(js);
 }
 
-void BaseWebView::handleScriptMessage(const ScriptValueVector& args)
+void BaseWebWidget::handleScriptMessage(const ScriptValueVector& args)
 {
     if ((args.size() > 1) && (args[0].getString() == "console.log")) {
         std::cerr << args[1].getString().buffer() << std::endl;
@@ -92,7 +92,7 @@ void BaseWebView::handleScriptMessage(const ScriptValueVector& args)
     }
 }
 
-String BaseWebView::serializeScriptValues(const ScriptValueVector& args)
+String BaseWebWidget::serializeScriptValues(const ScriptValueVector& args)
 {
     std::stringstream ss;
     ss << '[';
@@ -106,7 +106,7 @@ String BaseWebView::serializeScriptValues(const ScriptValueVector& args)
     return String(ss.str().c_str());
 }
 
-void BaseWebView::addStylesheet(String& source)
+void BaseWebWidget::addStylesheet(String& source)
 {
     String js = "document.head.insertAdjacentHTML('beforeend', '<style>" + source + "</style>');";
     runScript(js);

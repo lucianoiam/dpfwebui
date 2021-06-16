@@ -18,7 +18,7 @@ SRC_FILES_DSP = \
 SRC_FILES_UI  = \
     WebExampleUI.cpp \
     base/WebUI.cpp \
-    base/BaseWebView.cpp \
+    base/BaseWebWidget.cpp \
     base/ScriptValue.cpp
 
 # --------------------------------------------------------------
