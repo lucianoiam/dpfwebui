@@ -37,6 +37,11 @@
 
 USE_NAMESPACE_DISTRHO
 
+BaseWebView::BaseWebView(Window& windowToMapTo, WebViewEventHandler& handler)
+    : TopLevelWidget(windowToMapTo)
+    , fHandler(handler)
+{}
+
 void BaseWebView::injectDefaultScripts(String& platformSpecificScript)
 {
     String js = String()

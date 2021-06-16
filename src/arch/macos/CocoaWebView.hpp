@@ -32,11 +32,11 @@ START_NAMESPACE_DISTRHO
 class CocoaWebView : public BaseWebView
 {
 public:
-    CocoaWebView(WebViewEventHandler& handler);
+    CocoaWebView(Window& windowToMapTo, WebViewEventHandler& handler);
     ~CocoaWebView();
 
     void setBackgroundColor(uint32_t rgba) override;
-    void reparent(uintptr_t windowId) override;
+    void reparent(Window& windowToMapTo) override;
     void resize(const DGL::Size<uint>& size) override;
     void navigate(String& url) override;
     void runScript(String& source) override;

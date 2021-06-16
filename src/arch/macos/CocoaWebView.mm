@@ -33,8 +33,8 @@ USE_NAMESPACE_DISTRHO
 @property (assign, nonatomic) CocoaWebView *cppView;
 @end
 
-CocoaWebView::CocoaWebView(WebViewEventHandler& handler)
-    : BaseWebView(handler)
+CocoaWebView::CocoaWebView(Window& windowToMapTo, WebViewEventHandler& handler)
+    : BaseWebView(windowToMapTo, handler)
 {
     // Create web view
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];
@@ -47,6 +47,7 @@ CocoaWebView::CocoaWebView(WebViewEventHandler& handler)
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
+    reparent(windowToMapTo);
 }
 
 CocoaWebView::~CocoaWebView()
@@ -73,11 +74,11 @@ void CocoaWebView::setBackgroundColor(uint32_t rgba)
     }
 }
 
-void CocoaWebView::reparent(uintptr_t windowId)
+void CocoaWebView::reparent(Window& windowToMapTo)
 {
     // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
     // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
-    NSView *parentView = (NSView *)windowId;
+    NSView *parentView = (NSView *)windowToMapTo.getNativeWindowHandle();
     CGSize parentSize = parentView.frame.size;
     [fWebView removeFromSuperview];
     fWebView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
