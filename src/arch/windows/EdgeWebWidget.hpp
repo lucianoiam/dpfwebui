@@ -50,9 +50,10 @@ public:
     EdgeWebWidget(Window& windowToMapTo);
     ~EdgeWebWidget();
 
+    void onResize(const ResizeEvent& ev) override;
+
     void setBackgroundColor(uint32_t rgba) override;
     void reparent(Window& windowToMapTo) override;
-    void resize(const Size<uint>& size) override;
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;

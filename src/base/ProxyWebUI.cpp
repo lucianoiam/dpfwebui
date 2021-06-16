@@ -44,7 +44,7 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     uint height = k * baseHeight;
     setGeometryConstraints(width, height, true);
     fWebWidget.setEventHandler(this);
-    fWebWidget.resize(getSize());
+    //fWebWidget.resize(getSize());
     fWebWidget.setBackgroundColor(fBackgroundColor);
     String js = String(
 #include "base/webui.js"
@@ -81,11 +81,6 @@ void ProxyWebUI::onDisplay()
     String url = "file://" + platform::getResourcePath() + "/index.html";
     fWebWidget.navigate(url);
     fWebWidget.start();
-}
-
-void ProxyWebUI::onResize(const ResizeEvent& ev)
-{
-    fWebWidget.resize(ev.size);
 }
 
 void ProxyWebUI::parameterChanged(uint32_t index, float value)

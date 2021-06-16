@@ -49,7 +49,6 @@ public:
 
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void reparent(Window& windowToMapTo) = 0;
-    virtual void resize(const DGL::Size<uint>& size) = 0;
     virtual void navigate(String& url) = 0;
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
