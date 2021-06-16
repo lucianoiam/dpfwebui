@@ -27,7 +27,7 @@
 #include "arch/linux/ExternalGtkWebView.hpp"
 #endif
 #ifdef DISTRHO_OS_MAC
-#include "arch/macos/CocoaWebView.hpp"
+#include "arch/macos/CocoaWebWidget.hpp"
 #endif
 #ifdef DISTRHO_OS_WINDOWS
 #include "arch/windows/EdgeWebView.hpp"
