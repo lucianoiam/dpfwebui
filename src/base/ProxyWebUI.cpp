@@ -41,8 +41,8 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     uint width = k * baseWidth;
     uint height = k * baseHeight;
     setGeometryConstraints(width, height, true);
+    setSize(width, height);
     fWebWidget.setEventHandler(this);
-    //fWebWidget.resize(getSize());
     fWebWidget.setBackgroundColor(fBackgroundColor);
     String js = String(
 #include "base/webui.js"
