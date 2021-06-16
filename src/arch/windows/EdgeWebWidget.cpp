@@ -41,6 +41,7 @@ USE_NAMESPACE_DISTRHO
 EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     : BaseWebWidget(windowToMapTo)
     , fHelperHwnd(0)
+    , fDisplayed(false)
     , fController(0)
     , fView(0)
     , fPBackgroundColor(0)
@@ -78,6 +79,16 @@ EdgeWebWidget::~EdgeWebWidget()
     ::DestroyWindow(fHelperHwnd);
     ::UnregisterClass(fHelperClass.lpszClassName, 0);
     ::free((void*)fHelperClass.lpszClassName);
+}
+
+void EdgeWebWidget::onDisplay()
+{
+    if (fDisplayed) {
+        return;
+    }
+    fDisplayed = true;
+    // "onVisibilityChanged(true)"
+    initWebView2();
 }
 
 void EdgeWebWidget::onResize(const ResizeEvent& ev)
@@ -143,7 +154,7 @@ void EdgeWebWidget::injectScript(String& source)
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
 }
 
-void EdgeWebWidget::start()
+void EdgeWebWidget::initWebView2()
 {
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
         TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
