@@ -106,6 +106,21 @@ data types. These values are wrapped by `DISTRHO::ScriptValue` instances. The
 following JS types are supported: boolean, number, string. Any other types are
 mapped to null.
 
+### Note on the Makefile
+
+There are various bits of Makefiles. Derived projects only need to tweak the
+main file, ie. the one called Makefile without extension in the repo root.
+If advanced tweaks are needed here is the include order:
+
+```
+Makefile
+Makefile.plugins.mk
+Makefile.base.mk
+lib/DPF/Makefile.plugins.mk
+lib/DPF/Makefile.base.mk
+Makefile.support.mk
+```
+
 ### About DPF - DISTRHO Plugin Framework
 
 The framework sports an accurate motto: "DPF is designed to make development of
