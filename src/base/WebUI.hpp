@@ -49,7 +49,7 @@ protected:
     void stateChanged(const char* key, const char* value) override;
 #endif
 
-    PlatformWebWidget& webView() { return fWebWidget; }
+    PlatformWebWidget& webWidget() { return fWebWidget; }
 
     void webPostMessage(const ScriptValueVector& args);
 
@@ -61,8 +61,8 @@ protected:
 private:
     // WebWidgetEventHandler
 
-    virtual void handleWebViewLoadFinished() override;
-    virtual void handleWebViewScriptMessageReceived(const ScriptValueVector& args) override;
+    virtual void handleWebWidgetContentLoadFinished() override;
+    virtual void handleWebWidgetScriptMessageReceived(const ScriptValueVector& args) override;
 
     typedef std::vector<ScriptValueVector> InitMessageQueue;
 

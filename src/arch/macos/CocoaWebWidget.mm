@@ -25,7 +25,7 @@
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
-// NOTE: ARC is not available here
+// ☢️ ARC is not available here
 
 USE_NAMESPACE_DISTRHO
 

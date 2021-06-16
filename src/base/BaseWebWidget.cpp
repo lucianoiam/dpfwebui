@@ -55,7 +55,7 @@ void BaseWebWidget::handleLoadFinished()
     ;
     addStylesheet(css);
     if (fHandler != 0) {
-        fHandler->handleWebViewLoadFinished();
+        fHandler->handleWebWidgetContentLoadFinished();
     }
 }
 
@@ -64,7 +64,7 @@ void BaseWebWidget::postMessage(const ScriptValueVector& args)
     // WebKit-based webviews implement a standard mechanism for transferring messages from JS to the
     // native side, carrying a payload of JavaScript values that can be accessed through jsc_value_*
     // calls in WebKitGTK or automatically bridged to Objective-C objects in WKWebView. On Edge
-    // WebView2 only JSON is available, see EdgeWebView::handleWebView2WebMessageReceived().
+    // WebView2 only JSON is available, see EdgeWebWidget::handleWebView2WebMessageReceived().
     // There is no equivalent inverse mechanism for passing messages from native to JS, other than
     // calling custom JavaScript using a function provided by webviews on all platforms.
     // This method implements something like a "reverse postMessage()" aiming to keep the bridge
@@ -86,7 +86,7 @@ void BaseWebWidget::handleScriptMessage(const ScriptValueVector& args)
     std::cerr << "n <- js : " << serializeScriptValues(args).buffer() << std::endl;
 #endif
         if (fHandler != 0) {
-            fHandler->handleWebViewScriptMessageReceived(args);
+            fHandler->handleWebWidgetScriptMessageReceived(args);
         }
     }
 }
