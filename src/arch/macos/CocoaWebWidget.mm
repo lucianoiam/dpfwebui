@@ -85,12 +85,6 @@ void CocoaWebWidget::reparent(Window& windowToMapTo)
     [parentView addSubview:fWebView];
 }
 
-void CocoaWebWidget::resize(const DGL::Size<uint>& size)
-{
-    // The WKWebView automatically resizes to match its parent dimensions
-    (void)size;
-}
-
 void CocoaWebWidget::navigate(String& url)
 {
     NSString *urlStr = [[NSString alloc] initWithCString:url encoding:NSUTF8StringEncoding];
