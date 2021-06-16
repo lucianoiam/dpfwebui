@@ -11,7 +11,9 @@ An alternate approach to plugin graphics.
 * Makefile based
 * BSD-like license
 
-Example code:
+### Example UI code
+
+( A proof of concept plugin is being developed at https://github.com/lucianoiam/castello-rev )
 
 ```JavaScript
 class WebExampleUI extends DISTRHO_WebUI {
@@ -32,9 +34,9 @@ class WebExampleUI extends DISTRHO_WebUI {
 }
 ```
 
-A proof of concept plugin is being developed at https://github.com/lucianoiam/castello-rev
+### Dependencies
 
-JavaScript and rendering are provided by system libraries:
+Just the system web view. Usage of JS frameworks is up to the developer.
 
 - On Linux a WebKitGTK web view instance runs in a separate process to keep the
 plugin free of references to libgtk. Note that this approach relies on XEmbed,
@@ -43,15 +45,16 @@ appear detached.
 
 - On macOS WKWebView is used.
 
-- On Windows Edge WebView2 is used. The user needs to install a runtime library
-https://developer.microsoft.com/microsoft-edge/webview2. This might not sound
-ideal but it is expected for MS to bundle it soon into Windows.
+- On Windows Edge WebView2 is used. As of Jun '21 the user needs to install a
+runtime library https://developer.microsoft.com/microsoft-edge/webview2. It is
+expected it will be bundled into Windows sooner or later.
 
-Usage of JS frameworks is up to the developer. A small JS wrapper around the C++
-`DISTRHO::UI` class is provided for convenience. New integrations between C++
-and JS code can be easily built leveraging the standard `postMessage()` call.
-For Linux and Mac a message handler called `host` is installed, thus providing
-access to a native callback through the function:
+### Integration with the underlying C++ framework (DPF)
+
+A small JS wrapper around the C++ `DISTRHO::UI` class is provided for convenience.
+New integrations between C++ and JS code can be easily built leveraging the
+standard `postMessage()` call. For Linux and Mac a message handler called `host`
+is installed, thus providing access to a native callback through the function:
 
 `window.webkit.messageHandlers.host.postMessage()`
 
@@ -74,10 +77,10 @@ The `DISTRHO::WebUI` and JS `DISTRHO_WebUI` classes use the above mechanism to
 map some useful plugin methods, like the ones shown in the first code example of
 this README.
 
-Summarizing:
+The bridge in a nutshell:
 
 ```
-// Send
+// Send ( js → cpp )
 
 window.webviewHost.postMessage([...]);
 
@@ -87,7 +90,7 @@ void WebUI::webMessageReceived(const ScriptValueVector&) {
 
 }
 
-// Send
+// Send ( cpp → js )
 
 WebUI::webPostMessage({...});
 
@@ -103,17 +106,28 @@ data types. These values are wrapped by `DISTRHO::ScriptValue` instances. The
 following JS types are supported: boolean, number, string. Any other types are
 mapped to null.
 
-New features should strictly relate to controlling the plugin or adding any
-missing UI tool that makes sense in an audio plugin context, bridging DPF C++
-code first when available.
+### About DPF - DISTRHO Plugin Framework
 
-For the C++ interfaces to plugin features check https://github.com/DISTRHO/DPF,
-it is included as a git submodule in `lib/DPF`.
+The framework sports an accurate motto: "DPF is designed to make development of
+new plugins an easy and enjoyable task". It is a low footprint yet powerful tool
+that allows the developer to focus on productivity by already solving many not
+trivial issues commonly found in the audio plugins domain.
 
-**"DPF is designed to make development of new plugins an easy and enjoyable task"**
+What makes it different?
 
-Do not forget to visit https://github.com/DISTRHO for many other cool audio
-projects.
+- It bears a clear libre license
+- Relies on standard build tools
+- Very low learning curve
+- Does not promote the usage of unrelated features
+- Does not enforce any particular coding patterns
+- Scope is limited to audio plugins keeping it lightweight
+- There is a great and experienced community around
+
+Its full documentation and code can be found at https://github.com/DISTRHO/DPF,
+this repo includes it as a git submodule in `lib/DPF`. And do not forget to
+visit https://github.com/DISTRHO for many other cool audio projects.
+
+****
 
 ![](https://user-images.githubusercontent.com/930494/121346399-595adf80-c926-11eb-9131-3269de4398b7.png)
 
