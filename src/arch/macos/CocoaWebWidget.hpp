@@ -14,24 +14,24 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef COCOAWEBVIEW_HPP
-#define COCOAWEBVIEW_HPP
+#ifndef COCOAWEBWIDGET_HPP
+#define COCOAWEBWIDGET_HPP
 
 #include "base/BaseWebWidget.hpp"
 
 // While it is possible to #import Obj-C headers here, that would force all
-// source files importing CocoaWebView.hpp to do so before any other project
+// source files importing CocoaWebWidget.hpp to do so before any other project
 // headers to avoid symbol name collisions. Do not make any assumption.
 
-#define DISTRHO_WEBVIEW_CLASS CocoaWebView
+#define DISTRHO_WEBVIEW_CLASS CocoaWebWidget
 
 START_NAMESPACE_DISTRHO
 
-class CocoaWebView : public BaseWebWidget
+class CocoaWebWidget : public BaseWebWidget
 {
 public:
-    CocoaWebView(Window& windowToMapTo);
-    ~CocoaWebView();
+    CocoaWebWidget(Window& windowToMapTo);
+    ~CocoaWebWidget();
 
     void setBackgroundColor(uint32_t rgba) override;
     void reparent(Window& windowToMapTo) override;
@@ -53,4 +53,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // COCOAWEBVIEW_HPP
+#endif  // COCOAWEBWIDGET_HPP

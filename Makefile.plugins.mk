@@ -17,7 +17,7 @@ SRC_FILES_UI += arch/linux/ExternalGtkWebView.cpp \
                 arch/linux/extra/ipc.c
 endif
 ifeq ($(MACOS),true)
-SRC_FILES_UI += arch/macos/CocoaWebView.mm \
+SRC_FILES_UI += arch/macos/CocoaWebWidget.mm \
                 arch/macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
