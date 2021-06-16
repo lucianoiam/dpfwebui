@@ -16,10 +16,7 @@ SRC_FILES_DSP = \
     WebExamplePlugin.cpp
 
 SRC_FILES_UI  = \
-    WebExampleUI.cpp \
-    base/WebUI.cpp \
-    base/BaseWebWidget.cpp \
-    base/ScriptValue.cpp
+    WebExampleUI.cpp
 
 # --------------------------------------------------------------
 # Note this is not the DPF version of Makefile.plugins.mk
