@@ -42,10 +42,8 @@ public:
 class BaseWebWidget : public TopLevelWidget
 {
 public:
-    BaseWebWidget(Window& windowToMapTo, WebWidgetEventHandler& handler);
+    BaseWebWidget(Window& windowToMapTo) : TopLevelWidget(windowToMapTo) {}
     virtual ~BaseWebWidget() {};
-
-    void onDisplay() override {};
 
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void reparent(Window& windowToMapTo) = 0;
@@ -54,7 +52,10 @@ public:
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
     virtual void start() {};
-    
+
+    void onDisplay() override {};
+
+    void setEventHandler(WebWidgetEventHandler* handler) { fHandler = handler; }
     void postMessage(const ScriptValueVector& args);
 
 protected:
@@ -68,7 +69,7 @@ private:
 
     void addStylesheet(String& source);
 
-    WebWidgetEventHandler& fHandler;
+    WebWidgetEventHandler* fHandler;
 
 };
 

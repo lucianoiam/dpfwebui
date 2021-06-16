@@ -30,7 +30,7 @@ USE_NAMESPACE_DISTRHO
 
 WebUI::WebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
-    , fWebView(getWindow(), *this)
+    , fWebView(getWindow())
     , fBackgroundColor(backgroundColor)
     , fDisplayed(false)
     , fInitContentReady(false)
@@ -42,6 +42,7 @@ WebUI::WebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     uint height = k * baseHeight;
     setGeometryConstraints(width, height, true);
     setSize(width, height);
+    fWebView.setEventHandler(this);
     fWebView.resize(getSize());
     fWebView.setBackgroundColor(fBackgroundColor);
     String js = String(
