@@ -81,9 +81,7 @@ private:
     ICoreWebView2*                fView;
 
     // P means pending
-    Window*             fPParentWindow;
     uint32_t            fPBackgroundColor;
-    Size<uint>          fPSize;
     String              fPUrl;
     std::vector<String> fPInjectedScripts;
 
