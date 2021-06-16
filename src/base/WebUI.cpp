@@ -15,7 +15,6 @@
  */
 
 #include "WebUI.hpp"
-#include "Window.hpp"
 
 #include "base/Platform.hpp"
 #include "base/macro.h"
@@ -31,7 +30,7 @@ USE_NAMESPACE_DISTRHO
 
 WebUI::WebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
-    , fWebView(*this)
+    , fWebView(getWindow(), *this)
     , fBackgroundColor(backgroundColor)
     , fDisplayed(false)
     , fInitContentReady(false)
@@ -45,7 +44,6 @@ WebUI::WebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     setSize(width, height);
     fWebView.resize(getSize());
     fWebView.setBackgroundColor(fBackgroundColor);
-    fWebView.reparent(getWindow().getNativeWindowHandle());
     String js = String(
 #include "base/webui.js"
     );
