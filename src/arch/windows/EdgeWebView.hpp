@@ -38,8 +38,6 @@
   https://www.codeproject.com/Articles/13601/COM-in-plain-C
 */
 
-#define DISTRHO_WEBVIEW_CLASS EdgeWebView
-
 START_NAMESPACE_DISTRHO
 
 class EdgeWebViewInternalEventHandler;
@@ -87,6 +85,8 @@ private:
     std::vector<String> fPInjectedScripts;
 
 };
+
+typedef EdgeWebView PlatformWebWidget;
 
 
 // The event handler lifetime cannot be bound to its owner lifetime, otherwise

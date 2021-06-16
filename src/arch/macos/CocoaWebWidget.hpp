@@ -23,8 +23,6 @@
 // source files importing CocoaWebWidget.hpp to do so before any other project
 // headers to avoid symbol name collisions. Do not make any assumption.
 
-#define DISTRHO_WEBVIEW_CLASS CocoaWebWidget
-
 START_NAMESPACE_DISTRHO
 
 class CocoaWebWidget : public BaseWebWidget
@@ -50,6 +48,8 @@ private:
     void *fDelegate;
 
 };
+
+typedef CocoaWebWidget PlatformWebWidget;
 
 END_NAMESPACE_DISTRHO
 
