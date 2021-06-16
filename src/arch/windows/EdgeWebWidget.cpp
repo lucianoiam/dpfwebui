@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "EdgeWebView.hpp"
+#include "EdgeWebWidget.hpp"
 
 #include <cassert>
 #include <codecvt>
@@ -28,23 +28,23 @@
 
 #include "DistrhoPluginInfo.h"
 
-#define WSTRING_CONVERTER std::wstring_convert<std::codecvt_utf8<wchar_t>>()
-#define TO_LPCWSTR(s)     WSTRING_CONVERTER.from_bytes(s).c_str()
-#define TO_LPCSTR(s)      WSTRING_CONVERTER.to_bytes(s).c_str()
+#define WSTR_CONVERTER std::wstring_convert<std::codecvt_utf8<wchar_t>>()
+#define TO_LPCWSTR(s)  WSTR_CONVERTER.from_bytes(s).c_str()
+#define TO_LPCSTR(s)   WSTR_CONVERTER.to_bytes(s).c_str()
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.chrome.webview.postMessage(args);"
 
 USE_NAMESPACE_DISTRHO
 
-EdgeWebView::EdgeWebView(WebWidgetEventHandler& handler)
-    : BaseWebWidget(handler)
+EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
+    : BaseWebWidget(windowToMapTo)
     , fHelperHwnd(0)
     , fController(0)
     , fView(0)
+    , fPParentWindow(0)
     , fPBackgroundColor(0)
-    , fPWindowId(0)
 {
-    // EdgeWebView works a bit different compared to the other platforms due to
+    // EdgeWebWidget works a bit different compared to the other platforms due to
     // the async nature of the native web view initialization process
     WCHAR className[256];
     ::swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
@@ -61,12 +61,13 @@ EdgeWebView::EdgeWebView(WebWidgetEventHandler& handler)
         0, 0, 0, 0
     );
     ::ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
+    reparent(windowToMapTo); // queue request
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
-    fHandler = new EdgeWebViewInternalEventHandler(this);
+    fHandler = new InternalWebView2EventHandler(this);
 }
 
-EdgeWebView::~EdgeWebView()
+EdgeWebWidget::~EdgeWebWidget()
 {
     fHandler->release();
     if (fController != 0) {
@@ -78,7 +79,7 @@ EdgeWebView::~EdgeWebView()
     ::free((void*)fHelperClass.lpszClassName);
 }
 
-void EdgeWebView::setBackgroundColor(uint32_t rgba)
+void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
 {
     if (fController == 0) {
         fPBackgroundColor = rgba;
@@ -94,16 +95,17 @@ void EdgeWebView::setBackgroundColor(uint32_t rgba)
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 }
 
-void EdgeWebView::reparent(uintptr_t windowId)
+void EdgeWebWidget::reparent(Window& windowToMapTo)
 {
     if (fController == 0) {
-        fPWindowId = windowId;
+        fPParentWindow = &windowToMapTo;
         return; // later
     }
-    ICoreWebView2Controller2_put_ParentWindow(fController, (HWND)windowId);
+	HWND hWnd = reinterpret_cast<HWND>(windowToMapTo.getNativeWindowHandle());
+    ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
 }
 
-void EdgeWebView::resize(const Size<uint>& size)
+void EdgeWebWidget::resize(const Size<uint>& size)
 {
     if (fController == 0) {
         fPSize = size;
@@ -115,7 +117,7 @@ void EdgeWebView::resize(const Size<uint>& size)
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
-void EdgeWebView::navigate(String& url)
+void EdgeWebWidget::navigate(String& url)
 {
     if (fView == 0) {
         fPUrl = url;
@@ -124,7 +126,7 @@ void EdgeWebView::navigate(String& url)
     ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
 }
 
-void EdgeWebView::runScript(String& source)
+void EdgeWebWidget::runScript(String& source)
 {
     // For the plugin specific use case fView==0 means a programming error.
     // There is no point in queuing these, just wait for the view to become ready.
@@ -132,7 +134,7 @@ void EdgeWebView::runScript(String& source)
     ICoreWebView2_ExecuteScript(fView, TO_LPCWSTR(source), 0);
 }
 
-void EdgeWebView::injectScript(String& source)
+void EdgeWebWidget::injectScript(String& source)
 {
     if (fController == 0) {
         fPInjectedScripts.push_back(source);
@@ -141,7 +143,7 @@ void EdgeWebView::injectScript(String& source)
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
 }
 
-void EdgeWebView::start()
+void EdgeWebWidget::start()
 {
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
         TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
@@ -150,7 +152,7 @@ void EdgeWebView::start()
     }
 }
 
-HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
+HRESULT EdgeWebWidget::handleWebView2EnvironmentCompleted(HRESULT result,
                                                         ICoreWebView2Environment* environment)
 {
     if (FAILED(result)) {
@@ -160,12 +162,11 @@ HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
     ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fHelperHwnd, fHandler);
     // FIXME: handleWebView2ControllerCompleted() is never called when running standalone
     //        unless the app window border is clicked, looks like messages get stuck somewhere
-    //        and does not seem related to the usage of the fHelperHwnd, passing fPWindowId
-    //        above produces the same result
+    //        and does not seem related to the usage of the fHelperHwnd
     return S_OK;
 }
 
-HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
+HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
                                                        ICoreWebView2Controller* controller)
 {
     if (FAILED(result)) {
@@ -192,23 +193,23 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     return S_OK;
 }
 
-HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
+HRESULT EdgeWebWidget::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
                                                        ICoreWebView2NavigationCompletedEventArgs *eventArgs)
 {
     (void)sender;
     (void)eventArgs;
     if (fController != 0) {
         handleLoadFinished();
-        if (fPWindowId != 0) {
-            reparent(fPWindowId);
+        if (fPParentWindow != 0) {
+            reparent(*fPParentWindow);
             // handleWebViewNavigationCompleted() could be called again
-            fPWindowId = 0;
+            fPParentWindow = 0;
         }
     }
     return S_OK;
 }
 
-HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
+HRESULT EdgeWebWidget::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                                       ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
 {
     // Edge WebView2 does not provide access to JSCore values; resort to parsing JSON
@@ -242,7 +243,7 @@ HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
     return S_OK;
 }
 
-void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
+void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
 {
     // TODO: Add clickable link to installer. It would be also better to display
     // a message and button in the native window using DPF drawing methods.

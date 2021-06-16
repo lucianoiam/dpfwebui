@@ -25,7 +25,7 @@ SRC_FILES_UI += arch/macos/CocoaWebWidget.mm \
                 arch/macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
-SRC_FILES_UI += arch/windows/EdgeWebView.cpp \
+SRC_FILES_UI += arch/windows/EdgeWebWidget.cpp \
                 arch/windows/PlatformWindows.cpp \
                 arch/windows/extra/WebView2EventHandler.cpp \
                 arch/windows/extra/WinApiStub.cpp \

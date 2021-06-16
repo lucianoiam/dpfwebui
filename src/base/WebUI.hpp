@@ -28,7 +28,7 @@
 #include "arch/macos/CocoaWebWidget.hpp"
 #endif
 #ifdef DISTRHO_OS_WINDOWS
-#include "arch/windows/EdgeWebView.hpp"
+#include "arch/windows/EdgeWebWidget.hpp"
 #endif
 
 START_NAMESPACE_DISTRHO

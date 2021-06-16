@@ -14,8 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef EDGEWEBVIEW_HPP
-#define EDGEWEBVIEW_HPP
+#ifndef EDGEWEBWIDGET_HPP
+#define EDGEWEBWIDGET_HPP
 
 #define UNICODE
 #define CINTERFACE
@@ -40,16 +40,16 @@
 
 START_NAMESPACE_DISTRHO
 
-class EdgeWebViewInternalEventHandler;
+class InternalWebView2EventHandler;
 
-class EdgeWebView : public BaseWebWidget, edge::WebView2EventHandler
+class EdgeWebWidget : public BaseWebWidget, edge::WebView2EventHandler
 {
 public:
-    EdgeWebView(WebWidgetEventHandler& handler);
-    ~EdgeWebView();
+    EdgeWebWidget(Window& windowToMapTo);
+    ~EdgeWebWidget();
 
     void setBackgroundColor(uint32_t rgba) override;
-    void reparent(uintptr_t windowId) override;
+    void reparent(Window& windowToMapTo) override;
     void resize(const Size<uint>& size) override;
     void navigate(String& url) override;
     void runScript(String& source) override;
@@ -73,20 +73,20 @@ private:
     WNDCLASS fHelperClass;
     HWND     fHelperHwnd;
 
-    EdgeWebViewInternalEventHandler* fHandler;
-    ICoreWebView2Controller*         fController;
-    ICoreWebView2*                   fView;
+    InternalWebView2EventHandler* fHandler;
+    ICoreWebView2Controller*      fController;
+    ICoreWebView2*                fView;
 
     // P means pending
+    Window*             fPParentWindow;
     uint32_t            fPBackgroundColor;
-    uintptr_t           fPWindowId;
     Size<uint>          fPSize;
     String              fPUrl;
     std::vector<String> fPInjectedScripts;
 
 };
 
-typedef EdgeWebView PlatformWebWidget;
+typedef EdgeWebWidget PlatformWebWidget;
 
 
 // The event handler lifetime cannot be bound to its owner lifetime, otherwise
@@ -94,9 +94,9 @@ typedef EdgeWebView PlatformWebWidget;
 // example if the plugin UI is opened and suddenly closed before web content
 // finishes loading, or before WebView2 has fully initialized itself.
 
-class EdgeWebViewInternalEventHandler : public edge::WebView2EventHandler {
+class InternalWebView2EventHandler : public edge::WebView2EventHandler {
 public:
-    EdgeWebViewInternalEventHandler(edge::WebView2EventHandler* ownerRef)
+    InternalWebView2EventHandler(edge::WebView2EventHandler* ownerRef)
         : fOwnerWeakRef(ownerRef)
     {
         incRefCount();
@@ -157,4 +157,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // EDGEWEBVIEW_HPP
+#endif  // EDGEWEBWIDGET_HPP
