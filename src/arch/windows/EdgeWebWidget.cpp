@@ -207,7 +207,7 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
 
     // FIXME - For some reason getSize() always returns {0,0}. Only happens on
     //         Windows which in turn is the only platform where UI_TYPE=cairo
-    //         Is that a TopLevelWidget/Cairo bug?
+    //         Is that a TopLevelWidget/Cairo bug? use getWindow().getSize()
     updateWebViewSize(getWindow().getSize());
 
     for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
