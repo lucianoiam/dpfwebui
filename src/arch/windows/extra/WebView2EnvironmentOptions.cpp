@@ -26,7 +26,7 @@ using namespace edge;
 #define pInstance static_cast<WebView2EnvironmentOptions*>(This)
 #define CO_TASK_MEM_ALLOC_WSTR(n) static_cast<LPWSTR>(::CoTaskMemAlloc(n));
 
-static HRESULT STDMETHODCALLTYPE QueryInterface(ICoreWebView2EnvironmentOptions* This, REFIID riid, void** ppvObject)
+static HRESULT STDMETHODCALLTYPE Impl_QueryInterface(ICoreWebView2EnvironmentOptions* This, REFIID riid, void** ppvObject)
 {
     if (!::IsEqualIID(riid, IID_ICoreWebView2EnvironmentOptions)) {
         *ppvObject = 0;
@@ -108,7 +108,7 @@ static HRESULT STDMETHODCALLTYPE Impl_put_AllowSingleSignOnUsingOSPrimaryAccount
 }
 
 static ICoreWebView2EnvironmentOptionsVtbl Vtbl_WebView2EnvironmentOptions = {
-    QueryInterface,
+    Impl_QueryInterface,
     Null_AddRef,
     Null_Release,
     Impl_get_AdditionalBrowserArguments,
