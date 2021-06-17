@@ -27,11 +27,6 @@ class DISTRHO_WebUI {
         });
     }
 
-    // WebUI::flushInitMessageQueue()
-    flushInitMessageQueue() {
-        this.postMessage('WebUI', 'flushInitMessageQueue');
-    }
-
     // UI::editParameter(uint32_t index, bool started)
     editParameter(index, started) {
         this.postMessage('WebUI', 'editParameter', index, started);
@@ -57,12 +52,17 @@ class DISTRHO_WebUI {
         // default empty implementation
     }
 
-    // WebUI::webPostMessage(const ScriptValueVector& args)
+    // ProxyWebUI::flushInitMessageQueue()
+    flushInitMessageQueue() {
+        this.postMessage('WebUI', 'flushInitMessageQueue');
+    }
+
+    // ProxyWebUI::webPostMessage(const ScriptValueVector& args)
     postMessage(...args) {
         window.webviewHost.postMessage(args);
     }
 
-    // WebUI::webMessageReceived(const ScriptValueVector& args)
+    // ProxyWebUI::webMessageReceived(const ScriptValueVector& args)
     messageReceived(args) {
         // default empty implementation
     }
