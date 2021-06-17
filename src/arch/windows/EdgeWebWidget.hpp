@@ -34,7 +34,7 @@
   created to make life easier for developers on Windows through readable
   type-safe C++ interfaces for common Windows coding patterns."
   Unfortunately WIL is not compatible with the MinGW GCC. But because Edge
-  WebView2 is a COM component, it can still be called using its C interface.
+  WebView2 is a COM component, it can still be integrated using its C interface.
 
   https://github.com/microsoft/wil/issues/117
   https://github.com/jchv/webview2-in-mingw
