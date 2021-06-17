@@ -38,7 +38,6 @@ CocoaWebWidget::CocoaWebWidget(Window& windowToMapTo)
 {
     // Create the web view
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];
-    [fWebView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     fWebView.hidden = YES;
 
     // Create a ObjC object that responds to some web view callbacks
@@ -64,6 +63,15 @@ CocoaWebWidget::~CocoaWebWidget()
     [fWebView removeFromSuperview];
     [fWebView release];
     [fWebViewDelegate release];
+}
+
+void CocoaWebWidget::onResize(const ResizeEvent& ev)
+{
+    (void)ev;
+    CGRect frame = fWebView.superview.frame;
+    frame.origin.x = 0;
+    frame.origin.y = 0;
+    fWebView.frame = frame;
 }
 
 void CocoaWebWidget::setBackgroundColor(uint32_t rgba)

@@ -31,6 +31,8 @@ public:
     CocoaWebWidget(Window& windowToMapTo);
     ~CocoaWebWidget();
 
+    void onResize(const ResizeEvent& ev) override;
+
     void setBackgroundColor(uint32_t rgba) override;
     void navigate(String& url) override;
     void runScript(String& source) override;

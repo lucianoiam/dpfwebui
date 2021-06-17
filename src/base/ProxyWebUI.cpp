@@ -21,26 +21,24 @@
 
 USE_NAMESPACE_DISTRHO
 
-// TODO - why the special case?
-#ifdef DISTRHO_OS_WINDOWS
+// Automatically scale up the webview so its contents do not look small
+// on high pixel density displays, known as HiDPI, Retina...
 #define INIT_SCALE_FACTOR platform::getSystemDisplayScaleFactor()
-#else
-#define INIT_SCALE_FACTOR 1.f
-#endif
 
+// Dimensions passed to UI constructor determine the host initial viewport.
+// There is a discrepancy between plugin and standalone here, keeping the same
+// values for both targets just does not produce the same visual result:
+// - Mac standalone seems to interpret values in NSScreen "physical" pixel scale
+// - Mac REAPER seems to interpret values in NSScreen "virtual" pixel scale,
+//   leading to an excessively big canvas for the embedded ui 
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
     , fWebWidget(getWindow())
     , fBackgroundColor(backgroundColor)
     , fInitContentReady(false)
 {
-    // Automatically scale up the webview so its contents do not look small
-    // on high pixel density displays, known as HiDPI, Retina...
-    float k = platform::getSystemDisplayScaleFactor();
-    uint width = k * baseWidth;
-    uint height = k * baseHeight;
-    setGeometryConstraints(width, height, true);
-    setSize(width, height);
+    setGeometryConstraints(getWidth(), getHeight(), false, false);
+    getWindow().setGeometryConstraints(getWidth(), getHeight(), false, false);
 
     fWebWidget.setEventHandler(this);
     fWebWidget.setBackgroundColor(fBackgroundColor);
