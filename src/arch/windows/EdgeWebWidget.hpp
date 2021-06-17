@@ -31,11 +31,14 @@
 #include "extra/WebView2EventHandler.hpp"
 
 /*
-  The easy way to work with WebView2 requires WIL - "Windows Implementation Library"
-  which is not compatible with MinGW, see https://github.com/microsoft/wil/issues/117
-  
-  Solution is to use the C interface to WebView2
-  
+  The easy way to work with Edge WebView2 requires WIL. According to MS:
+  "The Windows Implementation Libraries (WIL) is a header-only C++ library
+  created to make life easier for developers on Windows through readable
+  type-safe C++ interfaces for common Windows coding patterns."
+  Unfortunately WIL is not compatible with the MinGW GCC. But because Edge
+  WebView2 is a COM component, it can still be called using its C interface.
+
+  https://github.com/microsoft/wil/issues/117
   https://github.com/jchv/webview2-in-mingw
   https://www.codeproject.com/Articles/13601/COM-in-plain-C
 */
@@ -73,7 +76,7 @@ public:
 private:
     inline void updateWebViewSize(Size<uint> size);
 
-    void initWebView();
+    void startWebViewInit();
 
     void webViewLoaderErrorMessageBox(HRESULT result);
 

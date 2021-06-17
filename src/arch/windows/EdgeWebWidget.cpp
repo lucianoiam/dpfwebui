@@ -47,8 +47,6 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     , fController(0)
     , fView(0)
 {
-    // EdgeWebWidget works a bit different compared to the other platforms due
-    // to the async nature of the native web view initialization process
     WCHAR className[256];
     ::swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
     ::ZeroMemory(&fHelperClass, sizeof(fHelperClass));
@@ -64,19 +62,25 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
         0, 0, 0, 0
     );
     ::ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
-    reparent(windowToMapTo); // queue request
+
+ 	// Reparent request is queued until Edge WebView2 initializes itself
+    reparent(windowToMapTo);
+
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
+    
     fHandler = new InternalWebView2EventHandler(this);
 }
 
 EdgeWebWidget::~EdgeWebWidget()
 {
     fHandler->release();
+
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
         ICoreWebView2_Release(fController);
     }
+    
     ::DestroyWindow(fHelperHwnd);
     ::UnregisterClass(fHelperClass.lpszClassName, 0);
     ::free((void*)fHelperClass.lpszClassName);
@@ -84,19 +88,23 @@ EdgeWebWidget::~EdgeWebWidget()
 
 void EdgeWebWidget::onDisplay()
 {
+    // Replacement for "onVisibilityChanged(true)"
     if (fDisplayed) {
         return;
     }
     fDisplayed = true;
-    // "onVisibilityChanged(true)"
-    initWebView();
+    
+    // Does not initialize right away
+    startWebViewInit();
 }
 
 void EdgeWebWidget::onResize(const ResizeEvent& ev)
 {
     if (fController == 0) {
-        return; // later
+        return; // does not make sense now
     }
+
+    // This is a helper method so the caller does not need to tinker with RECT
     updateWebViewSize(ev.size);
 }
 
@@ -104,8 +112,9 @@ void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
 {
     if (fController == 0) {
         fBackgroundColor = rgba;
-        return; // later
+        return; // keep it for later
     }
+
     // WebView2 currently only supports alpha=0 or alpha=1
     COREWEBVIEW2_COLOR color;
     color.A = static_cast<BYTE>(rgba & 0x000000ff);
@@ -119,8 +128,9 @@ void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
 void EdgeWebWidget::reparent(Window& windowToMapTo)
 {
     if (fController == 0) {
-        return; // later
+        return; // does not make sense now
     }
+
     HWND hWnd = reinterpret_cast<HWND>(windowToMapTo.getNativeWindowHandle());
     ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
 }
@@ -129,16 +139,17 @@ void EdgeWebWidget::navigate(String& url)
 {
     if (fView == 0) {
         fUrl = url;
-        return; // later
+        return; // keep it for later
     }
+
     ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
 }
 
 void EdgeWebWidget::runScript(String& source)
 {
     // For the plugin specific use case fView==0 means a programming error.
-    // There is no point in queuing these, just wait for the view to become
-    // ready before trying to run scripts.
+    // There is no point in queuing these, just wait for the view to load its
+    // contents before trying to run scripts. Otherwise use injectScript()
     assert(fView != 0);
     ICoreWebView2_ExecuteScript(fView, TO_LPCWSTR(source), 0);
 }
@@ -147,8 +158,9 @@ void EdgeWebWidget::injectScript(String& source)
 {
     if (fController == 0) {
         fInjectedScripts.push_back(source);
-        return; // later
+        return; // keep it for later
     }
+
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
 }
 
@@ -160,7 +172,7 @@ void EdgeWebWidget::updateWebViewSize(Size<uint> size)
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
-void EdgeWebWidget::initWebView()
+void EdgeWebWidget::startWebViewInit()
 {
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
         TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
@@ -176,10 +188,14 @@ HRESULT EdgeWebWidget::handleWebView2EnvironmentCompleted(HRESULT result,
         webViewLoaderErrorMessageBox(result);
         return result;
     }
+
     ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fHelperHwnd, fHandler);
-    // FIXME: handleWebView2ControllerCompleted() is never called when running standalone
-    //        unless the app window border is clicked, looks like messages get stuck somewhere
-    //        and does not seem related to the usage of the fHelperHwnd
+    
+    // FIXME: handleWebView2ControllerCompleted() is never called when running
+    //        standalone unless the app window border is clicked. Looks like
+    //        window messages get stuck somewhere and does not seem related to
+    //        the usage of the fHelperHwnd.
+    
     return S_OK;
 }
 
@@ -190,24 +206,32 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
         webViewLoaderErrorMessageBox(result);
         return result;
     }
+
     fController = controller;
     ICoreWebView2Controller2_AddRef(fController);
     ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
     ICoreWebView2_add_NavigationCompleted(fView, fHandler, 0);
     ICoreWebView2_add_WebMessageReceived(fView, fHandler, 0);
-    // Call pending setters
+    
+    // Run pending requests
+
+    setBackgroundColor(fBackgroundColor);
+
+    // FIXME - For some reason getSize() always returns {0,0}. Only happens on
+    //         Windows which in turn is the only platform where UI_TYPE=cairo
+    //         Is that a TopLevelWidget/Cairo bug?
+    updateWebViewSize(getWindow().getSize());
+
     for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
         injectScript(*it);
     }
-    setBackgroundColor(fBackgroundColor);
-    // FIXME - for some reason getSize() returns {0,0} only on Windows. Only on
-    //         Windows we have UI_TYPE=cairo, is it a TopLevelWidget/Cairo bug?
-    updateWebViewSize(getWindow().getSize());
+
     navigate(fUrl);
-    // Cleanup, handleWebViewControllerCompleted() will not be called again anyways
-    fInjectedScripts.clear();
+
     fBackgroundColor = 0;
+    fInjectedScripts.clear();
     fUrl.clear();
+    
     return S_OK;
 }
 
@@ -216,10 +240,12 @@ HRESULT EdgeWebWidget::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
 {
     (void)sender;
     (void)eventArgs;
+
     if (fController != 0) {
         handleLoadFinished();
         reparent(getWindow());
     }
+    
     return S_OK;
 }
 
@@ -228,16 +254,21 @@ HRESULT EdgeWebWidget::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
 {
     // Edge WebView2 does not provide access to JSCore values; resort to parsing JSON
     (void)sender;
+
     LPWSTR jsonStr;
     ICoreWebView2WebMessageReceivedEventArgs_get_WebMessageAsJson(eventArgs, &jsonStr);
     cJSON* jArgs = ::cJSON_Parse(TO_LPCSTR(jsonStr));
     ::CoTaskMemFree(jsonStr);
+
     ScriptValueVector args;
+    
     if (::cJSON_IsArray(jArgs)) {
         int numArgs = ::cJSON_GetArraySize(jArgs);
+
         if (numArgs > 0) {
             for (int i = 0; i < numArgs; i++) {
                 cJSON* jArg = ::cJSON_GetArrayItem(jArgs, i);
+
                 if (::cJSON_IsFalse(jArg)) {
                     args.push_back(ScriptValue(false));
                 } else if (::cJSON_IsTrue(jArg)) {
@@ -252,19 +283,24 @@ HRESULT EdgeWebWidget::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
             }
         }
     }
+
     ::cJSON_free(jArgs);
+    
     handleScriptMessage(args);
+    
     return S_OK;
 }
 
 void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
 {
     // TODO: Add clickable link to installer. It would be also better to display
-    // a message and button in the native window using DPF drawing methods.
+    //       a message and button in the native window using DPF drawing methods.
     std::wstringstream wss;
     wss << "Make sure you have installed the Microsoft Edge WebView2 Runtime. "
         << "Error 0x" << std::hex << result;
     std::wstring ws = wss.str();
+    
     DISTRHO_LOG_STDERR_COLOR(TO_LPCSTR(ws));
+
     ::MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
 }
