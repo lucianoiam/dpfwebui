@@ -61,7 +61,7 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     );
     ::ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
 
- 	// Reparent request is queued until Edge WebView2 initializes itself
+    // Reparent request is queued until Edge WebView2 initializes itself
     reparent(windowToMapTo);
 
     String js = String(JS_POST_MESSAGE_SHIM);
@@ -76,7 +76,7 @@ EdgeWebWidget::~EdgeWebWidget()
 
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
-        ICoreWebView2_Release(fController);
+        ICoreWebView2Controller2_Release(fController);
     }
     
     ::DestroyWindow(fHelperHwnd);
@@ -99,7 +99,7 @@ void EdgeWebWidget::onDisplay()
 void EdgeWebWidget::onResize(const ResizeEvent& ev)
 {
     if (fController == 0) {
-        return; // does not make sense now
+        return; // does not make sense now, ignore
     }
 
     // This is a helper method so the caller does not need to tinker with RECT
@@ -113,7 +113,7 @@ void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
         return; // keep it for later
     }
 
-    // WebView2 currently only supports alpha=0 or alpha=1
+    // Edge WebView2 currently only supports alpha=0 or alpha=1
     COREWEBVIEW2_COLOR color;
     color.A = static_cast<BYTE>(rgba & 0x000000ff);
     color.R = static_cast<BYTE>(rgba >> 24);
@@ -126,7 +126,7 @@ void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
 void EdgeWebWidget::reparent(Window& windowToMapTo)
 {
     if (fController == 0) {
-        return; // does not make sense now
+        return; // does not make sense now, ignore
     }
 
     HWND hWnd = reinterpret_cast<HWND>(windowToMapTo.getNativeWindowHandle());
@@ -206,6 +206,7 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
     }
 
     fController = controller;
+
     ICoreWebView2Controller2_AddRef(fController);
     ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
     ICoreWebView2_add_NavigationCompleted(fView, fHandler, 0);
@@ -283,7 +284,7 @@ HRESULT EdgeWebWidget::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
     }
 
     ::cJSON_free(jArgs);
-    
+
     handleScriptMessage(args);
     
     return S_OK;
