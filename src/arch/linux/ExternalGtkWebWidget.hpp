@@ -22,14 +22,14 @@
 
 #include "extra/Thread.hpp"
 
-#include "base/BaseWebWidget.hpp"
+#include "base/AbstractWebWidget.hpp"
 
 #include "extra/ipc.h"
 #include "helper.h"
 
 START_NAMESPACE_DISTRHO
 
-class ExternalGtkWebWidget : public BaseWebWidget
+class ExternalGtkWebWidget : public AbstractWebWidget
 {
 friend class IpcReadThread;
 

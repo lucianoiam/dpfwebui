@@ -17,7 +17,7 @@
 #ifndef COCOAWEBWIDGET_HPP
 #define COCOAWEBWIDGET_HPP
 
-#include "base/BaseWebWidget.hpp"
+#include "base/AbstractWebWidget.hpp"
 
 // While it is possible to #import Obj-C headers here, that would force all
 // source files importing CocoaWebWidget.hpp to do so before any other project
@@ -25,7 +25,7 @@
 
 START_NAMESPACE_DISTRHO
 
-class CocoaWebWidget : public BaseWebWidget
+class CocoaWebWidget : public AbstractWebWidget
 {
 public:
     CocoaWebWidget(Window& windowToMapTo);
