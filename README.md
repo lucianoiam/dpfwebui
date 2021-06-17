@@ -62,8 +62,8 @@ On Windows, WebView2 already provides a single built-in entry point to native:
 
 `window.chrome.webview.postMessage()`
 
-In both cases the `postMessage()` function is mapped by `DISTRHO::BaseWebView`
-to a custom symbol for hiding the differences between platforms:
+In all cases the `postMessage()` function is mapped to a custom symbol for
+hiding the differences between platforms:
 
 `window.webviewHost.postMessage()`
 
@@ -121,22 +121,21 @@ lib/DPF/Makefile.base.mk
 Makefile.support.mk
 ```
 
-### About DPF - DISTRHO Plugin Framework
+### About DPF — DISTRHO Plugin Framework
 
 The framework sports an accurate motto: "DPF is designed to make development of
 new plugins an easy and enjoyable task". It is a low footprint yet powerful tool
-that allows the developer to focus on productivity by already solving many not
+that allows developers to focus on productivity by already solving many not
 trivial issues commonly found in the audio plugins domain.
 
 What makes it great?
 
-- It bears a clear libre license
-- Relies on standard build tools
-- Very low learning curve
-- Does not promote the usage of unrelated features
-- Does not enforce any particular coding patterns
-- Scope is limited to audio plugins keeping it lightweight
-- There is a great and experienced community around
+- It comes with a clear libre license
+- Zero bloat: scope is limited to audio plugins
+- Makefile based, MinGW compatible
+- Absurdingly low learning curve
+- High quality modern C++ codebase
+- Great experienced community around
 
 Its full documentation and code can be found at https://github.com/DISTRHO/DPF,
 this repo includes it as a git submodule in `lib/DPF`. And do not forget to
