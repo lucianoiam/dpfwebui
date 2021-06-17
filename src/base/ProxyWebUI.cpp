@@ -25,12 +25,12 @@ USE_NAMESPACE_DISTRHO
 // on high pixel density displays, known as HiDPI, Retina...
 #define INIT_SCALE_FACTOR platform::getSystemDisplayScaleFactor()
 
-// Dimensions passed to UI constructor determine the host initial viewport.
-// There is a discrepancy between Mac plugin and Mac standalone here, keeping
-// the same values for both targets just does not produce the same visual result:
-// - Standalone seems to interpret values in NSScreen "physical" pixel scale
-// - REAPER seems to interpret values in NSScreen "virtual" pixel scale, leading
-//   to an excessively big canvas for the embedded UI.
+// It currently seems that on Mac the host is getting dimensions already
+// multiplied by the screen scale factor, resulting for example in REAPER
+// showing an excessively big canvas that does not tightly wrap the plugin UI.
+// Likely the host expects unscaled values, ie. those used by the NSView frame.
+// This does not affect hosts that show floating windows like Live or the
+// standalone version of the plugin.
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
     , fWebWidget(getWindow())
