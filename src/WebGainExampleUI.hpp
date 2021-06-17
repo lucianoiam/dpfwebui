@@ -14,18 +14,18 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WEBEXAMPLEUI_HPP
-#define WEBEXAMPLEUI_HPP
+#ifndef WEBGAINEXAMPLEUI_HPP
+#define WEBGAINEXAMPLEUI_HPP
 
 #include "base/ProxyWebUI.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class WebExampleUI : public ProxyWebUI
+class WebGainExampleUI : public ProxyWebUI
 {
 public:
-    WebExampleUI();
-    ~WebExampleUI() {};
+    WebGainExampleUI();
+    ~WebGainExampleUI() {};
 
 protected:
     void webContentReady() override;
@@ -35,4 +35,4 @@ protected:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBEXAMPLEUI_HPP
+#endif  // WEBGAINEXAMPLEUI_HPP

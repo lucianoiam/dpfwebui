@@ -21,25 +21,25 @@
    This is used to identify your plugin before a Plugin instance can be created.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_NAME "WebUI"
+#define DISTRHO_PLUGIN_NAME "WebGain"
 
 /**
    Number of audio inputs the plugin has.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_NUM_INPUTS 1
+#define DISTRHO_PLUGIN_NUM_INPUTS 2
 
 /**
    Number of audio outputs the plugin has.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_NUM_OUTPUTS 1
+#define DISTRHO_PLUGIN_NUM_OUTPUTS 2
 
 /**
    The plugin URI when exporting in LV2 format.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_URI "https://github.com/lucianoiam/dpf-webui"
+#define DISTRHO_PLUGIN_URI "https://github.com/lucianoiam/dpf-webgain"
 
 /**
    Wherever the plugin has a custom %UI.

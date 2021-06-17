@@ -13,10 +13,10 @@ NAME = d_dpf_webui
 # Files to build
 
 SRC_FILES_DSP = \
-    WebExamplePlugin.cpp
+    WebGainExamplePlugin.cpp
 
 SRC_FILES_UI  = \
-    WebExampleUI.cpp
+    WebGainExampleUI.cpp
 
 # --------------------------------------------------------------
 # Note this is not the DPF version of Makefile.plugins.mk
