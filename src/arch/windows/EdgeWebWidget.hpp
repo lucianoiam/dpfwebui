@@ -51,7 +51,6 @@ public:
     EdgeWebWidget(Window& windowToMapTo);
     ~EdgeWebWidget();
 
-    void onDisplay() override;
     void onResize(const ResizeEvent& ev) override;
 
     void setBackgroundColor(uint32_t rgba) override;
@@ -73,8 +72,6 @@ public:
 
 private:
     inline void updateWebViewSize(Size<uint> size);
-
-    void startWebViewInit();
 
     void webViewLoaderErrorMessageBox(HRESULT result);
 
