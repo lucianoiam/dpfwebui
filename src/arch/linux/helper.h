@@ -23,7 +23,7 @@
 
 typedef enum {
     OPC_SET_BACKGROUND_COLOR,
-    OPC_REPARENT,
+    OPC_SET_PARENT,
     OPC_RESIZE,
     OPC_NAVIGATE,
     OPC_RUN_SCRIPT,
