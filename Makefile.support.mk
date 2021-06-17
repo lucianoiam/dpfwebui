@@ -47,7 +47,7 @@ LXHELPER_BIN = /tmp/$(NAME)_ui
 TARGETS += $(LXHELPER_BIN)
 
 $(LXHELPER_BIN): src/arch/linux/helper.c src/arch/linux/extra/ipc.c
-	@echo "Creating helper"
+	@echo "Compiling helper"
 	$(SILENT)$(CC) $^ -Isrc -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
