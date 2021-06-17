@@ -35,7 +35,7 @@ typedef struct {
 
 static void create_webview(helper_context_t *ctx);
 static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t);
-static void reparent(const helper_context_t *ctx, uintptr_t parentId);
+static void set_parent(const helper_context_t *ctx, uintptr_t parentId);
 static void inject_script(const helper_context_t *ctx, const char* js);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
@@ -117,7 +117,7 @@ static void set_background_color(const helper_context_t *ctx, uint32_t rgba)
 #pragma GCC diagnostic pop
 }
 
-static void reparent(const helper_context_t *ctx, uintptr_t parentId)
+static void set_parent(const helper_context_t *ctx, uintptr_t parentId)
 {
     GdkDisplay *gdkDisplay = gdk_display_get_default();
 
@@ -240,8 +240,8 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             set_background_color(ctx, *((uint32_t *)packet.v));
             break;
 
-        case OPC_REPARENT:
-            reparent(ctx, *((uintptr_t *)packet.v));
+        case OPC_SET_PARENT:
+            set_parent(ctx, *((uintptr_t *)packet.v));
             break;
 
         case OPC_RESIZE: {
