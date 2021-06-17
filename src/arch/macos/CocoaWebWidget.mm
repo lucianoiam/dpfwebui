@@ -47,7 +47,13 @@ CocoaWebWidget::CocoaWebWidget(Window& windowToMapTo)
     fWebView.navigationDelegate = fWebViewDelegate;
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
 
-    reparent(windowToMapTo);
+    // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
+    // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
+    NSView *parentView = (NSView *)windowToMapTo.getNativeWindowHandle();
+    CGSize parentSize = parentView.frame.size;
+    [fWebView removeFromSuperview];
+    fWebView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
+    [parentView addSubview:fWebView];
 
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
@@ -76,17 +82,6 @@ void CocoaWebWidget::setBackgroundColor(uint32_t rgba)
             NSLog(@"Could not set transparent color for WKWebView");
         }
     }
-}
-
-void CocoaWebWidget::reparent(Window& windowToMapTo)
-{
-    // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
-    // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
-    NSView *parentView = (NSView *)windowToMapTo.getNativeWindowHandle();
-    CGSize parentSize = parentView.frame.size;
-    [fWebView removeFromSuperview];
-    fWebView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
-    [parentView addSubview:fWebView];
 }
 
 void CocoaWebWidget::navigate(String& url)
