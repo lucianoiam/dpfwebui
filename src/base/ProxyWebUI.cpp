@@ -26,11 +26,11 @@ USE_NAMESPACE_DISTRHO
 #define INIT_SCALE_FACTOR platform::getSystemDisplayScaleFactor()
 
 // Dimensions passed to UI constructor determine the host initial viewport.
-// There is a discrepancy between plugin and standalone here, keeping the same
-// values for both targets just does not produce the same visual result:
-// - Mac standalone seems to interpret values in NSScreen "physical" pixel scale
-// - Mac REAPER seems to interpret values in NSScreen "virtual" pixel scale,
-//   leading to an excessively big canvas for the embedded ui 
+// There is a discrepancy between Mac plugin and Mac standalone here, keeping
+// the same values for both targets just does not produce the same visual result:
+// - Standalone seems to interpret values in NSScreen "physical" pixel scale
+// - REAPER seems to interpret values in NSScreen "virtual" pixel scale, leading
+//   to an excessively big canvas for the embedded UI.
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
     , fWebWidget(getWindow())
@@ -38,7 +38,6 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     , fInitContentReady(false)
 {
     setGeometryConstraints(getWidth(), getHeight(), false, false);
-    getWindow().setGeometryConstraints(getWidth(), getHeight(), false, false);
 
     fWebWidget.setEventHandler(this);
     fWebWidget.setBackgroundColor(fBackgroundColor);
