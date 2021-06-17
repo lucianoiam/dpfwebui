@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef BASEWEBWIDGET_HPP
-#define BASEWEBWIDGET_HPP
+#ifndef ABSTRACTWEBWIDGET_HPP
+#define ABSTRACTWEBWIDGET_HPP
 
 #include <cstdint>
 #include <vector>
@@ -41,11 +41,11 @@ public:
 
 };
 
-class BaseWebWidget : public TopLevelWidget
+class AbstractWebWidget : public TopLevelWidget
 {
 public:
-    BaseWebWidget(Window& windowToMapTo) : TopLevelWidget(windowToMapTo) {}
-    virtual ~BaseWebWidget() {};
+    AbstractWebWidget(Window& windowToMapTo) : TopLevelWidget(windowToMapTo) {}
+    virtual ~AbstractWebWidget() {};
 
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void reparent(Window& windowToMapTo) = 0;
@@ -75,4 +75,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif // BASEWEBWIDGET_HPP
+#endif // ABSTRACTWEBWIDGET_HPP

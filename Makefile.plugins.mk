@@ -11,7 +11,7 @@ DPF_GIT_BRANCH=develop
 include Makefile.base.mk
 
 SRC_FILES_UI += base/ProxyWebUI.cpp \
-                base/BaseWebWidget.cpp \
+                base/AbstractWebWidget.cpp \
                 base/ScriptValue.cpp
 
 # Add ProxyWebUI files

@@ -79,9 +79,8 @@ void ProxyWebUI::onDisplay()
     // resource intensive tasks like loading a URL. Loading web content could be
     // thought of as drawing the window and only needs to happen once, real
     // drawing is handled by the web views. ProxyWebUI() constructor is not a
-    // suitable place for calling BaseWebWidget::navigate() because ctor/dtor
-    // can be called successive times without the window ever being displayed
-    // (e.g. on Carla)
+    // suitable place for calling navigate() because ctor/dtor can be called
+    // successive times without the window ever being displayed (e.g. on Carla)
     String url = "file://" + platform::getResourcePath() + "/index.html";
     fWebWidget.navigate(url);
 }

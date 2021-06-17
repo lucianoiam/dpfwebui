@@ -40,7 +40,7 @@ extern char **environ;
 USE_NAMESPACE_DISTRHO
 
 ExternalGtkWebWidget::ExternalGtkWebWidget(Window& windowToMapTo)
-    : BaseWebWidget(windowToMapTo)
+    : AbstractWebWidget(windowToMapTo)
     , fPid(-1)
     , fIpc(nullptr)
     , fIpcThread(nullptr)

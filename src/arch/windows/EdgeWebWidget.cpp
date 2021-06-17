@@ -39,7 +39,7 @@
 USE_NAMESPACE_DISTRHO
 
 EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
-    : BaseWebWidget(windowToMapTo)
+    : AbstractWebWidget(windowToMapTo)
     , fHelperHwnd(0)
     , fDisplayed(false)
     , fBackgroundColor(0)
