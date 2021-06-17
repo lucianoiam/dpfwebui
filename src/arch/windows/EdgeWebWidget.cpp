@@ -70,7 +70,7 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
     
-    // Edge WebView2 initialization does not complete right away
+    // Initialization does not complete right away
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
         TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
     if (FAILED(result)) {
