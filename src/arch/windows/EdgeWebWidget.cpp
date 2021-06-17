@@ -89,7 +89,7 @@ void EdgeWebWidget::onDisplay()
     }
     fDisplayed = true;
     // "onVisibilityChanged(true)"
-    initWebView2();
+    initWebView();
 }
 
 void EdgeWebWidget::onResize(const ResizeEvent& ev)
@@ -97,10 +97,7 @@ void EdgeWebWidget::onResize(const ResizeEvent& ev)
     if (fController == 0) {
         return; // later
     }
-    RECT bounds {};
-    bounds.right = ev.size.getWidth();
-    bounds.bottom = ev.size.getHeight();
-    ICoreWebView2Controller2_put_Bounds(fController, bounds);
+    updateWebViewSize(ev.size);
 }
 
 void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
@@ -124,7 +121,7 @@ void EdgeWebWidget::reparent(Window& windowToMapTo)
     if (fController == 0) {
         return; // later
     }
-	HWND hWnd = reinterpret_cast<HWND>(windowToMapTo.getNativeWindowHandle());
+    HWND hWnd = reinterpret_cast<HWND>(windowToMapTo.getNativeWindowHandle());
     ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
 }
 
@@ -155,7 +152,15 @@ void EdgeWebWidget::injectScript(String& source)
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
 }
 
-void EdgeWebWidget::initWebView2()
+void EdgeWebWidget::updateWebViewSize(Size<uint> size)
+{
+    RECT bounds {};
+    bounds.right = size.getWidth();
+    bounds.bottom = size.getHeight();
+    ICoreWebView2Controller2_put_Bounds(fController, bounds);
+}
+
+void EdgeWebWidget::initWebView()
 {
     HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
         TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
@@ -195,12 +200,9 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
         injectScript(*it);
     }
     setBackgroundColor(fBackgroundColor);
-    // FIXME - for some reason getWidth() and getHeight() are returning 0 only on Windows
-    //         Windows is the only platform running cairo, is it a TopLevelWidget/Cairo bug?
-    RECT bounds {};
-    bounds.right = getWindow().getWidth();
-    bounds.bottom = getWindow().getHeight();
-    ICoreWebView2Controller2_put_Bounds(fController, bounds);
+    // FIXME - for some reason getSize() returns {0,0} only on Windows. Only on
+    //         Windows we have UI_TYPE=cairo, is it a TopLevelWidget/Cairo bug?
+    updateWebViewSize(getWindow().getSize());
     navigate(fUrl);
     // Cleanup, handleWebViewControllerCompleted() will not be called again anyways
     fInjectedScripts.clear();

@@ -71,7 +71,9 @@ public:
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
 private:
-    void initWebView2();
+    inline void updateWebViewSize(Size<uint> size);
+
+    void initWebView();
 
     void webViewLoaderErrorMessageBox(HRESULT result);
 
