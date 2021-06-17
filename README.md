@@ -45,9 +45,10 @@ appear detached.
 
 - On macOS WKWebView is used.
 
-- On Windows Edge WebView2 is used. As of Jun '21 the user needs to install a
+- On Windows Edge WebView2 is used. As of Jun '21 the end user needs to install a
 runtime library https://developer.microsoft.com/microsoft-edge/webview2. It is
-expected it will be bundled into Windows sooner or later.
+an official library from MS and expected to become bundled into Windows at some
+point.
 
 ### Integration with the underlying C++ framework (DPF)
 
@@ -101,8 +102,12 @@ window.webviewHost.addMessageListener((args) => {
 });
 ```
 
-The message arguments must be an array/vector containing values of primitive
-data types. These values are wrapped by `DISTRHO::ScriptValue` instances. The
+The C++ class carries the "Proxy" moniker because it merely acts as a bridge
+between the two languages and the actual UI functionlity is meant to be
+implemented in JavaScript.
+
+Message arguments must be an array/vector containing values of primitive data
+types. These values are wrapped by `DISTRHO::ScriptValue` instances. The
 following JS types are supported: boolean, number, string. Any other types are
 mapped to null.
 
