@@ -68,17 +68,6 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     injectDefaultScripts(js);
 }
 
-void EdgeWebWidget::onDisplay()
-{
-    if (fDisplayed) {
-        return;
-    }
-    fDisplayed = true;
-    
-    // Initialization does not complete right away
-    initWebView();
-}
-
 EdgeWebWidget::~EdgeWebWidget()
 {
     fHandler->release();
@@ -91,6 +80,17 @@ EdgeWebWidget::~EdgeWebWidget()
     ::DestroyWindow(fHelperHwnd);
     ::UnregisterClass(fHelperClass.lpszClassName, 0);
     ::free((void*)fHelperClass.lpszClassName);
+}
+
+void EdgeWebWidget::onDisplay()
+{
+    if (fDisplayed) {
+        return;
+    }
+    fDisplayed = true;
+    
+    // Edge WebView2 initialization does not complete right away
+    initWebView();
 }
 
 void EdgeWebWidget::onResize(const ResizeEvent& ev)
