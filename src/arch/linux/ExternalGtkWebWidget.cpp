@@ -46,20 +46,25 @@ ExternalGtkWebWidget::ExternalGtkWebWidget(Window& windowToMapTo)
     , fIpcThread(nullptr)
 {
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
+
     if (::pipe(fPipeFd[0]) == -1) {
         DISTRHO_LOG_STDERR_ERRNO("Could not create parent->helper pipe");
         return;
     }
+
     if (::pipe(fPipeFd[1]) == -1) {
         DISTRHO_LOG_STDERR_ERRNO("Could not create helper->parent pipe");
         return;
     }
+
     ipc_conf_t conf;
     conf.fd_r = fPipeFd[1][0];
     conf.fd_w = fPipeFd[0][1];
+
     fIpc = ipc_init(&conf);
     fIpcThread = new IpcReadThread(*this);
     fIpcThread->startThread();
+
     // BIN_BASENAME is defined in Makefile
     char rfd[10];
     ::sprintf(rfd, "%d", fPipeFd[0][0]);
@@ -67,12 +72,16 @@ ExternalGtkWebWidget::ExternalGtkWebWidget(Window& windowToMapTo)
     ::sprintf(wfd, "%d", fPipeFd[1][1]);
     String helperPath = platform::getBinaryDirectoryPath() + String("/" XSTR(BIN_BASENAME) "_ui");
     const char *argv[] = {helperPath, rfd, wfd, 0};
+
     int status = ::posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
+
     if (status != 0) {
         DISTRHO_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
     }
+
     reparent(windowToMapTo);
+
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
 }
@@ -86,21 +95,26 @@ ExternalGtkWebWidget::~ExternalGtkWebWidget()
         } else {
             DISTRHO_LOG_STDERR_ERRNO("Could not terminate helper subprocess");
         }
+
         fPid = -1;
     }
+
     if (fIpcThread != nullptr) {
         fIpcThread->stopThread(-1);
         fIpcThread = nullptr;
     }
+
     if (fIpc != nullptr) {
         ipc_destroy(fIpc);
         fIpc = nullptr;
     }
+
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             if ((fPipeFd[i][j] != -1) && (close(fPipeFd[i][j]) == -1)) {
                 DISTRHO_LOG_STDERR_ERRNO("Could not close pipe");
             }
+
             fPipeFd[i][j] = -1;
         }
     }
@@ -150,10 +164,13 @@ int ExternalGtkWebWidget::ipcWrite(helper_opcode_t opcode, const void *payload, 
     packet.t = static_cast<short>(opcode);
     packet.l = payloadSize;
     packet.v = payload;
+
     int retval;
+
     if ((retval = ipc_write(fIpc, &packet)) == -1) {
         DISTRHO_LOG_STDERR_ERRNO("Could not write to IPC channel");
     }
+
     return retval;
 }
 
@@ -163,9 +180,11 @@ void ExternalGtkWebWidget::ipcReadCallback(const tlv_t& packet)
         case OPC_HANDLE_LOAD_FINISHED:
             handleLoadFinished();
             break;
+
         case OPC_HANDLE_SCRIPT_MESSAGE:
             handleHelperScriptMessage(static_cast<const char*>(packet.v), packet.l);
             break;
+
         default:
             break;
     }
@@ -176,32 +195,39 @@ void ExternalGtkWebWidget::handleHelperScriptMessage(const char *payload, int pa
     // Should validate payload is never read past payloadSize 
     ScriptValueVector args;
     int offset = 0;
+
     while (offset < payloadSize) {
         const char *type = payload + offset;
         const char *value = type + 1;
+
         switch (*type) {
             case ARG_TYPE_FALSE:
                 offset += 1;
                 args.push_back(ScriptValue(false));
                 break;
+
             case ARG_TYPE_TRUE:
                 offset += 1;
                 args.push_back(ScriptValue(true));
                 break;
+
             case ARG_TYPE_DOUBLE:
                 offset += 1 + sizeof(double);
                 args.push_back(ScriptValue(*reinterpret_cast<const double *>(value)));
                 break;
+
             case ARG_TYPE_STRING:
                 offset += 1 /*type*/ + ::strlen(value) + 1 /*\0*/;
                 args.push_back(ScriptValue(String(value)));
                 break;
+
             default:
                 offset += 1;
                 args.push_back(ScriptValue()); // null
                 break;
         }
     }
+
     handleScriptMessage(args);
 }
 
@@ -216,26 +242,33 @@ void IpcReadThread::run()
     fd_set rfds;
     struct timeval tv;
     tlv_t packet;
+
     while (true) {
         FD_ZERO(&rfds);
         FD_SET(fd, &rfds);
         tv.tv_sec = 0;
         tv.tv_usec = 100000;
+
         int retval = ::select(fd + 1, &rfds, 0, 0, &tv);
+
         if (retval == -1) {
             DISTRHO_LOG_STDERR_ERRNO("Failed select() on IPC channel");
             break;
         }
+
         if (shouldThreadExit()) {
             break;
         }
+
         if (retval == 0) {
             continue; // timeout
         }
+
         if (ipc_read(fView.ipc(), &packet) == -1) {
             DISTRHO_LOG_STDERR_ERRNO("Could not read from IPC channel");
             break;
         }
+
         fView.ipcReadCallback(packet);
     }
 }

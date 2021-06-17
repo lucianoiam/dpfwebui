@@ -22,14 +22,12 @@
 #include <stdint.h>
 
 typedef enum {
-    // Plugin -> web view
     OPC_SET_BACKGROUND_COLOR,
     OPC_REPARENT,
     OPC_RESIZE,
     OPC_NAVIGATE,
     OPC_RUN_SCRIPT,
     OPC_INJECT_SCRIPT,
-    // Plugin <- web view
     OPC_HANDLE_SCRIPT_MESSAGE,
     OPC_HANDLE_LOAD_FINISHED
 } helper_opcode_t;

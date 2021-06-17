@@ -31,6 +31,7 @@ HRESULT stub::GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue
     if (f == 0) {
         return ::GetLastError();
     }
+
     return (*f)(hProc, pValue);
 }
 
@@ -41,6 +42,7 @@ HRESULT stub::GetScaleFactorForMonitor(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScal
     if (f == 0) {
         return ::GetLastError();
     }
+
     return (*f)(hMon, pScale);
 }
 
@@ -50,5 +52,6 @@ FARPROC stub::GetProcAddressForDllName(LPCSTR lpDllName, LPCSTR lpProcName)
     if (hm == 0) {
         return 0;
     }
+
     return ::GetProcAddress(hm, lpProcName);
 }

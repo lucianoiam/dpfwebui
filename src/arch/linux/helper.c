@@ -51,46 +51,58 @@ int main(int argc, char* argv[])
     helper_context_t ctx;
     ipc_conf_t conf;
     GIOChannel* channel;
+
     if (argc < 3) {
         DISTRHO_LOG_STDERR("Invalid argument count");
         return -1;
     }
+
     if ((sscanf(argv[1], "%d", &conf.fd_r) == 0) || (sscanf(argv[2], "%d", &conf.fd_w) == 0)) {
         DISTRHO_LOG_STDERR("Invalid file descriptor");
         return -1;
     }
+
     ctx.ipc = ipc_init(&conf);
     gtk_init(0, NULL);
+
     if (GDK_IS_X11_DISPLAY(gdk_display_get_default())
             && ((ctx.display = XOpenDisplay(NULL)) == NULL)) {
         DISTRHO_LOG_STDERR("Cannot open display");
         return -1;
     }
+
     create_webview(&ctx);
+
     channel = g_io_channel_unix_new(conf.fd_r);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
 
     gtk_main();
 
     g_io_channel_shutdown(channel, TRUE, NULL);
+
     ipc_destroy(ctx.ipc);
+
     return 0;
 }
 
 static void create_webview(helper_context_t *ctx)
 {
     ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+
     if (!GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) {
         // Do not remove decorations on Wayland
         gtk_window_set_decorated(ctx->window, FALSE);
     }
+
     // Set up callback so that if the main window is closed, the program will exit
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), ctx);
     gtk_widget_show(GTK_WIDGET(ctx->window));
-    // Create web view
+
+    // Create the web view
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
+
     // Listen to script messages
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
     g_signal_connect(manager, "script-message-received::host", G_CALLBACK(web_view_script_message_cb), ctx);
@@ -110,6 +122,7 @@ static void set_background_color(const helper_context_t *ctx, uint32_t rgba)
 static void reparent(const helper_context_t *ctx, uintptr_t parentId)
 {
     GdkDisplay *gdkDisplay = gdk_display_get_default();
+
     if (GDK_IS_X11_DISPLAY(gdk_display_get_default())) {
         Window childId = gdk_x11_window_get_xid(gtk_widget_get_window(GTK_WIDGET(ctx->window)));
         XReparentWindow(ctx->display, childId, parentId, 0, 0);
@@ -139,12 +152,14 @@ static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
 {
     helper_context_t *ctx = (helper_context_t *)data;
+
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
             ipc_write_simple(ctx, OPC_HANDLE_LOAD_FINISHED, NULL, 0);
             gtk_widget_show(GTK_WIDGET(view));
             break;
+
         default:
             break;
     }
@@ -159,10 +174,13 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
     JSCValue *jsArgs = webkit_javascript_result_get_js_value(res);
     char *payload = NULL;
     int offset = 0;
+
     if (jsc_value_is_array(jsArgs)) {
         numArgs = jsc_value_to_int32(jsc_value_object_get_property(jsArgs, "length"));
+
         for (i = 0; i < numArgs; i++) {
             jsArg = jsc_value_object_get_property_at_index(jsArgs, i);
+
             if (jsc_value_is_boolean(jsArg)) {
                 payload = (char *)realloc(payload, offset + 1);
                 if (jsc_value_to_boolean(jsArg)) {
@@ -171,12 +189,14 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
                     *(payload+offset) = (char)ARG_TYPE_FALSE;
                 }
                 offset += 1;
+
             } else if (jsc_value_is_number(jsArg)) {
                 payload = (char *)realloc(payload, offset + 1 + sizeof(double));
                 *(payload+offset) = (char)ARG_TYPE_DOUBLE;
                 offset += 1;
                 *(double *)(payload+offset) = jsc_value_to_double(jsArg);
                 offset += sizeof(double);
+
             } else if (jsc_value_is_string(jsArg)) {
                 const char *s = jsc_value_to_string(jsArg);
                 int slen = strlen(s) + 1;
@@ -185,6 +205,7 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
                 offset += 1;
                 strcpy(payload+offset, s);
                 offset += slen;
+
             } else {
                 payload = (char *)realloc(payload, offset + 1);
                 *(payload+offset) = (char)ARG_TYPE_NULL;
@@ -192,8 +213,11 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
             }
         }
     }
+
     webkit_javascript_result_unref(res);
+
     ipc_write_simple((helper_context_t *)data, OPC_HANDLE_SCRIPT_MESSAGE, payload, offset);
+
     if (payload) {
         free(payload);
     }
@@ -207,6 +231,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     if ((condition & G_IO_IN) == 0) {
         return TRUE;
     }
+
     if (ipc_read(ctx->ipc, &packet) == -1) {
         DISTRHO_LOG_STDERR_ERRNO("Could not read from IPC channel");
         return TRUE;
@@ -216,23 +241,29 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
         case OPC_SET_BACKGROUND_COLOR:
             set_background_color(ctx, *((uint32_t *)packet.v));
             break;
+
         case OPC_REPARENT:
             reparent(ctx, *((uintptr_t *)packet.v));
             break;
+
         case OPC_RESIZE: {
             const helper_size_t *size = (const helper_size_t *)packet.v;
             gtk_window_resize(ctx->window, size->width, size->height);
             break;
         }
+
         case OPC_NAVIGATE:
             webkit_web_view_load_uri(ctx->webView, packet.v);
             break;
+
         case OPC_RUN_SCRIPT:
             webkit_web_view_run_javascript(ctx->webView, packet.v, NULL, NULL, NULL);
             break;
+
         case OPC_INJECT_SCRIPT:
             inject_script(ctx, packet.v);
             break;
+
         default:
             break;
     }
@@ -244,11 +275,14 @@ static int ipc_write_simple(const helper_context_t *ctx, helper_opcode_t opcode,
 {
     int retval;
     tlv_t packet;
+
     packet.t = (short)opcode;
     packet.l = payload_sz;
     packet.v = payload;
+
     if ((retval = ipc_write(ctx->ipc, &packet)) == -1) {
         DISTRHO_LOG_STDERR_ERRNO("Could not write to IPC channel");
     }
+
     return retval;
 }

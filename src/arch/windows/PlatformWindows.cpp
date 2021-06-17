@@ -75,6 +75,7 @@ String platform::getTemporaryPath()
         DISTRHO_LOG_STDERR_INT("Could not determine user app data folder", result);
         return String();
     }
+
     // Append host executable name to the temp path otherwise WebView2 controller initialization
     // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
     // simultaneously due to permissions. C:\Users\< USERNAME >\AppData\Local\DPF_Temp\< HOST_BIN >
@@ -84,6 +85,7 @@ String platform::getTemporaryPath()
         return String();
     }
     LPSTR exeFilename = ::PathFindFileName(exePath);
+
     // The following call relies on a further Windows library called Pathcch, which is implemented
     // in api-ms-win-core-path-l1-1-0.dll and requires Windows 8.
     // Since the minimum plugin target is Windows 7 it is acceptable to use a deprecated function.
@@ -91,6 +93,7 @@ String platform::getTemporaryPath()
     ::PathRemoveExtension(exeFilename);
     ::strcat(tempPath, "\\DPF_Temp\\");
     ::strcat(tempPath, exeFilename);
+
     return String(tempPath);
 }
 
@@ -98,10 +101,12 @@ float platform::getSystemDisplayScaleFactor()
 {
     float k = 1.f;
     PROCESS_DPI_AWARENESS dpiAware;
+
     if (SUCCEEDED(stub::GetProcessDpiAwareness(0, &dpiAware))) {
         if (dpiAware != PROCESS_DPI_UNAWARE) {
             HMONITOR hMon = ::MonitorFromWindow(::GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
             DEVICE_SCALE_FACTOR scaleFactor;
+
             if (SUCCEEDED(stub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
                 if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
                     k = static_cast<float>(scaleFactor) / 100.f;
