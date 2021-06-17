@@ -36,14 +36,16 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     , fInitContentReady(false)
 {
     // Automatically scale up the webview so its contents do not look small
-    // on high pixel density displays (HiDPI / Retina)
+    // on high pixel density displays, known as HiDPI, Retina...
     float k = platform::getSystemDisplayScaleFactor();
     uint width = k * baseWidth;
     uint height = k * baseHeight;
     setGeometryConstraints(width, height, true);
     setSize(width, height);
+
     fWebWidget.setEventHandler(this);
     fWebWidget.setBackgroundColor(fBackgroundColor);
+    
     String js = String(
 #include "base/webui.js"
     );
@@ -63,12 +65,14 @@ void ProxyWebUI::onDisplay()
     cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(fBackgroundColor, double));
     cairo_paint(cr);
 #endif
+    
     // onDisplay() is meant for drawing and will be called multiple times
     // Having something like onVisibilityChanged() would avoid this workaround
     if (fDisplayed) {
         return;
     }
     fDisplayed = true;
+
     // At this point UI initialization has settled down and it is time to launch
     // resource intensive tasks like loading a URL. Loading web content could be
     // thought of as drawing the window and only needs to happen once, real
@@ -122,20 +126,25 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
         webMessageReceived(args); // passthrough
         return;
     }
+
     String method = args[1].getString();
     int argc = args.size() - 2;
+
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
+
     } else if ((method == "editParameter") && (argc == 2)) {
         editParameter(
             static_cast<uint32_t>(args[2].getDouble()), // index
             static_cast<bool>(args[3].getBool())        // started
         );
+
     } else if ((method == "setParameterValue") && (argc == 2)) {
         setParameterValue(
             static_cast<uint32_t>(args[2].getDouble()), // index
             static_cast<float>(args[3].getDouble())     // value
         );
+
 #if (DISTRHO_PLUGIN_WANT_STATE == 1)
     } else if ((method == "setState") && (argc == 2)) {
         setState(
@@ -143,6 +152,7 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
             args[3].getString()  // value
         );
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
+
     } else {
         DISTRHO_LOG_STDERR_COLOR("Invalid call to ProxyWebUI method");
     }

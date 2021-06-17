@@ -54,6 +54,7 @@ void BaseWebWidget::handleLoadFinished()
         + String(CSS_DISABLE_PINCH_ZOOM)
     ;
     addStylesheet(css);
+
     if (fHandler != 0) {
         fHandler->handleWebWidgetContentLoadFinished();
     }
@@ -95,13 +96,16 @@ String BaseWebWidget::serializeScriptValues(const ScriptValueVector& args)
 {
     std::stringstream ss;
     ss << '[';
+
     for (ScriptValueVector::const_iterator it = args.cbegin(); it != args.cend(); ++it) {
         if (it != args.cbegin()) {
             ss << ',';
         }
         ss << *it;
     }
+
     ss << ']';
+
     return String(ss.str().c_str());
 }
 

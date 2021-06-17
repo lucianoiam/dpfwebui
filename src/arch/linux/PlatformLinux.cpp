@@ -40,6 +40,7 @@ String platform::getBinaryPath()
     // Is there a better way to differentiate we are being called from library or executable?
     String libPath = getSharedLibraryPath();
     void *handle = ::dlopen(libPath, RTLD_LAZY);
+
     if (handle) {
         ::dlclose(handle);
         return libPath;
@@ -52,6 +53,7 @@ String platform::getBinaryPath()
 String platform::getSharedLibraryPath()
 {
     Dl_info dl_info;
+
     if (::dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
         DISTRHO_LOG_STDERR(::dlerror());
         return String();
@@ -64,6 +66,7 @@ String platform::getExecutablePath()
 {
     char path[PATH_MAX];
     ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path) - 1);
+
     if (len == -1) {
         DISTRHO_LOG_STDERR_ERRNO("Could not determine executable path");
         return String();
@@ -85,11 +88,13 @@ String platform::getTemporaryPath()
 float platform::getSystemDisplayScaleFactor()
 {
     const char *dpi = ::getenv("GDK_DPI_SCALE");
+
     if (dpi != 0) {
         float k;
         if (sscanf(dpi, "%f", &k) == 1) {
             return k;
         }
     }
+
     return 1.f;
 }

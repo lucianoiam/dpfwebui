@@ -23,9 +23,11 @@ std::ostream& operator<<(std::ostream &os, const ScriptValue &val) {
         case ScriptValue::TNull:
             os << "null";
             break;
+
         case ScriptValue::TBool:
             os << (val.getBool() ? "true" : "false");
             break;
+
         case ScriptValue::TDouble: {
             double d = val.getDouble();
             if (std::isnan(d)) {
@@ -37,6 +39,7 @@ std::ostream& operator<<(std::ostream &os, const ScriptValue &val) {
             }
             break;
         }
+
         case ScriptValue::TString: {
             const String& s = val.getString();
             const char *buf = s.buffer();
@@ -52,8 +55,10 @@ std::ostream& operator<<(std::ostream &os, const ScriptValue &val) {
             os << '"';
             break;
         }
+
         default:
             break;
     }
+
     return os;
 }
