@@ -21,16 +21,25 @@
 
 USE_NAMESPACE_DISTRHO
 
-// Automatically scale up the webview so its contents do not look small
-// on high pixel density displays, known as HiDPI, Retina...
-#define INIT_SCALE_FACTOR platform::getSystemDisplayScaleFactor()
-
 // It currently seems that on Mac+HiDPI the host is getting dimensions already
 // multiplied by the screen scale factor, resulting for example in REAPER
 // showing an excessively large canvas that does not tightly wrap the plugin UI,
 // or Live showing a floating window with plenty of empty space. Likely the host
 // is expecting unscaled values, ie. those specified by NSView frames. The issue
-// does not affect the standalone version of the plugin.
+// does not affect the standalone version of the plugin. 17 Jun 2021.
+#ifdef DISTRHO_OS_MAC
+namespace DISTRHO {
+    // Support for patched DistrhoUI.cpp
+    float FIXME_MacScaleFactor() {
+        return platform::getSystemDisplayScaleFactor();
+    }
+}
+#endif
+
+// Automatically scale up the webview so its contents do not look small
+// on high pixel density displays, known as HiDPI, Retina...
+#define INIT_SCALE_FACTOR platform::getSystemDisplayScaleFactor()
+
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
     , fWebWidget(getWindow())
