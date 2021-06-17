@@ -45,3 +45,8 @@ ifeq (,$(findstring $(DPF_GIT_BRANCH),$(shell git -C $(DPF_CUSTOM_PATH) branch -
 _:=$(shell git -C $(DPF_CUSTOM_PATH) checkout $(DPF_GIT_BRANCH))
 endif
 endif
+
+ifeq ($(MACOS),true)
+$(info Patching DistrhoUI.cpp to workaround scale bug on macOS...)
+_:=$(shell patch -u $(DPF_CUSTOM_PATH)/distrho/src/DistrhoUI.cpp -i src/DistrhoUI.cpp.patch)
+endif
