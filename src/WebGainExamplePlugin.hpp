@@ -14,22 +14,22 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WEBEXAMPLEPLUGIN_HPP
-#define WEBEXAMPLEPLUGIN_HPP
+#ifndef WEBGAINEXAMPLEPLUGIN_HPP
+#define WEBGAINEXAMPLEPLUGIN_HPP
 
 #include "DistrhoPlugin.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class WebExamplePlugin : public Plugin
+class WebGainExamplePlugin : public Plugin
 {
 public:
-    WebExamplePlugin();
-    ~WebExamplePlugin() {};
+    WebGainExamplePlugin();
+    ~WebGainExamplePlugin() {};
 
     const char* getLabel() const override
     {
-        return "WebUI";
+        return "WebGain";
     }
 
     const char* getMaker() const override
@@ -49,7 +49,7 @@ public:
 
     int64_t getUniqueId() const override
     {
-        return d_cconst('d', 'W', 'e', 'b');
+        return d_cconst('D', 'P', 'w', 'g');
     }
 
     void  initParameter(uint32_t index, Parameter& parameter) override;
@@ -66,8 +66,11 @@ public:
 
     void run(const float** inputs, float** outputs, uint32_t frames) override;
 
+private:
+    float fGain;
+
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBEXAMPLEPLUGIN_HPP
+#endif  // WEBGAINEXAMPLEPLUGIN_HPP

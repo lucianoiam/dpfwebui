@@ -26,6 +26,10 @@ pre {
     justify-content: center;
     align-items: center;
     text-align: center;
-    border: solid 1px #000;
     overflow: hidden;
+}
+
+#gain-slider {
+    width: 200px;
+    margin: 10px;
 }

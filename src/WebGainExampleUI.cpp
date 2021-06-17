@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "WebExampleUI.hpp"
+#include "WebGainExampleUI.hpp"
 
 // These dimensions are scaled up according to the system display scale factor
 #define BASE_WIDTH_PX  600
@@ -30,10 +30,10 @@ USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
 {
-    return new WebExampleUI;
+    return new WebGainExampleUI;
 }
 
-WebExampleUI::WebExampleUI()
+WebGainExampleUI::WebGainExampleUI()
     : ProxyWebUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA)
 {
     // Web view not guaranteed to be ready yet. Calls to webWidget().runScript()
@@ -44,13 +44,13 @@ WebExampleUI::WebExampleUI()
     // after web content finishes loading and before any referenced <script> runs.
 }
 
-void WebExampleUI::webContentReady()
+void WebGainExampleUI::webContentReady()
 {
     // Called when the main document finished loading and DOM is ready. It is
     // now safe to call webWidget().runScript() and mapped DPF methods if needed.
 }
 
-void WebExampleUI::webMessageReceived(const ScriptValueVector& args)
+void WebGainExampleUI::webMessageReceived(const ScriptValueVector& args)
 {
     // Web view and DOM are guaranteed to be ready here.
     (void)args;

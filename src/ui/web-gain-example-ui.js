@@ -21,38 +21,36 @@
 // global namespace and guaranteed to be available after the document load event
 // fires and before any referenced script starts running.
 
-class WebExampleUI extends DISTRHO_WebUI {
+class WebGainExampleUI extends DISTRHO_WebUI {
 
     constructor() {
-        super(); // do not forget to call
+        super(); // do not forget
 
-        this.colors     = Object.freeze(['#f00', '#0f0', '#00f']);
-        this.colorIndex = 0;
+        this.dom = {
+            userAgent:  document.getElementById('user-agent'),
+            gainSlider: document.getElementById('gain-slider')
+        };
 
-        const main = document.createElement('div');
-        main.id = 'main';
-        
-        main.innerHTML = `
-            <h1>Made with DPF</h1>
-            <img style="width:32px; height:25px;" src="music.gif">
-            <pre id="ua">${navigator.userAgent}</pre>
-        `;
+        this.dom.userAgent.innerText = navigator.userAgent;
 
-        main.addEventListener('mousedown', (ev) => {
-            const i = this.colorIndex++ % this.colors.length;
-            ev.currentTarget.style.borderColor = this.colors[i];
+        this.dom.gainSlider.addEventListener('input', (ev) => {
+            this.setParameterValue(0, parseFloat(ev.target.value));
         });
 
-        const body = document.body;
-
-        body.appendChild(main);
-        body.style.visibility = 'visible';
-
-        // Not needed for this demo but any plugin implementing parameters
-        // should call this to trigger any parameter change callbacks that may
-        // have accumulated while the web view was still loading. 
-        // TODO: probably the same goes for state callacks -- need to try
+        // Process any UI message generated while the web view was still loading
         this.flushInitMessageQueue();
+
+        document.body.style.visibility = 'visible';
+    }
+
+    parameterChanged(index, value) {
+        switch (index) {
+            case 0:
+                this.dom.gainSlider.value = value;
+                break;
+            default:
+                break;
+        }
     }
 
 }
