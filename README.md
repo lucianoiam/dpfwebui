@@ -13,10 +13,10 @@ An alternate approach to plugin graphics.
 
 ### Example UI code
 
-( A proof of concept plugin is being developed at https://github.com/lucianoiam/castello-rev )
+[ A real world plugin is under development at https://github.com/lucianoiam/castello-rev ]
 
 ```JavaScript
-class WebExampleUI extends DISTRHO_WebUI {
+class MyPluginWebUI extends DISTRHO_WebUI {
 
     constructor() {
     	super();
