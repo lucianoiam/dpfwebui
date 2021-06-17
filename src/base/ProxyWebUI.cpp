@@ -34,7 +34,6 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
     , fWebWidget(getWindow())
     , fBackgroundColor(backgroundColor)
-    , fDisplayed(false)
     , fInitContentReady(false)
 {
     // Automatically scale up the webview so its contents do not look small
@@ -52,6 +51,9 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
 #include "base/webui.js"
     );
     fWebWidget.injectScript(js);
+
+    String url = "file://" + platform::getResourcePath() + "/index.html";
+    fWebWidget.navigate(url);
 }
 
 void ProxyWebUI::onDisplay()
@@ -67,22 +69,6 @@ void ProxyWebUI::onDisplay()
     cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(fBackgroundColor, double));
     cairo_paint(cr);
 #endif
-    
-    // onDisplay() is meant for drawing and will be called multiple times
-    // Having something like onVisibilityChanged() would avoid this workaround
-    if (fDisplayed) {
-        return;
-    }
-    fDisplayed = true;
-
-    // At this point UI initialization has settled down and it is time to launch
-    // resource intensive tasks like loading a URL. Loading web content could be
-    // thought of as drawing the window and only needs to happen once, real
-    // drawing is handled by the web views. ProxyWebUI() constructor is not a
-    // suitable place for calling navigate() because ctor/dtor can be called
-    // successive times without the window ever being displayed (e.g. on Carla)
-    String url = "file://" + platform::getResourcePath() + "/index.html";
-    fWebWidget.navigate(url);
 }
 
 void ProxyWebUI::parameterChanged(uint32_t index, float value)
@@ -112,6 +98,7 @@ void ProxyWebUI::flushInitMessageQueue()
     for (InitMessageQueue::iterator it = fInitMsgQueue.begin(); it != fInitMsgQueue.end(); ++it) {
         fWebWidget.postMessage(*it);
     }
+    
     fInitMsgQueue.clear();
 }
 

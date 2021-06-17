@@ -42,7 +42,7 @@ public:
     virtual ~ProxyWebUI() {};
 
 protected:
-
+    
     void onDisplay() override;
 
     void parameterChanged(uint32_t index, float value) override;
@@ -69,7 +69,6 @@ private:
 
     PlatformWebWidget fWebWidget;
     uint32_t          fBackgroundColor;
-    bool              fDisplayed;
     bool              fInitContentReady;
     InitMessageQueue  fInitMsgQueue;
 

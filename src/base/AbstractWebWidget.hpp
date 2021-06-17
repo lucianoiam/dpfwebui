@@ -47,13 +47,13 @@ public:
     AbstractWebWidget(Window& windowToMapTo) : TopLevelWidget(windowToMapTo) {}
     virtual ~AbstractWebWidget() {};
 
+    void onDisplay() override {}
+
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void reparent(Window& windowToMapTo) = 0;
     virtual void navigate(String& url) = 0;
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
-
-    void onDisplay() override {};
 
     void setEventHandler(WebWidgetEventHandler* handler) { fHandler = handler; }
     void postMessage(const ScriptValueVector& args);
