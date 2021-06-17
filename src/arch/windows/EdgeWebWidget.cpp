@@ -63,8 +63,7 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
 
     fHandler = new InternalWebView2EventHandler(this);
 
-    // These requests are queued until Edge WebView2 initializes itself
-    reparent(windowToMapTo);
+    // This request is queued until Edge WebView2 initializes itself
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
     
@@ -115,16 +114,6 @@ void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
     color.B = static_cast<BYTE>((rgba & 0x0000ff00) >> 8 );
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
-}
-
-void EdgeWebWidget::reparent(Window& windowToMapTo)
-{
-    if (fController == 0) {
-        return; // does not make sense now, ignore
-    }
-
-    HWND hWnd = reinterpret_cast<HWND>(windowToMapTo.getNativeWindowHandle());
-    ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
 }
 
 void EdgeWebWidget::navigate(String& url)
@@ -227,7 +216,8 @@ HRESULT EdgeWebWidget::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
 
     if (fController != 0) {
         handleLoadFinished();
-        reparent(getWindow());
+        HWND hostHwnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
+        ICoreWebView2Controller2_put_ParentWindow(fController, hostHwnd);
     }
     
     return S_OK;
