@@ -34,7 +34,7 @@ class ExternalGtkWebWidget : public AbstractWebWidget
 friend class IpcReadThread;
 
 public:
-    ExternalGtkWebWidget(Window& windowToMapTo);
+    ExternalGtkWebWidget(Widget *parentWidget);
     ~ExternalGtkWebWidget();
 
     void onResize(const ResizeEvent& ev) override;

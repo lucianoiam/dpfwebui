@@ -36,8 +36,8 @@
 
 USE_NAMESPACE_DISTRHO
 
-EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
-    : AbstractWebWidget(windowToMapTo)
+EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
+    : AbstractWebWidget(parentWidget)
     , fHelperHwnd(0)
     , fDisplayed(false)
     , fBackgroundColor(0)
@@ -202,11 +202,7 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
     // Run pending requests
 
     setBackgroundColor(fBackgroundColor);
-
-    // FIXME - For some reason getSize() always returns {0,0}. Only happens on
-    //         Windows which in turn is the only platform where UI_TYPE=cairo
-    //         Is that a TopLevelWidget/Cairo bug? use getWindow().getSize()
-    updateWebViewSize(getWindow().getSize());
+    updateWebViewSize(getSize());
 
     for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
         injectScript(*it);
@@ -229,8 +225,8 @@ HRESULT EdgeWebWidget::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
 
     if (fController != 0) {
         handleLoadFinished();
-        HWND hostHwnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
-        ICoreWebView2Controller2_put_ParentWindow(fController, hostHwnd);
+        HWND hWnd = reinterpret_cast<HWND>(getParentWidget()->getWindow().getNativeWindowHandle());
+        ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
     }
     
     return S_OK;

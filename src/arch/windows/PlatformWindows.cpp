@@ -114,5 +114,6 @@ float platform::getSystemDisplayScaleFactor()
             // Process is not DPI-aware, do not scale
         }
     }
+    fflush(stdout); // FIXME
     return k;
 }

@@ -33,9 +33,11 @@ USE_NAMESPACE_DISTRHO
 @property (assign, nonatomic) CocoaWebWidget *cppView;
 @end
 
-CocoaWebWidget::CocoaWebWidget(Window& windowToMapTo)
-    : AbstractWebWidget(windowToMapTo)
+CocoaWebWidget::CocoaWebWidget(Widget *parentWidget)
+    : AbstractWebWidget(parentWidget)
 {
+    setSkipDrawing(true);
+    
     // Create the web view
     fView = [[WKWebView alloc] initWithFrame:CGRectZero];
     fWebView.hidden = YES;
@@ -48,7 +50,7 @@ CocoaWebWidget::CocoaWebWidget(Window& windowToMapTo)
 
     // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
     // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
-    NSView *parentView = (NSView *)windowToMapTo.getNativeWindowHandle();
+    NSView *parentView = (NSView *)parentWidget->getWindow().getNativeWindowHandle();
     CGSize parentSize = parentView.frame.size;
     [fWebView removeFromSuperview];
     fWebView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
