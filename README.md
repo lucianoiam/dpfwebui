@@ -84,7 +84,7 @@ The `DISTRHO::ProxyWebUI` and JS `DISTRHO_WebUI` classes use the above mechanism
 to map some useful plugin methods, like the ones shown in the first code example
 of this README.
 
-The bridge in a nutshell:
+The bridge interface in a nutshell:
 
 ```
 // Send ( js → cpp )
@@ -109,7 +109,7 @@ window.webviewHost.addMessageListener((args) => {
 ```
 
 The C++ class carries the "Proxy" moniker because it merely acts as a bridge
-between the two languages and the actual UI functionlity is meant to be
+between the two languages and the actual UI functionality is meant to be
 implemented in JavaScript.
 
 Message arguments must be an array/vector containing values of primitive data
