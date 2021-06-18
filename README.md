@@ -145,7 +145,7 @@ What makes it great?
 - Zero bloat: scope is limited to audio plugins
 - Makefile based, MinGW compatible
 - Absurdingly low learning curve
-- High quality modern C++ codebase
+- High quality clean C++ codebase
 - Great experienced community around
 
 Its full documentation and code can be found at https://github.com/DISTRHO/DPF,
