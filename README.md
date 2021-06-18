@@ -1,19 +1,25 @@
 Audio plugins featuring webview based UIs
 -----------------------------------------
 
-An alternate approach to plugin graphics.
+An alternate approach to plugin user interfaces.
+
+![](https://user-images.githubusercontent.com/930494/122536098-77aa9480-d024-11eb-93a4-4d4174c6559c.png)
+
+*WebGain example running on Bitwig. A real world plugin is under development at https://github.com/lucianoiam/castello-rev.*
+
+****
+
+### Features
 
 * Based on DPF: DISTRHO Plugin Framework
 * C++ for DSP code
 * HTML/CSS/JS for UI development
-* VST2 / LV2 plugin formats and JACK standalone app
-* Lightweight, just the powerful basics
-* Makefile based
+* VST2/LV2 plugin formats and JACK standalone app
+* Linux/Mac/Windows
+* Just the powerful basics
 * BSD-like license
 
 ### Example UI code
-
-[ A real world plugin is under development at https://github.com/lucianoiam/castello-rev ]
 
 ```JavaScript
 class MyPluginWebUI extends DISTRHO_WebUI {
@@ -145,9 +151,5 @@ What makes it great?
 Its full documentation and code can be found at https://github.com/DISTRHO/DPF,
 this repo includes it as a git submodule in `lib/DPF`. And do not forget to
 visit https://github.com/DISTRHO for many other cool audio projects.
-
-****
-
-![](https://user-images.githubusercontent.com/930494/121346399-595adf80-c926-11eb-9131-3269de4398b7.png)
 
 If you find libre software useful please support the developers
