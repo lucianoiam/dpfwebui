@@ -54,6 +54,7 @@ float WebGainExamplePlugin::getParameterValue(uint32_t index) const
     default:
         break;
     }
+    return 0;
 }
 
 void WebGainExamplePlugin::setParameterValue(uint32_t index, float value)
