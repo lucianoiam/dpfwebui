@@ -40,6 +40,7 @@ namespace DISTRHO {
 // on high pixel density displays, known as HiDPI, Retina...
 #define INIT_SCALE_FACTOR platform::getSystemDisplayScaleFactor()
 
+// Dimensions passed to the UI constructor determine the initial plugin size
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
     , fWebWidget(this)

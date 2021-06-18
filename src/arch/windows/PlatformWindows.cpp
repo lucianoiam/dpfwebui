@@ -103,7 +103,7 @@ float platform::getSystemDisplayScaleFactor()
     if (SUCCEEDED(stub::GetProcessDpiAwareness(0, &dpiAware))) {
         if (dpiAware != PROCESS_DPI_UNAWARE) {
             HMONITOR hMon = ::MonitorFromWindow(::GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
-            DEVICE_SCALE_FACTOR scaleFactor;
+            DEVICE_SCALE_FACTOR scaleFactor = DEVICE_SCALE_FACTOR_INVALID;
 
             if (SUCCEEDED(stub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
                 if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
@@ -114,9 +114,5 @@ float platform::getSystemDisplayScaleFactor()
             // Process is not DPI-aware, do not scale
         }
     }
-    // FIXME - removing fflush() breaks the plugin on Win7/VMWare
-    //         'k' is set to a reasonable value of 1.0 at this point
-    //         there is something else going on in that setup
-    fflush(stdout);
     return k;
 }
