@@ -45,6 +45,8 @@ ExternalGtkWebWidget::ExternalGtkWebWidget(Widget *parentWidget)
     , fIpc(nullptr)
     , fIpcThread(nullptr)
 {
+    setSkipDrawing(true);
+    
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
 
     if (::pipe(fPipeFd[0]) == -1) {
