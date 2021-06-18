@@ -22,7 +22,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "dgl/TopLevelWidget.hpp"
+#include "dgl/SubWidget.hpp"
 #include "dgl/Geometry.hpp"
 #include "extra/String.hpp"
 #include "Window.hpp"
@@ -41,14 +41,14 @@ public:
 
 };
 
-class AbstractWebWidget : public TopLevelWidget
+class AbstractWebWidget : public SubWidget
 {
 public:
-    AbstractWebWidget(Window& windowToMapTo) : TopLevelWidget(windowToMapTo) {}
+    AbstractWebWidget(Widget *parentWidget) : SubWidget(parentWidget) {}
     virtual ~AbstractWebWidget() {};
 
     void onDisplay() override {}
-
+    
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void navigate(String& url) = 0;
     virtual void runScript(String& source) = 0;

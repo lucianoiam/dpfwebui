@@ -38,21 +38,22 @@ namespace DISTRHO {
 }
 #endif
 
-// Automatically scale up the webview so its contents do not look small
+// Automatically scale up the plugin UI so its contents do not look small
 // on high pixel density displays, known as HiDPI, Retina...
 #define INIT_SCALE_FACTOR platform::getSystemDisplayScaleFactor()
 
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
-    , fWebWidget(getWindow())
+    , fWebWidget(this)
     , fBackgroundColor(backgroundColor)
     , fInitContentReady(false)
 {
     setGeometryConstraints(getWidth(), getHeight(), false, false);
 
-    fWebWidget.setEventHandler(this);
+    fWebWidget.setSize(getWidth(), getHeight());
     fWebWidget.setBackgroundColor(fBackgroundColor);
-    
+    fWebWidget.setEventHandler(this);
+
     String js = String(
 #include "base/webui.js"
     );
@@ -75,6 +76,11 @@ void ProxyWebUI::onDisplay()
     cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(fBackgroundColor, double));
     cairo_paint(cr);
 #endif
+}
+
+void ProxyWebUI::uiReshape(uint width, uint height)
+{
+    fWebWidget.setSize(width, height);
 }
 
 void ProxyWebUI::parameterChanged(uint32_t index, float value)

@@ -30,7 +30,7 @@ START_NAMESPACE_DISTRHO
 class CocoaWebWidget : public AbstractWebWidget
 {
 public:
-    CocoaWebWidget(Window& windowToMapTo);
+    CocoaWebWidget(Widget *parentWidget);
     ~CocoaWebWidget();
 
     void onResize(const ResizeEvent& ev) override;

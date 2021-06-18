@@ -50,7 +50,7 @@ class InternalWebView2EventHandler;
 class EdgeWebWidget : public AbstractWebWidget, edge::WebView2EventHandler
 {
 public:
-    EdgeWebWidget(Window& windowToMapTo);
+    EdgeWebWidget(Widget *parentWidget);
     ~EdgeWebWidget();
 
     void onDisplay() override;
