@@ -5,7 +5,7 @@ An alternate approach to plugin user interfaces.
 
 ![](https://user-images.githubusercontent.com/930494/122536098-77aa9480-d024-11eb-93a4-4d4174c6559c.png)
 
-*WebGain example running on Bitwig. A real world plugin is under development at https://github.com/lucianoiam/castello-rev.*
+*WebGain example running on Bitwig. A real world plugin is under development [here](https://github.com/lucianoiam/castello-rev).*
 
 ****
 
@@ -42,7 +42,7 @@ class MyPluginWebUI extends DISTRHO_WebUI {
 
 ### Dependencies
 
-Just the system web view. Usage of JS frameworks is up to the developer.
+Only the system web view. Usage of JS frameworks is up to the developer.
 
 - On Linux a WebKitGTK web view instance runs in a separate process to keep the
 plugin free of references to libgtk. Note that this approach relies on XEmbed,
