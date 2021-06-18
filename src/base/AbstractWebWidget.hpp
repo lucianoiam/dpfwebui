@@ -47,7 +47,7 @@ public:
     AbstractWebWidget(Widget *parentWidget) : SubWidget(parentWidget) {}
     virtual ~AbstractWebWidget() {};
 
-    void onDisplay() override {}
+    void onDisplay() override { /* no-op */ }
     
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void navigate(String& url) = 0;
