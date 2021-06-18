@@ -116,6 +116,9 @@ float platform::getSystemDisplayScaleFactor()
             // Process is not DPI-aware, do not scale
         }
     }
-    fflush(stdout); // FIXME
+    // FIXME - removing fflush() breaks the plugin on Win7/VMWare
+    //         'k' is set to a reasonable value of 1.0 at this point
+    //         there is something else going on in that setup
+    fflush(stdout);
     return k;
 }
