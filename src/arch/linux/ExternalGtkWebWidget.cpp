@@ -126,7 +126,13 @@ ExternalGtkWebWidget::~ExternalGtkWebWidget()
 void ExternalGtkWebWidget::onResize(const ResizeEvent& ev)
 {
     helper_size_t sizePkt = {ev.size.getWidth(), ev.size.getHeight()};
-    ipcWrite(OPC_RESIZE, &sizePkt, sizeof(sizePkt));
+    ipcWrite(OPC_SET_SIZE, &sizePkt, sizeof(sizePkt));
+}
+
+void ExternalGtkWebWidget::onPositionChanged(const PositionChangedEvent& ev)
+{
+    helper_pos_t posPkt = {ev.pos.getX(), ev.pos.getY()};
+    ipcWrite(OPC_SET_POSITION, &posPkt, sizeof(posPkt));
 }
 
 void ExternalGtkWebWidget::setBackgroundColor(uint32_t rgba)
