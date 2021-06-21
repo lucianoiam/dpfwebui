@@ -70,17 +70,19 @@ CocoaWebWidget::~CocoaWebWidget()
 void CocoaWebWidget::onResize(const ResizeEvent& ev)
 {
     (void)ev;
-    updateViewFrame();
+    updateWebViewFrame();
 }
 
 void CocoaWebWidget::onPositionChanged(const PositionChangedEvent& ev)
 {
     (void)ev;
-    updateViewFrame();
+    updateWebViewFrame();
 }
 
-void CocoaWebWidget::updateViewFrame()
+void CocoaWebWidget::updateWebViewFrame()
 {
+    // There is a mismatch between DGL and AppKit coordinates
+    // https://github.com/DISTRHO/DPF/issues/291
     float k = platform::getSystemDisplayScaleFactor();
     CGRect frame;
     frame.origin.x = (CGFloat)getAbsoluteX() / k;
