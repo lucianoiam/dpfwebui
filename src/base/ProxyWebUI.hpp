@@ -21,15 +21,7 @@
 
 #include <vector>
 
-#ifdef DISTRHO_OS_LINUX
-#include "arch/linux/ExternalGtkWebWidget.hpp"
-#endif
-#ifdef DISTRHO_OS_MAC
-#include "arch/macos/CocoaWebWidget.hpp"
-#endif
-#ifdef DISTRHO_OS_WINDOWS
-#include "arch/windows/EdgeWebWidget.hpp"
-#endif
+#include "Platform.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -49,7 +41,7 @@ protected:
     void stateChanged(const char* key, const char* value) override;
 #endif
 
-    PlatformWebWidget& webWidget() { return fWebWidget; }
+    platform::WebWidget& webWidget() { return fWebWidget; }
 
     void webPostMessage(const ScriptValueVector& args);
 
@@ -66,10 +58,10 @@ private:
 
     typedef std::vector<ScriptValueVector> InitMessageQueue;
 
-    PlatformWebWidget fWebWidget;
-    uint32_t          fBackgroundColor;
-    bool              fInitContentReady;
-    InitMessageQueue  fInitMsgQueue;
+    platform::WebWidget fWebWidget;
+    uint32_t            fBackgroundColor;
+    bool                fInitContentReady;
+    InitMessageQueue    fInitMsgQueue;
 
 };
 

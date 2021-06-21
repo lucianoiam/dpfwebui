@@ -21,9 +21,24 @@
 
 #include "macro.h"
 
+#ifdef DISTRHO_OS_LINUX
+#include "arch/linux/ExternalGtkWebWidget.hpp"
+typedef ExternalGtkWebWidget _WebWidget;
+#endif
+#ifdef DISTRHO_OS_MAC
+#include "arch/macos/CocoaWebWidget.hpp"
+typedef CocoaWebWidget _WebWidget;
+#endif
+#ifdef DISTRHO_OS_WINDOWS
+#include "arch/windows/EdgeWebWidget.hpp"
+typedef EdgeWebWidget _WebWidget;
+#endif
+
 START_NAMESPACE_DISTRHO
 
 namespace platform {
+
+	typedef _WebWidget WebWidget;
 
     // The following functions help locating resource files and helper binaries
     // during runtime. Location of such is relative to the running binary path. 

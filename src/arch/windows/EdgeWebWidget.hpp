@@ -91,8 +91,6 @@ private:
 
 };
 
-typedef EdgeWebWidget PlatformWebWidget;
-
 
 // The event handler lifetime cannot be bound to its owner lifetime, otherwise
 // the Edge WebView2 could callback a deleted object. That would happen for
