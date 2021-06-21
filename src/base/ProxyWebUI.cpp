@@ -49,8 +49,10 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
 {
     setGeometryConstraints(getWidth(), getHeight(), false, false);
 
-    //fWebWidget.setSize(getWidth(), getHeight());
-    //fWebWidget.setAbsolutePos({20, 20});
+#ifdef DISTRHO_OS_WINDOWS
+    // TODO: investigate special case
+    fWebWidget.setSize(getWidth(), getHeight());
+#endif
     fWebWidget.setBackgroundColor(fBackgroundColor);
     fWebWidget.setEventHandler(this);
 

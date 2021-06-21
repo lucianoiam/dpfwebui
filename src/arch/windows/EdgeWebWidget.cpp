@@ -95,12 +95,22 @@ void EdgeWebWidget::onDisplay()
 
 void EdgeWebWidget::onResize(const ResizeEvent& ev)
 {
+    (void)ev;
     if (fController == 0) {
         return; // does not make sense now, ignore
     }
 
-    // This is a helper method so the caller does not need to tinker with RECT
-    updateWebViewSize(ev.size);
+    updateWebViewBounds();
+}
+
+void EdgeWebWidget::onPositionChanged(const PositionChangedEvent& ev)
+{
+    (void)ev;
+    if (fController == 0) {
+        return; // does not make sense now, ignore
+    }
+
+    updateWebViewBounds();
 }
 
 void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
@@ -149,11 +159,13 @@ void EdgeWebWidget::injectScript(String& source)
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
 }
 
-void EdgeWebWidget::updateWebViewSize(Size<uint> size)
+void EdgeWebWidget::updateWebViewBounds()
 {
-    RECT bounds {};
-    bounds.right = size.getWidth();
-    bounds.bottom = size.getHeight();
+    RECT bounds;
+    bounds.left = (LONG)getAbsoluteX();
+    bounds.top = (LONG)getAbsoluteY();
+    bounds.right = bounds.left + (LONG)getWidth();
+    bounds.bottom = bounds.top + (LONG)getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
@@ -202,7 +214,7 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
     // Run pending requests
 
     setBackgroundColor(fBackgroundColor);
-    updateWebViewSize(getSize());
+    updateWebViewBounds();
 
     for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
         injectScript(*it);

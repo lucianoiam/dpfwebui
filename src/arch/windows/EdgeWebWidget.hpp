@@ -52,8 +52,8 @@ public:
     ~EdgeWebWidget();
 
     void onDisplay() override;
-
     void onResize(const ResizeEvent& ev) override;
+    void onPositionChanged(const PositionChangedEvent& ev) override;
 
     void setBackgroundColor(uint32_t rgba) override;
     void navigate(String& url) override;
@@ -72,10 +72,9 @@ public:
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
 private:
-    inline void updateWebViewSize(Size<uint> size);
-
     void initWebView();
-
+    void updateWebViewBounds();
+    
     void webViewLoaderErrorMessageBox(HRESULT result);
 
     WNDCLASS            fHelperClass;

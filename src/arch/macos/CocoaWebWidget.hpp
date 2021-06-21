@@ -45,7 +45,7 @@ public:
     void didReceiveScriptMessage(const ScriptValueVector& args) { handleScriptMessage(args); }
 
 private:
-    void updateViewFrame();
+    void updateWebViewFrame();
 
     void *fView;
     void *fDelegate;
