@@ -73,8 +73,6 @@ private:
 
 };
 
-typedef ExternalGtkWebWidget PlatformWebWidget;
-
 END_NAMESPACE_DISTRHO
 
 #endif  // EXTERNALGTKWEBWIDGET_HPP

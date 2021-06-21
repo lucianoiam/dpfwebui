@@ -51,8 +51,6 @@ private:
 
 };
 
-typedef CocoaWebWidget PlatformWebWidget;
-
 END_NAMESPACE_DISTRHO
 
 #endif  // COCOAWEBWIDGET_HPP
