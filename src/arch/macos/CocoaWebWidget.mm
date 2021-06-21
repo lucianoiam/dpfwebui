@@ -18,8 +18,6 @@
 #import <AppKit/AppKit.h>
 #import <WebKit/WebKit.h>
 
-#include "base/Platform.hpp"
-
 #include "CocoaWebWidget.hpp"
 
 #define fWebView         ((WKWebView*)fView)
@@ -83,7 +81,7 @@ void CocoaWebWidget::updateWebViewFrame()
 {
     // There is a mismatch between DGL and AppKit coordinates
     // https://github.com/DISTRHO/DPF/issues/291
-    float k = platform::getSystemDisplayScaleFactor();
+    CGFloat k = [NSScreen mainScreen].backingScaleFactor;
     CGRect frame;
     frame.origin.x = (CGFloat)getAbsoluteX() / k;
     frame.origin.y = (CGFloat)getAbsoluteY() / k;
