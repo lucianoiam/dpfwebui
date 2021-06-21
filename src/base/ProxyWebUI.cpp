@@ -49,7 +49,8 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
 {
     setGeometryConstraints(getWidth(), getHeight(), false, false);
 
-    fWebWidget.setSize(getWidth(), getHeight());
+    //fWebWidget.setSize(getWidth(), getHeight());
+    //fWebWidget.setAbsolutePos({20, 20});
     fWebWidget.setBackgroundColor(fBackgroundColor);
     fWebWidget.setEventHandler(this);
 
