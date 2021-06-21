@@ -244,9 +244,18 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             set_parent(ctx, *((uintptr_t *)packet.v));
             break;
 
-        case OPC_RESIZE: {
+        case OPC_SET_SIZE: {
             const helper_size_t *size = (const helper_size_t *)packet.v;
             gtk_window_resize(ctx->window, size->width, size->height);
+            break;
+        }
+
+        case OPC_SET_POSITION: {
+            const helper_pos_t *pos = (const helper_pos_t *)packet.v;
+            gtk_window_move(ctx->window, pos->x, pos->y);
+            /*Window childId = gdk_x11_window_get_xid(gtk_widget_get_window(GTK_WIDGET(ctx->window)));
+            XMoveWindow(ctx->display, childId, pos->x, pos->y);
+            XFlush(ctx->display);*/
             break;
         }
 

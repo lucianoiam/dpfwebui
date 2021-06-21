@@ -38,6 +38,7 @@ public:
     ~ExternalGtkWebWidget();
 
     void onResize(const ResizeEvent& ev) override;
+    void onPositionChanged(const PositionChangedEvent& ev) override;
 
     void setBackgroundColor(uint32_t rgba) override;
     void navigate(String& url) override;

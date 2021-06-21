@@ -22,7 +22,8 @@
 typedef enum {
     OPC_SET_BACKGROUND_COLOR,
     OPC_SET_PARENT,
-    OPC_RESIZE,
+    OPC_SET_SIZE,
+    OPC_SET_POSITION,
     OPC_NAVIGATE,
     OPC_RUN_SCRIPT,
     OPC_INJECT_SCRIPT,
@@ -42,5 +43,10 @@ typedef struct {
     unsigned width;
     unsigned height;
 } helper_size_t;
+
+typedef struct {
+    int x;
+    int y;
+} helper_pos_t;
 
 #endif  // HELPER_H
