@@ -18,6 +18,8 @@
 #import <AppKit/AppKit.h>
 #import <WebKit/WebKit.h>
 
+#include "base/Platform.hpp"
+
 #include "CocoaWebWidget.hpp"
 
 #define fWebView         ((WKWebView*)fView)
@@ -51,9 +53,7 @@ CocoaWebWidget::CocoaWebWidget(Widget *parentWidget)
     // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
     // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
     NSView *parentView = (NSView *)parentWidget->getWindow().getNativeWindowHandle();
-    CGSize parentSize = parentView.frame.size;
     [fWebView removeFromSuperview];
-    fWebView.frame = CGRectMake(0, 0, parentSize.width, parentSize.height);
     [parentView addSubview:fWebView];
 
     String js = String(JS_POST_MESSAGE_SHIM);
@@ -70,9 +70,23 @@ CocoaWebWidget::~CocoaWebWidget()
 void CocoaWebWidget::onResize(const ResizeEvent& ev)
 {
     (void)ev;
-    CGRect frame = fWebView.superview.frame;
-    frame.origin.x = 0;
-    frame.origin.y = 0;
+    updateViewFrame();
+}
+
+void CocoaWebWidget::onPositionChanged(const PositionChangedEvent& ev)
+{
+    (void)ev;
+    updateViewFrame();
+}
+
+void CocoaWebWidget::updateViewFrame()
+{
+    float k = platform::getSystemDisplayScaleFactor();
+    CGRect frame;
+    frame.origin.x = (CGFloat)getAbsoluteX() / k;
+    frame.origin.y = (CGFloat)getAbsoluteY() / k;
+    frame.size.width = (CGFloat)getWidth() / k;
+    frame.size.height = (CGFloat)getHeight() / k;
     fWebView.frame = frame;
 }
 
