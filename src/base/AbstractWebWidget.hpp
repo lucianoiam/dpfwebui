@@ -44,7 +44,8 @@ public:
 class AbstractWebWidget : public SubWidget
 {
 public:
-    AbstractWebWidget(Widget *parentWidget) : SubWidget(parentWidget) {}
+    AbstractWebWidget(Widget *parentWidget) : SubWidget(parentWidget),
+        fPrintTraffic(false) {}
     virtual ~AbstractWebWidget() {};
 
     void onDisplay() override { /* no-op */ }
@@ -54,6 +55,7 @@ public:
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
 
+    void setPrintTraffic(bool printTraffic) { fPrintTraffic = printTraffic; }
     void setEventHandler(WebWidgetEventHandler* handler) { fHandler = handler; }
     void postMessage(const ScriptValueVector& args);
 
@@ -67,6 +69,8 @@ private:
     String serializeScriptValues(const ScriptValueVector& args);
 
     void addStylesheet(String& source);
+
+    bool fPrintTraffic;
 
     WebWidgetEventHandler* fHandler;
 
