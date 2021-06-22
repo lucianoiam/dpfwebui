@@ -16,7 +16,13 @@
 
  class ResizeHandle {
 
-    constructor(ui) {
+    constructor(callback) {
+        this.callback = callback;
+
+        /*setTimeout(() => {
+            this.callback(1600, 800);
+        }, 2000);*/
+
         console.log('FIXME: add a resize handle to the user interface');
     }
 

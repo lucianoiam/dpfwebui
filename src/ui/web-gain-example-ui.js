@@ -43,7 +43,7 @@ class WebGainExampleUI extends DISTRHO_WebUI {
         document.body.style.visibility = 'visible';
 
         this.isResizable().then((result) => {
-            new ResizeHandle(this);
+            new ResizeHandle((w, h) => this.setSize(w, h));
         });
     }
 
