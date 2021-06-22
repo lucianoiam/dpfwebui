@@ -90,12 +90,12 @@ class DISTRHO_WebUI {
         // default empty implementation
     }
 
-    // Helper method for calling UI methods
+    // Helper for calling UI methods
     _call(method, ...args) {
         this.postMessage('WebUI', method, ...args)
     }
 
-    // Helper method for supporting synchronous calls using promises
+    // Helper for supporting synchronous calls using promises
     _callWithReply(method, ...args) {
         if (method in this._resolve) {
             this._resolve[method][1](); // reject previous
