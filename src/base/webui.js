@@ -29,6 +29,11 @@ class DISTRHO_WebUI {
         });
     }
 
+    // UI::setSize(uint width, uint height)
+    setSize(width, height) {
+        this.postMessage('WebUI', 'setSize', width, height);
+    }
+
     // UI::editParameter(uint32_t index, bool started)
     editParameter(index, started) {
         this.postMessage('WebUI', 'editParameter', index, started);

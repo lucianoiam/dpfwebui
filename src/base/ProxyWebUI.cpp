@@ -134,6 +134,12 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
 
+    } else if ((method == "setSize") && (argc == 2)) {
+        setSize(
+            static_cast<uint>(args[2].getDouble()), // width
+            static_cast<uint>(args[3].getDouble())  // height
+        );
+
     } else if ((method == "editParameter") && (argc == 2)) {
         editParameter(
             static_cast<uint32_t>(args[2].getDouble()), // index
