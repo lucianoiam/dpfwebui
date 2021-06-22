@@ -44,8 +44,8 @@ namespace DISTRHO {
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
     , fWebWidget(this)
+    , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
-    , fInitContentReady(false)
 {
     setGeometryConstraints(getWidth(), getHeight(), false, false);
 
@@ -97,7 +97,7 @@ void ProxyWebUI::stateChanged(const char* key, const char* value)
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
 
 void ProxyWebUI::webPostMessage(const ScriptValueVector& args) {
-    if (fInitContentReady) {
+    if (fFlushedInitMsgQueue) {
         fWebWidget.postMessage(args);
     } else {
         fInitMsgQueue.push_back(args);
@@ -106,6 +106,12 @@ void ProxyWebUI::webPostMessage(const ScriptValueVector& args) {
 
 void ProxyWebUI::flushInitMessageQueue()
 {
+    if (fFlushedInitMsgQueue) {
+        return;
+    }
+
+    fFlushedInitMsgQueue = true;
+
     for (InitMessageQueue::iterator it = fInitMsgQueue.begin(); it != fInitMsgQueue.end(); ++it) {
         fWebWidget.postMessage(*it);
     }
@@ -115,7 +121,7 @@ void ProxyWebUI::flushInitMessageQueue()
 
 void ProxyWebUI::handleWebWidgetContentLoadFinished()
 {
-    fInitContentReady = true;
+    // no-op, just let derived classes now
     webContentReady();
 }
 
@@ -131,6 +137,11 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
 
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
+
+    } else if (method == "isResizable") {
+        // It is not possible to implement synchronous calls without
+        // resorting to dirty hacks, fulfill getter promises instead.
+        webPostMessage({"WebUI", "isResizable", isResizable()});
 
     } else if ((method == "setSize") && (argc == 2)) {
         setSize(

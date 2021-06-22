@@ -36,9 +36,15 @@ class WebGainExampleUI extends DISTRHO_WebUI {
         });
 
         // Process any UI message generated while the web view was still loading
+        // It is mandatory to call this method at some point, e.g. after UI gets
+        // ready, otherwise messages will accumulate indefinitely on C++ side.
         this.flushInitMessageQueue();
 
         document.body.style.visibility = 'visible';
+
+        this.isResizable().then((result) => {
+        	console.log('isResizable() = ' + result);
+        });
     }
 
     parameterChanged(index, value) {

@@ -18,33 +18,49 @@ R"WEBUI_JS(
 class DISTRHO_WebUI {
 
     constructor() {
+        this._resolve = {};
+
         window.webviewHost.addMessageListener((args) => {
-            if (args[0] == 'WebUI') {
-                this[args[1]](...args.slice(2));
+            if (args[0] != 'WebUI') {
+                this.messageReceived(args); // passthrough
+                return;
+            }
+
+            const method = args[1];
+            args = args.slice(2);
+
+            if (method in this._resolve) {
+                this._resolve[method][0](...args); // fulfill promise
+                delete this._resolve[method];
             } else {
-                this.messageReceived(args);
+                this[method](...args); // call method
             }
         });
     }
 
+    // UI::isResizable()
+    async isResizable() {
+        return this._callWithReply('isResizable');
+    }
+
     // UI::setSize(uint width, uint height)
     setSize(width, height) {
-        this.postMessage('WebUI', 'setSize', width, height);
+        this._call('setSize', width, height);
     }
 
     // UI::editParameter(uint32_t index, bool started)
     editParameter(index, started) {
-        this.postMessage('WebUI', 'editParameter', index, started);
+        this._call('editParameter', index, started);
     }
 
     // UI::setParameterValue(uint32_t index, float value)
     setParameterValue(index, value) {
-        this.postMessage('WebUI', 'setParameterValue', index, value);
+        this._call('setParameterValue', index, value);
     }
 
     // UI::setState(const char* key, const char* value)
     setState(key, value) {
-        this.postMessage('WebUI', 'setState', key, value);
+        this._call('setState', key, value);
     }
 
     // UI::parameterChanged(uint32_t index, float value)
@@ -59,7 +75,7 @@ class DISTRHO_WebUI {
 
     // ProxyWebUI::flushInitMessageQueue()
     flushInitMessageQueue() {
-        this.postMessage('WebUI', 'flushInitMessageQueue');
+        this._call('flushInitMessageQueue');
     }
 
     // ProxyWebUI::webPostMessage(const ScriptValueVector& args)
@@ -70,6 +86,22 @@ class DISTRHO_WebUI {
     // ProxyWebUI::webMessageReceived(const ScriptValueVector& args)
     messageReceived(args) {
         // default empty implementation
+    }
+
+    // Helper method for calling UI methods
+    _call(method, ...args) {
+        this.postMessage('WebUI', method, ...args)
+    }
+
+    // Helper method for supporting synchronous calls using promises
+    _callWithReply(method, ...args) {
+        if (method in this._resolve) {
+            this._resolve[method][1](); // reject previous
+        }
+        return new Promise((resolve, reject) => {
+            this._resolve[method] = [resolve, reject];
+            this._call(method, ...args);
+        });
     }
 
 }
