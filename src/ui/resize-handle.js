@@ -52,8 +52,8 @@
                 return
             }
 
-            const accel = 4; // REAPER works better when accel > 1
-            
+            const accel = 1; // REAPER works better when accel > 1
+
             const newWidth = Math.max(this.initialWidth, Math.min(window.screen.width,
                 this.width + accel * ev.movementX));
             const newHeight = Math.max(this.initialHeight, Math.min(window.screen.height,
