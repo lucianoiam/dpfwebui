@@ -30,13 +30,27 @@ const ResizeHandle_SVG = `
 
 class ResizeHandle {
 
-    constructor(callback, minWidth, minHeight, maxWidth, maxHeight) {
+    constructor(callback, options) {
         this.callback = callback; 
 
-        this.minWidth = minWidth || document.body.clientWidth;
-        this.minHeight = minHeight || document.body.clientHeight;
-        this.maxWidth = maxWidth || window.screen.width;
-        this.maxHeight = maxHeight || window.screen.height;
+        options = options || {};
+
+        // Default minimum size is the current content size
+        this.minWidth = options.minWidth || document.body.clientWidth;
+        this.minHeight = options.minHeight || document.body.clientHeight;
+
+        if (options.maxScale) {
+            // Set the maximum size to maxScale times the minimum size 
+            this.maxWidth = options.maxScale * this.minWidth;
+            this.maxHeight = options.maxScale * this.minHeight;
+        } else {
+            // Default maximum size is the device screen size
+            this.maxWidth = options.maxWidth || window.screen.width;
+            this.maxHeight = options.maxHeight || window.screen.height;
+        }
+
+        // Keep aspect ratio while resizing, default to yes
+        this.keepAspect = options.keepAspect || true;
 
         this.width = 0;
         this.height = 0;
@@ -96,6 +110,8 @@ class ResizeHandle {
 
             let newHeight = this.height + accel * dy;
             newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, newHeight));
+
+            // FIXME - aspect ratio lock
 
             if ((this.width != newWidth) || (this.height != newHeight)) {
                 this.width = newWidth;
