@@ -21,10 +21,19 @@
 // Allow pressing shift when clicking on the handle to resize in larger steps.
 const ResizeHandle_SHIFT_ACCELERATION = 4;
 
+const ResizeHandle_SVG = `
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <line stroke="#000000" stroke-opacity="0.5" x1="0" y1="100" x2="100" y2="0"/>
+    <line stroke="#000000" stroke-opacity="0.5" x1="100" y1="25" x2="25" y2="100"/>
+    <line stroke="#000000" stroke-opacity="0.5" x1="50" y1="100" x2="100" y2="50"/>
+    <line stroke="#000000" stroke-opacity="0.5" x1="75" y1="100" x2="100" y2="75"/>
+</svg>
+`;
+
 class ResizeHandle {
 
     constructor(callback) {
-        this.callback = callback;
+        this.callback = callback; 
         this.initialWidth = document.body.clientWidth;
         this.initialHeight = document.body.clientHeight;
         this.accel = 0;
@@ -34,12 +43,12 @@ class ResizeHandle {
         // FIXME - consider using a small SVG for displaying handle lines
 
         const handle = document.createElement('div');
-        //handle.style.backgroundColor = 'rgba(0,0,0,0.5)';
+        handle.innerHTML = ResizeHandle_SVG;
         handle.style.position = 'fixed';
         handle.style.right = '0px';
         handle.style.bottom = '0px';
-        handle.style.width = '32px';
-        handle.style.height = '32px';
+        handle.style.width = '24px';
+        handle.style.height = '24px';
         handle.style.zIndex = '1000';
 
         document.body.appendChild(handle);
