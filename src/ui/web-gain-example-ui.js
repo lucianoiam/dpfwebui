@@ -69,9 +69,10 @@ class WebGainExampleUI extends DISTRHO_WebUI {
     }
 
     async _addResizeHandle() {
+        const k = window.devicePixelRatio;
         const options = {
-            minWidth: await this.getWidth(),   // UI::getWidth()
-            minHeight: await this.getHeight(), // UI::getHeight()
+            minWidth:  /* UI::getWidth()  */ await this.getWidth()  / k,
+            minHeight: /* UI::getHeight() */ await this.getHeight() / k,
             maxScale: 2,
             keepAspect: true
         };
