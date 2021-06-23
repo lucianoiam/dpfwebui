@@ -62,16 +62,16 @@ class ResizeHandle {
         this.linux = /linux/i.test(window.navigator.platform);
         this.mac = /macintosh/i.test(window.navigator.platform);
 
-        const handle = document.createElement('div');
-        handle.innerHTML = ResizeHandle_SVG;
-        handle.style.position = 'fixed';
-        handle.style.zIndex = '1000';
-        handle.style.right = '0px';
-        handle.style.bottom = '0px';
-        handle.style.width = '24px';
-        handle.style.height = '24px';
+        this.handle = document.createElement('div');
+        this.handle.innerHTML = ResizeHandle_SVG;
+        this.handle.style.position = 'fixed';
+        this.handle.style.zIndex = '1000';
+        this.handle.style.right = '0px';
+        this.handle.style.bottom = '0px';
+        this.handle.style.width = '24px';
+        this.handle.style.height = '24px';
 
-        handle.addEventListener('mousedown', (ev) => {
+        this.handle.addEventListener('mousedown', (ev) => {
             this.resizing = true;
 
             this.width = document.body.clientWidth;
@@ -123,8 +123,10 @@ class ResizeHandle {
                 //console.log(`${this.width}x${this.height}`);
             }
         });
+    }
 
-        return handle;
+    get element() {
+    	return this.handle;
     }
 
 }

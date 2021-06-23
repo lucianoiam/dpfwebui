@@ -38,7 +38,7 @@ class WebGainExampleUI extends DISTRHO_WebUI {
         // Add a resize handle
         const options = {maxScale: 2, keepAspect: true};
         const handle = new ResizeHandle((w, h) => this.setSize(w, h), options);
-        document.body.appendChild(handle);
+        document.body.appendChild(handle.element);
 
         // Mostly connect controls to the plugin
         this._setupView();
