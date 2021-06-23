@@ -132,15 +132,22 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
         return;
     }
 
+    // It is not possible to implement synchronous calls without resorting
+    // to dirty hacks, for such cases fulfill getter promises instead.
+
     String method = args[1].getString();
     int argc = args.size() - 2;
 
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
 
+    } else if (method == "getWidth") {
+        webPostMessage({"WebUI", "getWidth", static_cast<double>(getWidth())});
+
+    } else if (method == "getHeight") {
+        webPostMessage({"WebUI", "getHeight", static_cast<double>(getHeight())});
+
     } else if (method == "isResizable") {
-        // It is not possible to implement synchronous calls without
-        // resorting to dirty hacks, fulfill getter promises instead.
         webPostMessage({"WebUI", "isResizable", isResizable()});
 
     } else if ((method == "setSize") && (argc == 2)) {
