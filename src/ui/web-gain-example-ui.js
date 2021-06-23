@@ -35,12 +35,10 @@ class WebGainExampleUI extends DISTRHO_WebUI {
         // Fix input[type=range] sliders not reacting to touch events on Linux
         Platform.fixLinuxInputTypeRangeTouch();
         
-        // Add a resize handle if the host allows to resize the window
-        this.isResizable().then((result) => {
-            const options = {maxScale: 2, keepAspect: true};
-            const handle = new ResizeHandle((w, h) => this.setSize(w, h), options);
-            document.body.appendChild(handle);
-        });
+        // Add a resize handle
+        const options = {maxScale: 2, keepAspect: true};
+        const handle = new ResizeHandle((w, h) => this.setSize(w, h), options);
+        document.body.appendChild(handle);
 
         // Mostly connect controls to the plugin
         this._setupView();
