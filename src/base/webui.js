@@ -40,6 +40,16 @@ class DISTRHO_WebUI {
         });
     }
 
+    // UI::getWidth()
+    async getWidth() {
+        return this._callWithReply('getWidth');
+    }
+
+    // UI::getHeight()
+    async getHeight() {
+        return this._callWithReply('getHeight');
+    }
+
     // UI::isResizable()
     async isResizable() {
         return this._callWithReply('isResizable');
