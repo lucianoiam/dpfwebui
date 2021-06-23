@@ -74,7 +74,7 @@ class WebGainExampleUI extends DISTRHO_WebUI {
             minWidth:  /* UI::getWidth()  */ await this.getWidth()  / k,
             minHeight: /* UI::getHeight() */ await this.getHeight() / k,
             maxScale: 2,
-            keepAspect: true
+            keepAspectRatio: true
         };
         const handle = new ResizeHandle((w, h) => this.setSize(w, h), options);
         document.body.appendChild(handle.element);
