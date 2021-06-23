@@ -25,33 +25,33 @@ class WebGainExampleUI extends DISTRHO_WebUI {
 
     constructor() {
         super(); // do not forget
-
-        this.dom = {
+        
+        // This is just a shortcut to avoid repeating document.getElementById()
+        this.dom = Object.freeze({
             userAgent:  document.getElementById('user-agent'),
             gainSlider: document.getElementById('gain-slider')
-        };
-
-        this.dom.userAgent.innerText = navigator.userAgent;
-
-        this.dom.gainSlider.addEventListener('input', (ev) => {
-            this.setParameterValue(0, parseFloat(ev.target.value));
         });
+
+        // Fix input[type=range] sliders not reacting to touch events on Linux
+        Platform.fixLinuxInputTypeRangeTouch();
+        
+        // Add a resize handle if the host allows to resize the window
+        this.isResizable().then((result) => {
+            const options = {maxScale: 2, keepAspect: true};
+            const handle = new ResizeHandle((w, h) => this.setSize(w, h), options);
+            document.body.appendChild(handle);
+        });
+
+        // Mostly connect controls to the plugin
+        this._setupView();
 
         // Process any UI message generated while the web view was still loading
         // It is mandatory to call this method at some point, e.g. after UI gets
         // ready, otherwise messages will accumulate indefinitely on C++ side.
         this.flushInitMessageQueue();
 
-        // Fix for input[type=range] sliders not reacting to touch events on Linux
-        Platform.fixLinuxInputTypeRangeTouch();
-
+        // Showtime
         document.body.style.visibility = 'visible';
-
-        this.isResizable().then((result) => {
-            const options = {maxScale: 2, keepAspect: true};
-            const handle = new ResizeHandle((w, h) => this.setSize(w, h), options);
-            document.body.appendChild(handle);
-        });
     }
 
     parameterChanged(index, value) {
@@ -62,6 +62,14 @@ class WebGainExampleUI extends DISTRHO_WebUI {
             default:
                 break;
         }
+    }
+
+    _setupView() {
+        this.dom.userAgent.innerText = navigator.userAgent;
+
+        this.dom.gainSlider.addEventListener('input', (ev) => {
+            this.setParameterValue(0, parseFloat(ev.target.value));
+        });
     }
 
 }
