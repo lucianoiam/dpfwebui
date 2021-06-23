@@ -14,13 +14,18 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
- class ResizeHandle {
+// For some yet unknown reason REAPER makes the resize handle react slowly.
+// Behavior not reproducible on standalone application or plugin running on Live.
+// Allow pressing shift when clicking on the handle to resize in larger steps.
+const ResizeHandle_SHIFT_ACCELERATION = 4;
+
+class ResizeHandle {
 
     constructor(callback) {
         this.callback = callback;
         this.initialWidth = document.body.clientWidth;
         this.initialHeight = document.body.clientHeight;
-        this.resizing = false;
+        this.accel = 0;
         this.width = 0;
         this.height = 0;
 
@@ -31,33 +36,31 @@
         handle.style.position = 'fixed';
         handle.style.right = '0px';
         handle.style.bottom = '0px';
-        handle.style.width = '24px';
-        handle.style.height = '24px';
+        handle.style.width = '32px';
+        handle.style.height = '32px';
         handle.style.zIndex = '1000';
 
         document.body.appendChild(handle);
 
         handle.addEventListener('mousedown', (ev) => {
-            this.resizing = true;
+            this.accel = ev.shiftKey ? ResizeHandle_SHIFT_ACCELERATION : 1;
             this.width = document.body.clientWidth;
             this.height = document.body.clientHeight;
         });
 
         window.addEventListener('mouseup', (ev) => {
-            this.resizing = false;
+            this.accel = 0;
         });
 
         window.addEventListener('mousemove', (ev) => {
-            if (!this.resizing) {
+            if (this.accel == 0) {
                 return
             }
 
-            const accel = 1; // REAPER works better when accel > 1
-
             const newWidth = Math.max(this.initialWidth, Math.min(window.screen.width,
-                this.width + accel * ev.movementX));
+            this.width + this.accel * ev.movementX));
             const newHeight = Math.max(this.initialHeight, Math.min(window.screen.height,
-                this.height + accel * ev.movementY));
+            this.height + this.accel * ev.movementY));
 
             if ((this.width != newWidth) || (this.height != newHeight)) {
                 this.width = newWidth;
@@ -69,4 +72,4 @@
         });
     }
 
- }
+}
