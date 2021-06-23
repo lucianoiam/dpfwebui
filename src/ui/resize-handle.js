@@ -50,7 +50,8 @@ class ResizeHandle {
         }
 
         // Keep aspect ratio while resizing, default to yes
-        this.keepAspect = options.keepAspect || true;
+        this.keepAspectRatio = options.keepAspectRatio === false ? false : true;
+        this.aspectRatio = this.minWidth / this.minHeight;
 
         this.width = 0;
         this.height = 0;
@@ -103,7 +104,7 @@ class ResizeHandle {
 
         ['touchend', 'mouseup'].forEach((evName) => {
             window.addEventListener(evName, (ev) => {
-                this._onDragStop(ev);
+                this._onDragEnd(ev);
                 if (ev.cancelable) {
                     ev.preventDefault();
                 }
@@ -131,18 +132,20 @@ class ResizeHandle {
         const clientX = ev.clientX || ev.touches[0].clientX;
         const dx = clientX - this.x;
         this.x = clientX;
+        let newWidth = Math.max(this.minWidth, Math.min(this.maxWidth, this.width + accel * dx));
 
         const clientY = ev.clientY || ev.touches[0].clientY;
         const dy = clientY - this.y;
         this.y = clientY;
+        let newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, this.height + accel * dy));
 
-        let newWidth = this.width + accel * dx;
-        newWidth = Math.max(this.minWidth, Math.min(this.maxWidth, newWidth));
-
-        let newHeight = this.height + accel * dy;
-        newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, newHeight));
-
-        // FIXME - aspect ratio lock
+        if (this.keepAspectRatio) {
+            if (dx > dy) {
+                newHeight = newWidth / this.aspectRatio;
+            } else {
+                newWidth = newHeight * this.aspectRatio;
+            }
+        }
 
         if ((this.width != newWidth) || (this.height != newHeight)) {
             this.width = newWidth;
@@ -152,7 +155,7 @@ class ResizeHandle {
         }
     }
 
-    _onDragStop(ev) {
+    _onDragEnd(ev) {
         this.resizing = false;
     }
 
