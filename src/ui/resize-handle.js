@@ -58,7 +58,7 @@ class ResizeHandle {
         this.resizing = false;
 
         this.linux = /linux/i.test(window.navigator.platform);
-        this.mac = /macintosh/i.test(window.navigator.platform);
+        this.mac = /mac/i.test(window.navigator.platform);
 
         this.handle = document.createElement('div');
         this.handle.innerHTML = ResizeHandle_SVG;
