@@ -138,6 +138,8 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
     String method = args[1].getString();
     int argc = args.size() - 2;
 
+    // TODO: use a hashtable instead of comparing strings ?
+
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
 
