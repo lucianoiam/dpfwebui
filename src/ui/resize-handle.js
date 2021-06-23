@@ -56,72 +56,47 @@ class ResizeHandle {
 
         this.width = 0;
         this.height = 0;
-        
         this.resizing = false;
-
         this.mac = /mac/i.test(window.navigator.platform);
 
-        this.handle = document.createElement('div');
-        this.handle.innerHTML = ResizeHandle_SVG;
-        this.handle.style.position = 'fixed';
-        this.handle.style.zIndex = '1000';
-        this.handle.style.right = '0px';
-        this.handle.style.bottom = '0px';
-        this.handle.style.width = '24px';
-        this.handle.style.height = '24px';
+        this.handle = this._createElement();
 
+        this._addEventListeners();
+    }
+
+    get element() {
+        return this.handle;
+    }
+
+    _createElement() {
+        const handle = document.createElement('div');
+        handle.innerHTML = ResizeHandle_SVG;
+        handle.style.position = 'fixed';
+        handle.style.zIndex = '1000';
+        handle.style.right = '0px';
+        handle.style.bottom = '0px';
+        handle.style.width = '24px';
+        handle.style.height = '24px';
+        return handle;
+    }
+
+    _addEventListeners() {
         const evOptions = {passive: false};
 
         ['touchstart', 'mousedown'].forEach((evName) => {
             this.handle.addEventListener(evName, (ev) => {
-                this.resizing = true;
-
-                this.width = document.body.clientWidth;
-                this.height = document.body.clientHeight;
-
-                this.x = ev.clientX /* mouse */ || ev.touches[0].clientX;
-                this.y = ev.clientY /* mouse */ || ev.touches[0].clientY;
-
+                this._onDragStart(ev);
                 if (ev.cancelable) {
                     ev.preventDefault(); // first handled event wins
                 }
             }, evOptions);
         });
 
-        // FIXME: On Windows, touchmove events stop triggering after calling callback,
-        //        which in turn calls DistrhoUI::setSize(). Mouse resizing works OK.
-
         ['touchmove', 'mousemove'].forEach((evName) => {
             window.addEventListener(evName, (ev) => {
-                if (!this.resizing) {
-                    return
-                }
-
-                const accel = this.mac && ev.shiftKey ? ResizeHandle_SHIFT_ACCELERATION : 1;
-
-                const clientX = ev.clientX || ev.touches[0].clientX;
-                const dx = clientX - this.x;
-                this.x = clientX;
-
-                const clientY = ev.clientY || ev.touches[0].clientY;
-                const dy = clientY - this.y;
-                this.y = clientY;
-
-                let newWidth = this.width + accel * dx;
-                newWidth = Math.max(this.minWidth, Math.min(this.maxWidth, newWidth));
-
-                let newHeight = this.height + accel * dy;
-                newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, newHeight));
-
-                // FIXME - aspect ratio lock
-
-                if ((this.width != newWidth) || (this.height != newHeight)) {
-                    this.width = newWidth;
-                    this.height = newHeight;
-                    const k = window.devicePixelRatio;
-                    this.callback(k * this.width, k * this.height);
-                }
-                
+                // FIXME: On Windows, touchmove events stop triggering after calling callback,
+                //        which in turn calls DistrhoUI::setSize(). Mouse resizing works OK.
+                this._onDragContinue(ev);
                 if (ev.cancelable) {
                     ev.preventDefault();
                 }
@@ -130,7 +105,7 @@ class ResizeHandle {
 
         ['touchend', 'mouseup'].forEach((evName) => {
             window.addEventListener(evName, (ev) => {
-                this.resizing = false;
+                this._onDragStop(ev);
                 if (ev.cancelable) {
                     ev.preventDefault();
                 }
@@ -138,8 +113,49 @@ class ResizeHandle {
         });
     }
 
-    get element() {
-        return this.handle;
+    _onDragStart(ev) {
+        this.resizing = true;
+
+        this.width = document.body.clientWidth;
+        this.height = document.body.clientHeight;
+
+        this.x = ev.clientX /* mouse */ || ev.touches[0].clientX;
+        this.y = ev.clientY /* mouse */ || ev.touches[0].clientY;
+    }
+
+    _onDragContinue(ev) {
+        if (!this.resizing) {
+            return
+        }
+
+        const accel = this.mac && ev.shiftKey ? ResizeHandle_SHIFT_ACCELERATION : 1;
+
+        const clientX = ev.clientX || ev.touches[0].clientX;
+        const dx = clientX - this.x;
+        this.x = clientX;
+
+        const clientY = ev.clientY || ev.touches[0].clientY;
+        const dy = clientY - this.y;
+        this.y = clientY;
+
+        let newWidth = this.width + accel * dx;
+        newWidth = Math.max(this.minWidth, Math.min(this.maxWidth, newWidth));
+
+        let newHeight = this.height + accel * dy;
+        newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, newHeight));
+
+        // FIXME - aspect ratio lock
+
+        if ((this.width != newWidth) || (this.height != newHeight)) {
+            this.width = newWidth;
+            this.height = newHeight;
+            const k = window.devicePixelRatio;
+            this.callback(k * this.width, k * this.height);
+        }
+    }
+
+    _onDragStop(ev) {
+        this.resizing = false;
     }
 
 }
