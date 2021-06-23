@@ -32,18 +32,21 @@ const ResizeHandle_SVG = `
 
 class ResizeHandle {
 
-    constructor(callback) {
+    constructor(callback, minWidth, minHeight, maxWidth, maxHeight) {
         this.callback = callback; 
 
-        this.linux = /linux/i.test(window.navigator.platform);
-        this.mac = /macintosh/i.test(window.navigator.platform);
+        this.minWidth = minWidth || document.body.clientWidth;
+        this.minHeight = minHeight || document.body.clientHeight;
+        this.maxWidth = maxWidth || window.screen.width;
+        this.maxHeight = maxHeight || window.screen.height;
 
-        this.minWidth = 100; // FIXME - read geometry constraints
-        this.minHeight = 100; // FIXME - read geometry constraints
         this.width = 0;
         this.height = 0;
         
         this.resizing = false;
+
+        this.linux = /linux/i.test(window.navigator.platform);
+        this.mac = /macintosh/i.test(window.navigator.platform);
 
         const handle = document.createElement('div');
         handle.innerHTML = ResizeHandle_SVG;
@@ -53,8 +56,6 @@ class ResizeHandle {
         handle.style.bottom = '0px';
         handle.style.width = '24px';
         handle.style.height = '24px';
-
-        document.body.appendChild(handle);
 
         handle.addEventListener('mousedown', (ev) => {
             this.resizing = true;
@@ -93,10 +94,10 @@ class ResizeHandle {
             const accel = this.mac && ev.shiftKey ? ResizeHandle_SHIFT_ACCELERATION : 1;
 
             let newWidth = this.width + accel * dx;
-            newWidth = Math.max(this.minWidth, Math.min(window.screen.width, newWidth));
+            newWidth = Math.max(this.minWidth, Math.min(this.maxWidth, newWidth));
 
             let newHeight = this.height + accel * dy;
-            newHeight = Math.max(this.minHeight, Math.min(window.screen.height, newHeight));
+            newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, newHeight));
 
             if ((this.width != newWidth) || (this.height != newHeight)) {
                 this.width = newWidth;
@@ -106,6 +107,8 @@ class ResizeHandle {
                 //console.log(`${this.width}x${this.height}`);
             }
         });
+
+        return handle;
     }
 
 }
