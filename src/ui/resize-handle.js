@@ -14,11 +14,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// For some yet unknown reason REAPER/Mac makes the resize handle react slowly.
-// Behavior not reproducible on standalone application or plugin running on Live.
-// Allow pressing shift when dragging the handle to resize in larger steps.
-const ResizeHandle_SHIFT_ACCELERATION = 4;
-
 const ResizeHandle_SVG = `
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
     <line stroke="#000000" stroke-opacity="0.75" x1="0" y1="100" x2="100" y2="0"/>
@@ -56,7 +51,6 @@ class ResizeHandle {
         this.width = 0;
         this.height = 0;
         this.resizing = false;
-        this.mac = /mac/i.test(window.navigator.platform);
 
         this.handle = this._createElement();
 
@@ -127,17 +121,15 @@ class ResizeHandle {
             return
         }
 
-        const accel = this.mac && ev.shiftKey ? ResizeHandle_SHIFT_ACCELERATION : 1;
-
         const clientX = ev.clientX || ev.touches[0].clientX;
         const dx = clientX - this.x;
         this.x = clientX;
-        let newWidth = Math.max(this.minWidth, Math.min(this.maxWidth, this.width + accel * dx));
+        let newWidth = Math.max(this.minWidth, Math.min(this.maxWidth, this.width + dx));
 
         const clientY = ev.clientY || ev.touches[0].clientY;
         const dy = clientY - this.y;
         this.y = clientY;
-        let newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, this.height + accel * dy));
+        let newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, this.height + dy));
 
         if (this.keepAspectRatio) {
             if (dx > dy) {
