@@ -48,7 +48,8 @@ class WebGainExampleUI extends DISTRHO_WebUI {
         document.body.style.visibility = 'visible';
 
         this.isResizable().then((result) => {
-            const handle = new ResizeHandle((w, h) => this.setSize(w, h) /* FIXME: pass min/max w/h */);
+            const options = {maxScale: 2, keepAspect: true};
+            const handle = new ResizeHandle((w, h) => this.setSize(w, h), options);
             document.body.appendChild(handle);
         });
     }
