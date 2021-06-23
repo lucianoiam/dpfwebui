@@ -59,7 +59,6 @@ class ResizeHandle {
         
         this.resizing = false;
 
-        this.linux = /linux/i.test(window.navigator.platform);
         this.mac = /mac/i.test(window.navigator.platform);
 
         this.handle = document.createElement('div');
@@ -71,62 +70,73 @@ class ResizeHandle {
         this.handle.style.width = '24px';
         this.handle.style.height = '24px';
 
-        this.handle.addEventListener('mousedown', (ev) => {
-            this.resizing = true;
+        const evOptions = {passive: false};
 
-            this.width = document.body.clientWidth;
-            this.height = document.body.clientHeight;
+        ['touchstart', 'mousedown'].forEach((evName) => {
+            this.handle.addEventListener(evName, (ev) => {
+                this.resizing = true;
 
-            if (this.linux) {
-                this.x = ev.clientX;
-                this.y = ev.clientY;
-            }
+                this.width = document.body.clientWidth;
+                this.height = document.body.clientHeight;
+
+                this.x = ev.clientX /* mouse */ || ev.touches[0].clientX;
+                this.y = ev.clientY /* mouse */ || ev.touches[0].clientY;
+
+                if (ev.cancelable) {
+                    ev.preventDefault(); // first handled event wins
+                }
+            }, evOptions);
         });
 
-        window.addEventListener('mouseup', (ev) => {
-            this.resizing = false;
+        ['touchmove', 'mousemove'].forEach((evName) => {
+            window.addEventListener(evName, (ev) => {
+                if (!this.resizing) {
+                    return
+                }
+
+                const accel = this.mac && ev.shiftKey ? ResizeHandle_SHIFT_ACCELERATION : 1;
+
+                const clientX = ev.clientX || ev.touches[0].clientX;
+                const dx = clientX - this.x;
+                this.x = clientX;
+
+                const clientY = ev.clientY || ev.touches[0].clientY;
+                const dy = clientY - this.y;
+                this.y = clientY;
+
+                let newWidth = this.width + accel * dx;
+                newWidth = Math.max(this.minWidth, Math.min(this.maxWidth, newWidth));
+
+                let newHeight = this.height + accel * dy;
+                newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, newHeight));
+
+                // FIXME - aspect ratio lock
+
+                if ((this.width != newWidth) || (this.height != newHeight)) {
+                    this.width = newWidth;
+                    this.height = newHeight;
+                    const k = window.devicePixelRatio;
+                    this.callback(k * this.width, k * this.height);
+                }
+                
+                if (ev.cancelable) {
+                    ev.preventDefault();
+                }
+            }, evOptions);
         });
 
-        window.addEventListener('mousemove', (ev) => {
-            if (!this.resizing) {
-                return
-            }
-
-            let dx, dy;
-
-            if (this.linux) {
-                // Is WebKitGTK returning absolute values for ev.movementX/Y ?
-                dx = ev.clientX - this.x;
-                this.x = ev.clientX;
-                dy = ev.clientY - this.y;
-                this.y = ev.clientY;
-            } else {
-                dx = ev.movementX;
-                dy = ev.movementY;
-            }
-
-            const accel = this.mac && ev.shiftKey ? ResizeHandle_SHIFT_ACCELERATION : 1;
-
-            let newWidth = this.width + accel * dx;
-            newWidth = Math.max(this.minWidth, Math.min(this.maxWidth, newWidth));
-
-            let newHeight = this.height + accel * dy;
-            newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, newHeight));
-
-            // FIXME - aspect ratio lock
-
-            if ((this.width != newWidth) || (this.height != newHeight)) {
-                this.width = newWidth;
-                this.height = newHeight;
-                const k = window.devicePixelRatio;
-                this.callback(k * this.width, k * this.height);
-                //console.log(`${this.width}x${this.height}`);
-            }
+        ['touchend', 'mouseup'].forEach((evName) => {
+            window.addEventListener(evName, (ev) => {
+                this.resizing = false;
+                if (ev.cancelable) {
+                    ev.preventDefault();
+                }
+            }, evOptions);
         });
     }
 
     get element() {
-    	return this.handle;
+        return this.handle;
     }
 
 }
