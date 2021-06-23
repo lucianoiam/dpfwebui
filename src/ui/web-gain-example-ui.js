@@ -42,6 +42,9 @@ class WebGainExampleUI extends DISTRHO_WebUI {
         // ready, otherwise messages will accumulate indefinitely on C++ side.
         this.flushInitMessageQueue();
 
+        // Fix for input[type=range] sliders not reacting to touch events on Linux
+        WidgetUtil.fixLinuxInputTypeRangeTouch();
+
         document.body.style.visibility = 'visible';
 
         this.isResizable().then((result) => {
