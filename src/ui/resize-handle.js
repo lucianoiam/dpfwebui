@@ -88,6 +88,9 @@ class ResizeHandle {
             }, evOptions);
         });
 
+        // FIXME: On Windows, touchmove events stop triggering after calling callback,
+        //        which in turn calls DistrhoUI::setSize(). Mouse resizing works OK.
+
         ['touchmove', 'mousemove'].forEach((evName) => {
             window.addEventListener(evName, (ev) => {
                 if (!this.resizing) {
