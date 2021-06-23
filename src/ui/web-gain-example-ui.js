@@ -41,7 +41,7 @@ class WebGainExampleUI extends DISTRHO_WebUI {
         this.flushInitMessageQueue();
 
         // Fix for input[type=range] sliders not reacting to touch events on Linux
-        WidgetUtil.fixLinuxInputTypeRangeTouch();
+        Platform.fixLinuxInputTypeRangeTouch();
 
         document.body.style.visibility = 'visible';
 

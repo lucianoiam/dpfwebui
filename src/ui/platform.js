@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-class WidgetUtil {
+class Platform {
 
     static fixLinuxInputTypeRangeTouch() {
         // Is this a bug or by design of WebKitGTK ? input[type=range] sliders
