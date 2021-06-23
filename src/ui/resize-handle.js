@@ -18,7 +18,7 @@
 
 // For some yet unknown reason REAPER makes the resize handle react slowly.
 // Behavior not reproducible on standalone application or plugin running on Live.
-// Allow pressing shift when clicking on the handle to resize in larger steps.
+// Allow pressing shift when dragging the handle to resize in larger steps.
 const ResizeHandle_SHIFT_ACCELERATION = 4;
 
 const ResizeHandle_SVG = `
@@ -36,11 +36,9 @@ class ResizeHandle {
         this.callback = callback; 
         this.initialWidth = document.body.clientWidth;
         this.initialHeight = document.body.clientHeight;
-        this.accel = 0;
+        this.resizing = false;
         this.width = 0;
         this.height = 0;
-
-        // FIXME - consider using a small SVG for displaying handle lines
 
         const handle = document.createElement('div');
         handle.innerHTML = ResizeHandle_SVG;
@@ -54,31 +52,32 @@ class ResizeHandle {
         document.body.appendChild(handle);
 
         handle.addEventListener('mousedown', (ev) => {
-            this.accel = ev.shiftKey ? ResizeHandle_SHIFT_ACCELERATION : 1;
             this.width = document.body.clientWidth;
             this.height = document.body.clientHeight;
+            this.resizing = true;
         });
 
         window.addEventListener('mouseup', (ev) => {
-            this.accel = 0;
+            this.resizing = false;
         });
 
         window.addEventListener('mousemove', (ev) => {
-            if (this.accel == 0) {
+            if (!this.resizing) {
                 return
             }
 
+            const accel = ev.shiftKey ? ResizeHandle_SHIFT_ACCELERATION : 1;
+
             const newWidth = Math.max(this.initialWidth, Math.min(window.screen.width,
-            this.width + this.accel * ev.movementX));
+                this.width + accel * ev.movementX));
             const newHeight = Math.max(this.initialHeight, Math.min(window.screen.height,
-            this.height + this.accel * ev.movementY));
+                this.height + accel * ev.movementY));
 
             if ((this.width != newWidth) || (this.height != newHeight)) {
                 this.width = newWidth;
                 this.height = newHeight;
                 const k = window.devicePixelRatio;
                 this.callback(k * this.width, k * this.height);
-                //console.log(`${this.width}x${this.height}`);
             }
         });
     }
