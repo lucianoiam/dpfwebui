@@ -20,8 +20,8 @@
 
 #include "CocoaWebWidget.hpp"
 
-#define fWebView         ((WKWebView*)fView)
-#define fWebViewDelegate ((WebViewDelegate*)fDelegate)
+#define fWebView         ((DistrhoWebView*)fView)
+#define fWebViewDelegate ((DistrhoWebViewDelegate*)fDelegate)
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
@@ -29,7 +29,18 @@
 
 USE_NAMESPACE_DISTRHO
 
-@interface WebViewDelegate: NSObject<WKNavigationDelegate, WKScriptMessageHandler>
+@interface DistrhoWebView: WKWebView
+@end
+
+@implementation DistrhoWebView
+- (BOOL)acceptsFirstMouse:(NSEvent *)theEvent {
+    // Allow the web view to immediately process clicks when the plugin window
+    // is unfocused, otherwise the first click is swallowed to focus web view.
+    return YES;
+}
+@end
+
+@interface DistrhoWebViewDelegate: NSObject<WKNavigationDelegate, WKScriptMessageHandler>
 @property (assign, nonatomic) CocoaWebWidget *cppView;
 @end
 
@@ -39,11 +50,11 @@ CocoaWebWidget::CocoaWebWidget(Widget *parentWidget)
     setSkipDrawing(true);
     
     // Create the web view
-    fView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    fView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];
     fWebView.hidden = YES;
 
     // Create a ObjC object that responds to some web view callbacks
-    fDelegate = [[WebViewDelegate alloc] init];
+    fDelegate = [[DistrhoWebViewDelegate alloc] init];
     fWebViewDelegate.cppView = this;
     fWebView.navigationDelegate = fWebViewDelegate;
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
@@ -134,7 +145,7 @@ void CocoaWebWidget::injectScript(String& source)
     [js release];
 }
 
-@implementation WebViewDelegate
+@implementation DistrhoWebViewDelegate
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {

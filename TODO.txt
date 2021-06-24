@@ -23,14 +23,6 @@ LINUX
   a bit ashaming and should be replaced with a guaranteed, documented method.
 
 
-MACOS
------
-
-- Focus clicks should not be swallowed, e.g. a plugin window containing a slider
-  requires a click before dragging the slider when the window is not initially
-  focused. WebKitGTK and EdgeWebView2 do not exhibit this behavior.
-
-
 WINDOWS
 -------
 
