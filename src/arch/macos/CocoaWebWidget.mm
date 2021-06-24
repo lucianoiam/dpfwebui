@@ -25,7 +25,7 @@
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
-// ☢️ NO ARC
+// Do not assume an autorelease pool exists or ARC is enabled.
 
 USE_NAMESPACE_DISTRHO
 
