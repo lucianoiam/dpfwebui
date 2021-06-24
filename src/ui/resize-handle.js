@@ -90,7 +90,7 @@ class ResizeHandle {
 
         ['touchmove', 'mousemove'].forEach((evName) => {
             window.addEventListener(evName, (ev) => {
-                // FIXME: On Windows, touchmove events stop triggering after calling callback,
+                // FIXME: On Windows, touchmove events stop triggering after running callback,
                 //        which in turn calls DistrhoUI::setSize(). Mouse resizing works OK.
                 this._onDragContinue(ev);
                 if ((ev.target == this.handle) && ev.cancelable) {
