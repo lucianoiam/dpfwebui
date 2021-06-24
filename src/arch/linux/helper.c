@@ -63,6 +63,7 @@ int main(int argc, char* argv[])
     }
 
     ctx.ipc = ipc_init(&conf);
+    //gdk_set_allowed_backends("x11,wayland");
     gtk_init(0, NULL);
 
     if (GDK_IS_X11_DISPLAY(gdk_display_get_default())
