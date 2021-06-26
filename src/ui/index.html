@@ -7,15 +7,42 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body style="visibility: hidden;" onload="new WebGainExampleUI">
+    
     <div id="main">
         <h1>Made with DPF</h1>
         <img style="width:32px; height:25px;" src="music.gif">
         <input type="range" min="0" max="1" step="0.001" id="gain-slider">
         <pre id="user-agent">Loading...</pre>
     </div>
-    <script src="platform.js"></script>
-    <script src="resize-handle.js"></script>
+
     <script src="stub-webui.js"></script>
     <script src="web-gain-example-ui.js"></script>
+
+    <script>
+
+        // Is this a bug or by design of WebKitGTK ? input[type=range] sliders
+        // are not reacting to touches on that web view. It does not seem to be
+        // a dpf-webui bug as touch works as expected for every other element.
+
+        if (/linux/i.test(window.navigator.platform)) {
+            document.querySelectorAll('input[type=range]').forEach((el) => {
+                el.addEventListener('touchmove', (ev) => {
+                    const minVal = parseFloat(ev.target.min);
+                    const maxVal = parseFloat(ev.target.max);
+                    const width = ev.target.offsetWidth;
+                    const x = ev.touches[0].clientX;                
+                    const minX = ev.target.getBoundingClientRect().x;
+                    const maxX = minX + width;
+                    if ((x < minX) || (x > maxX)) return;
+                    const normVal = (x - minX) / width;
+                    const val = minVal + normVal * (maxVal - minVal);
+                    ev.target.value = val;
+                    ev.target.dispatchEvent(new CustomEvent('input'));
+                });
+            });
+        }
+
+    </script>
+
   </body>
 </html>
