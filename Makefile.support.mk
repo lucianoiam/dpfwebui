@@ -8,6 +8,7 @@ ifeq ($(LINUX),true)
 LINK_FLAGS += -lpthread -ldl
 endif
 ifeq ($(MACOS),true)
+BASE_FLAGS += -DDPF_OBJC_INTERFACE_SUFFIX=$(shell hexdump -n 4 -e '"%08x" "\n"' /dev/random)
 LINK_FLAGS += -framework WebKit 
 endif
 ifeq ($(WINDOWS),true)

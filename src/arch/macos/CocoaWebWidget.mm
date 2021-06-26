@@ -20,6 +20,14 @@
 
 #include "CocoaWebWidget.hpp"
 
+// Avoid symbol name collisions
+#define OBJC_INTERFACE_NAME_HELPER_1(INAME, SEP, SUFFIX) INAME ## SEP ## SUFFIX
+#define OBJC_INTERFACE_NAME_HELPER_2(INAME, SUFFIX) OBJC_INTERFACE_NAME_HELPER_1(INAME, _, SUFFIX)
+#define OBJC_INTERFACE_NAME(INAME) OBJC_INTERFACE_NAME_HELPER_2(INAME, DPF_OBJC_INTERFACE_SUFFIX)
+
+#define DistrhoWebView         OBJC_INTERFACE_NAME(DistrhoWebView)
+#define DistrhoWebViewDelegate OBJC_INTERFACE_NAME(DistrhoWebViewDelegate)
+
 #define fWebView         ((DistrhoWebView*)fView)
 #define fWebViewDelegate ((DistrhoWebViewDelegate*)fDelegate)
 
