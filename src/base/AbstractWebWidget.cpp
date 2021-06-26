@@ -28,6 +28,7 @@
 #define CSS_DISABLE_IMAGE_DRAG   "img { user-drag: none; -webkit-user-drag: none; }"
 #define CSS_DISABLE_SELECTION    "body { user-select: none; -webkit-user-select: none; }"
 #define CSS_DISABLE_PINCH_ZOOM   "body { touch-action: pan-x pan-y; }"
+#define CSS_DISABLE_OVERFLOW     "body { overflow: hidden; }"
 
 /**
    Keep this class generic; specific plugin features belong to ProxyWebUI.
@@ -52,6 +53,7 @@ void AbstractWebWidget::handleLoadFinished()
         + String(CSS_DISABLE_IMAGE_DRAG)
         + String(CSS_DISABLE_SELECTION)
         + String(CSS_DISABLE_PINCH_ZOOM)
+        + String(CSS_DISABLE_OVERFLOW)
     ;
     addStylesheet(css);
 
