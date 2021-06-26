@@ -381,18 +381,17 @@ void SendMessageToChildren(HWND hParentWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 LRESULT CALLBACK kbdInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    if (    (uMsg == WM_SETFOCUS)
-         || (uMsg == WM_KILLFOCUS)
-         || ((uMsg > WM_KEYFIRST)   && (uMsg < WM_KEYLAST))
-         || ((uMsg > WM_MOUSEFIRST) && (uMsg < WM_MOUSELAST)) ) {
+    bool isKeyboardEvent = ((uMsg > WM_KEYFIRST) && (uMsg < WM_KEYLAST));
+    bool isMouseEvent    = ((uMsg > WM_MOUSEFIRST) && (uMsg < WM_MOUSELAST));
 
+    if ((uMsg == WM_SETFOCUS) || (uMsg == WM_KILLFOCUS) || isKeyboardEvent || isMouseEvent) {
         HWND hPluginHwnd = GetParent(hWnd);
         SendMessageToChildren(hPluginHwnd, uMsg, wParam, lParam); // target web view
         SetFocus(hWnd); // restore focus to fKbdInputHwnd
-    }
 
-    if (uMsg == WM_KEYDOWN) {
-        printf("WM_KEYDOWN\n");
+        if (isKeyboardEvent) {
+            PostMessage(GetParent(hPluginHwnd), uMsg, wParam, lParam);
+        }
     }
 
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
