@@ -38,21 +38,22 @@ namespace DISTRHO {
 }
 #endif
 
-// Automatically scale up the plugin UI so its contents do not look small
-// on high pixel density displays, known as HiDPI or Retina. Scaled dimensions
-// are passed as args to the UI ctor instead of being set in the ProxyWebUI ctor
-// body otherwise initial plugin starts with a wrong window size on Windows.
-#define INIT_SCALE_FACTOR() platform::getSystemDisplayScaleFactor()
-
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
-    : UI(INIT_SCALE_FACTOR() * baseWidth, INIT_SCALE_FACTOR() * baseHeight)
+    : UI(baseWidth, baseHeight)
     , fWebWidget(this)
     , fFlushedInitMsgQueue(false)
-    , fInitWidth(getWidth())
-    , fInitHeight(getHeight())
     , fBackgroundColor(backgroundColor)
 {
-    fWebWidget.setSize(fInitWidth, fInitHeight);
+    // Automatically scale up the plugin UI so its contents do not look small
+    // on high pixel density displays, known as HiDPI or Retina.
+    float k = platform::getSystemDisplayScaleFactor();
+    fInitWidth = k * baseWidth;
+    fInitHeight = k * baseHeight;
+    setSize(fInitWidth, fInitHeight);
+#ifdef DISTRHO_OS_WINDOWS
+    setSize(fInitWidth, fInitHeight); // why 2x on Windows?
+#endif
+
     fWebWidget.setBackgroundColor(fBackgroundColor);
     fWebWidget.setEventHandler(this);
 
