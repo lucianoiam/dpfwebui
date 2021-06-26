@@ -36,9 +36,29 @@
 
 USE_NAMESPACE_DISTRHO
 
+LRESULT CALLBACK kbdInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch(uMsg)
+    {
+        //case WM_NCHITTEST:
+        //    return HTTRANSPARENT;
+
+        case WM_LBUTTONDOWN:
+            SetFocus(hWnd);
+            break;
+
+        case WM_KEYDOWN:
+            printf("WM_KEYDOWN\n");
+            break;
+    }
+
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
 EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     : AbstractWebWidget(parentWidget)
-    , fHelperHwnd(0)
+    , fInitHelperHwnd(0)
+    , fKbdInputHwnd(0)
     , fDisplayed(false)
     , fBackgroundColor(0)
     , fHandler(0)
@@ -46,20 +66,40 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     , fView(0)
 {
     WCHAR className[256];
+
+    // Pass a hidden orphan window handle to CreateCoreWebView2Controller
+    // for initializing Edge WebView2, instead of the plugin window handle that
+    // causes some hosts to hang when opening the UI, e.g. Carla.
     ::swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
-    ::ZeroMemory(&fHelperClass, sizeof(fHelperClass));
-    fHelperClass.lpszClassName = wcsdup(className);
-    fHelperClass.lpfnWndProc = DefWindowProc;
-    ::RegisterClass(&fHelperClass);
-    fHelperHwnd = ::CreateWindowEx(
+    ::ZeroMemory(&fInitHelperClass, sizeof(fInitHelperClass));
+    fInitHelperClass.lpszClassName = wcsdup(className);
+    fInitHelperClass.lpfnWndProc = DefWindowProc;
+    ::RegisterClass(&fInitHelperClass);
+    fInitHelperHwnd = ::CreateWindowEx(
         WS_EX_TOOLWINDOW,
-        fHelperClass.lpszClassName,
+        fInitHelperClass.lpszClassName,
         L"WebView2 Init Helper",
         WS_POPUPWINDOW | WS_CAPTION,
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         0, 0, 0, 0
     );
-    ::ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
+    ::ShowWindow(fInitHelperHwnd, SW_SHOWNOACTIVATE);
+
+    // Transparent overlay window for catching keystrokes
+    ::swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
+    ::ZeroMemory(&fKbdInputClass, sizeof(fKbdInputClass));
+    fKbdInputClass.lpszClassName = wcsdup(className);
+    fKbdInputClass.lpfnWndProc = kbdInputWndProc;
+    ::RegisterClass(&fKbdInputClass);
+    fKbdInputHwnd = ::CreateWindowEx(
+        WS_EX_TRANSPARENT,
+        fKbdInputClass.lpszClassName,
+        L"Keyboard Input Helper",
+        WS_CHILD,
+        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        reinterpret_cast<HWND>(getParentWidget()->getWindow().getNativeWindowHandle()), 0, 0, 0
+    );
+    ::ShowWindow(fKbdInputHwnd, SW_SHOWNORMAL);
 
     fHandler = new InternalWebView2EventHandler(this);
 
@@ -77,9 +117,13 @@ EdgeWebWidget::~EdgeWebWidget()
         ICoreWebView2Controller2_Release(fController);
     }
     
-    ::DestroyWindow(fHelperHwnd);
-    ::UnregisterClass(fHelperClass.lpszClassName, 0);
-    ::free((void*)fHelperClass.lpszClassName);
+    ::DestroyWindow(fKbdInputHwnd);
+    ::UnregisterClass(fKbdInputClass.lpszClassName, 0);
+    ::free((void*)fKbdInputClass.lpszClassName);
+
+    ::DestroyWindow(fInitHelperHwnd);
+    ::UnregisterClass(fInitHelperClass.lpszClassName, 0);
+    ::free((void*)fInitHelperClass.lpszClassName);
 }
 
 void EdgeWebWidget::onDisplay()
@@ -167,6 +211,10 @@ void EdgeWebWidget::updateWebViewBounds()
     bounds.right = bounds.left + (LONG)getWidth();
     bounds.bottom = bounds.top + (LONG)getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
+
+    //SetWindowPos(fKbdInputHwnd, HWND_TOP, bounds.left, bounds.top,
+    //                bounds.right - bounds.left, bounds.bottom - bounds.top, 0);
+    //SetFocus(fKbdInputHwnd);
 }
 
 void EdgeWebWidget::initWebView()
@@ -186,12 +234,12 @@ HRESULT EdgeWebWidget::handleWebView2EnvironmentCompleted(HRESULT result,
         return result;
     }
 
-    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fHelperHwnd, fHandler);
+    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fInitHelperHwnd, fHandler);
     
     // FIXME: handleWebView2ControllerCompleted() is never called when running
     //        standalone unless the app window border is clicked. Looks like
     //        window messages get stuck somewhere and does not seem related to
-    //        the usage of the fHelperHwnd.
+    //        the usage of the fInitHelperHwnd.
     
     return S_OK;
 }
@@ -210,7 +258,7 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
     ICoreWebView2Controller2_get_CoreWebView2(fController, &fView);
     ICoreWebView2_add_NavigationCompleted(fView, fHandler, 0);
     ICoreWebView2_add_WebMessageReceived(fView, fHandler, 0);
-    
+
     // Run pending requests
 
     setBackgroundColor(fBackgroundColor);
@@ -236,9 +284,15 @@ HRESULT EdgeWebWidget::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
     (void)eventArgs;
 
     if (fController != 0) {
-        handleLoadFinished();
+        // Reparent here instead of handleWebView2ControllerCompleted() to avoid
+        // flicker as much as possible. At this point the web contents are ready.
         HWND hWnd = reinterpret_cast<HWND>(getParentWidget()->getWindow().getNativeWindowHandle());
         ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
+
+        // Need to move transparent overlay back to the top after reparenting
+        updateWebViewBounds();
+
+        handleLoadFinished();
     }
     
     return S_OK;
