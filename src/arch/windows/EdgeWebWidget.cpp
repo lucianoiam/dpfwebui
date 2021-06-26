@@ -38,24 +38,7 @@
 
 USE_NAMESPACE_DISTRHO
 
-LRESULT CALLBACK kbdInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    switch(uMsg)
-    {
-        //case WM_NCHITTEST:
-        //    return HTTRANSPARENT;
-
-        case WM_LBUTTONDOWN:
-            SetFocus(hWnd);
-            break;
-
-        case WM_KEYDOWN:
-            printf("WM_KEYDOWN\n");
-            break;
-    }
-
-    return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
+LRESULT CALLBACK kbdInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     : AbstractWebWidget(parentWidget)
@@ -94,7 +77,7 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     fKbdInputClass.lpfnWndProc = kbdInputWndProc;
     RegisterClass(&fKbdInputClass);
     fKbdInputHwnd = CreateWindowEx(
-        WS_EX_TRANSPARENT,
+        WS_EX_TRANSPARENT, //| WS_EX_LAYERED,
         fKbdInputClass.lpszClassName,
         L"Keyboard Input Helper",
         WS_CHILD,
@@ -214,9 +197,9 @@ void EdgeWebWidget::updateWebViewBounds()
     bounds.bottom = bounds.top + (LONG)getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 
-    //SetWindowPos(fKbdInputHwnd, HWND_TOP, bounds.left, bounds.top,
-    //                bounds.right - bounds.left, bounds.bottom - bounds.top, 0);
-    //SetFocus(fKbdInputHwnd);
+    SetWindowPos(fKbdInputHwnd, HWND_TOP, bounds.left, bounds.top,
+                    bounds.right - bounds.left, bounds.bottom - bounds.top, 0);
+    SetFocus(fKbdInputHwnd);
 }
 
 void EdgeWebWidget::initWebView()
@@ -354,4 +337,65 @@ void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
     DISTRHO_LOG_STDERR_COLOR(TO_LPCSTR(ws));
 
     MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
+}
+
+/**
+ *  Support for intercepting keyboard events
+ */
+
+typedef struct
+{
+    UINT   uMsg;
+    WPARAM wParam;
+    LPARAM lParam;
+} WndMessage;
+
+BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
+{
+    if (GetWindowLongPtr(hWnd, GWLP_WNDPROC) == (LONG_PTR)kbdInputWndProc) {
+        return TRUE; // avoid recursion
+    }
+
+    WCHAR className[256];
+    GetClassName(hWnd, (LPWSTR)className, sizeof(className));
+    // Chrome_WidgetWin_0, Chrome_WidgetWin_1, Chrome_RenderWidgetHostHWND
+    //printf("[%ls]\n", className);
+
+    if (wcswcs(className, L"RenderWidget") == 0) {
+        WndMessage *pMsg = (WndMessage*)lParam;
+        SendMessage(hWnd, pMsg->uMsg, pMsg->wParam, pMsg->lParam);
+        return TRUE;
+    } else {
+        // skip otherwise events fire twice
+    }
+
+    return TRUE;
+}
+
+void SendMessageToChildren(HWND hParentWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    WndMessage msg;
+    msg.uMsg = uMsg;
+    msg.wParam = wParam;
+    msg.lParam = lParam;
+    EnumChildWindows(hParentWnd, EnumChildProc, (LPARAM)&msg);
+}
+
+LRESULT CALLBACK kbdInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    if (    (uMsg == WM_SETFOCUS)
+         || (uMsg == WM_KILLFOCUS)
+         || ((uMsg > WM_KEYFIRST)   && (uMsg < WM_KEYLAST))
+         || ((uMsg > WM_MOUSEFIRST) && (uMsg < WM_MOUSELAST)) ) {
+
+        HWND hPluginHwnd = GetParent(hWnd);
+        SendMessageToChildren(hPluginHwnd, uMsg, wParam, lParam); // target web view
+        SetFocus(hWnd); // restore focus to fKbdInputHwnd
+    }
+
+    if (uMsg == WM_KEYDOWN) {
+        printf("WM_KEYDOWN\n");
+    }
+
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
