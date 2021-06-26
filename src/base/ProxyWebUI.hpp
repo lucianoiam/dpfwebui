@@ -64,9 +64,9 @@ private:
     platform::WebWidget fWebWidget;
     InitMessageQueue    fInitMsgQueue;
     bool                fFlushedInitMsgQueue;
+    uint32_t            fBackgroundColor;
     uint                fInitWidth;
     uint                fInitHeight;
-    uint32_t            fBackgroundColor;
 
 };
 
