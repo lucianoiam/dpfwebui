@@ -41,11 +41,25 @@ USE_NAMESPACE_DISTRHO
 @end
 
 @implementation DistrhoWebView
-- (BOOL)acceptsFirstMouse:(NSEvent *)theEvent {
+
+- (BOOL)acceptsFirstMouse:(NSEvent *)event {
     // Allow the web view to immediately process clicks when the plugin window
     // is unfocused, otherwise the first click is swallowed to focus web view.
     return YES;
 }
+
+- (void)keyDown:(NSEvent *)event {
+    NSView *dpfView = self.superview;
+    NSView *hostView = dpfView.superview;
+    [hostView keyDown:event];
+}
+
+- (void)keyUp:(NSEvent *)event {
+    NSView *dpfView = self.superview;
+    NSView *hostView = dpfView.superview;
+    [hostView keyUp:event];
+}
+
 @end
 
 @interface DistrhoWebViewDelegate: NSObject<WKNavigationDelegate, WKScriptMessageHandler>

@@ -1,8 +1,11 @@
 GENERAL
 -------
 
-- Web widgets should not steal keyboard events. This interferes with the virtual
-  keyboard in Live. Tested on Mac, behavior not yet tested on others.
+- Plugin should conditionally forward keystrokes to the host, for example for
+  playing with the Live virtual keyboard. Ideally this should be supported by
+  the DPF framework. WKWebView subclass on Mac is already patched to do it.
+  Linux/Win need work. Determining if the web widget is accepting text input is
+  also not implemented yet, there should be soome coordination with JS for that.
 
 - Allow calling Window::openFileBrowser() from JavaScript
 
