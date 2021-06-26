@@ -195,9 +195,9 @@ void EdgeWebWidget::updateWebViewBounds()
     bounds.bottom = bounds.top + (LONG)getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 
-    SetWindowPos(fKbdInputHwnd, HWND_TOP, bounds.left, bounds.top,
+    /*SetWindowPos(fKbdInputHwnd, HWND_TOP, bounds.left, bounds.top,
                     bounds.right - bounds.left, bounds.bottom - bounds.top, 0);
-    SetFocus(fKbdInputHwnd);
+    SetFocus(fKbdInputHwnd);*/
 }
 
 void EdgeWebWidget::initWebView()
@@ -357,12 +357,11 @@ BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
     WCHAR className[256];
     GetClassName(hWnd, (LPWSTR)className, sizeof(className));
     // Chrome_WidgetWin_0, Chrome_WidgetWin_1, Chrome_RenderWidgetHostHWND
-    //printf("[%ls]\n", className);
+    //printf("EnumChildProc className [%ls]\n", className);
 
     if (wcswcs(className, L"RenderWidget") == 0) {
         WndMessage *pMsg = (WndMessage*)lParam;
         SendMessage(hWnd, pMsg->uMsg, pMsg->wParam, pMsg->lParam);
-        return TRUE;
     } else {
         // skip otherwise events fire twice
     }
@@ -381,16 +380,19 @@ void SendMessageToChildren(HWND hParentWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 LRESULT CALLBACK kbdInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    //printf("kbdInputWndProc uMsg %u\n");
     bool isKeyboardEvent = ((uMsg > WM_KEYFIRST) && (uMsg < WM_KEYLAST));
     bool isMouseEvent    = ((uMsg > WM_MOUSEFIRST) && (uMsg < WM_MOUSELAST));
+    bool isTouchEvent    = ((uMsg > 580) && (uMsg < 588)); // FIXME
 
-    if ((uMsg == WM_SETFOCUS) || (uMsg == WM_KILLFOCUS) || isKeyboardEvent || isMouseEvent) {
+    if ((uMsg == WM_SETFOCUS) || (uMsg == WM_KILLFOCUS) || isKeyboardEvent || isMouseEvent || isTouchEvent) {
         HWND hPluginHwnd = GetParent(hWnd);
         SendMessageToChildren(hPluginHwnd, uMsg, wParam, lParam); // target web view
         SetFocus(hWnd); // restore focus to fKbdInputHwnd
 
         if (isKeyboardEvent) {
-            PostMessage(GetParent(hPluginHwnd), uMsg, wParam, lParam);
+            //printf("kbdInputWndProc uMsg %u\n");
+            PostMessage(GetParent(hPluginHwnd), uMsg, wParam, lParam); // FIXME - this does not work
         }
     }
 
