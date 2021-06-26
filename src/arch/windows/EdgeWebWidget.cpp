@@ -72,12 +72,12 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     // Pass a hidden orphan window handle to CreateCoreWebView2Controller
     // for initializing Edge WebView2, instead of the plugin window handle that
     // causes some hosts to hang when opening the UI, e.g. Carla.
-    ::swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
-    ::ZeroMemory(&fInitHelperClass, sizeof(fInitHelperClass));
+    swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
+    ZeroMemory(&fInitHelperClass, sizeof(fInitHelperClass));
     fInitHelperClass.lpszClassName = wcsdup(className);
     fInitHelperClass.lpfnWndProc = DefWindowProc;
-    ::RegisterClass(&fInitHelperClass);
-    fInitHelperHwnd = ::CreateWindowEx(
+    RegisterClass(&fInitHelperClass);
+    fInitHelperHwnd = CreateWindowEx(
         WS_EX_TOOLWINDOW,
         fInitHelperClass.lpszClassName,
         L"WebView2 Init Helper",
@@ -85,15 +85,15 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         0, 0, 0, 0
     );
-    ::ShowWindow(fInitHelperHwnd, SW_SHOWNOACTIVATE);
+    ShowWindow(fInitHelperHwnd, SW_SHOWNOACTIVATE);
 
     // Transparent overlay window for catching keystrokes
-    ::swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
-    ::ZeroMemory(&fKbdInputClass, sizeof(fKbdInputClass));
+    swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
+    ZeroMemory(&fKbdInputClass, sizeof(fKbdInputClass));
     fKbdInputClass.lpszClassName = wcsdup(className);
     fKbdInputClass.lpfnWndProc = kbdInputWndProc;
-    ::RegisterClass(&fKbdInputClass);
-    fKbdInputHwnd = ::CreateWindowEx(
+    RegisterClass(&fKbdInputClass);
+    fKbdInputHwnd = CreateWindowEx(
         WS_EX_TRANSPARENT,
         fKbdInputClass.lpszClassName,
         L"Keyboard Input Helper",
@@ -101,7 +101,7 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         reinterpret_cast<HWND>(getParentWidget()->getWindow().getNativeWindowHandle()), 0, 0, 0
     );
-    ::ShowWindow(fKbdInputHwnd, SW_SHOWNORMAL);
+    ShowWindow(fKbdInputHwnd, SW_SHOWNORMAL);
 
     fHandler = new InternalWebView2EventHandler(this);
 
@@ -119,13 +119,13 @@ EdgeWebWidget::~EdgeWebWidget()
         ICoreWebView2Controller2_Release(fController);
     }
     
-    ::DestroyWindow(fKbdInputHwnd);
-    ::UnregisterClass(fKbdInputClass.lpszClassName, 0);
-    ::free((void*)fKbdInputClass.lpszClassName);
+    DestroyWindow(fKbdInputHwnd);
+    UnregisterClass(fKbdInputClass.lpszClassName, 0);
+    free((void*)fKbdInputClass.lpszClassName);
 
-    ::DestroyWindow(fInitHelperHwnd);
-    ::UnregisterClass(fInitHelperClass.lpszClassName, 0);
-    ::free((void*)fInitHelperClass.lpszClassName);
+    DestroyWindow(fInitHelperHwnd);
+    UnregisterClass(fInitHelperClass.lpszClassName, 0);
+    free((void*)fInitHelperClass.lpszClassName);
 }
 
 void EdgeWebWidget::onDisplay()
@@ -221,7 +221,7 @@ void EdgeWebWidget::updateWebViewBounds()
 
 void EdgeWebWidget::initWebView()
 {    
-    HRESULT result = ::CreateCoreWebView2EnvironmentWithOptions(0,
+    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0,
         TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
     if (FAILED(result)) {
         webViewLoaderErrorMessageBox(result);
@@ -308,26 +308,26 @@ HRESULT EdgeWebWidget::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
 
     LPWSTR jsonStr;
     ICoreWebView2WebMessageReceivedEventArgs_get_WebMessageAsJson(eventArgs, &jsonStr);
-    cJSON* jArgs = ::cJSON_Parse(TO_LPCSTR(jsonStr));
-    ::CoTaskMemFree(jsonStr);
+    cJSON* jArgs = cJSON_Parse(TO_LPCSTR(jsonStr));
+    CoTaskMemFree(jsonStr);
 
     ScriptValueVector args;
     
-    if (::cJSON_IsArray(jArgs)) {
-        int numArgs = ::cJSON_GetArraySize(jArgs);
+    if (cJSON_IsArray(jArgs)) {
+        int numArgs = cJSON_GetArraySize(jArgs);
 
         if (numArgs > 0) {
             for (int i = 0; i < numArgs; i++) {
-                cJSON* jArg = ::cJSON_GetArrayItem(jArgs, i);
+                cJSON* jArg = cJSON_GetArrayItem(jArgs, i);
 
-                if (::cJSON_IsFalse(jArg)) {
+                if (cJSON_IsFalse(jArg)) {
                     args.push_back(ScriptValue(false));
-                } else if (::cJSON_IsTrue(jArg)) {
+                } else if (cJSON_IsTrue(jArg)) {
                     args.push_back(ScriptValue(true));
-                } else if (::cJSON_IsNumber(jArg)) {
-                    args.push_back(ScriptValue(::cJSON_GetNumberValue(jArg)));
-                } else if (::cJSON_IsString(jArg)) {
-                    args.push_back(ScriptValue(String(::cJSON_GetStringValue(jArg))));
+                } else if (cJSON_IsNumber(jArg)) {
+                    args.push_back(ScriptValue(cJSON_GetNumberValue(jArg)));
+                } else if (cJSON_IsString(jArg)) {
+                    args.push_back(ScriptValue(String(cJSON_GetStringValue(jArg))));
                 } else {
                     args.push_back(ScriptValue()); // null
                 }
@@ -335,7 +335,7 @@ HRESULT EdgeWebWidget::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
         }
     }
 
-    ::cJSON_free(jArgs);
+    cJSON_free(jArgs);
 
     handleScriptMessage(args);
     
@@ -353,5 +353,5 @@ void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
     
     DISTRHO_LOG_STDERR_COLOR(TO_LPCSTR(ws));
 
-    ::MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
+    MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
 }
