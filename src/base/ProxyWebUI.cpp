@@ -26,7 +26,7 @@ USE_NAMESPACE_DISTRHO
 // showing an excessively large canvas that does not tightly wrap the plugin UI,
 // or Live showing a floating window with plenty of empty space. Likely the host
 // is expecting unscaled values, ie. those specified by NSView frames. The issue
-// does not affect the standalone version of the plugin. 17 Jun 2021.
+// does not affect the standalone version of the plugin. Jun '21.
 #ifdef DISTRHO_OS_MAC
 namespace DISTRHO {
     // Support for patched DistrhoUI.cpp
@@ -37,10 +37,11 @@ namespace DISTRHO {
 #endif
 
 // Automatically scale up the plugin UI so its contents do not look small
-// on high pixel density displays, known as HiDPI, Retina...
+// on high pixel density displays, known as HiDPI or Retina. Scaled dimensions
+// are passed as args to the UI ctor instead of being set in the ProxyWebUI ctor
+// body otherwise initial plugin starts with a wrong window size on Windows.
 #define INIT_SCALE_FACTOR() platform::getSystemDisplayScaleFactor()
 
-// Dimensions passed to the UI constructor determine the initial plugin size
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(INIT_SCALE_FACTOR() * baseWidth, INIT_SCALE_FACTOR() * baseHeight)
     , fWebWidget(this)
