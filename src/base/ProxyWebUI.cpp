@@ -168,6 +168,12 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
     } else if (method == "getHeight") {
         webPostMessage({"WebUI", "getHeight", static_cast<double>(getHeight())});
 
+    } else if ((method == "setWidth") && (argc == 1)) {
+        setWidth(static_cast<uint>(args[2].getDouble()));
+
+    } else if ((method == "setHeight") && (argc == 1)) {
+        setHeight(static_cast<uint>(args[2].getDouble()));
+
     } else if (method == "isResizable") {
         webPostMessage({"WebUI", "isResizable", isResizable()});
 
