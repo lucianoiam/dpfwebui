@@ -83,6 +83,16 @@ class DISTRHO_WebUI {
         // default empty implementation
     }
 
+    // ProxyWebUI::getInitWidth()
+    async getInitWidth() {
+        return this._callWithReply('getInitWidth');
+    }
+
+    // ProxyWebUI::getInitHeight()
+    async getInitHeight() {
+        return this._callWithReply('getInitHeight');
+    }
+
     // ProxyWebUI::flushInitMessageQueue()
     flushInitMessageQueue() {
         this._call('flushInitMessageQueue');

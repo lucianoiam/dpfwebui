@@ -38,18 +38,18 @@ namespace DISTRHO {
 
 // Automatically scale up the plugin UI so its contents do not look small
 // on high pixel density displays, known as HiDPI, Retina...
-#define INIT_SCALE_FACTOR platform::getSystemDisplayScaleFactor()
+#define INIT_SCALE_FACTOR() platform::getSystemDisplayScaleFactor()
 
 // Dimensions passed to the UI constructor determine the initial plugin size
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
-    : UI(INIT_SCALE_FACTOR * baseWidth, INIT_SCALE_FACTOR * baseHeight)
+    : UI(INIT_SCALE_FACTOR() * baseWidth, INIT_SCALE_FACTOR() * baseHeight)
     , fWebWidget(this)
     , fFlushedInitMsgQueue(false)
+    , fInitWidth(getWidth())
+    , fInitHeight(getHeight())
     , fBackgroundColor(backgroundColor)
 {
-    setGeometryConstraints(getWidth(), getHeight(), false, false);
-
-    fWebWidget.setSize(getWidth(), getHeight());
+    fWebWidget.setSize(fInitWidth, fInitHeight);
     fWebWidget.setBackgroundColor(fBackgroundColor);
     fWebWidget.setEventHandler(this);
 
@@ -95,6 +95,16 @@ void ProxyWebUI::stateChanged(const char* key, const char* value)
 }
 
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
+
+uint ProxyWebUI::getInitWidth() const
+{
+    return fInitWidth;
+}
+
+uint ProxyWebUI::getInitHeight() const
+{
+    return fInitHeight;
+}
 
 void ProxyWebUI::webPostMessage(const ScriptValueVector& args) {
     if (fFlushedInitMsgQueue) {
@@ -142,6 +152,12 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
 
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
+
+    } else if (method == "getInitWidth") {
+        webPostMessage({"WebUI", "getInitWidth", static_cast<double>(getInitWidth())});
+
+    } else if (method == "getInitHeight") {
+        webPostMessage({"WebUI", "getInitHeight", static_cast<double>(getInitHeight())});
 
     } else if (method == "getWidth") {
         webPostMessage({"WebUI", "getWidth", static_cast<double>(getWidth())});
