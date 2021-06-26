@@ -23,21 +23,9 @@ class WebGainExampleUI extends DISTRHO_WebUI {
 
     constructor() {
         super(); // do not forget
-        
-        // This is just a shortcut to avoid repeating document.getElementById()
-        this.dom = Object.freeze({
-            userAgent:  document.getElementById('user-agent'),
-            gainSlider: document.getElementById('gain-slider')
-        });
-
-        // Fix input[type=range] sliders not reacting to touch events on Linux
-        Platform.fixLinuxInputTypeRangeTouch();
 
         // Mostly connect controls to the plugin
         this._setupView();
-        
-        // Allow the user to resize the plugin window
-        this._addResizeHandle();
 
         // Process any UI message generated while the web view was still loading
         // It is mandatory to call this method at some point, e.g. after UI gets
@@ -51,7 +39,7 @@ class WebGainExampleUI extends DISTRHO_WebUI {
     parameterChanged(index, value) {
         switch (index) {
             case 0:
-                this.dom.gainSlider.value = value;
+                document.getElementById('gain-slider').value = value;
                 break;
             default:
                 break;
@@ -59,23 +47,13 @@ class WebGainExampleUI extends DISTRHO_WebUI {
     }
 
     _setupView() {
-        this.dom.userAgent.innerText = navigator.userAgent;
+        const elem = (id) => document.getElementById(id);
 
-        this.dom.gainSlider.addEventListener('input', (ev) => {
+        elem('user-agent').innerText = navigator.userAgent;
+
+        elem('gain-slider').addEventListener('input', (ev) => {
             this.setParameterValue(0, parseFloat(ev.target.value));
         });
-    }
-
-    async _addResizeHandle() {
-        const k = window.devicePixelRatio;
-        const options = {
-            minWidth:  /* UI::getWidth()  */ await this.getWidth()  / k,
-            minHeight: /* UI::getHeight() */ await this.getHeight() / k,
-            maxScale: 2,
-            keepAspectRatio: true
-        };
-        const handle = new ResizeHandle((w, h) => this.setSize(w, h), options);
-        document.body.appendChild(handle.element);
     }
 
 }
