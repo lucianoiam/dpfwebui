@@ -48,6 +48,16 @@ class DISTRHO_WebUI {
         return this._callWithReply('getHeight');
     }
 
+    // UI::setWidth(uint width)
+    setWidth(width) {
+        this._call('setWidth', width);
+    }
+
+    // UI::setHeight(uint height)
+    setHeight(height) {
+        this._call('setHeight', height);
+    }
+
     // UI::isResizable()
     async isResizable() {
         return this._callWithReply('isResizable');
