@@ -23,6 +23,13 @@ LINUX
   a bit ashaming and should be replaced with a guaranteed, documented method.
 
 
+MACOS
+-----
+
+- Live 10 sometimes does not quit when a dpf-webui plugin is loaded. No crashes.
+  Behavior not reproducible on REAPER.
+
+
 WINDOWS
 -------
 
