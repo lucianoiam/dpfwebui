@@ -101,7 +101,9 @@ void CocoaWebWidget::onResize(const ResizeEvent& ev)
     // There is a mismatch between DGL and AppKit coordinates
     // https://github.com/DISTRHO/DPF/issues/291
     CGFloat k = [NSScreen mainScreen].backingScaleFactor;
-    CGRect frame = fWebView.frame;
+    CGRect frame;
+    frame.origin.x = 0;
+    frame.origin.y = 0;
     frame.size.width = (CGFloat)ev.size.getWidth() / k;
     frame.size.height = (CGFloat)ev.size.getHeight() / k;
     fWebView.frame = frame;

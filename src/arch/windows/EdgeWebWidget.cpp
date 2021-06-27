@@ -36,23 +36,19 @@
 
 USE_NAMESPACE_DISTRHO
 
-LRESULT CALLBACK kbdInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
-    : AbstractWebWidget(parentWidget)
+EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
+    : AbstractWebWidget(windowToMapTo)
     , fInitHelperHwnd(0)
-    , fKbdInputHwnd(0)
     , fDisplayed(false)
     , fBackgroundColor(0)
     , fHandler(0)
     , fController(0)
     , fView(0)
 {
-    WCHAR className[256];
-
     // Pass a hidden orphan window handle to CreateCoreWebView2Controller
     // for initializing Edge WebView2, instead of the plugin window handle that
     // causes some hosts to hang when opening the UI, e.g. Carla.
+    WCHAR className[256];
     swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
     ZeroMemory(&fInitHelperClass, sizeof(fInitHelperClass));
     fInitHelperClass.lpszClassName = wcsdup(className);
@@ -67,22 +63,6 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
         0, 0, 0, 0
     );
     ShowWindow(fInitHelperHwnd, SW_SHOWNOACTIVATE);
-
-    // Transparent overlay window for catching keystrokes
-    swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
-    ZeroMemory(&fKbdInputClass, sizeof(fKbdInputClass));
-    fKbdInputClass.lpszClassName = wcsdup(className);
-    fKbdInputClass.lpfnWndProc = kbdInputWndProc;
-    RegisterClass(&fKbdInputClass);
-    fKbdInputHwnd = CreateWindowEx(
-        WS_EX_TRANSPARENT, //| WS_EX_LAYERED,
-        fKbdInputClass.lpszClassName,
-        L"Keyboard Input Helper",
-        WS_CHILD,
-        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-        reinterpret_cast<HWND>(getParentWidget()->getWindow().getNativeWindowHandle()), 0, 0, 0
-    );
-    ShowWindow(fKbdInputHwnd, SW_SHOWNORMAL);
 
     fHandler = new InternalWebView2EventHandler(this);
 
@@ -99,10 +79,6 @@ EdgeWebWidget::~EdgeWebWidget()
         ICoreWebView2Controller2_Close(fController);
         ICoreWebView2Controller2_Release(fController);
     }
-    
-    DestroyWindow(fKbdInputHwnd);
-    UnregisterClass(fKbdInputClass.lpszClassName, 0);
-    free((void*)fKbdInputClass.lpszClassName);
 
     DestroyWindow(fInitHelperHwnd);
     UnregisterClass(fInitHelperClass.lpszClassName, 0);
@@ -121,16 +97,6 @@ void EdgeWebWidget::onDisplay()
 }
 
 void EdgeWebWidget::onResize(const ResizeEvent& ev)
-{
-    (void)ev;
-    if (fController == 0) {
-        return; // does not make sense now, ignore
-    }
-
-    updateWebViewBounds();
-}
-
-void EdgeWebWidget::onPositionChanged(const PositionChangedEvent& ev)
 {
     (void)ev;
     if (fController == 0) {
@@ -188,16 +154,13 @@ void EdgeWebWidget::injectScript(String& source)
 
 void EdgeWebWidget::updateWebViewBounds()
 {
+    // WINSIZEBUG: this->getWidth() and this->getHeight() returning 0
     RECT bounds;
-    bounds.left = (LONG)getAbsoluteX();
-    bounds.top = (LONG)getAbsoluteY();
-    bounds.right = bounds.left + (LONG)getWidth();
-    bounds.bottom = bounds.top + (LONG)getHeight();
+    bounds.left = 0;
+    bounds.top = 0;
+    bounds.right = bounds.left + (LONG)getWindow().getWidth();
+    bounds.bottom = bounds.top + (LONG)getWindow().getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
-
-    /*SetWindowPos(fKbdInputHwnd, HWND_TOP, bounds.left, bounds.top,
-                    bounds.right - bounds.left, bounds.bottom - bounds.top, 0);
-    SetFocus(fKbdInputHwnd);*/
 }
 
 void EdgeWebWidget::initWebView()
@@ -269,11 +232,8 @@ HRESULT EdgeWebWidget::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
     if (fController != 0) {
         // Reparent here instead of handleWebView2ControllerCompleted() to avoid
         // flicker as much as possible. At this point the web contents are ready.
-        HWND hWnd = reinterpret_cast<HWND>(getParentWidget()->getWindow().getNativeWindowHandle());
+        HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
         ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
-
-        // Need to move transparent overlay back to the top after reparenting
-        updateWebViewBounds();
 
         handleLoadFinished();
     }
@@ -335,66 +295,4 @@ void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
     DISTRHO_LOG_STDERR_COLOR(TO_LPCSTR(ws));
 
     MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
-}
-
-/**
- *  Support for intercepting keyboard events
- */
-
-typedef struct
-{
-    UINT   uMsg;
-    WPARAM wParam;
-    LPARAM lParam;
-} WndMessage;
-
-BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
-{
-    if (GetWindowLongPtr(hWnd, GWLP_WNDPROC) == (LONG_PTR)kbdInputWndProc) {
-        return TRUE; // avoid recursion
-    }
-
-    WCHAR className[256];
-    GetClassName(hWnd, (LPWSTR)className, sizeof(className));
-    // Chrome_WidgetWin_0, Chrome_WidgetWin_1, Chrome_RenderWidgetHostHWND
-    //printf("EnumChildProc className [%ls]\n", className);
-
-    if (wcswcs(className, L"RenderWidget") == 0) {
-        WndMessage *pMsg = (WndMessage*)lParam;
-        SendMessage(hWnd, pMsg->uMsg, pMsg->wParam, pMsg->lParam);
-    } else {
-        // skip otherwise events fire twice
-    }
-
-    return TRUE;
-}
-
-void SendMessageToChildren(HWND hParentWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    WndMessage msg;
-    msg.uMsg = uMsg;
-    msg.wParam = wParam;
-    msg.lParam = lParam;
-    EnumChildWindows(hParentWnd, EnumChildProc, (LPARAM)&msg);
-}
-
-LRESULT CALLBACK kbdInputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    //printf("kbdInputWndProc uMsg %u\n");
-    bool isKeyboardEvent = ((uMsg > WM_KEYFIRST) && (uMsg < WM_KEYLAST));
-    bool isMouseEvent    = ((uMsg > WM_MOUSEFIRST) && (uMsg < WM_MOUSELAST));
-    bool isTouchEvent    = ((uMsg > 580) && (uMsg < 588)); // FIXME
-
-    if ((uMsg == WM_SETFOCUS) || (uMsg == WM_KILLFOCUS) || isKeyboardEvent || isMouseEvent || isTouchEvent) {
-        HWND hPluginHwnd = GetParent(hWnd);
-        SendMessageToChildren(hPluginHwnd, uMsg, wParam, lParam); // target web view
-        SetFocus(hWnd); // restore focus to fKbdInputHwnd
-
-        if (isKeyboardEvent) {
-            //printf("kbdInputWndProc uMsg %u\n");
-            PostMessage(GetParent(hPluginHwnd), uMsg, wParam, lParam); // FIXME - this does not work
-        }
-    }
-
-    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
