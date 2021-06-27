@@ -38,32 +38,12 @@
 USE_NAMESPACE_DISTRHO
 
 @interface DistrhoWebView: WKWebView
-@end
-
-@implementation DistrhoWebView
-
-- (BOOL)acceptsFirstMouse:(NSEvent *)event {
-    // Allow the web view to immediately process clicks when the plugin window
-    // is unfocused, otherwise the first click is swallowed to focus web view.
-    return YES;
-}
-
-- (void)keyDown:(NSEvent *)event {
-    NSView *dpfView = self.superview;
-    NSView *hostView = dpfView.superview;
-    [hostView keyDown:event];
-}
-
-- (void)keyUp:(NSEvent *)event {
-    NSView *dpfView = self.superview;
-    NSView *hostView = dpfView.superview;
-    [hostView keyUp:event];
-}
-
+@property (readonly, nonatomic) CocoaWebWidget* cppWidget;
+@property (readonly, nonatomic) NSView *hostView;
 @end
 
 @interface DistrhoWebViewDelegate: NSObject<WKNavigationDelegate, WKScriptMessageHandler>
-@property (assign, nonatomic) CocoaWebWidget *cppView;
+@property (assign, nonatomic) CocoaWebWidget *cppWidget;
 @end
 
 CocoaWebWidget::CocoaWebWidget(Window& windowToMapTo)
@@ -75,7 +55,7 @@ CocoaWebWidget::CocoaWebWidget(Window& windowToMapTo)
 
     // Create a ObjC object that responds to some web view callbacks
     fDelegate = [[DistrhoWebViewDelegate alloc] init];
-    fWebViewDelegate.cppView = this;
+    fWebViewDelegate.cppWidget = this;
     fWebView.navigationDelegate = fWebViewDelegate;
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
 
@@ -153,11 +133,40 @@ void CocoaWebWidget::injectScript(String& source)
     [js release];
 }
 
+@implementation DistrhoWebView
+
+- (CocoaWebWidget *)cppWidget
+{
+    return ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget;
+}
+
+- (NSView *)hostView
+{
+    NSView *dpfView = self.superview;
+    return dpfView.superview;
+}
+
+- (void)keyDown:(NSEvent *)event {
+    self.cppWidget->didReceiveKeyboardEvent(event, self.hostView);
+}
+
+- (void)keyUp:(NSEvent *)event {
+    self.cppWidget->didReceiveKeyboardEvent(event, self.hostView);
+}
+
+- (BOOL)acceptsFirstMouse:(NSEvent *)event {
+    // Allow the web view to immediately process clicks when the plugin window
+    // is unfocused, otherwise the first click is swallowed to focus web view.
+    return YES;
+}
+
+@end
+
 @implementation DistrhoWebViewDelegate
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
-    self.cppView->didFinishNavigation();
+    self.cppWidget->didFinishNavigation();
     webView.hidden = NO;
 }
 
@@ -181,7 +190,7 @@ void CocoaWebWidget::injectScript(String& source)
         }
     }
 
-    self.cppView->didReceiveScriptMessage(args);
+    self.cppWidget->didReceiveScriptMessage(args);
 }
 
 @end

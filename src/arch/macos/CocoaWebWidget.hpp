@@ -40,10 +40,11 @@ public:
     void runScript(String& source) override;
     void injectScript(String& source) override;
     
-    // Allow calling some protected methods from the ObjC WKNavigationDelegate
+    // Allow calling some protected methods from Objective-C instances
     
     void didFinishNavigation() { handleLoadFinished(); }
     void didReceiveScriptMessage(const ScriptValueVector& args) { handleScriptMessage(args); }
+    void didReceiveKeyboardEvent(void* arg0, void* arg1) { handleKeyboardEvent(arg0, arg1); }
 
 private:
     void *fView;
