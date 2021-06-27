@@ -94,9 +94,9 @@ void AbstractWebWidget::handleScriptMessage(const ScriptValueVector& args)
     }
 }
 
-void AbstractWebWidget::handleKeyboardEvent(int arg0, int arg1, void* data)
+void AbstractWebWidget::handleKeyboardEvent(void* event)
 {
-    fHandler->handleWebWidgetKeyboardEvent(arg0, arg1, data);
+    fHandler->handleWebWidgetKeyboardEvent(event);
 }
 
 String AbstractWebWidget::serializeScriptValues(const ScriptValueVector& args)

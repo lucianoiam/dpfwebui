@@ -31,6 +31,8 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 USE_NAMESPACE_DISTRHO
 
+static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam);
+
 String platform::getBinaryDirectoryPath()
 {
     char path[MAX_PATH];
@@ -117,9 +119,23 @@ float platform::getSystemDisplayScaleFactor()
     return k;
 }
 
-void platform::sendKeyboardEventToHost(int arg0, int arg1, void* data)
+void platform::sendKeyboardEventToHost(void* event)
 {
-    (void)data;
+    MSG* msg = (MSG *)event;
     
-    printf("FIXME sendKeyboardEventToHost %d %d\n", arg0, arg1);
+    printf("FIXME sendKeyboardEventToHost %d %d\n", msg->wParam, msg->lParam);
+
+
+}
+
+BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
+{
+    DWORD hostProcId = GetCurrentProcessId();
+    DWORD winProcId;
+
+    GetWindowThreadProcessId(hWnd, &winProcId);
+
+
+
+    return true;
 }

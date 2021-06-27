@@ -39,7 +39,6 @@ USE_NAMESPACE_DISTRHO
 // TODO: is using these globals safe?
 static int     gNumInstances;
 static HHOOK   gKeyboardHook;
-static HWND    gKbdEvSourceHwnd;
 static LRESULT CALLBACK KeyboardProc (int nCode, WPARAM wParam, LPARAM lParam);
 static BOOL    CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam);
 
@@ -320,21 +319,22 @@ void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
 }
 
 static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
+{    
     // HC_ACTION means wParam & lParam contain info about keystroke message
 
     if (nCode == HC_ACTION) {
+        MSG msg;
+        ZeroMemory(&msg, sizeof(MSG));
+        msg.wParam = wParam;
+        msg.lParam = lParam;
+
         HWND hWnd = GetFocus();
         int level = 0;
 
         while (level++ < 5) {
-            gKbdEvSourceHwnd = 0;
+            EnumChildWindows(hWnd, EnumChildProc, (LPARAM)&msg);
 
-            EnumChildWindows(hWnd, EnumChildProc, 0);
-
-            if (gKbdEvSourceHwnd != 0) {
-                EdgeWebWidget* lpWebWidget = (EdgeWebWidget *)GetClassLongPtr(gKbdEvSourceHwnd, 0);
-                lpWebWidget->keyboardProcEvent(wParam, lParam, 0);
+            if ((msg.wParam == 0) && (msg.lParam == 0)) {
                 break;
             }
 
@@ -353,8 +353,12 @@ BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
     GetClassName(hWnd, (LPWSTR)className, sizeof(className));
 
     if (wcswcs(className, L"EdgeWebWidget") && wcswcs(className, L"" XSTR(PROJECT_ID_HASH))) {
-        printf("%ls\n",className);
-        gKbdEvSourceHwnd = hWnd;
+        EdgeWebWidget* lpWebWidget = (EdgeWebWidget *)GetClassLongPtr(hWnd, 0);
+        MSG* msg = (MSG *)lParam; 
+        lpWebWidget->keyboardProcEvent(msg);
+        msg->wParam = 0;
+        msg->lParam = 0;
+
         return FALSE; // stop enumeration
     }
 
