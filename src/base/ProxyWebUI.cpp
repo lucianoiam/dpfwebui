@@ -43,6 +43,7 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     , fWebWidget(getWindow())
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
+    , fForwardKbdInput(false)
 {
     // Automatically scale up the plugin UI so its contents do not look small
     // on high pixel density displays, known as HiDPI or Retina.
@@ -129,11 +130,19 @@ void ProxyWebUI::flushInitMessageQueue()
     fInitMsgQueue.clear();
 }
 
+void ProxyWebUI::forwardKeyboardInputToHost(bool forward)
+{
+    fForwardKbdInput = forward;
+}
+
 void ProxyWebUI::handleWebWidgetContentLoadFinished()
 {
     // no-op, just let derived classes now
     webContentReady();
 }
+
+#define kArg0 2
+#define kArg1 3
 
 void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& args)
 {
@@ -146,12 +155,15 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
     // to dirty hacks, for such cases fulfill getter promises instead.
 
     String method = args[1].getString();
-    int argc = args.size() - 2;
+    int argc = args.size() - kArg0;
 
     // TODO: use a hashtable instead of comparing strings ?
 
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
+
+    } else if ((method == "forwardKeyboardInputToHost") && (argc == 1)) {
+        forwardKeyboardInputToHost(static_cast<bool>(args[kArg0].getBool()));
 
     } else if (method == "getInitWidth") {
         webPostMessage({"WebUI", "getInitWidth", static_cast<double>(getInitWidth())});
@@ -166,37 +178,37 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
         webPostMessage({"WebUI", "getHeight", static_cast<double>(getHeight())});
 
     } else if ((method == "setWidth") && (argc == 1)) {
-        setWidth(static_cast<uint>(args[2].getDouble()));
+        setWidth(static_cast<uint>(args[kArg0].getDouble()));
 
     } else if ((method == "setHeight") && (argc == 1)) {
-        setHeight(static_cast<uint>(args[2].getDouble()));
+        setHeight(static_cast<uint>(args[kArg0].getDouble()));
 
     } else if (method == "isResizable") {
         webPostMessage({"WebUI", "isResizable", isResizable()});
 
     } else if ((method == "setSize") && (argc == 2)) {
         setSize(
-            static_cast<uint>(args[2].getDouble()), // width
-            static_cast<uint>(args[3].getDouble())  // height
+            static_cast<uint>(args[kArg0].getDouble()), // width
+            static_cast<uint>(args[kArg1].getDouble())  // height
         );
 
     } else if ((method == "editParameter") && (argc == 2)) {
         editParameter(
-            static_cast<uint32_t>(args[2].getDouble()), // index
-            static_cast<bool>(args[3].getBool())        // started
+            static_cast<uint32_t>(args[kArg0].getDouble()), // index
+            static_cast<bool>(args[kArg1].getBool())        // started
         );
 
     } else if ((method == "setParameterValue") && (argc == 2)) {
         setParameterValue(
-            static_cast<uint32_t>(args[2].getDouble()), // index
-            static_cast<float>(args[3].getDouble())     // value
+            static_cast<uint32_t>(args[kArg0].getDouble()), // index
+            static_cast<float>(args[kArg1].getDouble())     // value
         );
 
 #if (DISTRHO_PLUGIN_WANT_STATE == 1)
     } else if ((method == "setState") && (argc == 2)) {
         setState(
-            args[2].getString(), // key
-            args[3].getString()  // value
+            args[kArg0].getString(), // key
+            args[kArg1].getString()  // value
         );
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
 
@@ -207,5 +219,7 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
 
 void ProxyWebUI::handleWebWidgetKeyboardEvent(void* arg0, void* arg1)
 {
-    platform::sendKeyboardEventToHost(arg0, arg1);
+    if (fForwardKbdInput) {
+        platform::sendKeyboardEventToHost(arg0, arg1);
+    }
 }

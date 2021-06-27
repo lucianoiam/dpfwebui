@@ -95,6 +95,16 @@ class DISTRHO_WebUI {
         // default empty implementation
     }
 
+    // ProxyWebUI::flushInitMessageQueue()
+    flushInitMessageQueue() {
+        this._call('flushInitMessageQueue');
+    }
+
+    // ProxyWebUI::forwardKeyboardInputToHost()
+    forwardKeyboardInputToHost(forward) {
+        this._call('forwardKeyboardInputToHost', forward);
+    }
+
     // ProxyWebUI::getInitWidth()
     async getInitWidth() {
         return this._callWithReply('getInitWidth');
@@ -103,11 +113,6 @@ class DISTRHO_WebUI {
     // ProxyWebUI::getInitHeight()
     async getInitHeight() {
         return this._callWithReply('getInitHeight');
-    }
-
-    // ProxyWebUI::flushInitMessageQueue()
-    flushInitMessageQueue() {
-        this._call('flushInitMessageQueue');
     }
 
     // ProxyWebUI::webPostMessage(const ScriptValueVector& args)
