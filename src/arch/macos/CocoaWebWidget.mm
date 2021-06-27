@@ -38,8 +38,6 @@
 USE_NAMESPACE_DISTRHO
 
 @interface DistrhoWebView: WKWebView
-@property (readonly, nonatomic) CocoaWebWidget* cppWidget;
-@property (readonly, nonatomic) NSView *hostView;
 @end
 
 @interface DistrhoWebViewDelegate: NSObject<WKNavigationDelegate, WKScriptMessageHandler>
@@ -135,23 +133,12 @@ void CocoaWebWidget::injectScript(String& source)
 
 @implementation DistrhoWebView
 
-- (CocoaWebWidget *)cppWidget
-{
-    return ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget;
-}
-
-- (NSView *)hostView
-{
-    NSView *dpfView = self.superview;
-    return dpfView.superview;
-}
-
 - (void)keyDown:(NSEvent *)event {
-    self.cppWidget->didReceiveKeyboardEvent(event, self.hostView);
+    ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget->didReceiveKeyboardEvent(event, 0);
 }
 
 - (void)keyUp:(NSEvent *)event {
-    self.cppWidget->didReceiveKeyboardEvent(event, self.hostView);
+    ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget->didReceiveKeyboardEvent(event, 0);
 }
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)event {
