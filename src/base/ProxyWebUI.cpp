@@ -51,9 +51,11 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     fInitWidth = k * baseWidth;
     fInitHeight = k * baseHeight;
     setSize(fInitWidth, fInitHeight);
+
 #ifdef DISTRHO_OS_WINDOWS
-    setSize(fInitWidth, fInitHeight); // WINSIZEBUG: why repeating 2x?
-    fWebWidget.setSize(fInitWidth, fInitHeight); // WINSIZEBUG: why?
+    // WINSIZEBUG: these are noticeable only when system scale factor > 100%
+    setSize(fInitWidth, fInitHeight); // why repeating 2x?
+    fWebWidget.setSize(fInitWidth, fInitHeight); // why?
 #endif
 
     fWebWidget.setBackgroundColor(fBackgroundColor);
