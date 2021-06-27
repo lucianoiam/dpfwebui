@@ -43,7 +43,7 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     , fWebWidget(getWindow())
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
-    , fForwardKbdInput(false)
+    , fForwardKbdInput(true) // FIXME - default false
 {
     // Automatically scale up the plugin UI so its contents do not look small
     // on high pixel density displays, known as HiDPI or Retina.
