@@ -9,6 +9,9 @@
 
 NAME = d_dpf_webui
 
+# Project version, used for generating unique symbol names
+PROJECT_VERSION = 1
+
 # --------------------------------------------------------------
 # Files to build
 
