@@ -253,12 +253,6 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             break;
         }
 
-        case OPC_SET_POSITION: {
-            const helper_pos_t *pos = (const helper_pos_t *)packet.v;
-            gtk_window_move(ctx->window, pos->x, pos->y);
-            break;
-        }
-
         case OPC_NAVIGATE:
             webkit_web_view_load_uri(ctx->webView, packet.v);
             break;
