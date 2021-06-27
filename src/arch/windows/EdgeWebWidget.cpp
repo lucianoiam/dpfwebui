@@ -36,9 +36,16 @@
 
 USE_NAMESPACE_DISTRHO
 
+// TODO: is using these globals safe?
+static int     gNumInstances;
+static HHOOK   gKeyboardHook;
+static bool    gFoundWebWidget;
+static LRESULT CALLBACK KeyboardProc (int nCode, WPARAM wParam, LPARAM lParam);
+static BOOL    CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam);
+
 EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     : AbstractWebWidget(windowToMapTo)
-    , fInitHelperHwnd(0)
+    , fHelperHwnd(0)
     , fDisplayed(false)
     , fBackgroundColor(0)
     , fHandler(0)
@@ -49,20 +56,25 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     // for initializing Edge WebView2, instead of the plugin window handle that
     // causes some hosts to hang when opening the UI, e.g. Carla.
     WCHAR className[256];
-    swprintf(className, sizeof(className), L"DPF_Class_%d", std::rand());
-    ZeroMemory(&fInitHelperClass, sizeof(fInitHelperClass));
-    fInitHelperClass.lpszClassName = wcsdup(className);
-    fInitHelperClass.lpfnWndProc = DefWindowProc;
-    RegisterClass(&fInitHelperClass);
-    fInitHelperHwnd = CreateWindowEx(
+    swprintf(className, sizeof(className), L"EdgeWebWidget_Class_%d", std::rand());
+    ZeroMemory(&fHelperClass, sizeof(fHelperClass));
+    fHelperClass.lpszClassName = wcsdup(className);
+    fHelperClass.lpfnWndProc = DefWindowProc;
+    RegisterClass(&fHelperClass);
+    fHelperHwnd = CreateWindowEx(
         WS_EX_TOOLWINDOW,
-        fInitHelperClass.lpszClassName,
+        fHelperClass.lpszClassName,
         L"WebView2 Init Helper",
         WS_POPUPWINDOW | WS_CAPTION,
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         0, 0, 0, 0
     );
-    ShowWindow(fInitHelperHwnd, SW_SHOWNOACTIVATE);
+    ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
+
+    if (gNumInstances++ == 0) {
+        // Passing GetCurrentThreadId() to dwThreadId results in the hook never being called
+        gKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, GetModuleHandle(NULL), 0);
+    }
 
     fHandler = new InternalWebView2EventHandler(this);
 
@@ -75,14 +87,18 @@ EdgeWebWidget::~EdgeWebWidget()
 {
     fHandler->release();
 
+    if (--gNumInstances == 0) {
+        UnhookWindowsHookEx(gKeyboardHook);
+    }
+
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
         ICoreWebView2Controller2_Release(fController);
     }
 
-    DestroyWindow(fInitHelperHwnd);
-    UnregisterClass(fInitHelperClass.lpszClassName, 0);
-    free((void*)fInitHelperClass.lpszClassName);
+    DestroyWindow(fHelperHwnd);
+    UnregisterClass(fHelperClass.lpszClassName, 0);
+    free((void*)fHelperClass.lpszClassName);
 }
 
 void EdgeWebWidget::onDisplay()
@@ -180,12 +196,12 @@ HRESULT EdgeWebWidget::handleWebView2EnvironmentCompleted(HRESULT result,
         return result;
     }
 
-    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fInitHelperHwnd, fHandler);
+    ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fHelperHwnd, fHandler);
     
     // FIXME: handleWebView2ControllerCompleted() is never called when running
     //        standalone unless the app window border is clicked. Looks like
     //        window messages get stuck somewhere and does not seem related to
-    //        the usage of the fInitHelperHwnd.
+    //        the usage of the fHelperHwnd.
     
     return S_OK;
 }
@@ -233,6 +249,8 @@ HRESULT EdgeWebWidget::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
         // Reparent here instead of handleWebView2ControllerCompleted() to avoid
         // flicker as much as possible. At this point the web contents are ready.
         HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
+        SetParent(fHelperHwnd, hWnd); // Allow EnumChildProc() to find the helper window
+
         ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
 
         handleLoadFinished();
@@ -295,4 +313,44 @@ void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
     DISTRHO_LOG_STDERR_COLOR(TO_LPCSTR(ws));
 
     MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
+}
+
+static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    // Keystrokes are only forwarded if a web widget window is focused. This is
+    // not very elegant, consider catching keyboard events right from JavaScript.
+    gFoundWebWidget = false;
+
+    HWND hWnd = GetFocus();
+    int level = 0;
+
+    while (!gFoundWebWidget && (level++ < 5)) {
+        EnumChildWindows(hWnd, EnumChildProc, 0);
+        hWnd = GetParent(hWnd);
+    }
+
+    if (gFoundWebWidget && (nCode == HC_ACTION)) {
+        switch (wParam) {
+            case WM_KEYDOWN:
+                // TODO - call handleKeyboardEvent()
+                printf("WM_KEYDOWN %d\n", nCode);
+                break;
+        }
+    }
+
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
+BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
+{
+    WCHAR className[256];
+
+    GetClassName(hWnd, (LPWSTR)className, sizeof(className));
+    gFoundWebWidget = wcswcs(className, L"EdgeWebWidget_Class") != NULL;
+
+    if (gFoundWebWidget) {
+        return FALSE; // stop enumeration
+    }
+
+    return TRUE;
 }
