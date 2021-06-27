@@ -38,7 +38,7 @@ class WebWidgetEventHandler
 public:
     virtual void handleWebWidgetContentLoadFinished() = 0;
     virtual void handleWebWidgetScriptMessageReceived(const ScriptValueVector& args) = 0;
-    virtual void handleWebWidgetKeyboardEvent(void* arg0, void* arg1) = 0;
+    virtual void handleWebWidgetKeyboardEvent(int arg0, int arg1, void* data) = 0;
 
 };
 
@@ -65,7 +65,7 @@ protected:
     
     void handleLoadFinished();
     void handleScriptMessage(const ScriptValueVector& args);
-    void handleKeyboardEvent(void* arg0, void* arg1);
+    void handleKeyboardEvent(int arg0, int arg1, void* data);
 
 private:
     String serializeScriptValues(const ScriptValueVector& args);

@@ -219,9 +219,9 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
     }
 }
 
-void ProxyWebUI::handleWebWidgetKeyboardEvent(void* arg0, void* arg1)
+void ProxyWebUI::handleWebWidgetKeyboardEvent(int arg0, int arg1, void* data)
 {
     if (fForwardKbdInput) {
-        platform::sendKeyboardEventToHost(arg0, arg1);
+        platform::sendKeyboardEventToHost(arg0, arg1, data);
     }
 }
