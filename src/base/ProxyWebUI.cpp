@@ -38,7 +38,7 @@ namespace DISTRHO {
 
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(baseWidth, baseHeight)
-    , fWebWidget(this)
+    , fWebWidget(getWindow())
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
 {
@@ -78,11 +78,6 @@ void ProxyWebUI::onDisplay()
     cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(fBackgroundColor, double));
     cairo_paint(cr);
 #endif
-}
-
-void ProxyWebUI::uiReshape(uint width, uint height)
-{
-    fWebWidget.setSize(width, height);
 }
 
 void ProxyWebUI::parameterChanged(uint32_t index, float value)

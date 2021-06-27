@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "dgl/SubWidget.hpp"
+#include "dgl/TopLevelWidget.hpp"
 #include "dgl/Geometry.hpp"
 #include "extra/String.hpp"
 #include "Window.hpp"
@@ -39,10 +39,10 @@ public:
 
 };
 
-class AbstractWebWidget : public SubWidget
+class AbstractWebWidget : public TopLevelWidget
 {
 public:
-    AbstractWebWidget(Widget *parentWidget) : SubWidget(parentWidget),
+    AbstractWebWidget(Window& windowToMapTo) : TopLevelWidget(windowToMapTo),
         fPrintTraffic(false) {}
     virtual ~AbstractWebWidget() {};
 
