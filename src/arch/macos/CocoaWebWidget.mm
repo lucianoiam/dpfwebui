@@ -134,11 +134,11 @@ void CocoaWebWidget::injectScript(String& source)
 @implementation DistrhoWebView
 
 - (void)keyDown:(NSEvent *)event {
-    ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget->didReceiveKeyboardEvent(0, 0, event);
+    ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget->didReceiveKeyboardEvent(event);
 }
 
 - (void)keyUp:(NSEvent *)event {
-    ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget->didReceiveKeyboardEvent(0, 0, event);
+    ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget->didReceiveKeyboardEvent(event);
 }
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)event {
