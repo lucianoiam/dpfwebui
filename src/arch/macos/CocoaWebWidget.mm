@@ -66,11 +66,9 @@ USE_NAMESPACE_DISTRHO
 @property (assign, nonatomic) CocoaWebWidget *cppView;
 @end
 
-CocoaWebWidget::CocoaWebWidget(Widget *parentWidget)
-    : AbstractWebWidget(parentWidget)
+CocoaWebWidget::CocoaWebWidget(Window& windowToMapTo)
+    : AbstractWebWidget(windowToMapTo)
 {
-    setSkipDrawing(true);
-    
     // Create the web view
     fView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];
     fWebView.hidden = YES;
@@ -83,7 +81,7 @@ CocoaWebWidget::CocoaWebWidget(Widget *parentWidget)
 
     // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
     // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
-    NSView *parentView = (NSView *)parentWidget->getWindow().getNativeWindowHandle();
+    NSView *parentView = (NSView *)windowToMapTo.getNativeWindowHandle();
     [fWebView removeFromSuperview];
     [parentView addSubview:fWebView];
 
@@ -100,26 +98,12 @@ CocoaWebWidget::~CocoaWebWidget()
 
 void CocoaWebWidget::onResize(const ResizeEvent& ev)
 {
-    (void)ev;
-    updateWebViewFrame();
-}
-
-void CocoaWebWidget::onPositionChanged(const PositionChangedEvent& ev)
-{
-    (void)ev;
-    updateWebViewFrame();
-}
-
-void CocoaWebWidget::updateWebViewFrame()
-{
     // There is a mismatch between DGL and AppKit coordinates
     // https://github.com/DISTRHO/DPF/issues/291
     CGFloat k = [NSScreen mainScreen].backingScaleFactor;
-    CGRect frame;
-    frame.origin.x = (CGFloat)getAbsoluteX() / k;
-    frame.origin.y = (CGFloat)getAbsoluteY() / k;
-    frame.size.width = (CGFloat)getWidth() / k;
-    frame.size.height = (CGFloat)getHeight() / k;
+    CGRect frame = fWebView.frame;
+    frame.size.width = (CGFloat)ev.size.getWidth() / k;
+    frame.size.height = (CGFloat)ev.size.getHeight() / k;
     fWebView.frame = frame;
 }
 
