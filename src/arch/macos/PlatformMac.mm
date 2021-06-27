@@ -85,12 +85,14 @@ float platform::getSystemDisplayScaleFactor()
 
 void platform::sendKeyboardEventToHost(void* arg0, void* arg1)
 {
+    (void)arg1;
+
     NSEvent *event = (NSEvent *)arg0;
-    NSView *hostView = (NSView *)arg1;
+    NSResponder *responder = [NSApplication sharedApplication].mainWindow.firstResponder;
 
     if (event.type == NSEventTypeKeyDown) {
-        [hostView keyDown:event];
+        [responder keyDown:event];
     } else if (event.type == NSEventTypeKeyUp) {
-        [hostView keyUp:event];
+        [responder keyUp:event];
     }
 }
