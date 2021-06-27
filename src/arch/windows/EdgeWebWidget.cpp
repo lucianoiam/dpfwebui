@@ -317,24 +317,26 @@ void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
 
 static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    // Keystrokes are only forwarded if a web widget window is focused. This is
-    // not very elegant, consider catching keyboard events right from JavaScript.
-    gFoundWebWidget = false;
+    // HC_ACTION: The wParam and lParam parameters contain information about a
+    //            keystroke message
+    if (nCode == HC_ACTION) {
+        // Keystrokes are only forwarded if a web widget window is focused. This 
+        // is not very elegant, consider catching keyboard events right from JS.
 
-    HWND hWnd = GetFocus();
-    int level = 0;
+        HWND hWnd = GetFocus();
+        int level = 0;
 
-    while (!gFoundWebWidget && (level++ < 5)) {
-        EnumChildWindows(hWnd, EnumChildProc, 0);
-        hWnd = GetParent(hWnd);
-    }
+        while (level++ < 5) {
+            gFoundWebWidget = false;
+            EnumChildWindows(hWnd, EnumChildProc, 0);
 
-    if (gFoundWebWidget && (nCode == HC_ACTION)) {
-        switch (wParam) {
-            case WM_KEYDOWN:
-                // TODO - call handleKeyboardEvent()
-                printf("WM_KEYDOWN %d\n", nCode);
+            if (gFoundWebWidget) {
+                printf("HC_ACTION\n");
+                // TODO
                 break;
+            }
+
+            hWnd = GetParent(hWnd);
         }
     }
 
@@ -343,6 +345,8 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
 {
+    (void)lParam;
+    
     WCHAR className[256];
 
     GetClassName(hWnd, (LPWSTR)className, sizeof(className));
