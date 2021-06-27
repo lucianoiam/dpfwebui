@@ -202,3 +202,8 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
         DISTRHO_LOG_STDERR_COLOR("Invalid call to ProxyWebUI method");
     }
 }
+
+void ProxyWebUI::handleWebWidgetKeyboardEvent(void* arg0, void* arg1)
+{
+    platform::sendKeyboardEventToHost(arg0, arg1);
+}

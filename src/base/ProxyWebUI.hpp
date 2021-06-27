@@ -57,6 +57,7 @@ private:
 
     virtual void handleWebWidgetContentLoadFinished() override;
     virtual void handleWebWidgetScriptMessageReceived(const ScriptValueVector& args) override;
+    virtual void handleWebWidgetKeyboardEvent(void* arg0, void* arg1) override;
 
     typedef std::vector<ScriptValueVector> InitMessageQueue;
     
