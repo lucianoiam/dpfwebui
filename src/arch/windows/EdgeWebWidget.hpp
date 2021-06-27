@@ -78,8 +78,8 @@ private:
     
     void webViewLoaderErrorMessageBox(HRESULT result);
 
-    WNDCLASS            fInitHelperClass;
-    HWND                fInitHelperHwnd;
+    WNDCLASS            fHelperClass;
+    HWND                fHelperHwnd;
     bool                fDisplayed;
     uint32_t            fBackgroundColor;
     std::vector<String> fInjectedScripts;
