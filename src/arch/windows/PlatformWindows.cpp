@@ -137,8 +137,13 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
         char text[256];
         GetWindowText(hWnd, (LPSTR)text, sizeof(text));
 
-        if (strstr(text, "Carla") != 0) { // XXX
-            printf("Send key wParam=%d lParam=%d to [%s]\n", msg->wParam, msg->lParam, text);
+        // XXX This works but it is suboptimal because:
+        //   - Host main window is determined using an unreliable method
+        //   - Focus is moved from the plugin window to the host window
+        //   - JUCE based soft synth OBx-d does it flawlessly
+
+        if (strstr(text, "Ableton Live") != 0) {
+            SetFocus(hWnd);
             PostMessage(hWnd, msg->lParam, msg->wParam, 0);
             return FALSE;
         }
