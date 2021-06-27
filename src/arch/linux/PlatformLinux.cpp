@@ -99,9 +99,10 @@ float platform::getSystemDisplayScaleFactor()
     return 1.f;
 }
 
-void platform::sendKeyboardEventToHost(void* arg0, void* arg1)
+void platform::sendKeyboardEventToHost(int arg0, int arg1, void* data)
 {
     (void)arg0;
     (void)arg1;
+    (void)data;
     // TODO
 }

@@ -56,7 +56,7 @@ namespace platform {
 
     // Helps forwarding keystrokes to host
 
-    void sendKeyboardEventToHost(void* arg0, void* arg1);
+    void sendKeyboardEventToHost(int arg0, int arg1, void* data);
 
     const String kDefaultResourcesSubdirectory = String(XSTR(BIN_BASENAME) "_resources");
 
