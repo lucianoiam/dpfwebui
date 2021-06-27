@@ -56,7 +56,7 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     // for initializing Edge WebView2, instead of the plugin window handle that
     // causes some hosts to hang when opening the UI, e.g. Carla.
     WCHAR className[256];
-    swprintf(className, sizeof(className), L"EdgeWebWidget_Class_%d", std::rand());
+    swprintf(className, sizeof(className), L"EdgeWebWidget_%s_%d", XSTR(PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
     fHelperClass.cbSize = sizeof(WNDCLASSEX);
     fHelperClass.cbClsExtra = sizeof(LONG_PTR);
@@ -321,17 +321,15 @@ void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
 
 static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    // HC_ACTION: The wParam and lParam parameters contain information about a
-    //            keystroke message
-    if (nCode == HC_ACTION) {
-        // Keystrokes are only forwarded if a web widget window is focused. This 
-        // is not very elegant, consider catching keyboard events right from JS.
+    // HC_ACTION means wParam & lParam contain info about keystroke message
 
+    if (nCode == HC_ACTION) {
         HWND hWnd = GetFocus();
         int level = 0;
 
         while (level++ < 5) {
             gKbdEvSourceHwnd = 0;
+
             EnumChildWindows(hWnd, EnumChildProc, 0);
 
             if (gKbdEvSourceHwnd != 0) {
@@ -352,11 +350,11 @@ BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
     (void)lParam;
 
     WCHAR className[256];
-
     GetClassName(hWnd, (LPWSTR)className, sizeof(className));
-    gKbdEvSourceHwnd = wcswcs(className, L"EdgeWebWidget_Class") ? hWnd : 0;
 
-    if (gKbdEvSourceHwnd != 0) {
+    if (wcswcs(className, L"EdgeWebWidget") && wcswcs(className, L"" XSTR(PROJECT_ID_HASH))) {
+        printf("%ls\n",className);
+        gKbdEvSourceHwnd = hWnd;
         return FALSE; // stop enumeration
     }
 
