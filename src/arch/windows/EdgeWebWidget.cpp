@@ -357,11 +357,13 @@ BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
     if (wcswcs(className, L"EdgeWebWidget") && wcswcs(className, L"" XSTR(PROJECT_ID_HASH))) {
         EdgeWebWidget* lpWebWidget = (EdgeWebWidget *)GetClassLongPtr(hWnd, 0);
         MSG* msg = (MSG *)lParam; 
+        
         lpWebWidget->keyboardProcEvent(msg);
+
         msg->wParam = 0;
         msg->lParam = 0;
 
-        return FALSE; // stop enumeration
+        return FALSE;
     }
 
     return TRUE;
