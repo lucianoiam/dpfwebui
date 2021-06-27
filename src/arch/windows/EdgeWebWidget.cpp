@@ -39,7 +39,7 @@ USE_NAMESPACE_DISTRHO
 // TODO: is using these globals safe?
 static int     gNumInstances;
 static HHOOK   gKeyboardHook;
-static bool    gFoundWebWidget;
+static HWND    gKbdEvSourceHwnd;
 static LRESULT CALLBACK KeyboardProc (int nCode, WPARAM wParam, LPARAM lParam);
 static BOOL    CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam);
 
@@ -58,9 +58,11 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     WCHAR className[256];
     swprintf(className, sizeof(className), L"EdgeWebWidget_Class_%d", std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
+    fHelperClass.cbSize = sizeof(WNDCLASSEX);
+    fHelperClass.cbClsExtra = sizeof(LONG_PTR);
     fHelperClass.lpszClassName = wcsdup(className);
     fHelperClass.lpfnWndProc = DefWindowProc;
-    RegisterClass(&fHelperClass);
+    RegisterClassEx(&fHelperClass);
     fHelperHwnd = CreateWindowEx(
         WS_EX_TOOLWINDOW,
         fHelperClass.lpszClassName,
@@ -69,6 +71,7 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         0, 0, 0, 0
     );
+    SetClassLongPtr(fHelperHwnd, 0, (LONG_PTR)this);
     ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
 
     if (gNumInstances++ == 0) {
@@ -250,6 +253,7 @@ HRESULT EdgeWebWidget::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
         // flicker as much as possible. At this point the web contents are ready.
         HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
         SetParent(fHelperHwnd, hWnd); // Allow EnumChildProc() to find the helper window
+        ShowWindow(fHelperHwnd, SW_HIDE);
 
         ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
 
@@ -327,12 +331,12 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
         int level = 0;
 
         while (level++ < 5) {
-            gFoundWebWidget = false;
+            gKbdEvSourceHwnd = 0;
             EnumChildWindows(hWnd, EnumChildProc, 0);
 
-            if (gFoundWebWidget) {
-                printf("HC_ACTION\n");
-                // TODO
+            if (gKbdEvSourceHwnd != 0) {
+                EdgeWebWidget* lpWebWidget = (EdgeWebWidget *)GetClassLongPtr(gKbdEvSourceHwnd, 0);
+                lpWebWidget->keyboardProcEvent(wParam, lParam, 0);
                 break;
             }
 
@@ -346,13 +350,13 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
 {
     (void)lParam;
-    
+
     WCHAR className[256];
 
     GetClassName(hWnd, (LPWSTR)className, sizeof(className));
-    gFoundWebWidget = wcswcs(className, L"EdgeWebWidget_Class") != NULL;
+    gKbdEvSourceHwnd = wcswcs(className, L"EdgeWebWidget_Class") ? hWnd : 0;
 
-    if (gFoundWebWidget) {
+    if (gKbdEvSourceHwnd != 0) {
         return FALSE; // stop enumeration
     }
 

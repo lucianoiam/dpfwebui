@@ -70,13 +70,17 @@ public:
     HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
+    // Allow calling some protected methods from static functions
+    
+    void keyboardProcEvent(int arg0, int arg1, void* data) { handleKeyboardEvent(arg0, arg1, data); }
+
 private:
     void initWebView();
     void updateWebViewBounds();
     
     void webViewLoaderErrorMessageBox(HRESULT result);
 
-    WNDCLASS            fHelperClass;
+    WNDCLASSEX          fHelperClass;
     HWND                fHelperHwnd;
     bool                fDisplayed;
     uint32_t            fBackgroundColor;
