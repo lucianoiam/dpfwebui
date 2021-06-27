@@ -37,14 +37,12 @@ extern char **environ;
 
 USE_NAMESPACE_DISTRHO
 
-ExternalGtkWebWidget::ExternalGtkWebWidget(Widget *parentWidget)
-    : AbstractWebWidget(parentWidget)
+ExternalGtkWebWidget::ExternalGtkWebWidget(Window& windowToMapTo)
+    : AbstractWebWidget(windowToMapTo)
     , fPid(-1)
     , fIpc(nullptr)
     , fIpcThread(nullptr)
 {
-    setSkipDrawing(true);
-    
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
 
     if (::pipe(fPipeFd[0]) == -1) {
@@ -80,7 +78,7 @@ ExternalGtkWebWidget::ExternalGtkWebWidget(Widget *parentWidget)
         return;
     }
 
-    int windowId = static_cast<int>(parentWidget->getWindow().getNativeWindowHandle());
+    int windowId = static_cast<int>(windowToMapTo.getNativeWindowHandle());
     ipcWrite(OPC_SET_PARENT, &windowId, sizeof(windowId));
 
     String js = String(JS_POST_MESSAGE_SHIM);
@@ -125,12 +123,6 @@ void ExternalGtkWebWidget::onResize(const ResizeEvent& ev)
 {
     helper_size_t sizePkt = {ev.size.getWidth(), ev.size.getHeight()};
     ipcWrite(OPC_SET_SIZE, &sizePkt, sizeof(sizePkt));
-}
-
-void ExternalGtkWebWidget::onPositionChanged(const PositionChangedEvent& ev)
-{
-    helper_pos_t posPkt = {ev.pos.getX(), ev.pos.getY()};
-    ipcWrite(OPC_SET_POSITION, &posPkt, sizeof(posPkt));
 }
 
 void ExternalGtkWebWidget::setBackgroundColor(uint32_t rgba)
