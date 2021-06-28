@@ -123,13 +123,26 @@ void platform::sendKeyboardEventToHost(void* event)
 {
     MSG* msg = (MSG *)event;
 
+    // This is not very tidy it should be moved to something like Platform::staticInit()
+    // but this is actually a special case for Windows, no need for staticInit() on others.
+
+    static bool gHostHWndSearched;
     static HWND gHostHWnd;
 
-    if (gHostHWnd == 0) {
-        EnumWindows(EnumWindowsProc, (LPARAM)&gHostHWnd);
+    if (!gHostHWndSearched) {
+        gHostHWndSearched = true;
+
+        if (gHostHWnd == 0) {
+            EnumWindows(EnumWindowsProc, (LPARAM)&gHostHWnd);
+        }
     }
 
-    if (gHostHWnd != 0) {
+    if (gHostHWnd == 0) {
+        // REAPER
+        SetFocus(msg->hwnd);
+        SendMessage(msg->hwnd, msg->message, msg->wParam, msg->lParam);
+    } else {
+        // Live
         SendMessage(gHostHWnd, msg->message, msg->wParam, msg->lParam);
     }
 }
@@ -144,8 +157,7 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
         text[0] = '\0';
         GetWindowText(hWnd, (LPSTR)text, sizeof(text));
 
-        // XXX This is unashamedly fragile
-        if (strstr(text, "Carla") || strstr(text, "REAPER") || strstr(text, "Ableton Live")) {
+        if (strstr(text, "Ableton Live")) {
             *((HWND *)lParam) = hWnd;
             return FALSE;
         }
