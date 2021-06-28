@@ -32,8 +32,6 @@ WINDOWS
 
 - Standalone window appears empty on startup until clicking the window border
 
-- Hitting Ctrl+Q when plugin window is focused does not work on REAPER.
-
 - Hitting Ctrl+P when plugin window is focused brings the print panel on REAPER
   and Live. Does not happen on Carla.
 
