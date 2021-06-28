@@ -26,7 +26,7 @@
 #include "base/macro.h"
 #include "extra/cJSON.h"
 
-#include "KeyboardForwarding.hpp"
+#include "KeyboardRouter.hpp"
 #include "DistrhoPluginInfo.h"
 
 #define WSTR_CONVERTER std::wstring_convert<std::codecvt_utf8<wchar_t>>()
@@ -66,7 +66,7 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     );
     ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
 
-    KeyboardForwarding::getInstance().incRefCount();
+    KeyboardRouter::getInstance().incRefCount();
 
     fHandler = new InternalWebView2EventHandler(this);
 
@@ -79,7 +79,7 @@ EdgeWebWidget::~EdgeWebWidget()
 {
     fHandler->release();
 
-    KeyboardForwarding::getInstance().decRefCount();
+    KeyboardRouter::getInstance().decRefCount();
 
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);

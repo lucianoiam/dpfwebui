@@ -14,8 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef KEYBOARDFORWARDING_HPP
-#define KEYBOARDFORWARDING_HPP
+#ifndef KEYBOARDROUTER_HPP
+#define KEYBOARDROUTER_HPP
 
 #include <WinDef.h>
 #include <winuser.h>
@@ -24,17 +24,17 @@
 
 START_NAMESPACE_DISTRHO
 
-class KeyboardForwarding
+class KeyboardRouter
 {
     public:
-        static KeyboardForwarding& getInstance()
+        static KeyboardRouter& getInstance()
         {
-            static KeyboardForwarding instance;
+            static KeyboardRouter instance;
             return instance;
         }
 
-        KeyboardForwarding(const KeyboardForwarding&) = delete;
-        void operator=(const KeyboardForwarding&) = delete;
+        KeyboardRouter(const KeyboardRouter&) = delete;
+        void operator=(const KeyboardRouter&) = delete;
         
         void incRefCount();
         void decRefCount();
@@ -43,13 +43,13 @@ class KeyboardForwarding
         void routeKeyMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     private:
-        KeyboardForwarding();
+        KeyboardRouter();
 
         // Win32 callbacks
 
-        static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam);
-        static BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam);
-        static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+        static BOOL CALLBACK enumWindowsProc(HWND hWnd, LPARAM lParam);
+        static BOOL CALLBACK enumChildProc(HWND hWnd, LPARAM lParam);
+        static LRESULT CALLBACK keyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 
         int   fRefCount;
         HWND  fHostHWnd;
@@ -59,4 +59,4 @@ class KeyboardForwarding
 
 END_NAMESPACE_DISTRHO
 
-#endif  // KEYBOARDFORWARDING_HPP
+#endif  // KEYBOARDROUTER_HPP

@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "KeyboardForwarding.hpp"
+#include "KeyboardRouter.hpp"
 
 #include <processthreadsapi.h>
 
@@ -22,16 +22,16 @@
 
 USE_NAMESPACE_DISTRHO
 
-KeyboardForwarding::KeyboardForwarding()
+KeyboardRouter::KeyboardRouter()
     : fRefCount(0)
     , fHostHWnd(0)
     , fKeyboardHook(0)
 {
     // Some hosts need key events delivered directly to their main window
-    EnumWindows(EnumWindowsProc, (LPARAM)&fHostHWnd);
+    EnumWindows(enumWindowsProc, (LPARAM)&fHostHWnd);
 }
 
-BOOL CALLBACK KeyboardForwarding::EnumWindowsProc(HWND hWnd, LPARAM lParam)
+BOOL CALLBACK KeyboardRouter::enumWindowsProc(HWND hWnd, LPARAM lParam)
 {
     DWORD winProcId = 0;
     GetWindowThreadProcessId(hWnd, &winProcId);
@@ -50,22 +50,22 @@ BOOL CALLBACK KeyboardForwarding::EnumWindowsProc(HWND hWnd, LPARAM lParam)
     return TRUE;
 }
 
-void KeyboardForwarding::incRefCount()
+void KeyboardRouter::incRefCount()
 {
     if (fRefCount++ == 0) {
         // Passing GetCurrentThreadId() to dwThreadId results in the hook never being called
-        fKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, GetModuleHandle(NULL), 0);
+        fKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboardProc, GetModuleHandle(NULL), 0);
     }
 }
 
-void KeyboardForwarding::decRefCount()
+void KeyboardRouter::decRefCount()
 {
     if (--fRefCount == 0) {
         UnhookWindowsHookEx(fKeyboardHook);
     }
 }
 
-LRESULT CALLBACK KeyboardForwarding::KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {    
     // HC_ACTION means wParam & lParam contain info about keystroke message
 
@@ -77,14 +77,14 @@ LRESULT CALLBACK KeyboardForwarding::KeyboardProc(int nCode, WPARAM wParam, LPAR
 
         while (level++ < 5) {
             HWND hFocusedPluginHelperWnd = 0;
-            EnumChildWindows(hWnd, EnumChildProc, (LPARAM)&hFocusedPluginHelperWnd);
+            EnumChildWindows(hWnd, enumChildProc, (LPARAM)&hFocusedPluginHelperWnd);
 
             if (hFocusedPluginHelperWnd != 0) {
                 // Key events may be delivered to the plugin root window or host main window
 
                 HWND hPluginRootWnd = GetParent(hFocusedPluginHelperWnd);
 
-                KeyboardForwarding::getInstance().handleLowLevelKeyEvent(hPluginRootWnd,
+                KeyboardRouter::getInstance().handleLowLevelKeyEvent(hPluginRootWnd,
                     (UINT)wParam, (KBDLLHOOKSTRUCT *)lParam);
 
                 break;
@@ -97,7 +97,7 @@ LRESULT CALLBACK KeyboardForwarding::KeyboardProc(int nCode, WPARAM wParam, LPAR
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
-BOOL CALLBACK KeyboardForwarding::EnumChildProc(HWND hWnd, LPARAM lParam)
+BOOL CALLBACK KeyboardRouter::enumChildProc(HWND hWnd, LPARAM lParam)
 {
     (void)lParam;
 
@@ -112,7 +112,7 @@ BOOL CALLBACK KeyboardForwarding::EnumChildProc(HWND hWnd, LPARAM lParam)
     return TRUE;
 }
 
-void KeyboardForwarding::handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT message, KBDLLHOOKSTRUCT* lpData)
+void KeyboardRouter::handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT message, KBDLLHOOKSTRUCT* lpData)
 {    
     // Translate low level keyboard events into a format suitable for SendMessage()
 
@@ -140,7 +140,7 @@ void KeyboardForwarding::handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT messag
     }
 }
 
-void KeyboardForwarding::routeKeyMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+void KeyboardRouter::routeKeyMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     if (fHostHWnd == 0) {
         SetFocus(hWnd);
