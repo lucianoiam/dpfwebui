@@ -33,6 +33,9 @@
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
+// CSS touch-action based approach seems to be failing for WebKitGTK. Looks like a bug.
+#define JS_DISABLE_PINCH_ZOOM_WORKAROUND "if (document.body.children.length > 0) document.body.children[0].addEventListener('touchstart', (ev) => { ev.preventDefault(); });"
+
 extern char **environ;
 
 USE_NAMESPACE_DISTRHO
@@ -170,10 +173,12 @@ int ExternalGtkWebWidget::ipcWrite(helper_opcode_t opcode, const void *payload, 
 void ExternalGtkWebWidget::ipcReadCallback(const tlv_t& packet)
 {
     switch (static_cast<helper_opcode_t>(packet.t)) {
-        case OPC_HANDLE_LOAD_FINISHED:
+        case OPC_HANDLE_LOAD_FINISHED: {
+            String js = String(JS_DISABLE_PINCH_ZOOM_WORKAROUND);
+            runScript(js);
             handleLoadFinished();
             break;
-
+        }
         case OPC_HANDLE_SCRIPT_MESSAGE:
             handleHelperScriptMessage(static_cast<const char*>(packet.v), packet.l);
             break;
