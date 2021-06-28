@@ -38,7 +38,7 @@ USE_NAMESPACE_DISTRHO
 
 static int     gNumInstances;
 static HHOOK   gKeyboardHook;
-static void    handleLowLevelKeboardEvent(EdgeWebWidget *lpWebWidget, UINT message, KBDLLHOOKSTRUCT* lpKbDllHookStruct);
+static void    handleKeyboardLowLevelHookEvent(EdgeWebWidget *lpWebWidget, UINT message, KBDLLHOOKSTRUCT* lpData);
 static LRESULT CALLBACK KeyboardProc (int nCode, WPARAM wParam, LPARAM lParam);
 static BOOL    CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam);
 
@@ -333,7 +333,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
             if (hWndWithWebWidgetPtr != 0) {
                 ULONG_PTR ptr = GetClassLongPtr(hWndWithWebWidgetPtr, 0);
-                handleLowLevelKeboardEvent((EdgeWebWidget *)ptr, (UINT)wParam, (KBDLLHOOKSTRUCT *)lParam);
+                handleKeyboardLowLevelHookEvent((EdgeWebWidget *)ptr, (UINT)wParam, (KBDLLHOOKSTRUCT *)lParam);
                 break;
             }
 
@@ -359,25 +359,25 @@ BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
     return TRUE;
 }
 
-void handleLowLevelKeboardEvent(EdgeWebWidget *lpWebWidget, UINT message, KBDLLHOOKSTRUCT* lpKbDllHookStruct)
+void handleKeyboardLowLevelHookEvent(EdgeWebWidget *lpWebWidget, UINT message, KBDLLHOOKSTRUCT* lpData)
 {    
     // Translate low level keyboard events into a format suitable for SendMessage()
     MSG msg;
     ZeroMemory(&msg, sizeof(MSG));
-    msg.wParam = lpKbDllHookStruct->vkCode;
-    msg.lParam = /* scan code */ lpKbDllHookStruct->scanCode << 16 | /* repeat count */ 0x1;
+    msg.wParam = lpData->vkCode;
+    msg.lParam = /* scan code */ lpData->scanCode << 16 | /* repeat count */ 0x1;
 
     switch (message) {
         case WM_KEYDOWN:
             // Just forward a-z to allow playing with Live's virtual keyboard.
-            // For everything else, converting low level events is probably a complex task.
+            // For everything else converting keyboard events is a complex task.
             msg.message = WM_KEYDOWN;
-            lpWebWidget->keyboardProcEvent(&msg);
+            lpWebWidget->keyboardHookEvent(&msg);
 
-            if ((lpKbDllHookStruct->vkCode >= 'A') && (lpKbDllHookStruct->vkCode <= 'Z')) {
+            if ((lpData->vkCode >= 'A') && (lpData->vkCode <= 'Z')) {
                 msg.message = WM_CHAR;
-                msg.wParam = lpKbDllHookStruct->vkCode | 0x20; // to lowercase
-                lpWebWidget->keyboardProcEvent(&msg);
+                msg.wParam = lpData->vkCode | 0x20; // to lowercase
+                lpWebWidget->keyboardHookEvent(&msg);
             }
 
             break;
@@ -387,7 +387,7 @@ void handleLowLevelKeboardEvent(EdgeWebWidget *lpWebWidget, UINT message, KBDLLH
             msg.lParam |= 0xC0000000; 
             msg.message = WM_KEYUP;
 
-            lpWebWidget->keyboardProcEvent(&msg);
+            lpWebWidget->keyboardHookEvent(&msg);
 
             break;
     }
