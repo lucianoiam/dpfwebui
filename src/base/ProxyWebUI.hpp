@@ -50,7 +50,7 @@ protected:
     void webPostMessage(const ScriptValueVector& args);
 
     void flushInitMessageQueue();
-    void setGrabKeyboardInput(bool grab);
+    void setGrabKeyboardInput(bool grabKeyboardInput);
 
     virtual void webContentReady() {};
     virtual void webMessageReceived(const ScriptValueVector& args) { (void)args; };
@@ -60,7 +60,6 @@ private:
 
     virtual void handleWebWidgetContentLoadFinished() override;
     virtual void handleWebWidgetScriptMessageReceived(const ScriptValueVector& args) override;
-    virtual void handleWebWidgetKeyboardEvent(void* event) override;
 
     typedef std::vector<ScriptValueVector> InitMessageQueue;
     
@@ -70,7 +69,6 @@ private:
     uint32_t            fBackgroundColor;
     uint                fInitWidth;
     uint                fInitHeight;
-    bool                fGrabKeyboardInput;
 
 };
 

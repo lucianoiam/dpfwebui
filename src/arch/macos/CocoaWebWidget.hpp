@@ -44,7 +44,6 @@ public:
     
     void didFinishNavigation() { handleLoadFinished(); }
     void didReceiveScriptMessage(const ScriptValueVector& args) { handleScriptMessage(args); }
-    void didReceiveKeyboardEvent(void* event) { handleKeyboardEvent(event); }
 
 private:
     void *fView;

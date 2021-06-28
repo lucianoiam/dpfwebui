@@ -56,10 +56,6 @@ namespace platform {
 
     float getSystemDisplayScaleFactor();
 
-    // Helps forwarding keystrokes to host
-
-    void sendKeyboardEventToHost(void* event);
-
     const String kDefaultResourcesSubdirectory = String(XSTR(BIN_BASENAME) "_resources");
 
 }

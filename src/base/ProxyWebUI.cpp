@@ -43,7 +43,6 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     , fWebWidget(getWindow())
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
-    , fGrabKeyboardInput(false)
 {
     // Automatically scale up the plugin UI so its contents do not look small
     // on high pixel density displays, known as HiDPI or Retina.
@@ -132,10 +131,10 @@ void ProxyWebUI::flushInitMessageQueue()
     fInitMsgQueue.clear();
 }
 
-void ProxyWebUI::setGrabKeyboardInput(bool grab)
+void ProxyWebUI::setGrabKeyboardInput(bool grabKeyboardInput)
 {
-    // Host window will not receive keystroke events when grab is enabled
-    fGrabKeyboardInput = grab;
+    // Host will not receive keystroke events when grab is enabled
+    fWebWidget.setGrabKeyboardInput(grabKeyboardInput);
 }
 
 void ProxyWebUI::handleWebWidgetContentLoadFinished()
@@ -224,12 +223,5 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
 
     } else {
         DISTRHO_LOG_STDERR_COLOR("Invalid call to ProxyWebUI method");
-    }
-}
-
-void ProxyWebUI::handleWebWidgetKeyboardEvent(void* event)
-{
-    if (!fGrabKeyboardInput) {
-        platform::sendKeyboardEventToHost(event);
     }
 }

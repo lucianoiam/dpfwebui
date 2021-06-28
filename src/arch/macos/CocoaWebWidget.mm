@@ -38,6 +38,8 @@
 USE_NAMESPACE_DISTRHO
 
 @interface DistrhoWebView: WKWebView
+@property (readonly, nonatomic) CocoaWebWidget* cppWidget;
+@property (readonly, nonatomic) NSView* pluginRootView;
 @end
 
 @interface DistrhoWebViewDelegate: NSObject<WKNavigationDelegate, WKScriptMessageHandler>
@@ -132,22 +134,38 @@ void CocoaWebWidget::injectScript(String& source)
 
 @implementation DistrhoWebView
 
+- (CocoaWebWidget *)cppWidget
+{
+    return ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget;
+}
+
+- (NSView *)pluginRootView
+{
+    return self.superview.superview;
+}
+
 - (void)keyDown:(NSEvent *)event
 {
     [super keyDown:event];
-    ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget->didReceiveKeyboardEvent(event);
+    if (!self.cppWidget->isGrabKeyboardInput()) {
+        [self.pluginRootView keyDown:event];
+    }
 }
 
 - (void)keyUp:(NSEvent *)event
 {
     [super keyUp:event];
-    ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget->didReceiveKeyboardEvent(event);
+    if (!self.cppWidget->isGrabKeyboardInput()) {
+        [self.pluginRootView keyUp:event];
+    }
 }
 
 - (void)flagsChanged:(NSEvent *)event
 {
     [super flagsChanged:event];
-    ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget->didReceiveKeyboardEvent(event);
+    if (!self.cppWidget->isGrabKeyboardInput()) {
+        [self.pluginRootView flagsChanged:event];
+    }
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event

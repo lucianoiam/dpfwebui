@@ -98,11 +98,6 @@ void AbstractWebWidget::handleScriptMessage(const ScriptValueVector& args)
     }
 }
 
-void AbstractWebWidget::handleKeyboardEvent(void* event)
-{
-    fHandler->handleWebWidgetKeyboardEvent(event);
-}
-
 String AbstractWebWidget::serializeScriptValues(const ScriptValueVector& args)
 {
     std::stringstream ss;
