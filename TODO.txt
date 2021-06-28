@@ -23,12 +23,8 @@ LINUX
 MACOS
 -----
 
-- Cmd+Q for quitting host does not work when plugin window is open and focused,
-  regardless the keyboard forward feature is enabled or not. Affects Live 10,
-  not reproducible on REAPER.
-
 - Live 10 sometimes refuses to quit from the Mac menu when a plugin window is
-  open. Behavior not reproducible on REAPER. Probably related to previous issue.
+  open. Behavior not reproducible on REAPER.
 
 
 WINDOWS
