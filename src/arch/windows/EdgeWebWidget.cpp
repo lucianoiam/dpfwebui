@@ -38,9 +38,9 @@
 
 USE_NAMESPACE_DISTRHO
 
-// TODO: is using these globals safe?
 static int     gNumInstances;
 static HHOOK   gKeyboardHook;
+static void    handleLowLevelKeboardEvent(EdgeWebWidget *lpWebWidget, WPARAM wParam, LPARAM lParam);
 static LRESULT CALLBACK KeyboardProc (int nCode, WPARAM wParam, LPARAM lParam);
 static BOOL    CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam);
 
@@ -325,6 +325,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     // HC_ACTION means wParam & lParam contain info about keystroke message
 
     if (nCode == HC_ACTION) {
+        // Traverse focused window ancestors until finding the one holding widget instance
         HWND hWnd = GetFocus();
         int level = 0;
 
@@ -333,15 +334,8 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             EnumChildWindows(hWnd, EnumChildProc, (LPARAM)&hWndWithWebWidgetRef);
 
             if (hWndWithWebWidgetRef != 0) {
-                MSG msg;
-                ZeroMemory(&msg, sizeof(MSG));
-                msg.hwnd = GetParent(hWnd);
-                msg.wParam = wParam;
-                msg.lParam = lParam;
-                
                 EdgeWebWidget* lpWebWidget = (EdgeWebWidget *)GetClassLongPtr(hWndWithWebWidgetRef, 0);
-                lpWebWidget->keyboardProcEvent(&msg);
-
+                handleLowLevelKeboardEvent(lpWebWidget, wParam, lParam);
                 break;
             }
 
@@ -365,4 +359,32 @@ BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
     }
 
     return TRUE;
+}
+
+void handleLowLevelKeboardEvent(EdgeWebWidget *lpWebWidget, WPARAM wParam, LPARAM lParam)
+{    
+    MSG msg;
+    ZeroMemory(&msg, sizeof(MSG));
+
+    // TODO -- find out how to translate LL key to window key message
+    //         meanwhile force key 't' for testing everything else
+
+    msg.wParam = 0x54;
+    msg.lParam = 0x140001;
+
+    // Translate low level keyboard event into a format suitable for SendMessage()
+
+    switch (wParam) {
+        case WM_KEYDOWN:
+            msg.message = WM_KEYDOWN;
+            lpWebWidget->keyboardProcEvent(&msg);
+            msg.message = WM_CHAR;
+            msg.wParam = 0x74;
+            lpWebWidget->keyboardProcEvent(&msg);
+            break;
+        case WM_KEYUP:
+            msg.message = WM_KEYUP;
+            lpWebWidget->keyboardProcEvent(&msg);
+            break;
+    }
 }
