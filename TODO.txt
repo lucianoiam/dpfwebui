@@ -1,12 +1,6 @@
 GENERAL
 -------
 
-- Plugin should conditionally forward keystrokes to the host, for example for
-  playing with the Live virtual keyboard. Ideally this should be supported by
-  the DPF framework. WKWebView subclass on Mac is already patched to do it.
-  Linux/Win need work. Determining if the web widget is accepting text input is
-  also not implemented yet, there should be soome coordination with JS for that.
-
 - Allow calling Window::openFileBrowser() from JavaScript
 
 - Map alert(), confirm(), prompt() to native dialogs
@@ -28,6 +22,9 @@ LINUX
 
 MACOS
 -----
+
+- Cmd+Q for quitting host does not work when plugin window is open and focused.
+  Issue not related to keyboard input forward feature.
 
 - Live 10 sometimes refuses to quit when a dpf-webui plugin is loaded. There are
   no crashes. Behavior not reproducible on REAPER. This happens sporadically and
