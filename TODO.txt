@@ -34,6 +34,9 @@ WINDOWS
 
 - Hitting Ctrl+Q when plugin window is focused does not work on REAPER.
 
+- Hitting Ctrl+P when plugin window is focused brings the print panel on REAPER
+  and Live. Does not happen on Carla.
+
 - Files plugin.manifest and WebView2Loader.manifest contain a hardcoded dummy
   version for WebView2Loader.dll. It probably needs to be set to the real DLL
   version the plugin is linking against, for the cases where the host or other
