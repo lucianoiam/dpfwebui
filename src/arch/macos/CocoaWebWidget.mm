@@ -60,7 +60,6 @@ CocoaWebWidget::CocoaWebWidget(Window& windowToMapTo)
     // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
     // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
     NSView *parentView = (NSView *)windowToMapTo.getNativeWindowHandle();
-    [fWebView removeFromSuperview];
     [parentView addSubview:fWebView];
 
     String js = String(JS_POST_MESSAGE_SHIM);
