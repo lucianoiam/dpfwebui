@@ -65,7 +65,7 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     fHelperHwnd = CreateWindowEx(
         WS_EX_TOOLWINDOW,
         fHelperClass.lpszClassName,
-        L"WebView2 Init Helper",
+        L"EdgeWebWidget Helper",
         WS_POPUPWINDOW | WS_CAPTION,
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         0, 0, 0, 0
@@ -323,18 +323,23 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     // HC_ACTION means wParam & lParam contain info about keystroke message
 
     if (nCode == HC_ACTION) {
-        MSG msg;
-        ZeroMemory(&msg, sizeof(MSG));
-        msg.wParam = wParam;
-        msg.lParam = lParam;
-
         HWND hWnd = GetFocus();
         int level = 0;
 
         while (level++ < 5) {
-            EnumChildWindows(hWnd, EnumChildProc, (LPARAM)&msg);
+            HWND hWndWithWebWidgetRef = 0;
+            EnumChildWindows(hWnd, EnumChildProc, (LPARAM)&hWndWithWebWidgetRef);
 
-            if ((msg.wParam == 0) && (msg.lParam == 0)) {
+            if (hWndWithWebWidgetRef != 0) {
+                MSG msg;
+                ZeroMemory(&msg, sizeof(MSG));
+                msg.hwnd = GetParent(hWnd);
+                msg.wParam = wParam;
+                msg.lParam = lParam;
+                
+                EdgeWebWidget* lpWebWidget = (EdgeWebWidget *)GetClassLongPtr(hWndWithWebWidgetRef, 0);
+                lpWebWidget->keyboardProcEvent(&msg);
+
                 break;
             }
 
@@ -353,14 +358,7 @@ BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
     GetClassName(hWnd, (LPWSTR)className, sizeof(className));
 
     if (wcswcs(className, L"EdgeWebWidget") && wcswcs(className, L"" XSTR(PROJECT_ID_HASH))) {
-        EdgeWebWidget* lpWebWidget = (EdgeWebWidget *)GetClassLongPtr(hWnd, 0);
-        MSG* msg = (MSG *)lParam; 
-        
-        lpWebWidget->keyboardProcEvent(msg);
-
-        msg->wParam = 0;
-        msg->lParam = 0;
-
+        *((HWND *)lParam) = hWnd;
         return FALSE;
     }
 

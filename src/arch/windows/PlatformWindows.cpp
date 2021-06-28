@@ -121,28 +121,33 @@ float platform::getSystemDisplayScaleFactor()
 
 void platform::sendKeyboardEventToHost(void* event)
 {
-    EnumWindows(EnumWindowsProc, (LPARAM)event);
+    MSG* msg = (MSG *)event;
+    HWND hHostWnd = 0;
+
+    EnumWindows(EnumWindowsProc, (LPARAM)&hHostWnd);
+
+    if (hHostWnd != 0) {
+        // XXX This works but it is suboptimal because:
+        //   - Host main window is determined using an unreliable method
+        //   - Focus is moved from the plugin window to the host window
+        //   - JUCE based softsynth OB-Xd does it flawlessly
+
+        SetFocus(hHostWnd);
+        PostMessage(hHostWnd, msg->lParam, msg->wParam, 0);
+    }
 }
 
 BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
 {
-    MSG* msg = (MSG *)lParam;
-    
-    DWORD winProcId;
+    DWORD winProcId = 0;
     GetWindowThreadProcessId(hWnd, &winProcId);
 
     if (winProcId == GetCurrentProcessId()) {
         char text[256];
         GetWindowText(hWnd, (LPSTR)text, sizeof(text));
 
-        // XXX This works but it is suboptimal because:
-        //   - Host main window is determined using an unreliable method
-        //   - Focus is moved from the plugin window to the host window
-        //   - JUCE based soft synth OBx-d does it flawlessly
-
         if (strstr(text, "Ableton Live") != 0) {
-            SetFocus(hWnd);
-            PostMessage(hWnd, msg->lParam, msg->wParam, 0);
+            *((HWND *)lParam) = hWnd;
             return FALSE;
         }
     }
