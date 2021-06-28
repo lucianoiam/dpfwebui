@@ -48,7 +48,7 @@ LXHELPER_BIN = /tmp/$(NAME)_ui
 TARGETS += $(LXHELPER_BIN)
 
 $(LXHELPER_BIN): src/arch/linux/helper.c src/arch/linux/extra/ipc.c
-	@echo "Compiling helper"
+	@echo "Building helper..."
 	$(SILENT)$(CC) $^ -Isrc -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
@@ -149,7 +149,7 @@ endif
 TARGETS += resources
 
 resources:
-	@echo "Copying web UI resource files"
+	@echo "Copying web UI resource files..."
 ifneq ($(filter jack,$(TARGETS)),)
 	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources
 	@cp -r src/ui/* $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_resources

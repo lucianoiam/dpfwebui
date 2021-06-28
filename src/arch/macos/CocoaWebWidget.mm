@@ -151,6 +151,12 @@ void CocoaWebWidget::injectScript(String& source)
     ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget->didReceiveKeyboardEvent(event);
 }
 
+- (BOOL)performKeyEquivalent:(NSEvent *)event
+{
+    // Ignore key shortcuts like Cmd+Q and Cmd+H
+    return NO;
+}
+
 - (BOOL)acceptsFirstMouse:(NSEvent *)event
 {
     // Allow the web view to immediately process clicks when the plugin window
