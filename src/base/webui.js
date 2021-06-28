@@ -100,9 +100,9 @@ class DISTRHO_WebUI {
         this._call('flushInitMessageQueue');
     }
 
-    // ProxyWebUI::forwardKeyboardInputToHost()
-    forwardKeyboardInputToHost(forward) {
-        this._call('forwardKeyboardInputToHost', forward);
+    // ProxyWebUI::setGrabKeyboardInput()
+    setGrabKeyboardInput(forward) {
+        this._call('setGrabKeyboardInput', forward);
     }
 
     // ProxyWebUI::getInitWidth()
