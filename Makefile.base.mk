@@ -47,6 +47,6 @@ endif
 endif
 
 ifeq ($(MACOS),true)
-$(info Patching DistrhoUI.cpp to workaround scale bug on macOS...)
+$(info Patching DistrhoUI.cpp to workaround window size bug on macOS...)
 _:=$(shell patch -u $(DPF_CUSTOM_PATH)/distrho/src/DistrhoUI.cpp -i src/DistrhoUI.cpp.patch)
 endif
