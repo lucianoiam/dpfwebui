@@ -92,5 +92,7 @@ void platform::sendKeyboardEventToHost(void* event)
         [responder keyDown:nsEvent];
     } else if (nsEvent.type == NSEventTypeKeyUp) {
         [responder keyUp:nsEvent];
+    } else if (nsEvent.type == NSEventTypeFlagsChanged) {
+        [responder flagsChanged:nsEvent];
     }
 }
