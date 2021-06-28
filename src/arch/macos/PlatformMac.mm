@@ -82,17 +82,3 @@ float platform::getSystemDisplayScaleFactor()
 {
     return [NSScreen mainScreen].backingScaleFactor;
 }
-
-void platform::sendKeyboardEventToHost(void* event)
-{
-    NSEvent *nsEvent = (NSEvent *)event;
-    NSResponder *responder = [NSApplication sharedApplication].mainWindow.firstResponder;
-
-    if (nsEvent.type == NSEventTypeKeyDown) {
-        [responder keyDown:nsEvent];
-    } else if (nsEvent.type == NSEventTypeKeyUp) {
-        [responder keyUp:nsEvent];
-    } else if (nsEvent.type == NSEventTypeFlagsChanged) {
-        [responder flagsChanged:nsEvent];
-    }
-}

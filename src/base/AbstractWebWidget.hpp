@@ -36,7 +36,6 @@ class WebWidgetEventHandler
 public:
     virtual void handleWebWidgetContentLoadFinished() = 0;
     virtual void handleWebWidgetScriptMessageReceived(const ScriptValueVector& args) = 0;
-    virtual void handleWebWidgetKeyboardEvent(void* event) = 0;
 
 };
 
@@ -44,7 +43,7 @@ class AbstractWebWidget : public TopLevelWidget
 {
 public:
     AbstractWebWidget(Window& windowToMapTo) : TopLevelWidget(windowToMapTo),
-        fPrintTraffic(false) {}
+        fGrabKeyboardInput(false), fPrintTraffic(false) {}
     virtual ~AbstractWebWidget() {};
 
     void onDisplay() override { /* no-op */ }
@@ -54,6 +53,8 @@ public:
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
 
+    bool isGrabKeyboardInput() { return fGrabKeyboardInput; }
+    void setGrabKeyboardInput(bool grabKeyboardInput) { fGrabKeyboardInput = grabKeyboardInput; }
     void setPrintTraffic(bool printTraffic) { fPrintTraffic = printTraffic; }
     void setEventHandler(WebWidgetEventHandler* handler) { fHandler = handler; }
     void postMessage(const ScriptValueVector& args);
@@ -63,7 +64,8 @@ protected:
     
     void handleLoadFinished();
     void handleScriptMessage(const ScriptValueVector& args);
-    void handleKeyboardEvent(void* event);
+
+    bool fGrabKeyboardInput;
 
 private:
     String serializeScriptValues(const ScriptValueVector& args);
