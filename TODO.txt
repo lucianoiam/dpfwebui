@@ -11,6 +11,8 @@ GENERAL
 LINUX
 -----
 
+- Initial plugin window size not set for LV2, works for VST.
+
 - DSSI plugin currently builds but fails to start
 
 - UI not displaying at all on Gnome Shell even running on Xorg. XEmbed related?
