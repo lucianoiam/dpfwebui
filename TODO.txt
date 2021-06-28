@@ -11,7 +11,9 @@ GENERAL
 LINUX
 -----
 
-- Initial plugin window size not set for LV2, works for VST.
+- HTML <input> elements do not receive keyboard events on REAPER and Bitwig.
+  It is still possible to copy and paste text on them by enabling the right click
+  context menu and using its options. Keyboard input works as expected on Carla.
 
 - DSSI plugin currently builds but fails to start
 
