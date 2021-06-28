@@ -193,6 +193,13 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
             static_cast<uint>(args[kArg0].getDouble()), // width
             static_cast<uint>(args[kArg1].getDouble())  // height
         );
+#ifdef DISTRHO_OS_WINDOWS
+        // WINSIZEBUG: repeat 2x
+        setSize(
+            static_cast<uint>(args[kArg0].getDouble()), // width
+            static_cast<uint>(args[kArg1].getDouble())  // height
+        );
+#endif
 
     } else if ((method == "editParameter") && (argc == 2)) {
         editParameter(
