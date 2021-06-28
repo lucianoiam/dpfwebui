@@ -70,10 +70,6 @@ public:
     HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
-    // Allow calling some protected methods from static functions
-    
-    void keyboardHookEvent(void* event) { handleKeyboardEvent(event); }
-
 private:
     void initWebView();
     void updateWebViewBounds();
