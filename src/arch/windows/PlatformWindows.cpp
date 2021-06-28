@@ -144,7 +144,8 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
         text[0] = '\0';
         GetWindowText(hWnd, (LPSTR)text, sizeof(text));
 
-        if (strstr(text, "Ableton Live") != 0) {
+        // XXX This is unashamedly fragile
+        if (strstr(text, "Carla") || strstr(text, "REAPER") || strstr(text, "Ableton Live")) {
             *((HWND *)lParam) = hWnd;
             return FALSE;
         }
