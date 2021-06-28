@@ -30,8 +30,8 @@ USE_NAMESPACE_DISTRHO
 String platform::getBinaryDirectoryPath()
 {
     char path[PATH_MAX];
-    ::strcpy(path, getBinaryPath());
-    return String(::dirname(path));
+    strcpy(path, getBinaryPath());
+    return String(dirname(path));
 }
 
 String platform::getBinaryPath()
@@ -39,10 +39,10 @@ String platform::getBinaryPath()
     // DISTRHO_PLUGIN_TARGET_* macros are not available here
     // Is there a better way to differentiate we are being called from library or executable?
     String libPath = getSharedLibraryPath();
-    void *handle = ::dlopen(libPath, RTLD_LAZY);
+    void *handle = dlopen(libPath, RTLD_LAZY);
 
     if (handle) {
-        ::dlclose(handle);
+        dlclose(handle);
         return libPath;
     } else {
          // dlopen() fails when running standalone
@@ -54,8 +54,8 @@ String platform::getSharedLibraryPath()
 {
     Dl_info dl_info;
 
-    if (::dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
-        DISTRHO_LOG_STDERR(::dlerror());
+    if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
+        DISTRHO_LOG_STDERR(dlerror());
         return String();
     } else {
         return String(dl_info.dli_fname);
@@ -65,7 +65,7 @@ String platform::getSharedLibraryPath()
 String platform::getExecutablePath()
 {
     char path[PATH_MAX];
-    ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path) - 1);
+    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
 
     if (len == -1) {
         DISTRHO_LOG_STDERR_ERRNO("Could not determine executable path");
@@ -87,7 +87,7 @@ String platform::getTemporaryPath()
 
 float platform::getSystemDisplayScaleFactor()
 {
-    const char *dpi = ::getenv("GDK_DPI_SCALE");
+    const char *dpi = getenv("GDK_DPI_SCALE");
 
     if (dpi != 0) {
         float k;
