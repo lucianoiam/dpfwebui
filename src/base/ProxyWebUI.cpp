@@ -41,7 +41,7 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     , fWebWidget(getWindow())
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
-    , fForwardKbdInput(false)
+    , fGrabKeyboardInput(false)
 {
     // Automatically scale up the plugin UI so its contents do not look small
     // on high pixel density displays, known as HiDPI or Retina.
@@ -130,9 +130,10 @@ void ProxyWebUI::flushInitMessageQueue()
     fInitMsgQueue.clear();
 }
 
-void ProxyWebUI::forwardKeyboardInputToHost(bool forward)
+void ProxyWebUI::setGrabKeyboardInput(bool grab)
 {
-    fForwardKbdInput = forward;
+    // Host window will not receive keystroke events when grab is enabled
+    fGrabKeyboardInput = grab;
 }
 
 void ProxyWebUI::handleWebWidgetContentLoadFinished()
@@ -162,8 +163,8 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
 
-    } else if ((method == "forwardKeyboardInputToHost") && (argc == 1)) {
-        forwardKeyboardInputToHost(static_cast<bool>(args[kArg0].getBool()));
+    } else if ((method == "setGrabKeyboardInput") && (argc == 1)) {
+        setGrabKeyboardInput(static_cast<bool>(args[kArg0].getBool()));
 
     } else if (method == "getInitWidth") {
         webPostMessage({"WebUI", "getInitWidth", static_cast<double>(getInitWidth())});
@@ -226,7 +227,7 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
 
 void ProxyWebUI::handleWebWidgetKeyboardEvent(void* event)
 {
-    if (fForwardKbdInput) {
+    if (!fGrabKeyboardInput) {
         platform::sendKeyboardEventToHost(event);
     }
 }
