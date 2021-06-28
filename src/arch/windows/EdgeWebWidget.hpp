@@ -74,7 +74,7 @@ public:
 
     // Allow calling some protected methods from static functions
     
-    void keyboardProcEvent(void* event) { handleKeyboardEvent(event); }
+    void keyboardHookEvent(void* event) { handleKeyboardEvent(event); }
 
 private:
     void initWebView();
