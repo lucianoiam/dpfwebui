@@ -50,12 +50,12 @@ ExternalGtkWebWidget::ExternalGtkWebWidget(Window& windowToMapTo)
 {
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
 
-    if (::pipe(fPipeFd[0]) == -1) {
+    if (pipe(fPipeFd[0]) == -1) {
         DISTRHO_LOG_STDERR_ERRNO("Could not create parent->helper pipe");
         return;
     }
 
-    if (::pipe(fPipeFd[1]) == -1) {
+    if (pipe(fPipeFd[1]) == -1) {
         DISTRHO_LOG_STDERR_ERRNO("Could not create helper->parent pipe");
         return;
     }
@@ -70,13 +70,13 @@ ExternalGtkWebWidget::ExternalGtkWebWidget(Window& windowToMapTo)
 
     // BIN_BASENAME is defined in Makefile
     char rfd[10];
-    ::sprintf(rfd, "%d", fPipeFd[0][0]);
+    sprintf(rfd, "%d", fPipeFd[0][0]);
     char wfd[10];
-    ::sprintf(wfd, "%d", fPipeFd[1][1]);
+    sprintf(wfd, "%d", fPipeFd[1][1]);
     String helperPath = platform::getBinaryDirectoryPath() + String("/" XSTR(BIN_BASENAME) "_ui");
     const char *argv[] = {helperPath, rfd, wfd, 0};
 
-    int status = ::posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
+    int status = posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
 
     if (status != 0) {
         DISTRHO_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
@@ -95,7 +95,7 @@ ExternalGtkWebWidget::~ExternalGtkWebWidget()
     if (fPid != -1) {
         if (kill(fPid, SIGTERM) == 0) {
             int stat;
-            ::waitpid(fPid, &stat, 0);
+            waitpid(fPid, &stat, 0);
         } else {
             DISTRHO_LOG_STDERR_ERRNO("Could not terminate helper subprocess");
         }
@@ -153,7 +153,7 @@ void ExternalGtkWebWidget::injectScript(String& source)
 int ExternalGtkWebWidget::ipcWriteString(helper_opcode_t opcode, String str) const
 {
     const char *cStr = static_cast<const char *>(str);
-    return ipcWrite(opcode, cStr, ::strlen(cStr) + 1);
+    return ipcWrite(opcode, cStr, strlen(cStr) + 1);
 }
 
 int ExternalGtkWebWidget::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize) const
@@ -217,7 +217,7 @@ void ExternalGtkWebWidget::handleHelperScriptMessage(const char *payload, int pa
                 break;
 
             case ARG_TYPE_STRING:
-                offset += 1 /*type*/ + ::strlen(value) + 1 /*\0*/;
+                offset += 1 /*type*/ + strlen(value) + 1 /*\0*/;
                 args.push_back(ScriptValue(String(value)));
                 break;
 
@@ -249,7 +249,7 @@ void IpcReadThread::run()
         tv.tv_sec = 0;
         tv.tv_usec = 100000;
 
-        int retval = ::select(fd + 1, &rfds, 0, 0, &tv);
+        int retval = select(fd + 1, &rfds, 0, 0, &tv);
 
         if (retval == -1) {
             DISTRHO_LOG_STDERR_ERRNO("Failed select() on IPC channel");
