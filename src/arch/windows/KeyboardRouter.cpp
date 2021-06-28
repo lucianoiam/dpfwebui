@@ -76,18 +76,26 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
         int level = 0;
 
         // Check if focused window belongs to the hierarchy of one of our plugin instances
+        // Max 3 levels is reasonable for reaching plugin window from a Chrome child window
 
-        while (level++ < 5) {
+        while (level++ < 3) { 
             HWND hFocusedPluginHelperWnd = 0;
             EnumChildWindows(hWnd, enumChildProc, (LPARAM)&hFocusedPluginHelperWnd);
 
+            // Plugin DPF window should have the helper window as a child
+
             if (hFocusedPluginHelperWnd != 0) {
-                // Key events may be delivered to the plugin root window or host main window
+                bool grabKeyboardInput = (bool)GetClassLongPtr(hFocusedPluginHelperWnd, 0);
 
-                HWND hPluginRootWnd = GetParent(hFocusedPluginHelperWnd);
+                if (!grabKeyboardInput) {
+                    // The root window is provided by the host and has DPF window as a child
+                    // Key events may be delivered to the plugin root window or host main window
 
-                KeyboardRouter::getInstance().handleLowLevelKeyEvent(hPluginRootWnd,
-                    (UINT)wParam, (KBDLLHOOKSTRUCT *)lParam);
+                    HWND hPluginRootWnd = GetParent(hFocusedPluginHelperWnd);
+
+                    KeyboardRouter::getInstance().handleLowLevelKeyEvent(hPluginRootWnd,
+                        (UINT)wParam, (KBDLLHOOKSTRUCT *)lParam);
+                }
 
                 break;
             }

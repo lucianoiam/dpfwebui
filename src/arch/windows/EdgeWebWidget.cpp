@@ -55,6 +55,7 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     swprintf(className, sizeof(className), L"EdgeWebWidget_%s_%d", XSTR(PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
     fHelperClass.cbSize = sizeof(WNDCLASSEX);
+    fHelperClass.cbClsExtra = sizeof(LONG_PTR);
     fHelperClass.lpszClassName = wcsdup(className);
     fHelperClass.lpfnWndProc = DefWindowProc;
     RegisterClassEx(&fHelperClass);
@@ -68,6 +69,7 @@ EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
     );
     ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
 
+    setGrabKeyboardInput(false);
     KeyboardRouter::getInstance().incRefCount();
 
     fHandler = new InternalWebView2EventHandler(this);
@@ -158,6 +160,12 @@ void EdgeWebWidget::injectScript(String& source)
     }
 
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
+}
+
+void EdgeWebWidget::setGrabKeyboardInput(bool grabKeyboardInput)
+{
+    AbstractWebWidget::setGrabKeyboardInput(grabKeyboardInput);
+    SetClassLongPtr(fHelperHwnd, 0, (LONG_PTR)grabKeyboardInput); // allow KeyboardRouter to read it
 }
 
 void EdgeWebWidget::updateWebViewBounds()

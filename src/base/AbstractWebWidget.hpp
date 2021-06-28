@@ -55,8 +55,9 @@ public:
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
 
-    bool isGrabKeyboardInput() { return fGrabKeyboardInput; }
-    void setGrabKeyboardInput(bool grabKeyboardInput) { fGrabKeyboardInput = grabKeyboardInput; }
+    virtual void setGrabKeyboardInput(bool grabKeyboardInput) { fGrabKeyboardInput = grabKeyboardInput; }
+    bool         isGrabKeyboardInput() { return fGrabKeyboardInput; }
+
     void setPrintTraffic(bool printTraffic) { fPrintTraffic = printTraffic; }
     void setEventHandler(WebWidgetEventHandler* handler) { fHandler = handler; }
     void postMessage(const ScriptValueVector& args);
