@@ -22,6 +22,7 @@
 #include <sstream>
 
 #define JS_DISABLE_CONTEXT_MENU  "window.oncontextmenu = (e) => e.preventDefault();"
+#define JS_DISABLE_PRINT         "window.onkeydown = (e) => { if ((e.key == 'p') && (e.ctrlKey || e.metaKey)) e.preventDefault(); };"
 #define JS_CREATE_CONSOLE        "window.console = {log: (s) => window.webviewHost.postMessage(['console.log', String(s)])};"
 #define JS_CREATE_HOST_OBJECT    "window.webviewHost = new EventTarget;" \
                                  "window.webviewHost.addMessageListener = (lr) => {" \
@@ -42,6 +43,7 @@ void AbstractWebWidget::injectDefaultScripts(String& platformSpecificScript)
 {
     String js = String()
         + String(JS_DISABLE_CONTEXT_MENU)
+        //+ String(JS_DISABLE_PRINT)
         + String(JS_CREATE_CONSOLE)
         + String(JS_CREATE_HOST_OBJECT)
         + platformSpecificScript
