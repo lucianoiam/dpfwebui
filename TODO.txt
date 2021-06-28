@@ -23,8 +23,8 @@ LINUX
 MACOS
 -----
 
-- Live 10 sometimes refuses to quit from the Mac menu when a plugin window is
-  open. Behavior not reproducible on REAPER.
+- Live 10 sporadically refuses to quit from the Mac menu or by pressing Cmd+Q
+  when a plugin window is open. Behavior not reproducible on REAPER.
 
 
 WINDOWS
