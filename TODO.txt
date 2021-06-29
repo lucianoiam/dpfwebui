@@ -13,7 +13,9 @@ LINUX
 
 - HTML <input> elements do not receive keyboard events on REAPER and Bitwig.
   It is still possible to copy and paste text on them by enabling the right click
-  context menu and using its options. Keyboard input works as expected on Carla.
+  context menu and using its options. Keyboard input works as expected on Carla
+  and standalone. Widget::onKeyboard(const KeyboardEvent&) is called for DPF
+  example d_parameters on Carla and Bitwig but not REAPER, possible REAPER bug.
 
 - DSSI plugin currently builds but fails to start
 
