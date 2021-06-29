@@ -130,6 +130,16 @@ void ExternalGtkWebWidget::onResize(const ResizeEvent& ev)
     ipcWrite(OPC_SET_SIZE, &sizePkt, sizeof(sizePkt));
 }
 
+bool ExternalGtkWebWidget::onKeyboard(const KeyboardEvent& ev)
+{
+    // TODO: route keys to webview, necessary for Bitwig
+    //       REAPER keyboard input seems to be broken for every plugin.
+    //       also consider onCharacterInput()
+    String js = String("if(typeof(window.count)=='undefined') window.count=0;document.getElementById('temp').innerText=window.count++;");
+    runScript(js);
+    return isGrabKeyboardInput(); // true = stop propagation
+}
+
 void ExternalGtkWebWidget::setBackgroundColor(uint32_t rgba)
 {
     ipcWrite(OPC_SET_BACKGROUND_COLOR, &rgba, sizeof(uint32_t));
