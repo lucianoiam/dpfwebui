@@ -50,9 +50,8 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     setSize(fInitWidth, fInitHeight);
 
 #ifdef DISTRHO_OS_WINDOWS
-    // WINSIZEBUG: these are noticeable only when system scale factor > 100%
-    setSize(fInitWidth, fInitHeight); // why repeating 2x?
-    fWebWidget.setSize(fInitWidth, fInitHeight); // why?
+    setSize(fInitWidth, fInitHeight); // why setSize() call needs to be repeated 2x?
+    fWebWidget.setSize(fInitWidth, fInitHeight); // isn't UI::setSize() enough for a TopLevelWidget?
 #endif
 
     fWebWidget.setBackgroundColor(fBackgroundColor);
@@ -151,13 +150,14 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
         return;
     }
 
-    // It is not possible to implement synchronous calls without resorting
-    // to dirty hacks, for such cases fulfill getter promises instead.
+    // It is not possible to implement JS synchronous calls that return values
+    // without resorting to dirty hacks. Use JS async functions instead, and
+    // fulfill their promises here. See for example isResizable() below.
 
     String method = args[1].getString();
     int argc = args.size() - kArg0;
 
-    // TODO: use a hashtable instead of comparing strings ?
+    // How about using a hashtable of methods instead of comparing strings?
 
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
@@ -192,7 +192,7 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
             static_cast<uint>(args[kArg1].getDouble())  // height
         );
 #ifdef DISTRHO_OS_WINDOWS
-        // WINSIZEBUG: repeat 2x
+        // WINSIZEBUG: need to repeat setSize() call 2x
         setSize(
             static_cast<uint>(args[kArg0].getDouble()), // width
             static_cast<uint>(args[kArg1].getDouble())  // height
