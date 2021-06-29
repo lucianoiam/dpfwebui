@@ -29,11 +29,29 @@
 
 USE_NAMESPACE_DISTRHO
 
-String platform::getBinaryDirectoryPath()
+static String getSharedLibraryPath()
+{
+    Dl_info dl_info;
+
+    if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
+        DISTRHO_LOG_STDERR(dlerror());
+        return String();
+    } else {
+        return String(dl_info.dli_fname);
+    }
+}
+
+static String getExecutablePath()
 {
     char path[PATH_MAX];
-    strcpy(path, getBinaryPath());
-    return String(dirname(path));
+    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
+
+    if (len == -1) {
+        DISTRHO_LOG_STDERR_ERRNO("Could not determine executable path");
+        return String();
+    } else {
+        return String(path);
+    }
 }
 
 String platform::getBinaryPath()
@@ -52,34 +70,11 @@ String platform::getBinaryPath()
     }
 }
 
-String platform::getSharedLibraryPath()
-{
-    Dl_info dl_info;
-
-    if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
-        DISTRHO_LOG_STDERR(dlerror());
-        return String();
-    } else {
-        return String(dl_info.dli_fname);
-    }
-}
-
-String platform::getExecutablePath()
-{
-    char path[PATH_MAX];
-    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
-
-    if (len == -1) {
-        DISTRHO_LOG_STDERR_ERRNO("Could not determine executable path");
-        return String();
-    } else {
-        return String(path);
-    }
-}
-
 String platform::getResourcePath()
 {
-    return getBinaryDirectoryPath() + "/" + kDefaultResourcesSubdirectory;
+    char path[PATH_MAX];
+    strcpy(path, getBinaryPath());
+    return dirname(path) + "/" + kDefaultResourcesSubdirectory;
 }
 
 String platform::getTemporaryPath()
