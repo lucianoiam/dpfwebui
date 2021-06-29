@@ -40,16 +40,11 @@ namespace platform {
 
 	typedef _WebWidget WebWidget;
 
-    // The following functions help locating resource files and helper binaries
-    // during runtime. Location of such is relative to the running binary path. 
-
     String getBinaryPath();
     String getResourcePath();
     String getTemporaryPath();
 
-    // Helps scaling the web view on high density displays
-
-    float getSystemDisplayScaleFactor();
+    float  getSystemDisplayScaleFactor();
 
     const String kDefaultResourcesSubdirectory = String(XSTR(BIN_BASENAME) "_resources");
 
