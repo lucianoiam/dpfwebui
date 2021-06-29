@@ -18,7 +18,7 @@ class StubWebUI {
 
     static installIfNeeded() {
         if (typeof(DISTRHO_WebUI) == 'undefined') {
-            console.log('DISTRHO_WebUI is not present, installing stub')
+            console.log('DISTRHO_WebUI is not defined, installing stub')
             window.DISTRHO_WebUI = StubWebUI;
         }
     }
@@ -33,6 +33,14 @@ class StubWebUI {
 
     async getHeight() {
         return document.body.clientHeight;
+    }
+
+    setWidth(width) {
+        console.log(`setWidth(${width})`);
+    }
+
+    setHeight(height) {
+        console.log(`setHeight(${height})`);
     }
 
     async isResizable() {
@@ -57,6 +65,18 @@ class StubWebUI {
 
     flushInitMessageQueue() {
         console.log('flushInitMessageQueue()');
+    }
+
+    setGrabKeyboardInput(forward) {
+        console.log(`setGrabKeyboardInput(${forward}`);
+    }
+
+    async getInitWidth() {
+        return document.body.clientWidth;
+    }
+
+    async getInitHeight() {
+        return document.body.clientHeight;
     }
 
     postMessage(...args) {
