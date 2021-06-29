@@ -24,12 +24,12 @@ class WebGainExampleUI extends DISTRHO_WebUI {
     constructor() {
         super(); // do not forget
 
-        // Mostly connect controls to the plugin
+        // Connect slider to plugin and show user agent
         this._setupView();
 
         // Process any UI message generated while the web view was still loading
         // It is mandatory to call this method at some point, e.g. after UI gets
-        // ready, otherwise messages will accumulate indefinitely on C++ side.
+        // ready, otherwise messages get indefinitely accumulated on C++ side.
         this.flushInitMessageQueue();
 
         // Showtime

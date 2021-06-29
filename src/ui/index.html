@@ -1,30 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
+
+  <!-- Standard head -->
   <head>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>WebUI - Title currently ignored</title>
+    <title>WebGain - Title ignored by the plugin</title>
     <link rel="stylesheet" href="style.css">
+
   </head>
+
+  <!-- Optional: start hidden to avoid artifacts -->
   <body style="visibility: hidden;" onload="new WebGainExampleUI">
     
     <div id="main">
+        <!-- Credits -->
         <h1>Made with DPF</h1>
+
+        <!-- Smiley face -->
         <img style="width:32px; height:25px;" src="music.gif">
-        <input type="range" min="0" max="1" step="0.001" id="gain-slider">
+
+        <!-- The gain slider -->
+        <input type="range" min="0" max="1.25" step="0.001" id="gain-slider">
+
+        <!-- Replaced with the user agent -->
         <pre id="user-agent">Loading...</pre>
+
+        <!-- FIXME: remove this after fixing keyboard input on Bitwig/Linux -->
         <div id="temp" style="position:absolute;top:0;left:0;"></div>
         <input type="text" placeholder="Keyboard input test">
     </div>
 
+    <!-- Optional: allow debugging on a browser -->
     <script src="stub-webui.js"></script>
+
+    <!-- Implementation of class WebGainExampleUI -->
     <script src="web-gain-example-ui.js"></script>
 
-    <script>
+    <!--
+        Optional: workaround for input[type=range] sliders on Linux touchscreen
 
-        // Is this a bug or by design of WebKitGTK ? input[type=range] sliders
-        // are not reacting to touches on that web view. It does not seem to be
-        // a dpf-webui bug as touch works as expected for every other element.
+        Not sure this is a bug or feature of WebKitGTK. These elements do not
+        react to touches on Linux but do on other platforms. It does not seem to
+        be a dpf-webui bug as touch works as expected for every other element.
+    -->
+    <script>
 
         if (/linux/i.test(window.navigator.platform)) {
             document.querySelectorAll('input[type=range]').forEach((el) => {
