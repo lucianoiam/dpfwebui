@@ -39,6 +39,7 @@ static void create_webview(helper_context_t *ctx);
 static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t);
 static void set_parent(const helper_context_t *ctx, uintptr_t parentId);
 static void inject_script(const helper_context_t *ctx, const char* js);
+static void inject_keystroke(const helper_context_t *ctx, const helper_key_t *key);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
@@ -143,6 +144,23 @@ static void inject_script(const helper_context_t *ctx, const char* js)
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
     webkit_user_content_manager_add_script(manager, script);
     webkit_user_script_unref(script);
+}
+
+static void inject_keystroke(const helper_context_t *ctx, const helper_key_t *key)
+{
+    GdkEvent event;
+    event.key.type = key->press ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
+    event.key.window = gtk_widget_get_window(GTK_WIDGET(ctx->window));
+    event.key.send_event = FALSE;
+    event.key.time = GDK_CURRENT_TIME;
+    event.key.state = 0;
+    event.key.keyval = key->key;
+    event.key.length = 0;
+    event.key.string = NULL;
+    event.key.hardware_keycode = key->keycode;
+    event.key.group = 0;
+    event.key.is_modifier = 0;
+    gdk_event_put(&event);
 }
 
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)
@@ -263,6 +281,10 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
 
         case OPC_INJECT_SCRIPT:
             inject_script(ctx, packet.v);
+            break;
+
+        case OPC_KEY_EVENT:
+            inject_keystroke(ctx, (const helper_key_t *)packet.v);
             break;
 
         default:

@@ -28,6 +28,7 @@ typedef enum {
     OPC_NAVIGATE,
     OPC_RUN_SCRIPT,
     OPC_INJECT_SCRIPT,
+    OPC_KEY_EVENT,
     OPC_HANDLE_SCRIPT_MESSAGE,
     OPC_HANDLE_LOAD_FINISHED
 } helper_opcode_t;
@@ -44,5 +45,11 @@ typedef struct {
     unsigned width;
     unsigned height;
 } helper_size_t;
+
+typedef struct {
+    char     press;
+    unsigned key;
+    unsigned keycode;
+} helper_key_t;
 
 #endif  // HELPER_H
