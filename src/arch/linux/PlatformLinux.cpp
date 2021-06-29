@@ -72,7 +72,7 @@ String platform::getResourcePath()
 {
     char path[PATH_MAX];
     strcpy(path, getBinaryPath());
-    return dirname(path) + "/" + kDefaultResourcesSubdirectory;
+    return String(dirname(path)) + "/" + kDefaultResourcesSubdirectory;
 }
 
 String platform::getTemporaryPath()

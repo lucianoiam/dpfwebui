@@ -17,9 +17,11 @@
 #include "ExternalGtkWebWidget.hpp"
 
 #include <cstdio>
+#include <libgen.h>
 #include <signal.h>
 #include <spawn.h>
 #include <unistd.h>
+#include <linux/limits.h>
 #include <sys/select.h>
 #include <sys/wait.h>
 
