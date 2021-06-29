@@ -27,13 +27,6 @@
 
 USE_NAMESPACE_DISTRHO
 
-String platform::getBinaryDirectoryPath()
-{
-    char path[PATH_MAX];
-    strcpy(path, getBinaryPath());
-    return String(dirname(path));
-}
-
 String platform::getBinaryPath()
 {
     Dl_info dl_info;
@@ -45,24 +38,15 @@ String platform::getBinaryPath()
     }
 }
 
-String platform::getSharedLibraryPath()
-{
-    return getBinaryPath();
-}
-
-String platform::getExecutablePath()
-{
-    return getBinaryPath();
-}
-
 String platform::getResourcePath()
 {
     // There is no DPF method for querying plugin format during runtime
     // Anyways the ideal solution is to modify the Makefile and rely on macros
     // Mac VST is the only special case
     char path[PATH_MAX];
-    strcpy(path, getSharedLibraryPath());
+    strcpy(path, getBinaryPath());
     void *handle = dlopen(path, RTLD_NOLOAD);
+
     if (handle != 0) {
         void *addr = dlsym(handle, "VSTPluginMain");
         dlclose(handle);
@@ -70,7 +54,10 @@ String platform::getResourcePath()
             return String(dirname(path)) + "/../Resources";
         }
     }
-    return getBinaryDirectoryPath() + "/" + kDefaultResourcesSubdirectory;
+
+    strcpy(path, getBinaryPath().buffer());
+
+    return String(dirname(path)) + "/" + kDefaultResourcesSubdirectory;
 }
 
 String platform::getTemporaryPath()

@@ -31,37 +31,25 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 USE_NAMESPACE_DISTRHO
 
-String platform::getBinaryDirectoryPath()
-{
-    char path[MAX_PATH];
-    strcpy(path, getBinaryPath());
-    PathRemoveFileSpec(path);
-    return String(path);
-}
-
 String platform::getBinaryPath()
 {
     char path[MAX_PATH];
+    
     if (GetModuleFileName((HINSTANCE)&__ImageBase, path, sizeof(path)) == 0) {
         DISTRHO_LOG_STDERR_INT("Could not determine module path", GetLastError());
         path[0] = '\0';
     }
+
     return String(path);
-}
-
-String platform::getSharedLibraryPath()
-{
-    return getBinaryPath();
-}
-
-String platform::getExecutablePath()
-{
-    return getBinaryPath();
 }
 
 String platform::getResourcePath()
 {
-    return getBinaryDirectoryPath() + "\\" + kDefaultResourcesSubdirectory;
+    char path[MAX_PATH];
+    strcpy(path, getBinaryPath());
+    PathRemoveFileSpec(path);
+
+    return String(path) + "\\" + kDefaultResourcesSubdirectory;
 }
 
 String platform::getTemporaryPath()
@@ -114,5 +102,6 @@ float platform::getSystemDisplayScaleFactor()
             // Process is not DPI-aware, do not scale
         }
     }
+
     return k;
 }

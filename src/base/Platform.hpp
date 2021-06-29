@@ -43,10 +43,7 @@ namespace platform {
     // The following functions help locating resource files and helper binaries
     // during runtime. Location of such is relative to the running binary path. 
 
-    String getBinaryDirectoryPath();
     String getBinaryPath();
-    String getSharedLibraryPath();
-    String getExecutablePath();
     String getResourcePath();
     String getTemporaryPath();
 

@@ -71,7 +71,10 @@ ExternalGtkWebWidget::ExternalGtkWebWidget(Window& windowToMapTo)
     sprintf(rfd, "%d", fPipeFd[0][0]);
     char wfd[10];
     sprintf(wfd, "%d", fPipeFd[1][1]);
-    String helperPath = platform::getBinaryDirectoryPath() + String("/" XSTR(BIN_BASENAME) "_ui");
+    
+    char binPath[PATH_MAX];
+    strcpy(binPath, platform::getBinaryPath());
+    String helperPath = String(dirname(binPath)) + "/" XSTR(BIN_BASENAME) "_ui";
     const char *argv[] = {helperPath, rfd, wfd, 0};
 
     int status = posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
