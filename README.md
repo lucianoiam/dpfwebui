@@ -59,12 +59,13 @@ point.
 No web equivalent versions of the DPF/DGL widgets are provided. There are some
 options available:
 
-- Rely on standard HTML elements plus styling (not recommended but possible)
+- Rely on stock HTML elements plus styling. This is not recommended but possible.
 - Browse the web for available toolkits like this one [here](https://github.com/DeutscheSoft/toolkit)
-- Try my widgets library called [Awww](https://github.com/lucianoiam/awww)
-(incomplete and under heavy development as of Jun '21)
-- Roll your own widgets. HTML5 offers a pletora of tools: SVG, canvas, even a
-quick combination of images, stylesheets and little JS can work.
+- Try my widgets library called [Awww](https://github.com/lucianoiam/awww). It is
+incomplete and under heavy development as of Jun '21.
+- Roll your own widgets. HTML5 offers a pletora of tools, being SVG and canvas
+worth looking into. Even a quick combination of images, stylesheets and little
+code can do the job.
 
 ### Integration with the underlying C++ framework (DPF)
 
