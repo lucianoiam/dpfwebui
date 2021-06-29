@@ -135,11 +135,10 @@ void ExternalGtkWebWidget::onResize(const ResizeEvent& ev)
 
 bool ExternalGtkWebWidget::onKeyboard(const KeyboardEvent& ev)
 {
-    // TODO: route keys to webview, necessary for Bitwig
-    //       REAPER keyboard input seems to be broken for every plugin.
-    //       also consider onCharacterInput()
-    String js = String("if(typeof(window.count)=='undefined') window.count=0;document.getElementById('temp').innerText=window.count++;");
-    runScript(js);
+    // Some hosts like Bitwig prevent the web view from getting keyboard focus
+    helper_key_t keyPkt = {static_cast<char>(ev.press), static_cast<unsigned>(ev.key),
+        static_cast<unsigned>(ev.keycode)};
+    ipcWrite(OPC_KEY_EVENT, &keyPkt, sizeof(keyPkt));
     return isGrabKeyboardInput(); // true = stop propagation
 }
 
