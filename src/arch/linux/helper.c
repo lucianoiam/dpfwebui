@@ -149,18 +149,18 @@ static void inject_script(const helper_context_t *ctx, const char* js)
 static void inject_keystroke(const helper_context_t *ctx, const helper_key_t *key)
 {
     GdkEvent event;
+    memset(&event, 0, sizeof(event));
     event.key.type = key->press ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
     event.key.window = gtk_widget_get_window(GTK_WIDGET(ctx->window));
-    event.key.send_event = FALSE;
     event.key.time = GDK_CURRENT_TIME;
-    event.key.state = 0;
-    event.key.keyval = key->key;
-    event.key.length = 0;
-    event.key.string = NULL;
-    event.key.hardware_keycode = key->keycode;
-    event.key.group = 0;
-    event.key.is_modifier = 0;
-    gdk_event_put(&event);
+    event.key.state =   ((key->mod & MOD_SHIFT)   ? GDK_SHIFT_MASK   : 0)
+                      | ((key->mod & MOD_CONTROL) ? GDK_CONTROL_MASK : 0)
+                      | ((key->mod & MOD_ALT)     ? GDK_MOD1_MASK    : 0)
+                      | ((key->mod & MOD_SUPER)   ? GDK_SUPER_MASK   : 0); // Cmd, Win...
+    event.key.keyval = key->code;
+    event.key.hardware_keycode = key->hw_code;
+    event.key.is_modifier = (guint)(key->mod != 0);
+    gdk_event_put(&event); // prints a lot of warnings to stderr...
 }
 
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)

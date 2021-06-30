@@ -137,10 +137,21 @@ void ExternalGtkWebWidget::onResize(const ResizeEvent& ev)
 
 bool ExternalGtkWebWidget::onKeyboard(const KeyboardEvent& ev)
 {
-    // Some hosts like Bitwig prevent the web view from getting keyboard focus
-    helper_key_t keyPkt = {static_cast<char>(ev.press), static_cast<unsigned>(ev.key),
-        static_cast<unsigned>(ev.keycode)};
-    ipcWrite(OPC_KEY_EVENT, &keyPkt, sizeof(keyPkt));
+    // Some hosts like Bitwig prevent the web view from getting keyboard focus.
+    // In such cases the web view can still get touch/mouse input, so assuming
+    // the user wants to type into a <input> element, such element can be
+    // focused by clicking on it and all subsequent key events received by the
+    // root plugin window (here, by this method) will be conveniently injected
+    // into the helper window, effectively reaching the web view <input>.
+
+    helper_key_t key;
+    key.press = ev.press;
+    key.code = ev.key;
+    key.hw_code = ev.keycode;
+    key.mod = ev.mod;
+
+    ipcWrite(OPC_KEY_EVENT, &key, sizeof(key));
+    
     return isGrabKeyboardInput(); // true = stop propagation
 }
 
