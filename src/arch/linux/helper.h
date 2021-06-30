@@ -44,10 +44,18 @@ typedef struct {
     unsigned height;
 } helper_size_t;
 
+typedef enum {
+    MOD_SHIFT   = 1 << 0,
+    MOD_CONTROL = 1 << 1,
+    MOD_ALT     = 1 << 2,
+    MOD_SUPER   = 1 << 3
+} helper_key_mod_t;
+
 typedef struct {
     char     press;
-    unsigned key;
-    unsigned keycode;
+    unsigned code;
+    unsigned hw_code;
+    unsigned mod;
 } helper_key_t;
 
 #endif  // HELPER_H
