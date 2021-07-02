@@ -14,8 +14,8 @@ endif
 ifeq ($(WINDOWS),true)
 BASE_FLAGS += -I$(EDGE_WEBVIEW2_PATH)/build/native/include
 LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
-              -lole32 -lShlwapi -lWebView2Loader.dll -static-libgcc \
-              -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread
+              -lole32 -lShlwapi -lMfplat -lksuser -lmfuuid -lwmcodecdspuuid -lWebView2Loader.dll \
+              -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread
 endif
 
 # Target for DPF graphics library
