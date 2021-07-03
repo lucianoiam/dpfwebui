@@ -22,10 +22,17 @@
 class WebGainExampleUI extends DISTRHO_WebUI {
 
     constructor() {
-        super(); // do not forget
+        super(); // mandatory
 
-        // Connect slider to plugin and show user agent
-        this._setupView();
+        const elem = (id) => document.getElementById(id);
+
+        // Connect slider to plugin
+        elem('gain-slider').addEventListener('input', (ev) => {
+            this.setParameterValue(0, parseFloat(ev.target.value));
+        });
+
+        // Show user agent
+        elem('user-agent').innerText = navigator.userAgent;
 
         // Process any UI message generated while the web view was still loading
         // It is mandatory to call this method at some point, e.g. after UI gets
@@ -44,16 +51,6 @@ class WebGainExampleUI extends DISTRHO_WebUI {
             default:
                 break;
         }
-    }
-
-    _setupView() {
-        const elem = (id) => document.getElementById(id);
-
-        elem('user-agent').innerText = navigator.userAgent;
-
-        elem('gain-slider').addEventListener('input', (ev) => {
-            this.setParameterValue(0, parseFloat(ev.target.value));
-        });
     }
 
 }
