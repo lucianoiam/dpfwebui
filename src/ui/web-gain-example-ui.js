@@ -26,6 +26,7 @@ class WebGainExampleUI extends DISTRHO_WebUI {
     constructor() {
         super(); // mandatory
 
+        // Helper function
         const elem = (id) => document.getElementById(id);
 
         // Connect slider to plugin
