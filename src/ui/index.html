@@ -45,10 +45,6 @@
     -->
     <script>
 
-        querySelector('input').addEventListener('keydown', (ev) => {
-            console.log(ev);
-        });
-
         if (/linux/i.test(window.navigator.platform)) {
             document.querySelectorAll('input[type=range]').forEach((el) => {
                 el.addEventListener('touchmove', (ev) => {
