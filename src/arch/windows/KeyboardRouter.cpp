@@ -70,6 +70,7 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
     // HC_ACTION means wParam & lParam contain info about keystroke message
 
     if (nCode == HC_ACTION) {
+        HWND hFocusedPluginHelperWnd = 0;
         HWND hWnd = GetFocus();
         int level = 0;
 
@@ -77,28 +78,32 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
         // Max 3 levels is reasonable for reaching plugin window from a Chrome child window
 
         while (level++ < 3) { 
-            HWND hFocusedPluginHelperWnd = 0;
             EnumChildWindows(hWnd, enumChildProc, (LPARAM)&hFocusedPluginHelperWnd);
 
             // Plugin DPF window should have the helper window as a child
 
             if (hFocusedPluginHelperWnd != 0) {
-                bool grabKeyboardInput = (bool)GetClassLongPtr(hFocusedPluginHelperWnd, 0);
-
-                if (!grabKeyboardInput) {
-                    // The root window is provided by the host and has DPF window as a child
-                    // Key events may be delivered to the plugin root window or host main window
-
-                    HWND hPluginRootWnd = GetParent(hFocusedPluginHelperWnd);
-
-                    KeyboardRouter::getInstance().handleLowLevelKeyEvent(hPluginRootWnd,
-                        (UINT)wParam, (KBDLLHOOKSTRUCT *)lParam);
-                }
-
                 break;
             }
 
             hWnd = GetParent(hWnd);
+        }
+
+        if (hFocusedPluginHelperWnd != 0) {
+            bool grabKeyboardInput = (bool)GetClassLongPtr(hFocusedPluginHelperWnd, 0);
+
+            if (grabKeyboardInput) {
+                // The plugin decided to grab keyboard input, discard keystroke
+            
+            } else {
+                // The root window is provided by the host and has DPF window as a child
+                // Key events may be delivered to the plugin root window or host main window
+
+                HWND hPluginRootWnd = GetParent(hFocusedPluginHelperWnd);
+
+                KeyboardRouter::getInstance().handleLowLevelKeyEvent(hPluginRootWnd,
+                    (UINT)wParam, (KBDLLHOOKSTRUCT *)lParam);
+            }
         }
     }
 
@@ -121,7 +126,18 @@ BOOL CALLBACK KeyboardRouter::enumChildProc(HWND hWnd, LPARAM lParam)
 }
 
 void KeyboardRouter::handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT message, KBDLLHOOKSTRUCT* lpData)
-{    
+{
+    // If targeting the plugin root window focus it first
+
+    HWND hTargetWnd;
+
+    if (fHostHWnd == 0) {
+        hTargetWnd = hPluginRootWnd;
+        SetFocus(hTargetWnd);
+    } else {
+        hTargetWnd = fHostHWnd;
+    }
+
     // Translate low level keyboard events into a format suitable for SendMessage()
 
     WPARAM wParam = lpData->vkCode;
@@ -130,11 +146,11 @@ void KeyboardRouter::handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT message, K
     switch (message) {
         case WM_KEYDOWN:
             // Basic logic that forwards a-z to allow playing with Live's virtual keyboard.
-            routeKeyMessage(hPluginRootWnd, WM_KEYDOWN, wParam, lParam);
+            SendMessage(hTargetWnd, WM_KEYDOWN, wParam, lParam);
 
             if ((lpData->vkCode >= 'A') && (lpData->vkCode <= 'Z')) {
                 wParam |= 0x20; // to lowercase
-                routeKeyMessage(hPluginRootWnd, WM_CHAR, wParam, lParam);
+                SendMessage(hTargetWnd, WM_CHAR, wParam, lParam);
             }
 
             break;
@@ -142,18 +158,8 @@ void KeyboardRouter::handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT message, K
             // bit 30: The previous key state. The value is always 1 for a WM_KEYUP message.
             // bit 31: The transition state. The value is always 1 for a WM_KEYUP message.
             lParam |= 0xC0000000;
-            routeKeyMessage(hPluginRootWnd, WM_KEYUP, wParam, lParam);
+            SendMessage(hTargetWnd, WM_KEYUP, wParam, lParam);
             
             break;
-    }
-}
-
-void KeyboardRouter::routeKeyMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    if (fHostHWnd == 0) {
-        SetFocus(hWnd);
-        SendMessage(hWnd, message, wParam, lParam); // e.g.: REAPER
-    } else {
-        SendMessage(fHostHWnd, message, wParam, lParam); // e.g.: Live
     }
 }
