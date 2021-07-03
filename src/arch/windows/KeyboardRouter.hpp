@@ -42,7 +42,6 @@ class KeyboardRouter
         void decRefCount();
 
         void handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT message, KBDLLHOOKSTRUCT* lpData);
-        void routeKeyMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     private:
         KeyboardRouter();
