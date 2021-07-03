@@ -34,6 +34,7 @@ public:
     ~CocoaWebWidget();
 
     void onResize(const ResizeEvent& ev) override;
+    bool onKeyboard(const KeyboardEvent& ev) override;
 
     void setBackgroundColor(uint32_t rgba) override;
     void navigate(String& url) override;
