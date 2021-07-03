@@ -18,6 +18,8 @@
         <!-- Credits -->
         <h1>Made with DPF</h1>
 
+        <!--<input type="text">-->
+
         <!-- Smiley face -->
         <img style="width:32px; height:25px;" src="music.gif">
 
@@ -42,6 +44,10 @@
         be a dpf-webui bug as touch works as expected for every other element.
     -->
     <script>
+
+        querySelector('input').addEventListener('keydown', (ev) => {
+            console.log(ev);
+        });
 
         if (/linux/i.test(window.navigator.platform)) {
             document.querySelectorAll('input[type=range]').forEach((el) => {

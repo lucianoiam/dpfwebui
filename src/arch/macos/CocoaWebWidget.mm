@@ -88,6 +88,34 @@ void CocoaWebWidget::onResize(const ResizeEvent& ev)
     fWebView.frame = frame;
 }
 
+bool CocoaWebWidget::onKeyboard(const KeyboardEvent& ev)
+{
+    // Some hosts like REAPER prevent the web view from getting keyboard focus.
+    // In such cases the web view can still get touch/mouse input, so assuming
+    // the user wants to type into a <input> element, such element can be
+    // focused by clicking on it and all subsequent key events received by the
+    // root plugin window (here, by this method) will be conveniently injected
+    // into the native web view window, effectively reaching the web view <input>
+
+    // FIXME: https://github.com/DISTRHO/DPF/issues/296
+
+    /*NSLog(@"onKeyboard()");
+
+    NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
+        location: NSZeroPoint
+        modifierFlags: 0  // NSEventModifierFlagShift
+        timestamp: [NSDate now]
+        windowNumber: 0
+        context: nil
+        character: @""
+        charactersIgnoringModifiers: @""
+        isARepeat: NO
+        keyCode: 0
+    ];*/
+
+    return isGrabKeyboardInput(); // true = stop propagation
+}
+
 void CocoaWebWidget::setBackgroundColor(uint32_t rgba)
 {
     // macOS WKWebView apparently does not offer a method for setting a background color, so the
@@ -146,6 +174,7 @@ void CocoaWebWidget::injectScript(String& source)
 
 - (void)keyDown:(NSEvent *)event
 {
+    NSLog(@"%@", event);
     [super keyDown:event];
     if (!self.cppWidget->isGrabKeyboardInput()) {
         [self.pluginRootView keyDown:event];
