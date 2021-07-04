@@ -127,14 +127,14 @@ endif
 # Define all web UI targets
 
 # Target for DPF graphics library
-WEBUI_PRE += $(DPF_CUSTOM_PATH)/build/libdgl.a
+TARGETS += $(DPF_CUSTOM_PATH)/build/libdgl.a
 
 $(DPF_CUSTOM_PATH)/build/libdgl.a:
 	make -C $(DPF_CUSTOM_PATH) dgl
 
 # Target for generating LV2 TTL files
 ifeq ($(CAN_GENERATE_TTL),true)
-WEBUI_POST += lv2ttl
+WEBUI_TARGET += lv2ttl
 
 lv2ttl: $(DPF_CUSTOM_PATH)/utils/lv2_ttl_generator
 	@$(DPF_CUSTOM_PATH)/utils/generate-ttl.sh
@@ -146,7 +146,7 @@ endif
 # Linux requires a helper binary
 ifeq ($(LINUX),true)
 LXHELPER_BIN = /tmp/$(NAME)_ui
-WEBUI_POST += $(LXHELPER_BIN)
+WEBUI_TARGET += $(LXHELPER_BIN)
 
 $(LXHELPER_BIN): $(WEBUI_SRC_PATH)/linux/helper.c $(WEBUI_SRC_PATH)/linux/extra/ipc.c
 	@echo "Building helper..."
@@ -175,7 +175,7 @@ endif
 
 # Mac requires compiling Objective-C++ and creating a VST bundle
 ifeq ($(MACOS),true)
-WEBUI_POST += macvst
+WEBUI_TARGET += macvst
 
 macvst:
 	@$(DPF_CUSTOM_PATH)/utils/generate-vst-bundles.sh
@@ -195,8 +195,8 @@ endif
 # The current Makefile is too lazy to support 32-bit but DLL is also available
 ifeq ($(WINDOWS),true)
 EDGE_WEBVIEW2_PATH = ./lib/Microsoft.Web.WebView2
-WEBUI_PRE += $(EDGE_WEBVIEW2_PATH)
-WEBUI_POST += copywindll
+TARGETS += $(EDGE_WEBVIEW2_PATH)
+WEBUI_TARGET += copywindll
 
 ifeq (,$(shell which nuget 2>/dev/null))
 ifneq ($(MSYS_MINGW),true)
@@ -247,7 +247,7 @@ $(BUILD_DIR)/%.rc.o: %.rc
 endif
 
 # Always copy web UI files
-WEBUI_POST += resources
+WEBUI_TARGET += resources
 
 QNAME = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)
 
