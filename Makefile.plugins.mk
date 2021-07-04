@@ -166,9 +166,15 @@ $(LXHELPER_BIN): $(WEBUI_SRC_PATH)/linux/helper.c $(WEBUI_SRC_PATH)/linux/extra/
 	$(SILENT)$(CC) $^ -I$(WEBUI_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
-	@test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME)-vst.so && cp $(LXHELPER_BIN) $(TARGET_DIR) || true
-	@test -d $(TARGET_DIR)/$(NAME).lv2 && cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME).lv2 || true
-	@test -d $(TARGET_DIR)/$(NAME)-dssi && cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME)-dssi || true
+	@(test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME)-vst.so \
+		&& cp $(LXHELPER_BIN) $(TARGET_DIR) \
+		) || true
+	@(test -d $(TARGET_DIR)/$(NAME).lv2 \
+		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME).lv2 \
+		) || true
+	@(test -d $(TARGET_DIR)/$(NAME)-dssi \
+		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME)-dssi \
+		) || true
 
 clean: clean_lxhelper
 
@@ -215,16 +221,19 @@ endif
 
 copywindll:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
-	@test -f $(TARGET_DIR)/$(NAME).exe && cp $(WEBVIEW_DLL) $(TARGET_DIR) || true
-	@test -f $(TARGET_DIR)/$(NAME).lv2 \
+	@(test -f $(TARGET_DIR)/$(NAME).exe \
+		&& cp $(WEBVIEW_DLL) $(TARGET_DIR) \
+		) || true
+	@(test -f $(TARGET_DIR)/$(NAME).lv2 \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		&& cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
-		|| true
-	@test -f $(TARGET_DIR)/$(NAME)-vst.dll \
+		) || true
+	@(test -f $(TARGET_DIR)/$(NAME)-vst.dll \
 		&& mkdir -p $(TARGET_DIR)/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader \
-		&& cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader
+		&& cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
+		) || true
 
 clean: clean_windll
 
@@ -258,14 +267,21 @@ WEBUI_TARGET += resources
 
 resources:
 	@echo "Copying web UI resource files..."
-	@test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME).exe || test -f $(TARGET_DIR)/$(NAME)-vst.dll \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)_res && cp -r ui/* $(TARGET_DIR)/$(NAME)_res || true
-	@test -d $(TARGET_DIR)/$(NAME).lv2 \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res && cp -r ui/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res || true
-	@test -d $(TARGET_DIR)/$(NAME)-dssi \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res && cp -r ui/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res || true
-	@test -d $(TARGET_DIR)/$(NAME).vst \
-		&& cp -r ui/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources || true
+	@(test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME).exe || test -f $(TARGET_DIR)/$(NAME)-vst.dll \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)_res \
+		&& cp -r ui/* $(TARGET_DIR)/$(NAME)_res \
+		) || true
+	@(test -d $(TARGET_DIR)/$(NAME).lv2 \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
+		&& cp -r ui/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
+		) || true
+	@(test -d $(TARGET_DIR)/$(NAME)-dssi \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
+		&& cp -r ui/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
+		) || true
+	@(test -d $(TARGET_DIR)/$(NAME).vst \
+		&& cp -r ui/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources \
+		) || true
 
 clean: clean_resources
 
