@@ -16,7 +16,7 @@ DPF_CUSTOM_BUILD_DIR  ?= build
 DPF_GIT_BRANCH ?= develop
 
 # ------------------------------------------------------------------------------
-# Prepare build environment
+# Determine build environment
 
 TARGET_MACHINE := $(shell gcc -dumpmachine)
 
@@ -42,6 +42,15 @@ MSYS_MINGW_SYMLINKS = export MSYS=winsymlinks:nativestrict
 endif
 endif
 
+ifneq ($(CROSS_COMPILING),true)
+CAN_GENERATE_TTL = true
+else ifneq ($(EXE_WRAPPER),)
+CAN_GENERATE_TTL = true
+endif
+
+# ------------------------------------------------------------------------------
+# Prepare build
+
 # TODO: Make this a recipe
 ifeq (,$(wildcard $(DPF_CUSTOM_PATH)/Makefile))
 _ := $(shell git submodule update --init --recursive)
@@ -60,12 +69,6 @@ ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_CUSTOM_PATH)/distrho/src/Distrh
 $(info Patching DistrhoUI.cpp to workaround window size bug on macOS...)
 _ := $(shell cd $(WEBUI_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i src/DistrhoUI.cpp.patch)
 endif
-endif
-
-ifneq ($(CROSS_COMPILING),true)
-CAN_GENERATE_TTL = true
-else ifneq ($(EXE_WRAPPER),)
-CAN_GENERATE_TTL = true
 endif
 
 # ------------------------------------------------------------------------------
@@ -127,15 +130,16 @@ LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
 endif
 
 # ------------------------------------------------------------------------------
-# Define all web UI targets
+# DPF graphics library
 
-# Target for DPF graphics library
 TARGETS += $(DPF_PATH)/build/libdgl.a
 
 $(DPF_PATH)/build/libdgl.a:
 	make -C $(DPF_PATH) dgl
 
-# Target for generating LV2 TTL files
+# ------------------------------------------------------------------------------
+# LV2 manifest files
+
 ifeq ($(CAN_GENERATE_TTL),true)
 WEBUI_TARGET += lv2ttl
 
@@ -146,7 +150,9 @@ $(DPF_PATH)/utils/lv2_ttl_generator:
 	$(MAKE) -C $(DPF_PATH)/utils/lv2-ttl-generator
 endif
 
-# Linux requires a helper binary
+# ------------------------------------------------------------------------------
+# Linux WebKitGTK helper binary
+
 ifeq ($(LINUX),true)
 LXHELPER_BIN = $(BUILD_DIR)/$(NAME)_ui
 WEBUI_TARGET += $(LXHELPER_BIN)
@@ -167,7 +173,9 @@ clean_lxhelper:
 	@rm -rf $(LXHELPER_BIN)
 endif
 
-# Mac requires compiling Objective-C++ and creating a VST bundle
+# ------------------------------------------------------------------------------
+# macOS VST bundle and Objective-C++ compilation
+
 ifeq ($(MACOS),true)
 WEBUI_TARGET += macvst
 
@@ -185,8 +193,11 @@ $(BUILD_DIR)/%.mm.o: %.mm
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 endif
 
+# ------------------------------------------------------------------------------
 # Windows requires compiling resource files and linking to Edge WebView2
-# The current Makefile is too lazy to support 32-bit but DLL is also available
+# This Makefile version is too lazy to support 32-bit but DLL is also available
+# The standalone JACK program requires a "bare" DLL instead of an assembly
+
 ifeq ($(WINDOWS),true)
 EDGE_WEBVIEW2_PATH = ./lib/Microsoft.Web.WebView2
 TARGETS += $(EDGE_WEBVIEW2_PATH)
@@ -198,7 +209,6 @@ $(error NuGet not found, try sudo apt install nuget or the equivalent for your d
 endif
 endif
 
-# The standalone Windows version requires a "bare" DLL instead of the assembly
 copywindll:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
 ifneq ($(filter jack,$(TARGETS)),)
@@ -240,7 +250,9 @@ $(BUILD_DIR)/%.rc.o: %.rc
 	@windres --input $< --output $@ --output-format=coff
 endif
 
-# Always copy web UI files
+# ------------------------------------------------------------------------------
+# Always copy UI files
+
 WEBUI_TARGET += resources
 
 resources:
