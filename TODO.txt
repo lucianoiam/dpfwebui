@@ -11,7 +11,7 @@ GENERAL
 LINUX
 -----
 
-- DSSI plugin currently builds but fails to start
+- DSSI plugin builds but fails to start
 
 - UI not displaying at all on Gnome Shell even running on Xorg. XEmbed related?
 
@@ -34,6 +34,8 @@ WINDOWS
 -------
 
 - Standalone window appears empty on startup until clicking the window border
+
+- LV2 version builds but does not show up in Carla
 
 - Files plugin.manifest and WebView2Loader.manifest contain a hardcoded dummy
   version for WebView2Loader.dll. It probably needs to be set to the real DLL
