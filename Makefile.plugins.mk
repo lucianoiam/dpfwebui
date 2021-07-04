@@ -6,7 +6,7 @@
 
 WEBUI_PROJECT_VERSION ?= 1
 
-WEBUI_ROOT_PATH := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+WEBUI_ROOT_PATH := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 WEBUI_SRC_PATH  ?= $(WEBUI_ROOT_PATH)/src
 
 DPF_PATH       ?= $(WEBUI_ROOT_PATH)/dpf
@@ -123,6 +123,17 @@ LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
 endif
 
 # ------------------------------------------------------------------------------
+# Print some info
+
+TARGETS += info
+
+info:
+	@echo "DPF Web UI : $(WEBUI_ROOT_PATH)"
+	@echo "DPF        : $(DPF_PATH) @ $(DPF_GIT_BRANCH)"
+	@echo "Build      : $(DPF_BUILD_DIR)"
+	@echo "Target     : $(DPF_TARGET_DIR)"
+
+# ------------------------------------------------------------------------------
 # Basic dependencies
 
 TARGETS += mac_patch
@@ -215,7 +226,7 @@ ifeq ($(MACOS),true)
 WEBUI_TARGET += macvst
 
 macvst:
-	@$(DPF_PATH)/utils/generate-vst-bundles.sh
+	@$(abspath $(DPF_PATH))/utils/generate-vst-bundles.sh
 
 clean: clean_macvst
 
