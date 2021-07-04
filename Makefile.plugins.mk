@@ -92,6 +92,16 @@ endif
 # ------------------------------------------------------------------------------
 # Include DPF Makefile for plugins
 
+ifeq (,$(wildcard $(DPF_PATH)/Makefile))
+_ := $(shell git submodule update --init --recursive)
+endif
+
+ifneq (,$(DPF_GIT_BRANCH))
+ifeq (,$(findstring $(DPF_GIT_BRANCH),$(shell git -C $(DPF_PATH) branch --show-current)))
+_ := $(shell git -C $(DPF_PATH) checkout $(DPF_GIT_BRANCH))
+endif
+endif
+
 include $(DPF_PATH)/Makefile.plugins.mk
 
 # ------------------------------------------------------------------------------
@@ -115,21 +125,9 @@ endif
 # ------------------------------------------------------------------------------
 # Basic dependencies
 
-TARGETS += deps
+TARGETS += mac_patch
 
-deps: dpf-repo dpf-branch patch
-
-dpf-repo: $(DPF_PATH)/Makefile
-	@git submodule update --init --recursive
-
-dpf-branch:
-ifneq (,$(DPF_GIT_BRANCH))
-ifeq ($(shell git branch --show-current | grep -c $(DPF_GIT_BRANCH)),1)
-	@git -C $(DPF_PATH) checkout $(DPF_GIT_BRANCH)
-endif
-endif
-
-patch:
+mac_patch:
 ifeq ($(MACOS),true)
 ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_PATH)/distrho/src/DistrhoUI.cpp),0)
 	@echo Patching DistrhoUI.cpp to workaround window size bug on macOS...
