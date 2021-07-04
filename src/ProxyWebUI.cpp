@@ -16,8 +16,8 @@
 
 #include "ProxyWebUI.hpp"
 
-#include "base/Platform.hpp"
-#include "base/macro.h"
+#include "Platform.hpp"
+#include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
@@ -58,7 +58,7 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     fWebWidget.setEventHandler(this);
 
     String js = String(
-#include "base/webui.js"
+#include "webui.js"
     );
     fWebWidget.injectScript(js);
 

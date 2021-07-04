@@ -22,8 +22,8 @@
 #include <unistd.h>
 #include <sys/syslimits.h>
 
-#include "base/Platform.hpp"
-#include "base/macro.h"
+#include "Platform.hpp"
+#include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 

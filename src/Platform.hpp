@@ -14,25 +14,42 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WEBGAINEXAMPLEUI_HPP
-#define WEBGAINEXAMPLEUI_HPP
+#ifndef PLATFORM_HPP
+#define PLATFORM_HPP
 
-#include "base/ProxyWebUI.hpp"
+#include "extra/String.hpp"
+
+#include "macro.h"
+
+#ifdef DISTRHO_OS_LINUX
+#include "linux/ExternalGtkWebWidget.hpp"
+typedef ExternalGtkWebWidget _WebWidget;
+#endif
+#ifdef DISTRHO_OS_MAC
+#include "macos/CocoaWebWidget.hpp"
+typedef CocoaWebWidget _WebWidget;
+#endif
+#ifdef DISTRHO_OS_WINDOWS
+#include "windows/EdgeWebWidget.hpp"
+typedef EdgeWebWidget _WebWidget;
+#endif
 
 START_NAMESPACE_DISTRHO
 
-class WebGainExampleUI : public ProxyWebUI
-{
-public:
-    WebGainExampleUI();
-    ~WebGainExampleUI() {};
+namespace platform {
 
-protected:
-    void webContentReady() override;
-    void webMessageReceived(const ScriptValueVector& args) override;
+	typedef _WebWidget WebWidget;
 
-};
+    String getBinaryPath();
+    String getResourcePath();
+    String getTemporaryPath();
+
+    float  getSystemDisplayScaleFactor();
+
+    const String kDefaultResourcesSubdirectory = String(XSTR(BIN_BASENAME) "_res");
+
+}
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBGAINEXAMPLEUI_HPP
+#endif  // PLATFORM_HPP

@@ -22,8 +22,8 @@
 #include <sstream>
 #include <winuser.h>
 
-#include "base/Platform.hpp"
-#include "base/macro.h"
+#include "Platform.hpp"
+#include "macro.h"
 #include "extra/cJSON.h"
 
 #include "KeyboardRouter.hpp"

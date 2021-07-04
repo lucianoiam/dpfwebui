@@ -18,7 +18,7 @@
 
 #include <processthreadsapi.h>
 
-#include "base/macro.h"
+#include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 

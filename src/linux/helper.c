@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
-#include "base/macro.h"
+#include "macro.h"
 #include "extra/ipc.h"
 
 typedef struct {
