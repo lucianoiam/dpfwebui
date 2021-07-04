@@ -15,6 +15,8 @@ DPF_CUSTOM_BUILD_DIR ?= build
 
 DPF_GIT_BRANCH ?= develop
 
+DIR_AND_NAME = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)
+
 # ------------------------------------------------------------------------------
 # Prepare build environment
 
@@ -252,18 +254,16 @@ endif
 # Always copy web UI files
 WEBUI_TARGET += resources
 
-QNAME = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)
-
 resources:
 	@echo "Copying web UI resource files..."
-	@(test -f $(QNAME) || test -f $(QNAME).exe || test -f $(QNAME)-vst.dll \
-		&& mkdir -p $(QNAME)_res && cp -r ui/* $(QNAME)_res) || true
-	@(test -d $(QNAME).lv2 \
-		&& mkdir -p $(QNAME).lv2/$(NAME)_res && cp -r ui/* $(QNAME).lv2/$(NAME)_res) || true
-	@(test -d $(QNAME)-dssi \
-		&& mkdir -p $(QNAME)-dssi/$(NAME)_res && cp -r ui/* $(QNAME)-dssi/$(NAME)_res) || true
-	@(test -d $(QNAME).vst \
-		&& cp -r ui/* $(QNAME).vst/Contents/Resources) || true
+	@(test -f $(DIR_AND_NAME) || test -f $(DIR_AND_NAME).exe || test -f $(DIR_AND_NAME)-vst.dll \
+		&& mkdir -p $(DIR_AND_NAME)_res && cp -r ui/* $(DIR_AND_NAME)_res) || true
+	@(test -d $(DIR_AND_NAME).lv2 \
+		&& mkdir -p $(DIR_AND_NAME).lv2/$(NAME)_res && cp -r ui/* $(DIR_AND_NAME).lv2/$(NAME)_res) || true
+	@(test -d $(DIR_AND_NAME)-dssi \
+		&& mkdir -p $(DIR_AND_NAME)-dssi/$(NAME)_res && cp -r ui/* $(DIR_AND_NAME)-dssi/$(NAME)_res) || true
+	@(test -d $(DIR_AND_NAME).vst \
+		&& cp -r ui/* $(DIR_AND_NAME).vst/Contents/Resources) || true
 
 clean: clean_resources
 
