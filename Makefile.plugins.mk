@@ -49,7 +49,7 @@ CAN_GENERATE_TTL = true
 endif
 
 ifeq ($(WINDOWS),true)
-$(info FIXME - Windows DPF build for develop branch is broken as of 21.07.04)
+$(info FIXME - Windows DPF build for latest commit in develop branch is broken as of 21.07.04, switching to older commit)
 DPF_GIT_BRANCH = e28b6770f6d85396d3cf887ecad8bc2d63313eb6
 DPF_CUSTOM_PATH       = $(WEBUI_ROOT_PATH)/dpf
 DPF_CUSTOM_TARGET_DIR = bin
