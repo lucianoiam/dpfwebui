@@ -4,7 +4,7 @@
 # ------------------------------------------------------------------------------
 # Basic setup
 
-PROJECT_VERSION ?= 1
+WEBUI_PROJECT_VERSION ?= 1
 
 WEBUI_ROOT_PATH := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 WEBUI_SRC_PATH  ?= $(WEBUI_ROOT_PATH)/src
@@ -108,7 +108,7 @@ include $(DPF_PATH)/Makefile.plugins.mk
 # Add build flags for web UI dependencies
 
 BASE_FLAGS += -I. -I$(WEBUI_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
-              -DPROJECT_ID_HASH=$(shell echo $(NAME):$(PROJECT_VERSION) | shasum -a 256 | head -c 8)
+              -DPROJECT_ID_HASH=$(shell echo $(NAME):$(WEBUI_PROJECT_VERSION) | shasum -a 256 | head -c 8)
 ifeq ($(LINUX),true)
 LINK_FLAGS += -lpthread -ldl
 endif
