@@ -1,5 +1,4 @@
 example/build
 example/bin
-#lib
-# TODO: move WebView2 to root
+
 .DS_Store
