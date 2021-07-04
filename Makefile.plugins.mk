@@ -82,7 +82,6 @@ endif
 WEBUI_FILES_UI  = ProxyWebUI.cpp \
                   AbstractWebWidget.cpp \
                   ScriptValue.cpp
-
 ifeq ($(LINUX),true)
 WEBUI_FILES_UI += linux/ExternalGtkWebWidget.cpp \
                   linux/PlatformLinux.cpp \
@@ -112,6 +111,7 @@ endif
 
 # ------------------------------------------------------------------------------
 # Include DPF Makefile for plugins
+# After inclusion DPF_PATH can be used instead of DPF_CUSTOM_PATH
 
 include $(DPF_CUSTOM_PATH)/Makefile.plugins.mk
 
@@ -120,7 +120,6 @@ include $(DPF_CUSTOM_PATH)/Makefile.plugins.mk
 
 BASE_FLAGS += -I. -I$(WEBUI_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
               -DPROJECT_ID_HASH=$(shell echo $(NAME):$(PROJECT_VERSION) | shasum -a 256 | head -c 8)
-
 ifeq ($(LINUX),true)
 LINK_FLAGS += -lpthread -ldl
 endif
