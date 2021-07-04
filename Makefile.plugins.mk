@@ -48,14 +48,6 @@ else ifneq ($(EXE_WRAPPER),)
 CAN_GENERATE_TTL = true
 endif
 
-ifeq ($(WINDOWS),true)
-$(info FIXME - Windows DPF build for latest commit in develop branch is broken as of 21.07.04, switching to older commit)
-DPF_GIT_BRANCH = e28b6770f6d85396d3cf887ecad8bc2d63313eb6
-DPF_CUSTOM_PATH       = $(WEBUI_ROOT_PATH)/dpf
-DPF_CUSTOM_TARGET_DIR = bin
-DPF_CUSTOM_BUILD_DIR  = build
-endif
-
 # ------------------------------------------------------------------------------
 # Add web UI source
 
@@ -136,6 +128,11 @@ info:
 # ------------------------------------------------------------------------------
 # Basic dependencies
 
+TARGETS += $(DPF_PATH)/build/libdgl.a
+
+$(DPF_PATH)/build/libdgl.a:
+	make -C $(DPF_PATH) dgl
+
 TARGETS += mac_patch
 
 mac_patch:
@@ -170,21 +167,13 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
-# DPF graphics library
-
-TARGETS += $(DPF_PATH)/build/libdgl.a
-
-$(DPF_PATH)/build/libdgl.a:
-	make -C $(DPF_PATH) dgl
-
-# ------------------------------------------------------------------------------
 # LV2 manifest files
 
 ifeq ($(CAN_GENERATE_TTL),true)
 WEBUI_TARGET += lv2ttl
 
 lv2ttl: $(DPF_PATH)/utils/lv2_ttl_generator
-	@$(DPF_PATH)/utils/generate-ttl.sh
+	@$(abspath $(DPF_PATH))/utils/generate-ttl.sh
 
 $(DPF_PATH)/utils/lv2_ttl_generator:
 	$(MAKE) -C $(DPF_PATH)/utils/lv2-ttl-generator
