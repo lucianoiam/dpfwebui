@@ -49,6 +49,6 @@ endif
 
 TARGETS += vst
 
-all: $(WEBUI_PRE) $(TARGETS) $(WEBUI_POST)
+all: $(TARGETS) $(WEBUI_TARGET)
 
 # --------------------------------------------------------------
