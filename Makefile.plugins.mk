@@ -226,7 +226,7 @@ copywindll:
 	@(test -f $(TARGET_DIR)/$(NAME).exe \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR) \
 		) || true
-	@(test -f $(TARGET_DIR)/$(NAME).lv2 \
+	@(test -d $(TARGET_DIR)/$(NAME).lv2 \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		&& cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
