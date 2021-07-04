@@ -9,9 +9,9 @@ PROJECT_VERSION ?= 1
 WEBUI_ROOT_PATH := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 WEBUI_SRC_PATH  ?= $(WEBUI_ROOT_PATH)/src
 
-DPF_CUSTOM_PATH       ?= $(WEBUI_ROOT_PATH)/dpf
-DPF_CUSTOM_TARGET_DIR ?= bin
-DPF_CUSTOM_BUILD_DIR  ?= build
+DPF_PATH       ?= $(WEBUI_ROOT_PATH)/dpf
+DPF_TARGET_DIR ?= bin
+DPF_BUILD_DIR  ?= build
 
 DPF_GIT_BRANCH ?= develop
 
@@ -51,26 +51,29 @@ endif
 ifeq ($(WINDOWS),true)
 $(info FIXME - Windows DPF build for develop branch is broken as of 21.07.04)
 DPF_GIT_BRANCH = e28b6770f6d85396d3cf887ecad8bc2d63313eb6
+DPF_CUSTOM_PATH       = $(WEBUI_ROOT_PATH)/dpf
+DPF_CUSTOM_TARGET_DIR = bin
+DPF_CUSTOM_BUILD_DIR  = build
 endif
 
 # ------------------------------------------------------------------------------
 # Prepare build
 
 # TODO: Make this a recipe
-ifeq (,$(wildcard $(DPF_CUSTOM_PATH)/Makefile))
+ifeq (,$(wildcard $(DPF_PATH)/Makefile))
 _ := $(shell git submodule update --init --recursive)
 endif
 
 # TODO: Make this a recipe
 ifneq (,$(DPF_GIT_BRANCH))
-ifeq (,$(findstring $(DPF_GIT_BRANCH),$(shell git -C $(DPF_CUSTOM_PATH) branch --show-current)))
-_ := $(shell git -C $(DPF_CUSTOM_PATH) checkout $(DPF_GIT_BRANCH))
+ifeq (,$(findstring $(DPF_GIT_BRANCH),$(shell git -C $(DPF_PATH) branch --show-current)))
+_ := $(shell git -C $(DPF_PATH) checkout $(DPF_GIT_BRANCH))
 endif
 endif
 
 # TODO: Make this a recipe
 ifeq ($(MACOS),true)
-ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_CUSTOM_PATH)/distrho/src/DistrhoUI.cpp),0)
+ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_PATH)/distrho/src/DistrhoUI.cpp),0)
 $(info Patching DistrhoUI.cpp to workaround window size bug on macOS...)
 _ := $(shell cd $(WEBUI_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i src/DistrhoUI.cpp.patch)
 endif
@@ -111,9 +114,8 @@ endif
 
 # ------------------------------------------------------------------------------
 # Include DPF Makefile for plugins
-# After inclusion DPF_PATH can be used instead of DPF_CUSTOM_PATH
 
-include $(DPF_CUSTOM_PATH)/Makefile.plugins.mk
+include $(DPF_PATH)/Makefile.plugins.mk
 
 # ------------------------------------------------------------------------------
 # Add build flags for web UI dependencies
