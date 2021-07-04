@@ -42,16 +42,19 @@ MSYS_MINGW_SYMLINKS = export MSYS=winsymlinks:nativestrict
 endif
 endif
 
+# TODO: Make this a recipe
 ifeq (,$(wildcard $(DPF_CUSTOM_PATH)/Makefile))
 _ := $(shell git submodule update --init --recursive)
 endif
 
+# TODO: Make this a recipe
 ifneq (,$(DPF_GIT_BRANCH))
 ifeq (,$(findstring $(DPF_GIT_BRANCH),$(shell git -C $(DPF_CUSTOM_PATH) branch --show-current)))
 _ := $(shell git -C $(DPF_CUSTOM_PATH) checkout $(DPF_GIT_BRANCH))
 endif
 endif
 
+# TODO: Make this a recipe
 ifeq ($(MACOS),true)
 ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_CUSTOM_PATH)/distrho/src/DistrhoUI.cpp),0)
 $(info Patching DistrhoUI.cpp to workaround window size bug on macOS...)
