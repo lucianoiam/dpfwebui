@@ -16,15 +16,16 @@ LINUX
 - UI not displaying at all on Gnome Shell even running on Xorg. XEmbed related?
 
 - platform::getBinaryPath() uses a cheap hack to check whether the program runs
-  standalone or loaded from library during runtime.
+  standalone or loaded from library during runtime. Have a look at new DPF
+  Application::isStandalone() method.
 
 
 MACOS
 -----
 
 - HTML <input> elements do not receive keyboard events on REAPER. It is still
-  possible to drag and drop text on them. Works as expected on Live. Related to
-  https://github.com/DISTRHO/DPF/issues/296
+  possible to drag and drop text on them. Works as expected on Live. Routing
+  keystrokes from plugin root to web view should be possible after DPF e9563d1
 
 - Live 10 sporadically refuses to quit from the Mac menu or by pressing Cmd+Q
   when a plugin window is open. Behavior not reproducible on REAPER.
@@ -33,9 +34,9 @@ MACOS
 WINDOWS
 -------
 
-- Standalone window appears empty on startup until clicking the window border
-
 - LV2 version builds but does not show up in Carla
+
+- Standalone window appears empty on startup until clicking the window border
 
 - Files plugin.manifest and WebView2Loader.manifest contain a hardcoded dummy
   version for WebView2Loader.dll. It probably needs to be set to the real DLL
