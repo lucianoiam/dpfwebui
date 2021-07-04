@@ -200,7 +200,7 @@ endif
 # ------------------------------------------------------------------------------
 # Windows requires compiling resource files and linking to Edge WebView2
 # This Makefile version is too lazy to support 32-bit but DLL is also available
-# The standalone JACK program requires a "bare" DLL instead of an assembly
+# The standalone JACK program requires a "bare" DLL instead of assembly
 
 ifeq ($(WINDOWS),true)
 EDGE_WEBVIEW2_PATH = /opt/Microsoft.Web.WebView2
@@ -215,19 +215,16 @@ endif
 
 copywindll:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
-ifneq ($(filter jack,$(TARGETS)),)
-	@cp $(WEBVIEW_DLL) $(TARGET_DIR)
-endif
-ifneq (,$(findstring lv2,$(shell echo $(TARGETS)[@])))
-	-@mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader
-	@cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader
-	@cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader
-endif
-ifneq ($(filter vst,$(TARGETS)),)
-	-@mkdir -p $(TARGET_DIR)/WebView2Loader
-	@cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader
-	@cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader
-endif
+	@test -f $(TARGET_DIR)/$(NAME).exe && cp $(WEBVIEW_DLL) $(TARGET_DIR) || true
+	@test -f $(TARGET_DIR)/$(NAME).lv2 \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		&& cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		|| true
+	@test -f $(TARGET_DIR)/$(NAME)-vst.dll \
+		&& mkdir -p $(TARGET_DIR)/WebView2Loader \
+		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader \
+		&& cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader
 
 clean: clean_windll
 
