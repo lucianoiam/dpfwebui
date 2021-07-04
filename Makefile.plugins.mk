@@ -7,15 +7,13 @@
 PROJECT_VERSION ?= 1
 
 WEBUI_ROOT_PATH := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-WEBUI_SRC_PATH ?= $(WEBUI_ROOT_PATH)/src
+WEBUI_SRC_PATH  ?= $(WEBUI_ROOT_PATH)/src
 
-DPF_CUSTOM_PATH ?= $(WEBUI_ROOT_PATH)/dpf
+DPF_CUSTOM_PATH       ?= $(WEBUI_ROOT_PATH)/dpf
 DPF_CUSTOM_TARGET_DIR ?= bin
-DPF_CUSTOM_BUILD_DIR ?= build
+DPF_CUSTOM_BUILD_DIR  ?= build
 
 DPF_GIT_BRANCH ?= develop
-
-DIR_AND_NAME = $(DPF_CUSTOM_TARGET_DIR)/$(NAME)
 
 # ------------------------------------------------------------------------------
 # Prepare build environment
@@ -112,7 +110,7 @@ include $(DPF_CUSTOM_PATH)/Makefile.plugins.mk
 # ------------------------------------------------------------------------------
 # Add build flags for web UI dependencies
 
-BASE_FLAGS += -I. -I$(WEBUI_SRC_PATH) -I$(DPF_CUSTOM_PATH) -DBIN_BASENAME=$(NAME) \
+BASE_FLAGS += -I. -I$(WEBUI_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
               -DPROJECT_ID_HASH=$(shell echo $(NAME):$(PROJECT_VERSION) | shasum -a 256 | head -c 8)
 
 ifeq ($(LINUX),true)
@@ -132,50 +130,41 @@ endif
 # Define all web UI targets
 
 # Target for DPF graphics library
-TARGETS += $(DPF_CUSTOM_PATH)/build/libdgl.a
+TARGETS += $(DPF_PATH)/build/libdgl.a
 
-$(DPF_CUSTOM_PATH)/build/libdgl.a:
-	make -C $(DPF_CUSTOM_PATH) dgl
+$(DPF_PATH)/build/libdgl.a:
+	make -C $(DPF_PATH) dgl
 
 # Target for generating LV2 TTL files
 ifeq ($(CAN_GENERATE_TTL),true)
 WEBUI_TARGET += lv2ttl
 
-lv2ttl: $(DPF_CUSTOM_PATH)/utils/lv2_ttl_generator
-	@$(DPF_CUSTOM_PATH)/utils/generate-ttl.sh
+lv2ttl: $(DPF_PATH)/utils/lv2_ttl_generator
+	@$(DPF_PATH)/utils/generate-ttl.sh
 
-$(DPF_CUSTOM_PATH)/utils/lv2_ttl_generator:
-	$(MAKE) -C $(DPF_CUSTOM_PATH)/utils/lv2-ttl-generator
+$(DPF_PATH)/utils/lv2_ttl_generator:
+	$(MAKE) -C $(DPF_PATH)/utils/lv2-ttl-generator
 endif
 
 # Linux requires a helper binary
 ifeq ($(LINUX),true)
-LXHELPER_BIN = /tmp/$(NAME)_ui
+LXHELPER_BIN = $(BUILD_DIR)/$(NAME)_ui
 WEBUI_TARGET += $(LXHELPER_BIN)
 
 $(LXHELPER_BIN): $(WEBUI_SRC_PATH)/linux/helper.c $(WEBUI_SRC_PATH)/linux/extra/ipc.c
 	@echo "Building helper..."
-	$(SILENT)$(CC) $^ -Isrc -o $(LXHELPER_BIN) -lX11 \
+	$(SILENT)$(CC) $^ -I$(WEBUI_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
-ifneq ($(filter jack,$(TARGETS)),)
-	@cp $(LXHELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)
-endif
-ifneq (,$(findstring lv2,$(shell echo $(TARGETS)[@])))
-	@cp $(LXHELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2
-endif
-ifneq ($(filter dssi,$(TARGETS)),)
-	@cp $(LXHELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)/$(NAME)-dssi
-endif
-ifneq ($(filter vst,$(TARGETS)),)
-	@cp -n $(LXHELPER_BIN) $(DPF_CUSTOM_TARGET_DIR)
-endif
-	@rm $(LXHELPER_BIN)
+	@test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME)-vst.so && cp $(LXHELPER_BIN) $(TARGET_DIR) || true
+	@test -d $(TARGET_DIR)/$(NAME).lv2 && cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME).lv2 || true
+	@test -d $(TARGET_DIR)/$(NAME)-dssi && cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME)-dssi || true
 
 clean: clean_lxhelper
 
 clean_lxhelper:
-	rm -rf $(LXHELPER_BIN)
+	@rm -rf $(TARGET_DIR)/$(notdir $(LXHELPER_BIN))
+	@rm -rf $(LXHELPER_BIN)
 endif
 
 # Mac requires compiling Objective-C++ and creating a VST bundle
@@ -183,12 +172,12 @@ ifeq ($(MACOS),true)
 WEBUI_TARGET += macvst
 
 macvst:
-	@$(DPF_CUSTOM_PATH)/utils/generate-vst-bundles.sh
+	@$(DPF_PATH)/utils/generate-vst-bundles.sh
 
 clean: clean_macvst
 
 clean_macvst:
-	@rm -rf $(DPF_CUSTOM_TARGET_DIR)/$(NAME).vst
+	@rm -rf $(TARGET_DIR)/$(NAME).vst
 
 $(BUILD_DIR)/%.mm.o: %.mm
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
@@ -213,23 +202,23 @@ endif
 copywindll:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
 ifneq ($(filter jack,$(TARGETS)),)
-	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)
+	@cp $(WEBVIEW_DLL) $(TARGET_DIR)
 endif
 ifneq (,$(findstring lv2,$(shell echo $(TARGETS)[@])))
-	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
-	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
-	@cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/$(NAME).lv2/WebView2Loader
+	-@mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader
+	@cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader
+	@cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader
 endif
 ifneq ($(filter vst,$(TARGETS)),)
-	-@mkdir -p $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
-	@cp $(WEBVIEW_DLL) $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
-	@cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+	-@mkdir -p $(TARGET_DIR)/WebView2Loader
+	@cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader
+	@cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader
 endif
 
 clean: clean_windll
 
 clean_windll:
-	@rm -rf $(DPF_CUSTOM_TARGET_DIR)/WebView2Loader
+	@rm -rf $(TARGET_DIR)/WebView2Loader
 
 ifeq ($(MSYS_MINGW),true)
 $(EDGE_WEBVIEW2_PATH): /usr/bin/nuget.exe
@@ -256,16 +245,16 @@ WEBUI_TARGET += resources
 
 resources:
 	@echo "Copying web UI resource files..."
-	@(test -f $(DIR_AND_NAME) || test -f $(DIR_AND_NAME).exe || test -f $(DIR_AND_NAME)-vst.dll \
-		&& mkdir -p $(DIR_AND_NAME)_res && cp -r ui/* $(DIR_AND_NAME)_res) || true
-	@(test -d $(DIR_AND_NAME).lv2 \
-		&& mkdir -p $(DIR_AND_NAME).lv2/$(NAME)_res && cp -r ui/* $(DIR_AND_NAME).lv2/$(NAME)_res) || true
-	@(test -d $(DIR_AND_NAME)-dssi \
-		&& mkdir -p $(DIR_AND_NAME)-dssi/$(NAME)_res && cp -r ui/* $(DIR_AND_NAME)-dssi/$(NAME)_res) || true
-	@(test -d $(DIR_AND_NAME).vst \
-		&& cp -r ui/* $(DIR_AND_NAME).vst/Contents/Resources) || true
+	@test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME).exe || test -f $(TARGET_DIR)/$(NAME)-vst.dll \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)_res && cp -r ui/* $(TARGET_DIR)/$(NAME)_res || true
+	@test -d $(TARGET_DIR)/$(NAME).lv2 \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res && cp -r ui/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res || true
+	@test -d $(TARGET_DIR)/$(NAME)-dssi \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res && cp -r ui/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res || true
+	@test -d $(TARGET_DIR)/$(NAME).vst \
+		&& cp -r ui/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources || true
 
 clean: clean_resources
 
 clean_resources:
-	@rm -rf $(DPF_CUSTOM_TARGET_DIR)/$(NAME)_res
+	@rm -rf $(TARGET_DIR)/$(NAME)_res
