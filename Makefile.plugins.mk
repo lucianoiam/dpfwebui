@@ -57,29 +57,6 @@ DPF_CUSTOM_BUILD_DIR  = build
 endif
 
 # ------------------------------------------------------------------------------
-# Prepare build
-
-# TODO: Make this a recipe
-ifeq (,$(wildcard $(DPF_PATH)/Makefile))
-_ := $(shell git submodule update --init --recursive)
-endif
-
-# TODO: Make this a recipe
-ifneq (,$(DPF_GIT_BRANCH))
-ifeq (,$(findstring $(DPF_GIT_BRANCH),$(shell git -C $(DPF_PATH) branch --show-current)))
-_ := $(shell git -C $(DPF_PATH) checkout $(DPF_GIT_BRANCH))
-endif
-endif
-
-# TODO: Make this a recipe
-ifeq ($(MACOS),true)
-ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_PATH)/distrho/src/DistrhoUI.cpp),0)
-$(info Patching DistrhoUI.cpp to workaround window size bug on macOS...)
-_ := $(shell cd $(WEBUI_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i src/DistrhoUI.cpp.patch)
-endif
-endif
-
-# ------------------------------------------------------------------------------
 # Add web UI source
 
 WEBUI_FILES_UI  = ProxyWebUI.cpp \
@@ -133,6 +110,54 @@ BASE_FLAGS += -I$(EDGE_WEBVIEW2_PATH)/build/native/include
 LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
               -lole32 -lShlwapi -lMfplat -lksuser -lmfuuid -lwmcodecdspuuid -lWebView2Loader.dll \
               -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread
+endif
+
+# ------------------------------------------------------------------------------
+# Basic dependencies
+
+TARGETS += deps
+
+deps: dpf-repo dpf-branch patch
+
+dpf-repo: $(DPF_PATH)/Makefile
+	@git submodule update --init --recursive
+
+dpf-branch:
+ifneq (,$(DPF_GIT_BRANCH))
+ifeq ($(shell git branch --show-current | grep -c $(DPF_GIT_BRANCH)),1)
+	@git -C $(DPF_PATH) checkout $(DPF_GIT_BRANCH)
+endif
+endif
+
+patch:
+ifeq ($(MACOS),true)
+ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_PATH)/distrho/src/DistrhoUI.cpp),0)
+	@echo Patching DistrhoUI.cpp to workaround window size bug on macOS...
+	@cd $(WEBUI_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i src/DistrhoUI.cpp.patch
+endif
+endif
+
+ifeq ($(WINDOWS),true)
+EDGE_WEBVIEW2_PATH = /opt/Microsoft.Web.WebView2
+
+TARGETS += $(EDGE_WEBVIEW2_PATH)
+
+ifeq ($(MSYS_MINGW),true)
+$(EDGE_WEBVIEW2_PATH): /usr/bin/nuget.exe
+else
+$(EDGE_WEBVIEW2_PATH):
+ifeq (,$(shell which nuget 2>/dev/null))
+$(error NuGet not found, try sudo apt install nuget or the equivalent for your distro)
+endif
+endif
+	@echo Downloading Edge WebView2 SDK...
+	@eval $(MSYS_MINGW_SYMLINKS)
+	@nuget install Microsoft.Web.WebView2 -OutputDirectory /opt
+	@ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH)
+
+/usr/bin/nuget.exe:
+	@echo Downloading NuGet...
+	@wget -P /usr/bin https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 endif
 
 # ------------------------------------------------------------------------------
@@ -211,15 +236,7 @@ endif
 # The standalone JACK program requires a "bare" DLL instead of assembly
 
 ifeq ($(WINDOWS),true)
-EDGE_WEBVIEW2_PATH = /opt/Microsoft.Web.WebView2
-TARGETS += $(EDGE_WEBVIEW2_PATH)
 WEBUI_TARGET += copywindll
-
-ifeq (,$(shell which nuget 2>/dev/null))
-ifneq ($(MSYS_MINGW),true)
-$(error NuGet not found, try sudo apt install nuget or the equivalent for your distro)
-endif
-endif
 
 copywindll:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
@@ -241,20 +258,6 @@ clean: clean_windll
 
 clean_windll:
 	@rm -rf $(TARGET_DIR)/WebView2Loader
-
-ifeq ($(MSYS_MINGW),true)
-$(EDGE_WEBVIEW2_PATH): /usr/bin/nuget.exe
-else
-$(EDGE_WEBVIEW2_PATH):
-endif
-	@echo Downloading Edge WebView2 SDK...
-	@eval $(MSYS_MINGW_SYMLINKS)
-	@nuget install Microsoft.Web.WebView2 -OutputDirectory /opt
-	@ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH)
-
-/usr/bin/nuget.exe:
-	@echo Downloading NuGet...
-	@wget -P /usr/bin https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 
 $(BUILD_DIR)/%.rc.o: %.rc
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
