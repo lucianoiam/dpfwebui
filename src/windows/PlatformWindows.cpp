@@ -24,8 +24,8 @@
 #include <shlwapi.h>
 #include <shtypes.h>
 
-#include "base/Platform.hpp"
-#include "base/macro.h"
+#include "Platform.hpp"
+#include "macro.h"
 
 #include "extra/WinApiStub.hpp"
 

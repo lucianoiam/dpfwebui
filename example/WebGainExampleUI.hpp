@@ -19,7 +19,7 @@
 #ifndef WEBGAINEXAMPLEUI_HPP
 #define WEBGAINEXAMPLEUI_HPP
 
-#include "base/ProxyWebUI.hpp"
+#include "ProxyWebUI.hpp"
 
 START_NAMESPACE_DISTRHO
 

@@ -24,8 +24,8 @@
 #include <cstdlib>
 #include <linux/limits.h>
 
-#include "base/Platform.hpp"
-#include "base/macro.h"
+#include "Platform.hpp"
+#include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 

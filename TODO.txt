@@ -16,15 +16,15 @@ LINUX
 - UI not displaying at all on Gnome Shell even running on Xorg. XEmbed related?
 
 - platform::getBinaryPath() uses a cheap hack to check whether the program runs
-  standalone or loaded from library during runtime. Implementation works but is
-  a bit ashaming and should be replaced with a guaranteed, documented method.
+  standalone or loaded from library during runtime.
 
 
 MACOS
 -----
 
 - HTML <input> elements do not receive keyboard events on REAPER. It is still
-  possible to drag and drop text on them. Works as expected on Live.
+  possible to drag and drop text on them. Works as expected on Live. Related to
+  https://github.com/DISTRHO/DPF/issues/296
 
 - Live 10 sporadically refuses to quit from the Mac menu or by pressing Cmd+Q
   when a plugin window is open. Behavior not reproducible on REAPER.

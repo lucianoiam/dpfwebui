@@ -24,7 +24,7 @@
 
 #include "extra/Thread.hpp"
 
-#include "base/AbstractWebWidget.hpp"
+#include "AbstractWebWidget.hpp"
 
 #include "extra/ipc.h"
 #include "helper.h"
