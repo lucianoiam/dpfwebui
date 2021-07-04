@@ -140,7 +140,7 @@ lv2ttl: $(DPF_CUSTOM_PATH)/utils/lv2_ttl_generator
 	@$(DPF_CUSTOM_PATH)/utils/generate-ttl.sh
 
 $(DPF_CUSTOM_PATH)/utils/lv2_ttl_generator:
-	$(MAKE) -C utils/lv2-ttl-generator
+	$(MAKE) -C $(DPF_CUSTOM_PATH)/utils/lv2-ttl-generator
 endif
 
 # Linux requires a helper binary
