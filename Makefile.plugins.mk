@@ -35,7 +35,7 @@ endif
 
 ifeq ($(MSYS_MINGW),true)
 ifeq ($(shell cmd /c "net.exe session 1>NUL 2>NUL || exit /b 1"; echo $$?),1)
-$(info Run MSYS as administrator for real symlink support)
+#$(info Run MSYS as administrator for real symlink support)
 MSYS_MINGW_SYMLINKS = :
 else
 MSYS_MINGW_SYMLINKS = export MSYS=winsymlinks:nativestrict
@@ -46,6 +46,11 @@ ifneq ($(CROSS_COMPILING),true)
 CAN_GENERATE_TTL = true
 else ifneq ($(EXE_WRAPPER),)
 CAN_GENERATE_TTL = true
+endif
+
+ifeq ($(WINDOWS),true)
+$(info FIXME - Windows DPF build for develop branch is broken as of 21.07.04)
+DPF_GIT_BRANCH = e28b6770f6d85396d3cf887ecad8bc2d63313eb6
 endif
 
 # ------------------------------------------------------------------------------
@@ -199,7 +204,7 @@ endif
 # The standalone JACK program requires a "bare" DLL instead of an assembly
 
 ifeq ($(WINDOWS),true)
-EDGE_WEBVIEW2_PATH = ./lib/Microsoft.Web.WebView2
+EDGE_WEBVIEW2_PATH = /opt/Microsoft.Web.WebView2
 TARGETS += $(EDGE_WEBVIEW2_PATH)
 WEBUI_TARGET += copywindll
 
@@ -237,7 +242,7 @@ $(EDGE_WEBVIEW2_PATH):
 endif
 	@echo Downloading Edge WebView2 SDK...
 	@eval $(MSYS_MINGW_SYMLINKS)
-	@nuget install Microsoft.Web.WebView2 -OutputDirectory lib
+	@nuget install Microsoft.Web.WebView2 -OutputDirectory /opt
 	@ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH)
 
 /usr/bin/nuget.exe:
