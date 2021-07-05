@@ -45,7 +45,7 @@ class AbstractWebWidget : public SubWidget
 {
 public:
     AbstractWebWidget(Widget *parentWidget) : SubWidget(parentWidget),
-        fGrabKeyboardInput(false), fPrintTraffic(false) {}
+        fKeyboardFocus(false), fPrintTraffic(false) {}
     virtual ~AbstractWebWidget() {};
 
     virtual void setBackgroundColor(uint32_t rgba) = 0;
@@ -53,8 +53,8 @@ public:
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
 
-    virtual void setGrabKeyboardInput(bool grabKeyboardInput) { fGrabKeyboardInput = grabKeyboardInput; }
-    bool         isGrabKeyboardInput() { return fGrabKeyboardInput; }
+    virtual void setKeyboardFocus(bool focus) { fKeyboardFocus = focus; }
+    bool         isKeyboardFocus() { return fKeyboardFocus; }
 
     void setPrintTraffic(bool printTraffic) { fPrintTraffic = printTraffic; }
     void setEventHandler(WebWidgetEventHandler* handler) { fHandler = handler; }
@@ -68,7 +68,7 @@ protected:
     void handleLoadFinished();
     void handleScriptMessage(const ScriptValueVector& args);
 
-    bool fGrabKeyboardInput;
+    bool fKeyboardFocus;
 
 private:
     String serializeScriptValues(const ScriptValueVector& args);

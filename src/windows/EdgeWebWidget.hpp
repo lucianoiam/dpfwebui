@@ -58,7 +58,7 @@ public:
     void runScript(String& source) override;
     void injectScript(String& source) override;
 
-    void setGrabKeyboardInput(bool grabKeyboardInput) override;
+    void setKeyboardFocus(bool focus) override;
 
     // WebView2EventHandler
 

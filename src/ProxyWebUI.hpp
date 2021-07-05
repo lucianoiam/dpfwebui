@@ -50,7 +50,7 @@ protected:
     void webPostMessage(const ScriptValueVector& args);
 
     void flushInitMessageQueue();
-    void setGrabKeyboardInput(bool grabKeyboardInput);
+    void setKeyboardFocus(bool focus);
 
     virtual void webContentReady() {};
     virtual void webMessageReceived(const ScriptValueVector& args) { (void)args; };
