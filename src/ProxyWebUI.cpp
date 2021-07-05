@@ -57,12 +57,11 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     setSize(fInitWidth, fInitHeight);
 
 #ifdef DISTRHO_OS_WINDOWS
-    // WINSIZEBUG: Why setSize() call needs to be repeated 2x? bug on REAPER, Live OK
+    // WINSIZEBUG: Why setSize() call needs to be repeated 2x?
     setSize(fInitWidth, fInitHeight);
-    // WINSIZEBUG: Isn't UI::setSize() call enough? bug on Live, REAPER OK
-    fWebWidget.setSize(fInitWidth, fInitHeight);
 #endif
 
+    fWebWidget.setSize(fInitWidth, fInitHeight);
     fWebWidget.setBackgroundColor(fBackgroundColor);
     fWebWidget.setEventHandler(this);
 
