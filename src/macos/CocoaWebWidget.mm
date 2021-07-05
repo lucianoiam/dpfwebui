@@ -96,46 +96,49 @@ bool CocoaWebWidget::onKeyboard(const KeyboardEvent& ev)
     // root plugin window (here, by this method) will be conveniently injected
     // into the web view, effectively reaching the <input> element.
 
+    if (!isGrabKeyboardInput()) {
+        return false;
+    }
+
     // FIXME - incomplete implementation
     NSLog(@"onKeyboard() time = %u", ev.time);
 
-    if ((fLastKeyboardEvent.mod != ev.mod) || (fLastKeyboardEvent.flags != ev.flags)
-        || (fLastKeyboardEvent.time != ev.time) || (fLastKeyboardEvent.press != ev.press)
-        || (fLastKeyboardEvent.key != ev.key) || (fLastKeyboardEvent.keycode != ev.keycode)) {
+    if ((fLastKeyboardEvent.mod == ev.mod) && (fLastKeyboardEvent.flags == ev.flags)
+            && (fLastKeyboardEvent.time == ev.time) && (fLastKeyboardEvent.press == ev.press)
+            && (fLastKeyboardEvent.key == ev.key) && (fLastKeyboardEvent.keycode == ev.keycode)) {
+        return true; // break loop
+    }
 
-        fLastKeyboardEvent = ev;
+    fLastKeyboardEvent = ev;
 
-        if (ev.press) {
-            NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
-                location: NSZeroPoint
-                modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
-                timestamp: 0
-                windowNumber: 0
-                context: nil
-                characters:  @"a" // FIXME
-                charactersIgnoringModifiers: @"a" // FIXME
-                isARepeat: NO
-                keyCode: ev.keycode
-            ];
+    if (ev.press) {
+        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
+            location: NSZeroPoint
+            modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
+            timestamp: ev.time
+            windowNumber: 0
+            context: nil
+            characters:  @"a" // FIXME
+            charactersIgnoringModifiers: @"a" // FIXME
+            isARepeat: NO
+            keyCode: ev.keycode
+        ];
 
-            [fWebView keyDown:event];
-        } else {
-            NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyUp
-                location: NSZeroPoint
-                modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
-                timestamp: 0
-                windowNumber: 0
-                context: nil
-                characters:  @"a" // FIXME
-                charactersIgnoringModifiers: @"a" // FIXME
-                isARepeat: NO
-                keyCode: ev.keycode
-            ];
-
-            [fWebView keyUp:event];
-        }
+        [fWebView keyDown:event];
     } else {
-        // Break loop. Unfortunately this breaks key repetition as well.
+        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyUp
+            location: NSZeroPoint
+            modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
+            timestamp: ev.time
+            windowNumber: 0
+            context: nil
+            characters:  @"a" // FIXME
+            charactersIgnoringModifiers: @"a" // FIXME
+            isARepeat: NO
+            keyCode: ev.keycode
+        ];
+
+        [fWebView keyUp:event];
     }
 
     return true; // stop propagation
@@ -228,30 +231,30 @@ void CocoaWebWidget::updateWebViewFrame()
 // be picked up by the host, for example to allow playing the virtual keyboard
 // on Live while the web view UI is open. Need to make sure key events are not
 // coming from DPF (timestamp 0) otherwise that creates a feedback loop.
-// There is no need for checking self.cppWidget->isGrabKeyboardInput() on Mac
-// because unlike Windows, key events can be sent to a secondary view without
-// first having to set keyboard focus on that secondary view.
 
 - (void)keyDown:(NSEvent *)event
 {
-    [super keyDown:event];
-    if (event.timestamp != 0) {
+    if (self.cppWidget->isGrabKeyboardInput()) {
+        [super keyDown:event];
+    } else {
         [self.pluginRootView keyDown:event];
     }
 }
 
 - (void)keyUp:(NSEvent *)event
 {
-    [super keyUp:event];
-    if (event.timestamp != 0) {
+    if (self.cppWidget->isGrabKeyboardInput()) {
+        [super keyUp:event];
+    } else {
         [self.pluginRootView keyUp:event];
     }
 }
 
 - (void)flagsChanged:(NSEvent *)event
 {
-    [super flagsChanged:event];
-    if (event.timestamp != 0) {
+    if (self.cppWidget->isGrabKeyboardInput()) {
+        [super flagsChanged:event];
+    } else {
         [self.pluginRootView flagsChanged:event];
     }
 }
