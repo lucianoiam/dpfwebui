@@ -36,16 +36,18 @@ class ExternalGtkWebWidget : public AbstractWebWidget
 friend class IpcReadThread;
 
 public:
-    ExternalGtkWebWidget(Window& windowToMapTo);
+    ExternalGtkWebWidget(Widget *parentWidget);
     ~ExternalGtkWebWidget();
-
-    void onResize(const ResizeEvent& ev) override;
-    bool onKeyboard(const KeyboardEvent& ev) override;
 
     void setBackgroundColor(uint32_t rgba) override;
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;
+
+protected:
+    void onResize(const ResizeEvent& ev) override;
+    void onPositionChanged(const PositionChangedEvent&) override;
+    bool onKeyboard(const KeyboardEvent& ev) override;
 
 private:
     ipc_t* ipc() const { return fIpc; }
