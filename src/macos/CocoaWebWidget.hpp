@@ -42,7 +42,6 @@ public:
     
     void didFinishNavigation() { handleLoadFinished(); }
     void didReceiveScriptMessage(const ScriptValueVector& args) { handleScriptMessage(args); }
-    bool isLastKeyboardEventTimeZero() { return fLastKeyboardEvent.time == 0; }
 
 protected:
     void onResize(const ResizeEvent& ev) override;
