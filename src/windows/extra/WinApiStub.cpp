@@ -24,32 +24,46 @@ typedef HRESULT GETSCALEFACTORFORMONITOR(HMONITOR hMon, DEVICE_SCALE_FACTOR *pSc
 
 HRESULT stub::GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue)
 {
-    GETPROCESSDPIAWARENESS *f = (GETPROCESSDPIAWARENESS*)GetProcAddressForDllName(
-        "Shcore.dll", "GetProcessDpiAwareness");
-    if (f == 0) {
-        return ::GetLastError();
+    HRESULT hr;
+    HMODULE hm = LoadLibrary("Shcore.dll");
+
+    if (hm != 0) {
+        GETPROCESSDPIAWARENESS *f = (GETPROCESSDPIAWARENESS*)GetProcAddress(hm,
+            "GetProcessDpiAwareness");
+
+        if (f != 0) {
+            hr = (*f)(hProc, pValue);
+        } else {
+            hr = GetLastError();
+        }
+
+        FreeLibrary(hm);
+    } else {
+        hr = GetLastError();
     }
 
-    return (*f)(hProc, pValue);
+    return hr;
 }
 
 HRESULT stub::GetScaleFactorForMonitor(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale)
 {
-    GETSCALEFACTORFORMONITOR *f = (GETSCALEFACTORFORMONITOR*)GetProcAddressForDllName(
-        "Shcore.dll", "GetScaleFactorForMonitor");
-    if (f == 0) {
-        return ::GetLastError();
+    HRESULT hr;
+    HMODULE hm = LoadLibrary("Shcore.dll");
+
+    if (hm != 0) {
+        GETSCALEFACTORFORMONITOR *f = (GETSCALEFACTORFORMONITOR*)GetProcAddress(hm,
+            "GetScaleFactorForMonitor");
+
+        if (f != 0) {
+            hr = (*f)(hMon, pScale);
+        } else {
+            hr = GetLastError();
+        }
+
+        FreeLibrary(hm);
+    } else {
+        hr = GetLastError();
     }
 
-    return (*f)(hMon, pScale);
-}
-
-FARPROC stub::GetProcAddressForDllName(LPCSTR lpDllName, LPCSTR lpProcName)
-{
-    HMODULE hm = ::LoadLibrary(lpDllName);
-    if (hm == 0) {
-        return 0;
-    }
-
-    return ::GetProcAddress(hm, lpProcName);
+    return hr;
 }

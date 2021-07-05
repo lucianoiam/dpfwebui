@@ -31,9 +31,6 @@ namespace stub {
     HRESULT GetProcessDpiAwareness(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
     HRESULT GetScaleFactorForMonitor(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
 
-    // This is a custom helper function with a WinAPI-like name
-    FARPROC GetProcAddressForDllName(LPCSTR lpDllName, LPCSTR lpProcName);
-
 } // namespace stub
 
 #endif // WINAPISTUB_HPP
