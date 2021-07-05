@@ -36,6 +36,9 @@ public:
 protected:
 
     void onDisplay() override;
+#ifdef DISTRHO_OS_MAC // FIXME
+    bool onKeyboard(const KeyboardEvent& ev) override;
+#endif
 
     void parameterChanged(uint32_t index, float value) override;
 #if (DISTRHO_PLUGIN_WANT_STATE == 1)

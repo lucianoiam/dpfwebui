@@ -90,6 +90,13 @@ void ProxyWebUI::onDisplay()
 #endif
 }
 
+#ifdef DISTRHO_OS_MAC // FIXME
+bool ProxyWebUI::onKeyboard(const KeyboardEvent& ev)
+{
+    return fWebWidget.onKeyboard(ev); 
+}
+#endif
+
 void ProxyWebUI::parameterChanged(uint32_t index, float value)
 {
     webPostMessage({"WebUI", "parameterChanged", index, value});

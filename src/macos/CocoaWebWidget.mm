@@ -91,50 +91,46 @@ void CocoaWebWidget::onResize(const ResizeEvent& ev)
 bool CocoaWebWidget::onKeyboard(const KeyboardEvent& ev)
 {
     // Some hosts like REAPER prevent the web view from getting keyboard focus.
-    // The parent widget should call this method to allow routing keyboard
-    // events to the web view and make input work in such cases.
+    // In such cases the web view can still get touch/mouse input, so assuming
+    // the user wants to type into a <input> element, such element can be
+    // focused by clicking on it and all subsequent key events received by the
+    // root plugin window (here, by this method) will be conveniently injected
+    // into the web view, effectively reaching the <input> element.
 
-    if ((fLastKeyboardEvent.mod != ev.mod) || (fLastKeyboardEvent.flags != ev.flags)
-        || (fLastKeyboardEvent.time != ev.time) || (fLastKeyboardEvent.press != ev.press)
-        || (fLastKeyboardEvent.key != ev.key) || (fLastKeyboardEvent.keycode != ev.keycode)) {
+    NSLog(@"onKeyboard() time = %u", ev.time);
 
-        fLastKeyboardEvent = ev;
+    if (ev.time == 0) {
+        return true; // break loop
+    }
 
-        // FIXME
-        NSLog(@"onKeyboard()");
+    if (ev.press) {
+        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
+            location: NSZeroPoint
+            modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
+            timestamp: 0
+            windowNumber: 0
+            context: nil
+            characters:  @"a" // FIXME
+            charactersIgnoringModifiers: @"a" // FIXME
+            isARepeat: NO
+            keyCode: ev.keycode
+        ];
 
-        if (ev.press) {
-            NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
-                location: NSZeroPoint
-                modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
-                timestamp: ev.time
-                windowNumber: 0
-                context: nil
-                characters:  @"a" // FIXME
-                charactersIgnoringModifiers: @"a" // FIXME
-                isARepeat: NO
-                keyCode: ev.keycode
-            ];
-
-            [fWebView keyDown:event];
-        } else {
-            NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyUp
-                location: NSZeroPoint
-                modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
-                timestamp: ev.time
-                windowNumber: 0
-                context: nil
-                characters:  @"a" // FIXME
-                charactersIgnoringModifiers: @"a" // FIXME
-                isARepeat: NO
-                keyCode: ev.keycode
-            ];
-
-            [fWebView keyUp:event];
-        }
+        [fWebView keyDown:event];
     } else {
-        // Break loop. Unfortunately this breaks key repetition as well, the
-        // solution is to have non-zero timestamps in KeyboardEvent ev.
+        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyUp
+            location: NSZeroPoint
+            modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
+            timestamp: 0
+            windowNumber: 0
+            context: nil
+            characters:  @"a" // FIXME
+            charactersIgnoringModifiers: @"a" // FIXME
+            isARepeat: NO
+            keyCode: ev.keycode
+        ];
+
+        [fWebView keyUp:event];
     }
 
     return isGrabKeyboardInput(); // true = stop propagation
