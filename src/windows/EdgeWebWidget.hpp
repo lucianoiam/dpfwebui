@@ -48,11 +48,8 @@ class InternalWebView2EventHandler;
 class EdgeWebWidget : public AbstractWebWidget, edge::WebView2EventHandler
 {
 public:
-    EdgeWebWidget(Window& windowToMapTo);
+    EdgeWebWidget(Widget *parentWidget);
     ~EdgeWebWidget();
-
-    void onDisplay() override;
-    void onResize(const ResizeEvent& ev) override;
 
     void setBackgroundColor(uint32_t rgba) override;
     void navigate(String& url) override;
@@ -71,6 +68,12 @@ public:
                                     ICoreWebView2NavigationCompletedEventArgs *eventArgs) override;
     HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
+
+protected:
+    void onDisplay() override;
+    void onResize(const ResizeEvent& ev) override;
+    void onPositionChanged(const PositionChangedEvent&) override;
+    bool onKeyboard(const KeyboardEvent& ev) override;
 
 private:
     void initWebView();

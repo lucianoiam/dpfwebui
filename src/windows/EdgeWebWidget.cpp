@@ -37,8 +37,8 @@
 
 USE_NAMESPACE_DISTRHO
 
-EdgeWebWidget::EdgeWebWidget(Window& windowToMapTo)
-    : AbstractWebWidget(windowToMapTo)
+EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
+    : AbstractWebWidget(parentWidget)
     , fHelperHwnd(0)
     , fDisplayed(false)
     , fBackgroundColor(0)
@@ -98,6 +98,7 @@ void EdgeWebWidget::onDisplay()
     if (fDisplayed) {
         return;
     }
+
     fDisplayed = true;
     
     // handleWebView2EnvironmentCompleted() callback is sync but
@@ -119,6 +120,22 @@ void EdgeWebWidget::onResize(const ResizeEvent& ev)
     }
 
     updateWebViewBounds();
+}
+
+void EdgeWebWidget::onPositionChanged(const PositionChangedEvent& ev)
+{
+    (void)ev;
+    if (fController == 0) {
+        return; // does not make sense now, ignore
+    }
+
+    updateWebViewBounds();
+}
+
+bool EdgeWebWidget::onKeyboard(const KeyboardEvent& ev)
+{
+    (void)ev;
+    // KeyboardRouter already takes care of this
 }
 
 void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
@@ -175,12 +192,11 @@ void EdgeWebWidget::setGrabKeyboardInput(bool grabKeyboardInput)
 
 void EdgeWebWidget::updateWebViewBounds()
 {
-    // WINSIZEBUG: this->getWidth() and this->getHeight() returning 0
     RECT bounds;
-    bounds.left = 0;
-    bounds.top = 0;
-    bounds.right = bounds.left + (LONG)getWindow().getWidth();
-    bounds.bottom = bounds.top + (LONG)getWindow().getHeight();
+    bounds.left = (LONG)getAbsoluteX();
+    bounds.top = (LONG)getAbsoluteY();
+    bounds.right = bounds.left + (LONG)getWidth();
+    bounds.bottom = bounds.top + (LONG)getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
