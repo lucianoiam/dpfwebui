@@ -96,7 +96,7 @@ bool CocoaWebWidget::onKeyboard(const KeyboardEvent& ev)
     // root plugin window (here, by this method) will be conveniently injected
     // into the web view, effectively reaching the <input> element.
 
-    if (!isGrabKeyboardInput()) {
+    if (!isKeyboardFocus()) {
         return false;
     }
 
@@ -234,7 +234,7 @@ void CocoaWebWidget::updateWebViewFrame()
 
 - (void)keyDown:(NSEvent *)event
 {
-    if (self.cppWidget->isGrabKeyboardInput()) {
+    if (self.cppWidget->isKeyboardFocus()) {
         [super keyDown:event];
     } else {
         [self.pluginRootView keyDown:event];
@@ -243,7 +243,7 @@ void CocoaWebWidget::updateWebViewFrame()
 
 - (void)keyUp:(NSEvent *)event
 {
-    if (self.cppWidget->isGrabKeyboardInput()) {
+    if (self.cppWidget->isKeyboardFocus()) {
         [super keyUp:event];
     } else {
         [self.pluginRootView keyUp:event];
@@ -252,7 +252,7 @@ void CocoaWebWidget::updateWebViewFrame()
 
 - (void)flagsChanged:(NSEvent *)event
 {
-    if (self.cppWidget->isGrabKeyboardInput()) {
+    if (self.cppWidget->isKeyboardFocus()) {
         [super flagsChanged:event];
     } else {
         [self.pluginRootView flagsChanged:event];

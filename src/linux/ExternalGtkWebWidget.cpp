@@ -148,7 +148,7 @@ bool ExternalGtkWebWidget::onKeyboard(const KeyboardEvent& ev)
     // root plugin window (here, by this method) will be conveniently injected
     // into the helper window, effectively reaching the web view <input>.
 
-    if (!isGrabKeyboardInput()) {
+    if (!isKeyboardFocus()) {
         return false;
     }
 

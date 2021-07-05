@@ -67,7 +67,7 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     );
     ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
 
-    setGrabKeyboardInput(false);
+    setKeyboardFocus(false);
     KeyboardRouter::getInstance().incRefCount();
 
     fHandler = new InternalWebView2EventHandler(this);
@@ -184,10 +184,10 @@ void EdgeWebWidget::injectScript(String& source)
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
 }
 
-void EdgeWebWidget::setGrabKeyboardInput(bool grabKeyboardInput)
+void EdgeWebWidget::setKeyboardFocus(bool focus)
 {
-    AbstractWebWidget::setGrabKeyboardInput(grabKeyboardInput);
-    SetClassLongPtr(fHelperHwnd, 0, (LONG_PTR)grabKeyboardInput); // allow KeyboardRouter to read it
+    AbstractWebWidget::setKeyboardFocus(focus);
+    SetClassLongPtr(fHelperHwnd, 0, (LONG_PTR)focus); // allow KeyboardRouter to read it
 }
 
 void EdgeWebWidget::updateWebViewBounds()

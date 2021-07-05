@@ -141,10 +141,10 @@ void ProxyWebUI::flushInitMessageQueue()
     fInitMsgQueue.clear();
 }
 
-void ProxyWebUI::setGrabKeyboardInput(bool grabKeyboardInput)
+void ProxyWebUI::setKeyboardFocus(bool focus)
 {
-    // Host will not receive keystroke events when grab is enabled
-    fWebWidget.setGrabKeyboardInput(grabKeyboardInput);
+    // Host will not receive keystroke events when web widget is focused
+    fWebWidget.setKeyboardFocus(focus);
 }
 
 void ProxyWebUI::handleWebWidgetContentLoadFinished()
@@ -175,8 +175,8 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
 
-    } else if ((method == "setGrabKeyboardInput") && (argc == 1)) {
-        setGrabKeyboardInput(static_cast<bool>(args[kArg0].getBool()));
+    } else if ((method == "setKeyboardFocus") && (argc == 1)) {
+        setKeyboardFocus(static_cast<bool>(args[kArg0].getBool()));
 
     } else if (method == "getInitWidth") {
         webPostMessage({"WebUI", "getInitWidth", static_cast<double>(getInitWidth())});
