@@ -53,7 +53,8 @@ endif
 
 WEBUI_FILES_UI  = ProxyWebUI.cpp \
                   AbstractWebWidget.cpp \
-                  ScriptValue.cpp
+                  ScriptValue.cpp \
+                  Platform.cpp
 ifeq ($(LINUX),true)
 WEBUI_FILES_UI += linux/ExternalGtkWebWidget.cpp \
                   linux/PlatformLinux.cpp \
@@ -99,7 +100,7 @@ include $(DPF_PATH)/Makefile.plugins.mk
 # ------------------------------------------------------------------------------
 # Add build flags for web UI dependencies
 
-BASE_FLAGS += -I. -I$(WEBUI_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
+BASE_FLAGS += -I$(WEBUI_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
               -DPROJECT_ID_HASH=$(shell echo $(NAME):$(WEBUI_PROJECT_VERSION) | shasum -a 256 | head -c 8)
 ifeq ($(LINUX),true)
 LINK_FLAGS += -lpthread -ldl

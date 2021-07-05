@@ -18,6 +18,8 @@
 
 #include "ProxyWebUI.hpp"
 
+#include "dgl/Application.hpp"
+
 #include "Platform.hpp"
 #include "macro.h"
 
@@ -44,6 +46,11 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
 {
+    // The platform functions can be called from anywhere. However app object
+    // is not a singleton and there is a special case in PlatformLinux.cpp that
+    // makes it necessary to distinguish standalone vs. plugin during runtime
+    platform::setRunningStandalone(getWindow().getApp().isStandalone());
+
     // Automatically scale up the plugin UI so its contents do not look small
     // on high pixel density displays, known as HiDPI or Retina.
     float k = platform::getSystemDisplayScaleFactor();

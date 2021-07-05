@@ -15,10 +15,6 @@ LINUX
 
 - UI not displaying at all on Gnome Shell even running on Xorg. XEmbed related?
 
-- platform::getBinaryPath() uses a cheap hack to check whether the program runs
-  standalone or loaded from library during runtime. Have a look at new DPF
-  Application::isStandalone() method.
-
 
 MACOS
 -----

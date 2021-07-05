@@ -33,6 +33,29 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 USE_NAMESPACE_DISTRHO
 
+float platform::getSystemDisplayScaleFactor()
+{
+    float k = 1.f;
+    PROCESS_DPI_AWARENESS dpiAware;
+
+    if (SUCCEEDED(stub::GetProcessDpiAwareness(0, &dpiAware))) {
+        if (dpiAware != PROCESS_DPI_UNAWARE) {
+            HMONITOR hMon = MonitorFromWindow(GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
+            DEVICE_SCALE_FACTOR scaleFactor = DEVICE_SCALE_FACTOR_INVALID;
+
+            if (SUCCEEDED(stub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
+                if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
+                    k = static_cast<float>(scaleFactor) / 100.f;
+                }
+            }
+        } else {
+            // Process is not DPI-aware, do not scale
+        }
+    }
+
+    return k;
+}
+
 String platform::getBinaryPath()
 {
     char path[MAX_PATH];
@@ -83,27 +106,4 @@ String platform::getTemporaryPath()
     strcat(tempPath, exeFilename);
 
     return String(tempPath);
-}
-
-float platform::getSystemDisplayScaleFactor()
-{
-    float k = 1.f;
-    PROCESS_DPI_AWARENESS dpiAware;
-
-    if (SUCCEEDED(stub::GetProcessDpiAwareness(0, &dpiAware))) {
-        if (dpiAware != PROCESS_DPI_UNAWARE) {
-            HMONITOR hMon = MonitorFromWindow(GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
-            DEVICE_SCALE_FACTOR scaleFactor = DEVICE_SCALE_FACTOR_INVALID;
-
-            if (SUCCEEDED(stub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
-                if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
-                    k = static_cast<float>(scaleFactor) / 100.f;
-                }
-            }
-        } else {
-            // Process is not DPI-aware, do not scale
-        }
-    }
-
-    return k;
 }

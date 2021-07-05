@@ -29,6 +29,20 @@
 
 USE_NAMESPACE_DISTRHO
 
+float platform::getSystemDisplayScaleFactor()
+{
+    const char *dpi = getenv("GDK_DPI_SCALE");
+
+    if (dpi != 0) {
+        float k;
+        if (sscanf(dpi, "%f", &k) == 1) {
+            return k;
+        }
+    }
+
+    return 1.f;
+}
+
 static String getSharedLibraryPath()
 {
     Dl_info dl_info;
@@ -56,17 +70,10 @@ static String getExecutablePath()
 
 String platform::getBinaryPath()
 {
-    // DISTRHO_PLUGIN_TARGET_* macros are not available here
-    // Is there a better way to differentiate we are being called from library or executable?
-    String libPath = getSharedLibraryPath();
-    void *handle = dlopen(libPath, RTLD_LAZY);
-
-    if (handle) {
-        dlclose(handle);
-        return libPath;
+    if (isRunningStandalone()) {
+        return getExecutablePath();
     } else {
-         // dlopen() fails when running standalone
-        return getExecutablePath();     
+       return getSharedLibraryPath();
     }
 }
 
@@ -80,18 +87,4 @@ String platform::getResourcePath()
 String platform::getTemporaryPath()
 {
     return String(); // not implemented
-}
-
-float platform::getSystemDisplayScaleFactor()
-{
-    const char *dpi = getenv("GDK_DPI_SCALE");
-
-    if (dpi != 0) {
-        float k;
-        if (sscanf(dpi, "%f", &k) == 1) {
-            return k;
-        }
-    }
-
-    return 1.f;
 }
