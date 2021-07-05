@@ -48,6 +48,7 @@ USE_NAMESPACE_DISTRHO
 
 CocoaWebWidget::CocoaWebWidget(Widget *parentWidget)
     : AbstractWebWidget(parentWidget)
+    , fLastKeyboardEventTime(0)
 {
     // Create the web view
     fView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];
@@ -89,37 +90,48 @@ void CocoaWebWidget::onPositionChanged(const PositionChangedEvent& ev)
 
 bool CocoaWebWidget::onKeyboard(const KeyboardEvent& ev)
 {
-    // Some hosts like REAPER prevent the web view from getting keyboard focus.
+    // Some hosts like REAPER prevent the web view from gaining keyboard focus.
     // In such cases the web view can still get touch/mouse input, so assuming
     // the user wants to type into a <input> element, such element can be
-    // focused by clicking on it and all subsequent key events received by the
-    // root plugin window (here, by this method) will be conveniently injected
-    // into the web view, effectively reaching the <input> element.
+    // focused by clicking on it, and all subsequent key events received by the
+    // root plugin window here by this method will be conveniently injected into
+    // the web view, effectively reaching the <input> element.
 
     if (!isKeyboardFocus()) {
         return false;
     }
 
-    // FIXME - incomplete implementation
-    NSLog(@"onKeyboard() time = %u", ev.time);
-
-    if ((fLastKeyboardEvent.mod == ev.mod) && (fLastKeyboardEvent.flags == ev.flags)
-            && (fLastKeyboardEvent.time == ev.time) && (fLastKeyboardEvent.press == ev.press)
-            && (fLastKeyboardEvent.key == ev.key) && (fLastKeyboardEvent.keycode == ev.keycode)) {
-        return true; // break loop
+    if ((ev.time != 0) && (fLastKeyboardEventTime == ev.time)) {
+        //NSLog(@"Break onKeyboard() loop");
+        return true;
     }
 
-    fLastKeyboardEvent = ev;
+    // Make a distinction between DPF delivered key events (ev.time always 0)
+    // and synthesized key events below by setting their timestamps to now. This
+    // is needed to break potential onKeyboard() loops while allowing key repeat
 
+    uint now = (uint)CFAbsoluteTimeGetCurrent();
+
+    fLastKeyboardEventTime = ev.time == 0 ? now : ev.time;
+
+    // TODO: conversion method does not work for anything non-ASCII
+
+    uint32_t key = OSSwapHostToLittleInt32(ev.key);
+    NSString *ch = [[NSString alloc] initWithBytes:&key length:4 encoding:NSUTF32LittleEndianStringEncoding];
+
+    NSEventModifierFlags flags =  ((ev.mod & kModifierShift  ) ? NSEventModifierFlagShift   : 0)
+                                | ((ev.mod & kModifierControl) ? NSEventModifierFlagControl : 0)
+                                | ((ev.mod & kModifierAlt    ) ? NSEventModifierFlagOption  : 0)
+                                | ((ev.mod & kModifierSuper  ) ? NSEventModifierFlagCommand : 0);
     if (ev.press) {
         NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
             location: NSZeroPoint
-            modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
-            timestamp: ev.time
+            modifierFlags: flags
+            timestamp: (NSTimeInterval)now
             windowNumber: 0
             context: nil
-            characters:  @"a" // FIXME
-            charactersIgnoringModifiers: @"a" // FIXME
+            characters: ch
+            charactersIgnoringModifiers: ch
             isARepeat: NO
             keyCode: ev.keycode
         ];
@@ -128,18 +140,20 @@ bool CocoaWebWidget::onKeyboard(const KeyboardEvent& ev)
     } else {
         NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyUp
             location: NSZeroPoint
-            modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
-            timestamp: ev.time
+            modifierFlags: flags
+            timestamp: (NSTimeInterval)now
             windowNumber: 0
             context: nil
-            characters:  @"a" // FIXME
-            charactersIgnoringModifiers: @"a" // FIXME
+            characters: ch
+            charactersIgnoringModifiers: ch
             isARepeat: NO
             keyCode: ev.keycode
         ];
 
         [fWebView keyUp:event];
     }
+
+    [ch release];
 
     return true; // stop propagation
 }

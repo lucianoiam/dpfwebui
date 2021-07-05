@@ -54,7 +54,7 @@ private:
     void *fView;
     void *fDelegate;
 
-    KeyboardEvent fLastKeyboardEvent;
+    uint fLastKeyboardEventTime;
 
 };
 

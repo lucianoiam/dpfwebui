@@ -19,8 +19,6 @@ LINUX
 MACOS
 -----
 
-- Finish fixing keyboard input on REAPER
-
 - There is a patch to workaround bug https://github.com/DISTRHO/DPF/issues/291
 
 - Live 10 sporadically refuses to quit from the Mac menu or by pressing Cmd+Q

@@ -143,12 +143,12 @@ void ExternalGtkWebWidget::onPositionChanged(const PositionChangedEvent& ev)
 
 bool ExternalGtkWebWidget::onKeyboard(const KeyboardEvent& ev)
 {
-    // Some hosts like Bitwig prevent the web view from getting keyboard focus.
+    // Some hosts like Bitwig prevent the web view from gaining keyboard focus.
     // In such cases the web view can still get touch/mouse input, so assuming
     // the user wants to type into a <input> element, such element can be
-    // focused by clicking on it and all subsequent key events received by the
-    // root plugin window (here, by this method) will be conveniently injected
-    // into the helper window, effectively reaching the web view <input>.
+    // focused by clicking on it, and all subsequent key events received by the
+    // root plugin window here by this method will be conveniently injected into
+    // the helper window, effectively reaching the web view <input>.
 
     if (!isKeyboardFocus()) {
         return false;
