@@ -102,7 +102,14 @@ void EdgeWebWidget::onDisplay()
     }
     fDisplayed = true;
     
-    // Edge WebView2 initialization does not complete right away
+    // handleWebView2EnvironmentCompleted() callback is sync but
+    // handleWebView2ControllerCompleted() is not, in contrast to Linux and Mac
+    // the web view initialization process is asynchronous. A init-ready method
+    // could be added to WebWidgetEventHandler but that would really spill
+    // Windows specific requirements to the rest of the plugin code. This
+    // implementation keeps caller code sync by having the setters queue passed
+    // arguments until the web view is completely instantiatied.
+
     initWebView();
 }
 

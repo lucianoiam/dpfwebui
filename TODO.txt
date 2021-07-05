@@ -34,6 +34,8 @@ WINDOWS
 
 - LV2 plugin builds but UI does not open
 
+- There is an issue with some DGL calls marked in code with tag WINSIZEBUG.
+
 - Standalone version build fails for latest DPF develop but works for e28b677,
   temporarily disable JACK target.
 
