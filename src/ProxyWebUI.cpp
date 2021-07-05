@@ -57,8 +57,10 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     setSize(fInitWidth, fInitHeight);
 
 #ifdef DISTRHO_OS_WINDOWS
-    setSize(fInitWidth, fInitHeight); // why setSize() call needs to be repeated 2x?
-    fWebWidget.setSize(fInitWidth, fInitHeight); // isn't UI::setSize() enough for a TopLevelWidget?
+    // WINSIZEBUG: Why setSize() call needs to be repeated 2x? bug on REAPER, Live OK
+    setSize(fInitWidth, fInitHeight);
+    // WINSIZEBUG: Isn't UI::setSize() call enough? bug on Live, REAPER OK
+    fWebWidget.setSize(fInitWidth, fInitHeight);
 #endif
 
     fWebWidget.setBackgroundColor(fBackgroundColor);
