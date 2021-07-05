@@ -87,19 +87,6 @@ void CocoaWebWidget::onPositionChanged(const PositionChangedEvent& ev)
     updateWebViewFrame();
 }
 
-void CocoaWebWidget::updateWebViewFrame()
-{
-    // There is a mismatch between DGL and AppKit coordinates
-    // https://github.com/DISTRHO/DPF/issues/291
-    CGFloat k = [NSScreen mainScreen].backingScaleFactor;
-    CGRect frame;
-    frame.origin.x = (CGFloat)getAbsoluteX() / k;
-    frame.origin.y = (CGFloat)getAbsoluteY() / k;
-    frame.size.width = (CGFloat)getWidth() / k;
-    frame.size.height = (CGFloat)getHeight() / k;
-    fWebView.frame = frame;
-}
-
 bool CocoaWebWidget::onKeyboard(const KeyboardEvent& ev)
 {
     // Some hosts like REAPER prevent the web view from getting keyboard focus.
@@ -196,6 +183,19 @@ void CocoaWebWidget::injectScript(String& source)
     [fWebView.configuration.userContentController addUserScript:script];
     [script release];
     [js release];
+}
+
+void CocoaWebWidget::updateWebViewFrame()
+{
+    // There is a mismatch between DGL and AppKit coordinates
+    // https://github.com/DISTRHO/DPF/issues/291
+    CGFloat k = [NSScreen mainScreen].backingScaleFactor;
+    CGRect frame;
+    frame.origin.x = (CGFloat)getAbsoluteX() / k;
+    frame.origin.y = (CGFloat)getAbsoluteY() / k;
+    frame.size.width = (CGFloat)getWidth() / k;
+    frame.size.height = (CGFloat)getHeight() / k;
+    fWebView.frame = frame;
 }
 
 @implementation DistrhoWebView
