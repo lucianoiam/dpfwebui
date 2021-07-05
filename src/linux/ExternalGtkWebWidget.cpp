@@ -148,6 +148,10 @@ bool ExternalGtkWebWidget::onKeyboard(const KeyboardEvent& ev)
     // root plugin window (here, by this method) will be conveniently injected
     // into the helper window, effectively reaching the web view <input>.
 
+    if (!isGrabKeyboardInput()) {
+        return false;
+    }
+
     helper_key_t key;
     key.press = ev.press;
     key.code = ev.key;
@@ -156,7 +160,7 @@ bool ExternalGtkWebWidget::onKeyboard(const KeyboardEvent& ev)
 
     ipcWrite(OPC_KEY_EVENT, &key, sizeof(key));
     
-    return isGrabKeyboardInput(); // true = stop propagation
+    return true; // stop propagation
 }
 
 void ExternalGtkWebWidget::setBackgroundColor(uint32_t rgba)
