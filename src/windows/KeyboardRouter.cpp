@@ -104,12 +104,9 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
                 KeyboardRouter::getInstance().handleLowLevelKeyEvent(hPluginRootWnd,
                     (UINT)wParam, (KBDLLHOOKSTRUCT *)lParam);
 
-                // If not claiming keyboard focus, eat the keystroke before it
-                // reaches the web view.
-
-                if (!keyboardFocus) {
-                    return 1;
-                }
+                // Eat the keystroke before it reaches the web view
+                
+                return 1;
             }
         }
     }
