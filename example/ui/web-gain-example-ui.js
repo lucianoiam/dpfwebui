@@ -39,11 +39,14 @@ class WebGainExampleUI extends DISTRHO_WebUI {
         // accepting keyboard input (default setting) keystrokes are routed to
         // the host. This allows for example to play with the virtual Live
         // keyboard. When the widget needs keyboard this.setKeyboardFocus(true)
-        // should be called and this.setKeyboardFocus(false) when done. The
-        // element below is hidden by default to keep the demo UI nice looking.
-        elem('kbd-demo').style.display = 'none';
+        // should be called and this.setKeyboardFocus(false) when done. 
         elem('kbd-demo').addEventListener('focus', ev => this.setKeyboardFocus(true));
         elem('kbd-demo').addEventListener('blur', ev => this.setKeyboardFocus(false));
+
+        elem('smiley').addEventListener('click', ev => {
+            ev.target.style.display = 'none';
+            elem('kbd-demo').style.display = 'inline';
+        });
 
         // Process any UI message generated while the web view was still loading
         // It is mandatory to call this method at some point, e.g. after UI gets
