@@ -35,6 +35,15 @@ class WebGainExampleUI extends DISTRHO_WebUI {
         // Show user agent
         elem('user-agent').innerText = navigator.userAgent;
 
+        // How to properly handle keyboard focus: when the web widget is not
+        // accepting keyboard input (default setting) keystrokes are routed to
+        // the host. This allows for example to play with the virtual Live
+        // keyboard. When the widget needs keyboard this.setKeyboardFocus(true)
+        // should be called and this.setKeyboardFocus(false) when done. The
+        // element below is hidden to keep the demo UI nice looking, see HTML.
+        elem('kbd-demo').addEventListener('focus', ev => this.setKeyboardFocus(true));
+        elem('kbd-demo').addEventListener('blur', ev => this.setKeyboardFocus(false));
+
         // Process any UI message generated while the web view was still loading
         // It is mandatory to call this method at some point, e.g. after UI gets
         // ready, otherwise messages get indefinitely accumulated on C++ side.
