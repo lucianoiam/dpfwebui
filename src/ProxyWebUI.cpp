@@ -42,7 +42,7 @@ namespace DISTRHO {
 
 ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(baseWidth, baseHeight)
-    , fWebWidget(getWindow())
+    , fWebWidget(this)
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
 {
@@ -90,12 +90,10 @@ void ProxyWebUI::onDisplay()
 #endif
 }
 
-#ifdef DISTRHO_OS_MAC // FIXME
-bool ProxyWebUI::onKeyboard(const KeyboardEvent& ev)
+void ProxyWebUI::uiReshape(uint width, uint height)
 {
-    return fWebWidget.onKeyboard(ev); 
+    fWebWidget.setSize(width, height);
 }
-#endif
 
 void ProxyWebUI::parameterChanged(uint32_t index, float value)
 {

@@ -30,11 +30,8 @@ START_NAMESPACE_DISTRHO
 class CocoaWebWidget : public AbstractWebWidget
 {
 public:
-    CocoaWebWidget(Window& windowToMapTo);
+    CocoaWebWidget(Widget *parentWidget);
     ~CocoaWebWidget();
-
-    void onResize(const ResizeEvent& ev) override;
-    bool onKeyboard(const KeyboardEvent& ev) override;
 
     void setBackgroundColor(uint32_t rgba) override;
     void navigate(String& url) override;
@@ -45,10 +42,20 @@ public:
     
     void didFinishNavigation() { handleLoadFinished(); }
     void didReceiveScriptMessage(const ScriptValueVector& args) { handleScriptMessage(args); }
+    bool isLastKeyboardEventTimeZero() { return fLastKeyboardEvent.time == 0; }
+
+protected:
+    void onResize(const ResizeEvent& ev) override;
+    void onPositionChanged(const PositionChangedEvent&) override;
+    bool onKeyboard(const KeyboardEvent& ev) override;
 
 private:
+    void updateWebViewFrame();
+
     void *fView;
     void *fDelegate;
+
+    KeyboardEvent fLastKeyboardEvent;
 
 };
 
