@@ -19,9 +19,7 @@ LINUX
 MACOS
 -----
 
-- HTML <input> elements do not receive keyboard events on REAPER. It is still
-  possible to drag and drop text on them. Works as expected on Live. Routing
-  keystrokes from plugin root to web view should be possible after DPF e9563d1
+- Finish fixing keyboard input on REAPER
 
 - There is a patch to workaround bug https://github.com/DISTRHO/DPF/issues/291
 

@@ -50,6 +50,8 @@ private:
     void *fView;
     void *fDelegate;
 
+    KeyboardEvent fLastKeyboardEvent;
+
 };
 
 END_NAMESPACE_DISTRHO

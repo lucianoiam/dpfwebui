@@ -91,27 +91,51 @@ void CocoaWebWidget::onResize(const ResizeEvent& ev)
 bool CocoaWebWidget::onKeyboard(const KeyboardEvent& ev)
 {
     // Some hosts like REAPER prevent the web view from getting keyboard focus.
-    // In such cases the web view can still get touch/mouse input, so assuming
-    // the user wants to type into a <input> element, such element can be
-    // focused by clicking on it and all subsequent key events received by the
-    // root plugin window (here, by this method) will be conveniently injected
-    // into the native web view window, effectively reaching the web view <input>
+    // The parent widget should call this method to allow routing keyboard
+    // events to the web view and make input work in such cases.
 
-    // FIXME: https://github.com/DISTRHO/DPF/issues/296
+    if ((fLastKeyboardEvent.mod != ev.mod) || (fLastKeyboardEvent.flags != ev.flags)
+        || (fLastKeyboardEvent.time != ev.time) || (fLastKeyboardEvent.press != ev.press)
+        || (fLastKeyboardEvent.key != ev.key) || (fLastKeyboardEvent.keycode != ev.keycode)) {
 
-    /*NSLog(@"onKeyboard()");
+        fLastKeyboardEvent = ev;
 
-    NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
-        location: NSZeroPoint
-        modifierFlags: 0  // NSEventModifierFlagShift
-        timestamp: [NSDate now]
-        windowNumber: 0
-        context: nil
-        character: @""
-        charactersIgnoringModifiers: @""
-        isARepeat: NO
-        keyCode: 0
-    ];*/
+        // FIXME
+        NSLog(@"onKeyboard()");
+
+        if (ev.press) {
+            NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
+                location: NSZeroPoint
+                modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
+                timestamp: ev.time
+                windowNumber: 0
+                context: nil
+                characters:  @"a" // FIXME
+                charactersIgnoringModifiers: @"a" // FIXME
+                isARepeat: NO
+                keyCode: ev.keycode
+            ];
+
+            [fWebView keyDown:event];
+        } else {
+            NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyUp
+                location: NSZeroPoint
+                modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
+                timestamp: ev.time
+                windowNumber: 0
+                context: nil
+                characters:  @"a" // FIXME
+                charactersIgnoringModifiers: @"a" // FIXME
+                isARepeat: NO
+                keyCode: ev.keycode
+            ];
+
+            [fWebView keyUp:event];
+        }
+    } else {
+        // Break loop. Unfortunately this breaks key repetition as well, the
+        // solution is to have non-zero timestamps in KeyboardEvent ev.
+    }
 
     return isGrabKeyboardInput(); // true = stop propagation
 }
@@ -172,9 +196,25 @@ void CocoaWebWidget::injectScript(String& source)
     return self.superview.superview;
 }
 
+- (BOOL)acceptsFirstMouse:(NSEvent *)event
+{
+    // Allow the web view to immediately process clicks when the plugin window
+    // is unfocused, otherwise the first click is swallowed to focus web view.
+    return YES;
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent *)event
+{
+    // Ignore key shortcuts like Cmd+Q and Cmd+H
+    return NO;
+}
+
+// Optionally route keyboard events from the web view to plugin root window so
+// they are ultimately handled by the host. This for example allows playing the
+// virtual keyboard on Live while the web view UI is open.
+
 - (void)keyDown:(NSEvent *)event
 {
-    NSLog(@"%@", event);
     [super keyDown:event];
     if (!self.cppWidget->isGrabKeyboardInput()) {
         [self.pluginRootView keyDown:event];
@@ -195,19 +235,6 @@ void CocoaWebWidget::injectScript(String& source)
     if (!self.cppWidget->isGrabKeyboardInput()) {
         [self.pluginRootView flagsChanged:event];
     }
-}
-
-- (BOOL)performKeyEquivalent:(NSEvent *)event
-{
-    // Ignore key shortcuts like Cmd+Q and Cmd+H
-    return NO;
-}
-
-- (BOOL)acceptsFirstMouse:(NSEvent *)event
-{
-    // Allow the web view to immediately process clicks when the plugin window
-    // is unfocused, otherwise the first click is swallowed to focus web view.
-    return YES;
 }
 
 @end
