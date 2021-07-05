@@ -43,7 +43,7 @@ class WebGainExampleUI extends DISTRHO_WebUI {
         // keyboard. When the widget needs keyboard this.setKeyboardFocus(true)
         // should be called and this.setKeyboardFocus(false) when done. The
         // element below is hidden by default to keep the demo UI nice looking.
-        //elem('kbd-demo').style.display = 'none';
+        elem('kbd-demo').style.display = 'none';
         elem('kbd-demo').addEventListener('focus', ev => this.setKeyboardFocus(true));
         elem('kbd-demo').addEventListener('blur', ev => this.setKeyboardFocus(false));
 

@@ -67,6 +67,10 @@ void KeyboardRouter::decRefCount()
     }
 }
 
+#define ISALPHA_VKCODE(k)    ((k >= 'A') && (k <= 'Z'))
+#define ISNUM_VKCODE(k)      ((k >= '0') && (k <= '9'))
+#define ISALPHANUM_VKCODE(k) ISALPHA_VKCODE(k) || ISNUM_VKCODE(k)
+
 LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {    
     // HC_ACTION means wParam & lParam contain info about keystroke message
@@ -103,12 +107,18 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
 
                 HWND hPluginRootWnd = GetParent(hFocusedPluginHelperWnd);
 
-                KeyboardRouter::getInstance().handleLowLevelKeyEvent(hPluginRootWnd,
-                    (UINT)wParam, (KBDLLHOOKSTRUCT *)lParam);
+                KBDLLHOOKSTRUCT* lpData = (KBDLLHOOKSTRUCT *)lParam;
 
-                // Eat the keystroke before it reaches the web view
-                
-                return 1;
+                KeyboardRouter::getInstance().handleLowLevelKeyEvent(hPluginRootWnd,
+                    (UINT)wParam, lpData);
+
+                // Do not allow some keystrokes to reach the web view to keep consistent
+                // behavior across all platforms, keystrokes should be consumed in a single
+                // place. Allow everything else to pass, like Alt-Tab.
+
+                if (ISALPHANUM_VKCODE(lpData->vkCode)) {
+                    return 1;
+                }
             }
         }
     }
@@ -154,7 +164,7 @@ void KeyboardRouter::handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT message, K
             // Basic logic that forwards a-z to allow playing with Live's virtual keyboard.
             SendMessage(hTargetWnd, WM_KEYDOWN, wParam, lParam);
 
-            if ((lpData->vkCode >= 'A') && (lpData->vkCode <= 'Z')) {
+            if (ISALPHA_VKCODE(lpData->vkCode)) {
                 wParam |= 0x20; // to lowercase
                 SendMessage(hTargetWnd, WM_CHAR, wParam, lParam);
             }
