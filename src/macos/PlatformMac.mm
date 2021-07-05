@@ -27,22 +27,26 @@
 
 USE_NAMESPACE_DISTRHO
 
+float platform::getSystemDisplayScaleFactor()
+{
+    return [NSScreen mainScreen].backingScaleFactor;
+}
+
 String platform::getBinaryPath()
 {
     Dl_info dl_info;
-    if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
+    if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) != 0) {
+        return String(dl_info.dli_fname);
+    } else {
         DISTRHO_LOG_STDERR(dlerror());
         return String();
-    } else {
-        return String(dl_info.dli_fname);
     }
 }
 
 String platform::getResourcePath()
 {
     // There is no DPF method for querying plugin format during runtime
-    // Anyways the ideal solution is to modify the Makefile and rely on macros
-    // Mac VST is the only special case
+    // Mac VST is the only special case though
     char path[PATH_MAX];
     strcpy(path, getBinaryPath());
     void *handle = dlopen(path, RTLD_NOLOAD);
@@ -63,9 +67,4 @@ String platform::getResourcePath()
 String platform::getTemporaryPath()
 {
     return String(); // not implemented
-}
-
-float platform::getSystemDisplayScaleFactor()
-{
-    return [NSScreen mainScreen].backingScaleFactor;
 }

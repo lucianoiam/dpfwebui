@@ -40,11 +40,14 @@ namespace platform {
 
 	typedef _WebWidget WebWidget;
 
+    bool   isRunningStandalone();
+    void   setRunningStandalone(bool standalone);
+
+    float  getSystemDisplayScaleFactor();
+
     String getBinaryPath();
     String getResourcePath();
     String getTemporaryPath();
-
-    float  getSystemDisplayScaleFactor();
 
     const String kDefaultResourcesSubdirectory = String(XSTR(BIN_BASENAME) "_res");
 
