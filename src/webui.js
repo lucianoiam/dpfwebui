@@ -99,8 +99,8 @@ class DISTRHO_WebUI {
     }
 
     // ProxyWebUI::setKeyboardFocus()
-    setKeyboardFocus(forward) {
-        this._call('setKeyboardFocus', forward);
+    setKeyboardFocus(focus) {
+        this._call('setKeyboardFocus', focus);
     }
 
     // ProxyWebUI::getInitWidth()
