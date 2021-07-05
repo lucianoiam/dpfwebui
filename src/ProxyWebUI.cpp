@@ -90,11 +90,6 @@ void ProxyWebUI::onDisplay()
 #endif
 }
 
-bool ProxyWebUI::onKeyboard(const KeyboardEvent& ev)
-{
-    return fWebWidget.onKeyboard(ev);
-}
-
 void ProxyWebUI::parameterChanged(uint32_t index, float value)
 {
     webPostMessage({"WebUI", "parameterChanged", index, value});
