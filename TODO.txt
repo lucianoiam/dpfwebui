@@ -19,7 +19,10 @@ LINUX
 MACOS
 -----
 
-- Finish fixing keyboard input on REAPER
+- Finish fixing keyboard input on REAPER. TopLevelWidget::onKeyboard() is not
+  firing (works as expected on Linux). Temporarily workaround this by having
+  ProxyWebUI::onKeyboard() call TopLevelWidget::onKeyboard() which is supposed
+  to be a protected method. Needs investigation.
 
 - There is a patch to workaround bug https://github.com/DISTRHO/DPF/issues/291
 
