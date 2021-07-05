@@ -136,8 +136,9 @@ void EdgeWebWidget::onPositionChanged(const PositionChangedEvent& ev)
 
 bool EdgeWebWidget::onKeyboard(const KeyboardEvent& ev)
 {
-    (void)ev;
     // KeyboardRouter already takes care of this
+    (void)ev;
+    return false;
 }
 
 void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
