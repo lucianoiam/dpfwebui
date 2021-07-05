@@ -95,7 +95,7 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
             bool grabKeyboardInput = (bool)GetClassLongPtr(hFocusedPluginHelperWnd, 0);
 
             if (grabKeyboardInput) {
-                // The plugin decided to grab keyboard input, discard keystroke
+                // The plugin decided to grab keyboard input, do not forward keystroke.
             
             } else {
                 // The root window is provided by the host and has DPF window as a child
@@ -105,6 +105,13 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
 
                 KeyboardRouter::getInstance().handleLowLevelKeyEvent(hPluginRootWnd,
                     (UINT)wParam, (KBDLLHOOKSTRUCT *)lParam);
+
+                // If not grabbing the keyboard input, eat the keystroke before it reaches
+                // the web view.
+
+                if (!grabKeyboardInput) {
+                    return 1;
+                }
             }
         }
     }
