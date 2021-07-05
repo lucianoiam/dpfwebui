@@ -46,8 +46,8 @@ USE_NAMESPACE_DISTRHO
 @property (assign, nonatomic) CocoaWebWidget *cppWidget;
 @end
 
-CocoaWebWidget::CocoaWebWidget(Window& windowToMapTo)
-    : AbstractWebWidget(windowToMapTo)
+CocoaWebWidget::CocoaWebWidget(Widget *parentWidget)
+    : AbstractWebWidget(parentWidget)
 {
     // Create the web view
     fView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];
@@ -61,7 +61,7 @@ CocoaWebWidget::CocoaWebWidget(Window& windowToMapTo)
 
     // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
     // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
-    NSView *parentView = (NSView *)windowToMapTo.getNativeWindowHandle();
+    NSView *parentView = (NSView *)parentWidget->getWindow().getNativeWindowHandle();
     [parentView addSubview:fWebView];
 
     String js = String(JS_POST_MESSAGE_SHIM);
@@ -77,14 +77,26 @@ CocoaWebWidget::~CocoaWebWidget()
 
 void CocoaWebWidget::onResize(const ResizeEvent& ev)
 {
+    (void)ev;
+    updateWebViewFrame();
+}
+
+void CocoaWebWidget::onPositionChanged(const PositionChangedEvent& ev)
+{
+    (void)ev;
+    updateWebViewFrame();
+}
+
+void CocoaWebWidget::updateWebViewFrame()
+{
     // There is a mismatch between DGL and AppKit coordinates
     // https://github.com/DISTRHO/DPF/issues/291
     CGFloat k = [NSScreen mainScreen].backingScaleFactor;
     CGRect frame;
-    frame.origin.x = 0;
-    frame.origin.y = 0;
-    frame.size.width = (CGFloat)ev.size.getWidth() / k;
-    frame.size.height = (CGFloat)ev.size.getHeight() / k;
+    frame.origin.x = (CGFloat)getAbsoluteX() / k;
+    frame.origin.y = (CGFloat)getAbsoluteY() / k;
+    frame.size.width = (CGFloat)getWidth() / k;
+    frame.size.height = (CGFloat)getHeight() / k;
     fWebView.frame = frame;
 }
 
@@ -97,43 +109,49 @@ bool CocoaWebWidget::onKeyboard(const KeyboardEvent& ev)
     // root plugin window (here, by this method) will be conveniently injected
     // into the web view, effectively reaching the <input> element.
 
+    // FIXME - incomplete implementation
     NSLog(@"onKeyboard() time = %u", ev.time);
 
-    if (ev.time == 0) {
-        return true; // break loop
-    }
+    if ((fLastKeyboardEvent.mod != ev.mod) || (fLastKeyboardEvent.flags != ev.flags)
+        || (fLastKeyboardEvent.time != ev.time) || (fLastKeyboardEvent.press != ev.press)
+        || (fLastKeyboardEvent.key != ev.key) || (fLastKeyboardEvent.keycode != ev.keycode)) {
 
-    if (ev.press) {
-        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
-            location: NSZeroPoint
-            modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
-            timestamp: 0
-            windowNumber: 0
-            context: nil
-            characters:  @"a" // FIXME
-            charactersIgnoringModifiers: @"a" // FIXME
-            isARepeat: NO
-            keyCode: ev.keycode
-        ];
+        fLastKeyboardEvent = ev;
 
-        [fWebView keyDown:event];
+        if (ev.press) {
+            NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
+                location: NSZeroPoint
+                modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
+                timestamp: 0
+                windowNumber: 0
+                context: nil
+                characters:  @"a" // FIXME
+                charactersIgnoringModifiers: @"a" // FIXME
+                isARepeat: NO
+                keyCode: ev.keycode
+            ];
+
+            [fWebView keyDown:event];
+        } else {
+            NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyUp
+                location: NSZeroPoint
+                modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
+                timestamp: 0
+                windowNumber: 0
+                context: nil
+                characters:  @"a" // FIXME
+                charactersIgnoringModifiers: @"a" // FIXME
+                isARepeat: NO
+                keyCode: ev.keycode
+            ];
+
+            [fWebView keyUp:event];
+        }
     } else {
-        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyUp
-            location: NSZeroPoint
-            modifierFlags: 0  // FIXME ie, NSEventModifierFlagShift
-            timestamp: 0
-            windowNumber: 0
-            context: nil
-            characters:  @"a" // FIXME
-            charactersIgnoringModifiers: @"a" // FIXME
-            isARepeat: NO
-            keyCode: ev.keycode
-        ];
-
-        [fWebView keyUp:event];
+        // Break loop. Unfortunately this breaks key repetition as well.
     }
 
-    return isGrabKeyboardInput(); // true = stop propagation
+    return true; // stop propagation
 }
 
 void CocoaWebWidget::setBackgroundColor(uint32_t rgba)
@@ -201,18 +219,19 @@ void CocoaWebWidget::injectScript(String& source)
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event
 {
-    // Ignore key shortcuts like Cmd+Q and Cmd+H
+    // Make the web view ignore key shortcuts like Cmd+Q and Cmd+H
     return NO;
 }
 
-// Optionally route keyboard events from the web view to plugin root window so
-// they are ultimately handled by the host. This for example allows playing the
-// virtual keyboard on Live while the web view UI is open.
+// Route keyboard events from the web view to plugin root window so they are
+// ultimately handled by the host. This for example allows playing the virtual
+// keyboard on Live while the web view UI is open. Make sure the key events are
+// not coming from DPF (timestamp 0) otherwise that creates a feedback loop.
 
 - (void)keyDown:(NSEvent *)event
 {
     [super keyDown:event];
-    if (!self.cppWidget->isGrabKeyboardInput()) {
+    if (!self.cppWidget->isLastKeyboardEventTimeZero()) {// && !self.cppWidget->isGrabKeyboardInput()) {
         [self.pluginRootView keyDown:event];
     }
 }
@@ -220,7 +239,7 @@ void CocoaWebWidget::injectScript(String& source)
 - (void)keyUp:(NSEvent *)event
 {
     [super keyUp:event];
-    if (!self.cppWidget->isGrabKeyboardInput()) {
+    if (!self.cppWidget->isLastKeyboardEventTimeZero()) {// && !self.cppWidget->isGrabKeyboardInput()) {
         [self.pluginRootView keyUp:event];
     }
 }
@@ -228,7 +247,7 @@ void CocoaWebWidget::injectScript(String& source)
 - (void)flagsChanged:(NSEvent *)event
 {
     [super flagsChanged:event];
-    if (!self.cppWidget->isGrabKeyboardInput()) {
+    if (!self.cppWidget->isLastKeyboardEventTimeZero()) {// && !self.cppWidget->isGrabKeyboardInput()) {
         [self.pluginRootView flagsChanged:event];
     }
 }
