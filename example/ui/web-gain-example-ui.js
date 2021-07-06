@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// See src/base/webui.js for the DISTRHO_WebUI class implementation, it shows
+// See src/js/webui.js for the DISTRHO_WebUI class implementation, it shows
 // which C++ methods are mapped. The class is automatically injected into the
 // global namespace and guaranteed to be available after the document load event
 // fires and before any referenced script starts running.
