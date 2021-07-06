@@ -42,6 +42,8 @@ public:
     void runScript(String& source) override;
     void injectScript(String& source) override;
 
+    void setKeyboardFocus(bool focus) override;
+
 protected:
     void onResize(const ResizeEvent& ev) override;
     void onPositionChanged(const PositionChangedEvent&) override;

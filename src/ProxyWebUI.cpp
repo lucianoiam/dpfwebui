@@ -143,8 +143,6 @@ void ProxyWebUI::flushInitMessageQueue()
 
 void ProxyWebUI::setKeyboardFocus(bool focus)
 {
-    // REAPER reclaims focus during plugin initialization so re-focus is needed
-    getWindow().focus();
     fWebWidget.setKeyboardFocus(focus);
 }
 

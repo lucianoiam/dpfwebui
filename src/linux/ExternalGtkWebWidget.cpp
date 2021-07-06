@@ -183,6 +183,14 @@ void ExternalGtkWebWidget::injectScript(String& source)
     ipcWriteString(OPC_INJECT_SCRIPT, source);
 }
 
+void ExternalGtkWebWidget::setKeyboardFocus(bool focus)
+{
+    // REAPER steals focus after plugin initialization, reset keyboard focus
+    // because clicking on the web view is not enough for regaining it.
+    AbstractWebWidget::setKeyboardFocus(focus);
+    getWindow().focus();
+}
+
 int ExternalGtkWebWidget::ipcWriteString(helper_opcode_t opcode, String str) const
 {
     const char *cStr = static_cast<const char *>(str);
