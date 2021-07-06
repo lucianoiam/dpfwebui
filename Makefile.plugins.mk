@@ -140,7 +140,7 @@ mac_patch:
 ifeq ($(MACOS),true)
 ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_PATH)/distrho/src/DistrhoUI.cpp),0)
 	@echo Patching DistrhoUI.cpp to workaround window size bug on macOS...
-	@cd $(WEBUI_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i src/DistrhoUI.cpp.patch
+	@cd $(WEBUI_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i DistrhoUI.cpp.patch
 endif
 endif
 
