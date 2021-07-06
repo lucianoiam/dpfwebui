@@ -11,10 +11,6 @@ GENERAL
 LINUX
 -----
 
-- Keyboard input not working on REAPER. It is not a host issue as for example
-  VST2 plugin Amplitube wrapped using yabridge correctly gets keyboard input.
-  UI::onKeyboard() never gets called.
-
 - DSSI plugin builds but UI does not open
 
 - UI not displaying at all on Gnome Shell even running on Xorg. XEmbed related?
