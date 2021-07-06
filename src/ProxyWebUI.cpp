@@ -145,7 +145,8 @@ void ProxyWebUI::flushInitMessageQueue()
 
 void ProxyWebUI::setKeyboardFocus(bool focus)
 {
-    // Host will not receive keystroke events when web widget is focused
+    // REAPER reclaims focus during plugin initialization so re-focus is needed
+    getWindow().focus();
     fWebWidget.setKeyboardFocus(focus);
 }
 

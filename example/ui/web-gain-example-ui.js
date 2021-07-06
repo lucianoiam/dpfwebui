@@ -48,6 +48,7 @@ class WebGainExampleUI extends DISTRHO_WebUI {
         elem('smiley').addEventListener('click', ev => {
             ev.target.style.display = 'none';
             elem('kbd-demo').style.display = 'inline';
+            elem('kbd-demo').focus();
         });
 
         // Process any UI message generated while the web view was still loading
