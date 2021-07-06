@@ -68,7 +68,7 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     fWebWidget.setEventHandler(this);
 
     String js = String(
-#include "webui.js"
+#include "js/webui.js"
     );
     fWebWidget.injectScript(js);
 
