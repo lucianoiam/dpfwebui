@@ -40,7 +40,6 @@ USE_NAMESPACE_DISTRHO
 EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     : AbstractWebWidget(parentWidget)
     , fHelperHwnd(0)
-    , fDisplayed(false)
     , fBackgroundColor(0)
     , fHandler(0)
     , fController(0)
@@ -76,13 +75,12 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
 
-    // Start web view async init only when the UI becomes visible and not here
-    // because ctor/dtor cycles can happen rapidly several times without the UI
-    // ever being displayed, for example on Carla. That is asking for trouble
-    // without robust handling of a web view init cancellation request (if that
-    // is possible at all). Since there is no Widget::onVisible() method or
-    // similar, the initWebView() call is placed in onDisplay() instead where
-    // it can be assumed plugin init has settled down and UI became visible.
+    // Start Edge WebView2 initialization
+    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0,
+        TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
+    if (FAILED(result)) {
+        webViewLoaderErrorMessageBox(result);
+    }
 }
 
 EdgeWebWidget::~EdgeWebWidget()
@@ -99,25 +97,6 @@ EdgeWebWidget::~EdgeWebWidget()
     DestroyWindow(fHelperHwnd);
     UnregisterClass(fHelperClass.lpszClassName, 0);
     free((void*)fHelperClass.lpszClassName);
-}
-
-void EdgeWebWidget::onDisplay()
-{
-    if (fDisplayed) {
-        return;
-    }
-
-    fDisplayed = true;
-
-    // handleWebView2EnvironmentCompleted() callback is sync but
-    // handleWebView2ControllerCompleted() is not, in contrast to Linux and Mac
-    // the web view initialization process is asynchronous. A init-ready method
-    // could be added to WebWidgetEventHandler but that would really spill
-    // Windows specific requirements to the rest of the plugin code. This
-    // implementation keeps caller code sync by having the setters queue passed
-    // arguments until the web view is completely instantiatied.
-
-    initWebView();
 }
 
 void EdgeWebWidget::onResize(const ResizeEvent& ev)
@@ -206,15 +185,6 @@ void EdgeWebWidget::updateWebViewBounds()
     bounds.right = bounds.left + (LONG)getWidth();
     bounds.bottom = bounds.top + (LONG)getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
-}
-
-void EdgeWebWidget::initWebView()
-{    
-    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0,
-        TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
-    if (FAILED(result)) {
-        webViewLoaderErrorMessageBox(result);
-    }
 }
 
 HRESULT EdgeWebWidget::handleWebView2EnvironmentCompleted(HRESULT result,

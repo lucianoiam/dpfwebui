@@ -70,20 +70,17 @@ public:
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
 protected:
-    void onDisplay() override;
     void onResize(const ResizeEvent& ev) override;
     void onPositionChanged(const PositionChangedEvent&) override;
     bool onKeyboard(const KeyboardEvent& ev) override;
 
 private:
-    void initWebView();
     void updateWebViewBounds();
     
     void webViewLoaderErrorMessageBox(HRESULT result);
 
     WNDCLASSEX          fHelperClass;
     HWND                fHelperHwnd;
-    bool                fDisplayed;
     uint32_t            fBackgroundColor;
     std::vector<String> fInjectedScripts;
     String              fUrl;
