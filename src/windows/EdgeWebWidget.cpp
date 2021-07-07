@@ -118,7 +118,7 @@ void EdgeWebWidget::onResize(const ResizeEvent& ev)
 {
     (void)ev;
     if (fController == 0) {
-        return; // does not make sense now, ignore
+        return; // discard
     }
 
     updateWebViewBounds();
@@ -128,7 +128,7 @@ void EdgeWebWidget::onPositionChanged(const PositionChangedEvent& ev)
 {
     (void)ev;
     if (fController == 0) {
-        return; // does not make sense now, ignore
+        return; // discard
     }
 
     updateWebViewBounds();
@@ -136,16 +136,15 @@ void EdgeWebWidget::onPositionChanged(const PositionChangedEvent& ev)
 
 bool EdgeWebWidget::onKeyboard(const KeyboardEvent& ev)
 {
-    // KeyboardRouter already takes care of this
     (void)ev;
-    return false;
+    return false; // KeyboardRouter already takes care of this
 }
 
 void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
 {
     if (fController == 0) {
         fBackgroundColor = rgba;
-        return; // keep it for later
+        return; // queue
     }
 
     // Edge WebView2 currently only supports alpha=0 or alpha=1
@@ -162,7 +161,7 @@ void EdgeWebWidget::navigate(String& url)
 {
     if (fView == 0) {
         fUrl = url;
-        return; // keep it for later
+        return; // queue
     }
 
     ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
@@ -181,7 +180,7 @@ void EdgeWebWidget::injectScript(String& source)
 {
     if (fController == 0) {
         fInjectedScripts.push_back(source);
-        return; // keep it for later
+        return; // queue
     }
 
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
