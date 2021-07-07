@@ -49,42 +49,42 @@ void ipc_destroy(ipc_t *ipc)
     free(ipc);
 }
 
-int ipc_read(ipc_t *ipc, tlv_t *packet)
+int ipc_read(ipc_t *ipc, tlv_t *pkt)
 {
-    if (read(ipc->conf.fd_r, &packet->t, sizeof(packet->t)) != sizeof(packet->t)) {
+    if (read(ipc->conf.fd_r, &pkt->t, sizeof(pkt->t)) != sizeof(pkt->t)) {
         return -1;
     }
 
-    if (read(ipc->conf.fd_r, &packet->l, sizeof(packet->l)) != sizeof(packet->l)) {
+    if (read(ipc->conf.fd_r, &pkt->l, sizeof(pkt->l)) != sizeof(pkt->l)) {
         return -1;
     }
 
     ipc_free_buf(ipc);
 
-    if (packet->l > 0) {
-        ipc->buf = malloc(packet->l);
+    if (pkt->l > 0) {
+        ipc->buf = malloc(pkt->l);
 
-        if (read(ipc->conf.fd_r, ipc->buf, packet->l) != packet->l) {
+        if (read(ipc->conf.fd_r, ipc->buf, pkt->l) != pkt->l) {
             return -1;
         }
         
-        packet->v = ipc->buf;
+        pkt->v = ipc->buf;
     }
 
     return 0;
 }
 
-int ipc_write(const ipc_t *ipc, const tlv_t *packet)
+int ipc_write(const ipc_t *ipc, const tlv_t *pkt)
 {
-    if (write(ipc->conf.fd_w, &packet->t, sizeof(packet->t)) == -1) {
+    if (write(ipc->conf.fd_w, &pkt->t, sizeof(pkt->t)) == -1) {
         return -1;
     }
 
-    if (write(ipc->conf.fd_w, &packet->l, sizeof(packet->l)) == -1) {
+    if (write(ipc->conf.fd_w, &pkt->l, sizeof(pkt->l)) == -1) {
         return -1;
     }
 
-    if ((packet->l > 0) && (write(ipc->conf.fd_w, packet->v, packet->l) == -1)) {
+    if ((pkt->l > 0) && (write(ipc->conf.fd_w, pkt->v, pkt->l) == -1)) {
         return -1;
     }
 

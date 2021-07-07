@@ -36,8 +36,8 @@ extern "C" {
 
 ipc_t*            ipc_init(const ipc_conf_t *conf);
 void              ipc_destroy(ipc_t *ipc);
-int               ipc_read(ipc_t *ipc, tlv_t *packet);
-int               ipc_write(const ipc_t *ipc, const tlv_t *packet);
+int               ipc_read(ipc_t *ipc, tlv_t *pkt);
+int               ipc_write(const ipc_t *ipc, const tlv_t *pkt);
 const ipc_conf_t* ipc_get_config(const ipc_t *ipc);
 
 #ifdef __cplusplus
