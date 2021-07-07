@@ -6,7 +6,7 @@ Raw power meets versatility.
 Apices is a library for creating audio plugins with potentially complex user
 interfaces, without wasting precious CPU cycles in the critical realtime audio
 processing stage. Plugins implement a web view for running the UI, which
-interacts with the audio host through a factory shipped small JavaScript class.
+interacts with the audio host through a small factory shipped JavaScript class.
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
