@@ -38,7 +38,7 @@ START_NAMESPACE_DISTRHO
 
 namespace platform {
 
-	typedef _WebWidget WebWidget;
+    typedef _WebWidget WebWidget;
 
     bool   isRunningStandalone();
     void   setRunningStandalone(bool standalone);
