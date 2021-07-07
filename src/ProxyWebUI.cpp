@@ -33,7 +33,7 @@ USE_NAMESPACE_DISTRHO
 // does not affect the standalone version of the plugin. Jun '21.
 #ifdef DISTRHO_OS_MAC
 namespace DISTRHO {
-    // Support for patched DistrhoUI.cpp
+    // MACSIZEBUG - Support for patched DistrhoUI.cpp
     float FIXME_MacScaleFactor() {
         return platform::getSystemDisplayScaleFactor();
     }
@@ -46,9 +46,11 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
 {
-    // The platform functions can be called from anywhere. However app object
+    // Platform functions can be called from anywhere. However DGL app object
     // is not a singleton and there is a special case in PlatformLinux.cpp that
-    // makes it necessary to distinguish standalone vs. plugin during runtime
+    // makes it necessary to distinguish standalone vs. plugin during runtime.
+    // Note that the web widget is already initialized at this point so this
+    // function always returns false when called from web widget constructors. 
     platform::setRunningStandalone(getWindow().getApp().isStandalone());
 
     // Automatically scale up the plugin UI so its contents do not look small
