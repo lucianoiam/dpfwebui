@@ -212,8 +212,7 @@ void CocoaWebWidget::injectScript(String& source)
 
 void CocoaWebWidget::updateWebViewFrame()
 {
-    // There is a mismatch between DGL and AppKit coordinates
-    // https://github.com/DISTRHO/DPF/issues/291
+    // MACSIZEBUG: There is a mismatch between DGL and AppKit coordinates
     CGFloat k = [NSScreen mainScreen].backingScaleFactor;
     CGRect frame;
     frame.origin.x = (CGFloat)getAbsoluteX() / k;
