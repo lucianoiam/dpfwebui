@@ -39,7 +39,7 @@
    The plugin URI when exporting in LV2 format.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_URI "https://github.com/lucianoiam/dpf-webgain"
+#define DISTRHO_PLUGIN_URI "https://lucianoiam.com/dpf-webui/webgain"
 
 /**
    Wherever the plugin has a custom %UI.
