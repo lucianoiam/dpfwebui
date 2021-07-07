@@ -19,7 +19,9 @@ LINUX
 MACOS
 -----
 
-- There is a patch to workaround bug https://github.com/DISTRHO/DPF/issues/291
+- Patch for https://github.com/DISTRHO/DPF/issues/291 with tag MACSIZEBUG
+
+- Workaround for https://github.com/DISTRHO/DPF/issues/298 with tag MACJACKBUG
 
 - Live 10 sporadically refuses to quit from the Mac menu or by pressing Cmd+Q
   when a plugin window is open. Behavior not reproducible on REAPER.
@@ -28,9 +30,9 @@ MACOS
 WINDOWS
 -------
 
-- LV2 plugin builds but UI does not open
+- Workaround with tag WINSIZEBUG
 
-- There is an issue related to DGL marked in code with tag WINSIZEBUG.
+- LV2 plugin builds but UI does not open
 
 - Standalone version build fails for latest DPF develop but works for e28b677,
   temporarily disable JACK target.

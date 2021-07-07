@@ -134,9 +134,9 @@ TARGETS += $(DPF_PATH)/build/libdgl.a
 $(DPF_PATH)/build/libdgl.a:
 	make -C $(DPF_PATH) dgl
 
-TARGETS += mac_patch
+TARGETS += MACSIZEBUG
 
-mac_patch:
+MACSIZEBUG:
 ifeq ($(MACOS),true)
 ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_PATH)/distrho/src/DistrhoUI.cpp),0)
 	@echo Patching DistrhoUI.cpp to workaround window size bug on macOS...
