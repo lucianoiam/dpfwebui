@@ -102,6 +102,9 @@ include $(DPF_PATH)/Makefile.plugins.mk
 
 BASE_FLAGS += -I$(WEBUI_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
               -DPROJECT_ID_HASH=$(shell echo $(NAME):$(WEBUI_PROJECT_VERSION) | shasum -a 256 | head -c 8)
+ifeq ($(WEBUI_PRINT_TRAFFIC),true)
+BASE_FLAGS += -DWEBUI_PRINT_TRAFFIC=1
+endif
 ifeq ($(LINUX),true)
 LINK_FLAGS += -lpthread -ldl
 endif
