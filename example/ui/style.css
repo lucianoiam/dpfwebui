@@ -10,7 +10,7 @@ body {
     height: 100%;
     padding: 20px;
     margin: 0;
-    background-color: #B6EFD4;
+    background-color: #D4B6EF;
 }
 
 pre {
@@ -31,5 +31,5 @@ pre {
 
 #gain-slider {
     width: 200px;
-    margin: 10px;
+    margin: 32px;
 }

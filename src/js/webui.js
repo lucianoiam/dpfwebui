@@ -1,6 +1,6 @@
 R"WEBUI_JS(
 /*
- * dpf-webui
+ * Apices - Audio Plugins In C++ & ES6
  * Copyright (C) 2021 Luciano Iam <oss@lucianoiam.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with

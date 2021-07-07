@@ -1,9 +1,14 @@
-Audio plugins featuring webview based UIs
------------------------------------------
+Apices - Audio Plugins In C++ & ES6
+-----------------------------------
 
-An alternate approach to plugin user interfaces.
+Raw power meets versatility.
 
-![](https://user-images.githubusercontent.com/930494/122536098-77aa9480-d024-11eb-93a4-4d4174c6559c.png)
+Apices is a library for creating audio plugins with potentially complex user
+interfaces, without wasting precious CPU cycles in the critical realtime audio
+processing stage. Plugins implement a web view for running the UI, which
+interacts with the audio host through a factory shipped small JavaScript class.
+
+![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
 *WebGain example running on Bitwig. A real world plugin is under development [here](https://github.com/lucianoiam/castello-rev).*
 
@@ -11,11 +16,11 @@ An alternate approach to plugin user interfaces.
 
 ### Features
 
-* Based on DPF: DISTRHO Plugin Framework
+* Based on DISTRHO Plugin Framework
 * C++ for DSP code
-* HTML/CSS/JS for UI development
-* VST2/LV2 plugin formats and JACK standalone app
-* Linux/Mac/Windows
+* HTML / CSS / JS for UI development
+* VST2 / LV2 plugin formats and JACK standalone app (BETA)
+* Linux / Mac / Windows
 * Just the powerful basics
 * BSD-like license
 
@@ -53,9 +58,9 @@ class MyPluginWebUI extends DISTRHO_WebUI {
 
 **Usage of JS frameworks is up to the developer**
 
-More information [here](https://github.com/lucianoiam/dpf-webui/blob/master/doc/internals.md)
+More information [here](https://github.com/lucianoiam/apices/blob/master/doc/internals.md)
 
-### About DPF — DISTRHO Plugin Framework
+### About DISTRHO Plugin Framework (DPF)
 
 The framework sports an accurate motto: "DPF is designed to make development of
 new plugins an easy and enjoyable task". It is a low footprint yet powerful tool
@@ -64,15 +69,15 @@ trivial issues commonly found in the audio plugins domain.
 
 What makes it great?
 
-- It comes with a clear libre license
-- Zero bloat: scope is limited to audio plugins
+- It comes with a clear permissive license
+- Bloat-free: scope is limited to audio plugins
 - Makefile based, MinGW compatible
-- Absurdingly low learning curve
+- Extremely low learning curve
 - High quality clean C++ codebase
 - Great experienced community around
 
 Its full documentation and code can be found at https://github.com/DISTRHO/DPF,
-this repo includes it as a git submodule in `lib/DPF`. And do not forget to
-visit https://github.com/DISTRHO for many other cool audio projects.
+this repo includes it as a git submodule in `dpf`.  Do not forget to visit
+https://github.com/DISTRHO for many other cool audio projects.
 
 If you find libre software useful please support the developers

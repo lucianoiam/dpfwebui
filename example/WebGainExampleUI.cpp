@@ -1,5 +1,5 @@
 /*
- * dpf-webui
+ * Apices - Audio Plugins In C++ & ES6
  * Copyright (C) 2021 Luciano Iam <oss@lucianoiam.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -22,7 +22,7 @@
 
 // Color for painting the window background before the web content is ready.
 // Matching it to <html> background color ensures a smooth transition.
-#define INIT_BACKGROUND_RGBA 0xB6EFD4FF
+#define INIT_BACKGROUND_RGBA 0xD4B6EFFF
 
 USE_NAMESPACE_DISTRHO
 

@@ -79,8 +79,8 @@ window.webviewHost.addMessageListener((args) => {
 });
 ```
 
-The C++ class carries the "Proxy" moniker because it mainly acts as a bridge
-between the two languages and the actual UI functionality is meant to be
+The C++ class name carries the "Proxy" moniker because it mainly acts as a
+bridge between the two languages and the actual UI functionality is meant to be
 implemented in JavaScript.
 
 Message arguments must be an array/vector containing values of primitive data
