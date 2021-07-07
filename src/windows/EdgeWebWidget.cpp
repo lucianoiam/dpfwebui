@@ -77,6 +77,14 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     // This request is queued until Edge WebView2 initializes itself
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
+
+    // Start web view async init only when the UI becomes visible and not here
+    // because ctor/dtor cycles can happen rapidly several times without the UI
+    // ever being displayed, for example on Carla. That is asking for trouble
+    // without robust handling of a web view init cancellation request (if that
+    // is possible at all). Since there is no Widget::onVisible() method or
+    // similar, the initWebView() call is placed in onDisplay() instead where
+    // it can be assumed plugin init has settled down and UI became visible.
 }
 
 EdgeWebWidget::~EdgeWebWidget()
@@ -102,7 +110,7 @@ void EdgeWebWidget::onDisplay()
     }
 
     fDisplayed = true;
-    
+
     // handleWebView2EnvironmentCompleted() callback is sync but
     // handleWebView2ControllerCompleted() is not, in contrast to Linux and Mac
     // the web view initialization process is asynchronous. A init-ready method
