@@ -66,6 +66,9 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     fWebWidget.setSize(fInitWidth, fInitHeight);
     fWebWidget.setBackgroundColor(fBackgroundColor);
     fWebWidget.setEventHandler(this);
+#ifdef WEBUI_PRINT_TRAFFIC
+    fWebWidget.setPrintTraffic(true);
+#endif
 
     String js = String(
 #include "js/webui.js"
