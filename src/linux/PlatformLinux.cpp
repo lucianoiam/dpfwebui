@@ -73,7 +73,7 @@ String platform::getBinaryPath()
     if (isRunningStandalone()) {
         return getExecutablePath();
     } else {
-       return getSharedLibraryPath();
+        return getSharedLibraryPath();
     }
 }
 
