@@ -34,7 +34,8 @@ is installed, thus providing access to a native callback through the function:
 
 `window.webkit.messageHandlers.host.postMessage()`
 
-On Windows, WebView2 already provides a single built-in entry point to native:
+On Windows WebView2 already provides a single, fixed, built-in entry point to
+native:
 
 `window.chrome.webview.postMessage()`
 
@@ -45,34 +46,35 @@ hiding the differences between platforms:
 
 In an attempt to keep the interface symmetrical and generic, `window.webviewHost`
 is created as a `EventTarget` instance that can listened for events named
-'message' on the JS side. This allows C++ to send messages by calling:
+'message' on the JS side. This allows C++ to send messages by running the
+following JS code:
 
 `window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:args}))`
 
 The `DISTRHO::ProxyWebUI` and JS `DISTRHO_WebUI` classes use the above mechanism
 to map some useful plugin methods, like the ones shown in the first code example
-of this README.
+of the main README.
 
 The bridge interface in a nutshell:
 
 ```
-// Send ( js → cpp )
+// Send from JS to C++
 
 window.webviewHost.postMessage([...]);
 
 void ProxyWebUI::webMessageReceived(const ScriptValueVector&) {
 
-   // Receive
+   // Receive in C++ from JS
 
 }
 
-// Send ( cpp → js )
+// Send from C++ to JS
 
 ProxyWebUI::webPostMessage({...});
 
 window.webviewHost.addMessageListener((args) => {
     
-    // Receive
+    // Receive in JS from C++
 
 });
 ```
