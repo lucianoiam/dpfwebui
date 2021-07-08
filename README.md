@@ -28,7 +28,7 @@ audio host through a small factory shipped JavaScript class.
 ### Example UI code
 
 ```JavaScript
-class MyPluginWebUI extends DISTRHO_WebUI {
+class MyPluginUI extends DISTRHO_WebUI {
 
     constructor() {
     	super();
