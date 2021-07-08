@@ -48,7 +48,7 @@ public:
 
 protected:
     void onResize(const ResizeEvent& ev) override;
-    void onPositionChanged(const PositionChangedEvent&) override;
+    void onPositionChanged(const PositionChangedEvent& ev) override;
     bool onKeyboard(const KeyboardEvent& ev) override;
 
 private:
