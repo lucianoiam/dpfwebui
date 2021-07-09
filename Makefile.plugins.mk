@@ -276,18 +276,18 @@ resources:
 	@echo "Copying web UI resource files..."
 	@(test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME).exe || test -f $(TARGET_DIR)/$(NAME)-vst.dll \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_res \
-		&& cp -r $(APX_RES_DIR)/* $(TARGET_DIR)/$(NAME)_res \
+		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME)_res \
 		) || true
 	@(test -d $(TARGET_DIR)/$(NAME).lv2 \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
-		&& cp -r $(APX_RES_DIR)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
+		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
 		) || true
 	@(test -d $(TARGET_DIR)/$(NAME)-dssi \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
-		&& cp -r $(APX_RES_DIR)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
+		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
 		) || true
 	@(test -d $(TARGET_DIR)/$(NAME).vst \
-		&& cp -r $(APX_RES_DIR)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources \
+		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources \
 		) || true
 
 clean: clean_resources
