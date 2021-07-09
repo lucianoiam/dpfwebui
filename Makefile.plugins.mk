@@ -49,6 +49,15 @@ CAN_GENERATE_TTL = true
 endif
 
 # ------------------------------------------------------------------------------
+# Add optional WASM DSP source
+#WASM_DSP=true
+ifeq ($(WASM_DSP),true)
+APX_FILES_DSP = WasmHostPlugin.cpp
+
+FILES_DSP += $(APX_FILES_DSP:%=$(APX_SRC_PATH)/%)
+endif
+
+# ------------------------------------------------------------------------------
 # Add web UI source
 
 APX_FILES_UI  = WebHostUI.cpp \
