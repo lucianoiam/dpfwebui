@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ProxyWebUI.hpp"
+#include "WebHostUI.hpp"
 
 #include "dgl/Application.hpp"
 
@@ -40,7 +40,7 @@ namespace DISTRHO {
 }
 #endif
 
-ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
+WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(baseWidth, baseHeight)
     , fWebWidget(this)
     , fFlushedInitMsgQueue(false)
@@ -81,7 +81,7 @@ ProxyWebUI::ProxyWebUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor
     fWebWidget.navigate(url);
 }
 
-void ProxyWebUI::onDisplay()
+void WebHostUI::onDisplay()
 {
 #ifdef DGL_OPENGL
     // Clear background for OpenGL
@@ -96,36 +96,36 @@ void ProxyWebUI::onDisplay()
 #endif
 }
 
-void ProxyWebUI::uiReshape(uint width, uint height)
+void WebHostUI::uiReshape(uint width, uint height)
 {
     fWebWidget.setSize(width, height);
 }
 
-void ProxyWebUI::parameterChanged(uint32_t index, float value)
+void WebHostUI::parameterChanged(uint32_t index, float value)
 {
     webPostMessage({"WebUI", "parameterChanged", index, value});
 }
 
 #if (DISTRHO_PLUGIN_WANT_STATE == 1)
 
-void ProxyWebUI::stateChanged(const char* key, const char* value)
+void WebHostUI::stateChanged(const char* key, const char* value)
 {
     webPostMessage({"WebUI", "stateChanged", key, value});
 }
 
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
 
-uint ProxyWebUI::getInitWidth() const
+uint WebHostUI::getInitWidth() const
 {
     return fInitWidth;
 }
 
-uint ProxyWebUI::getInitHeight() const
+uint WebHostUI::getInitHeight() const
 {
     return fInitHeight;
 }
 
-void ProxyWebUI::webPostMessage(const ScriptValueVector& args) {
+void WebHostUI::webPostMessage(const ScriptValueVector& args) {
     if (fFlushedInitMsgQueue) {
         fWebWidget.postMessage(args);
     } else {
@@ -133,7 +133,7 @@ void ProxyWebUI::webPostMessage(const ScriptValueVector& args) {
     }
 }
 
-void ProxyWebUI::flushInitMessageQueue()
+void WebHostUI::flushInitMessageQueue()
 {
     if (fFlushedInitMsgQueue) {
         return;
@@ -148,12 +148,12 @@ void ProxyWebUI::flushInitMessageQueue()
     fInitMsgQueue.clear();
 }
 
-void ProxyWebUI::setKeyboardFocus(bool focus)
+void WebHostUI::setKeyboardFocus(bool focus)
 {
     fWebWidget.setKeyboardFocus(focus);
 }
 
-void ProxyWebUI::handleWebWidgetContentLoadFinished()
+void WebHostUI::handleWebWidgetContentLoadFinished()
 {
     // no-op, just let derived classes now
     webContentReady();
@@ -162,7 +162,7 @@ void ProxyWebUI::handleWebWidgetContentLoadFinished()
 #define kArg0 2
 #define kArg1 3
 
-void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& args)
+void WebHostUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& args)
 {
     if (args[0].getString() != "WebUI") {
         webMessageReceived(args); // passthrough
@@ -239,6 +239,6 @@ void ProxyWebUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& a
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
 
     } else {
-        DISTRHO_LOG_STDERR_COLOR("Invalid call to ProxyWebUI method");
+        DISTRHO_LOG_STDERR_COLOR("Invalid call to WebHostUI method");
     }
 }

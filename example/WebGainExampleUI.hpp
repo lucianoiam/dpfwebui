@@ -19,11 +19,11 @@
 #ifndef WEBGAINEXAMPLEUI_HPP
 #define WEBGAINEXAMPLEUI_HPP
 
-#include "ProxyWebUI.hpp"
+#include "WebHostUI.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class WebGainExampleUI : public ProxyWebUI
+class WebGainExampleUI : public WebHostUI
 {
 public:
     WebGainExampleUI();

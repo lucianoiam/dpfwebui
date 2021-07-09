@@ -34,7 +34,7 @@
 #define CSS_DISABLE_OVERFLOW     "body { overflow: hidden; }"
 
 /**
-   Keep this class generic; specific plugin features belong to ProxyWebUI.
+   Keep this class generic; specific plugin features belong to WebHostUI.
  */
 
 USE_NAMESPACE_DISTRHO
