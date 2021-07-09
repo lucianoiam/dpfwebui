@@ -14,8 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef PROXYWEBUI_HPP
-#define PROXYWEBUI_HPP
+#ifndef WEBHOSTUI_HPP
+#define WEBHOSTUI_HPP
 
 #include "DistrhoUI.hpp"
 
@@ -25,11 +25,11 @@
 
 START_NAMESPACE_DISTRHO
 
-class ProxyWebUI : public UI, private WebWidgetEventHandler
+class WebHostUI : public UI, private WebWidgetEventHandler
 {
 public:
-    ProxyWebUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
-    virtual ~ProxyWebUI() {};
+    WebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    virtual ~WebHostUI() {};
 
 protected:
     void onDisplay() override;
@@ -72,4 +72,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // PROXYWEBUI_HPP
+#endif  // WEBHOSTUI_HPP

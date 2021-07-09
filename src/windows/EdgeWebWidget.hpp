@@ -96,7 +96,7 @@ private:
 // the Edge WebView2 could callback a deleted object. That would happen for
 // example if the widget is created and suddenly destroyed before web content
 // finishes loading, or before WebView2 has fully initialized itself.
-// In the case of ProxyWebUI the scenario is easily reproducible by opening the
+// In the case of WebHostUI the scenario is easily reproducible by opening the
 // plugin window on Carla and immediately closing it before the web UI shows up.
 // Note that InternalWebView2EventHandler is not fully COM compliant, it is
 // lacking the query interface method. It would also need to be registered for

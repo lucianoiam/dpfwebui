@@ -93,32 +93,32 @@ class DISTRHO_WebUI {
         // default empty implementation
     }
 
-    // ProxyWebUI::flushInitMessageQueue()
+    // WebHostUI::flushInitMessageQueue()
     flushInitMessageQueue() {
         this._call('flushInitMessageQueue');
     }
 
-    // ProxyWebUI::setKeyboardFocus()
+    // WebHostUI::setKeyboardFocus()
     setKeyboardFocus(focus) {
         this._call('setKeyboardFocus', focus);
     }
 
-    // ProxyWebUI::getInitWidth()
+    // WebHostUI::getInitWidth()
     async getInitWidth() {
         return this._callWithReply('getInitWidth');
     }
 
-    // ProxyWebUI::getInitHeight()
+    // WebHostUI::getInitHeight()
     async getInitHeight() {
         return this._callWithReply('getInitHeight');
     }
 
-    // ProxyWebUI::webPostMessage(const ScriptValueVector& args)
+    // WebHostUI::webPostMessage(const ScriptValueVector& args)
     postMessage(...args) {
         window.webviewHost.postMessage(args);
     }
 
-    // ProxyWebUI::webMessageReceived(const ScriptValueVector& args)
+    // WebHostUI::webMessageReceived(const ScriptValueVector& args)
     messageReceived(args) {
         // default empty implementation
     }

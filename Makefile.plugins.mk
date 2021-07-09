@@ -51,7 +51,7 @@ endif
 # ------------------------------------------------------------------------------
 # Add web UI source
 
-WEBUI_FILES_UI  = ProxyWebUI.cpp \
+WEBUI_FILES_UI  = WebHostUI.cpp \
                   AbstractWebWidget.cpp \
                   ScriptValue.cpp \
                   Platform.cpp

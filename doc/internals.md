@@ -51,7 +51,7 @@ following JS code:
 
 `window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:args}))`
 
-The `DISTRHO::ProxyWebUI` and JS `DISTRHO_WebUI` classes use the above mechanism
+The `DISTRHO::WebHostUI` and JS `DISTRHO_WebUI` classes use the above mechanism
 to map some useful plugin methods, like the ones shown in the first code example
 of the main README.
 
@@ -62,7 +62,7 @@ The bridge interface in a nutshell:
 
 window.webviewHost.postMessage([...]);
 
-void ProxyWebUI::webMessageReceived(const ScriptValueVector&) {
+void WebHostUI::webMessageReceived(const ScriptValueVector&) {
 
    // Receive in C++ from JS
 
@@ -70,7 +70,7 @@ void ProxyWebUI::webMessageReceived(const ScriptValueVector&) {
 
 // Send from C++ to JS
 
-ProxyWebUI::webPostMessage({...});
+WebHostUI::webPostMessage({...});
 
 window.webviewHost.addMessageListener((args) => {
     
@@ -78,10 +78,6 @@ window.webviewHost.addMessageListener((args) => {
 
 });
 ```
-
-The C++ class name carries the "Proxy" moniker because it mainly acts as a
-bridge between the two languages and the actual UI functionality is meant to be
-implemented in JavaScript.
 
 Message arguments must be an array/vector containing values of primitive data
 types. These values are wrapped by `DISTRHO::ScriptValue` instances. The
