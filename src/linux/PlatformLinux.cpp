@@ -48,7 +48,7 @@ static String getSharedLibraryPath()
     Dl_info dl_info;
 
     if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
-        DISTRHO_LOG_STDERR(dlerror());
+        APX_LOG_STDERR(dlerror());
         return String();
     } else {
         return String(dl_info.dli_fname);
@@ -61,7 +61,7 @@ static String getExecutablePath()
     ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
 
     if (len == -1) {
-        DISTRHO_LOG_STDERR_ERRNO("Could not determine executable path");
+        APX_LOG_STDERR_ERRNO("Could not determine executable path");
         return String();
     } else {
         return String(path);

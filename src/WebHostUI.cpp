@@ -239,6 +239,6 @@ void WebHostUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& ar
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
 
     } else {
-        DISTRHO_LOG_STDERR_COLOR("Invalid call to WebHostUI method");
+        APX_LOG_STDERR_COLOR("Invalid call to WebHostUI method");
     }
 }
