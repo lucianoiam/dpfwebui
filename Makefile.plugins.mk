@@ -15,6 +15,8 @@ DPF_BUILD_DIR  ?= build
 
 DPF_GIT_BRANCH ?= develop
 
+WASMER_PATH    ?= $(APX_ROOT_PATH)/wasmer
+
 # ------------------------------------------------------------------------------
 # Determine build environment
 
@@ -49,8 +51,8 @@ CAN_GENERATE_TTL = true
 endif
 
 # ------------------------------------------------------------------------------
-# Add optional WASM DSP source
-#WASM_DSP=true
+# Add optional Wasm DSP source
+WASM_DSP=true
 ifeq ($(WASM_DSP),true)
 APX_FILES_DSP = WasmHostPlugin.cpp
 
@@ -105,6 +107,18 @@ endif
 endif
 
 include $(DPF_PATH)/Makefile.plugins.mk
+
+# ------------------------------------------------------------------------------
+# Add build flags for Wasm DSP dependencies
+
+ifeq ($(WASM_DSP),true)
+BASE_FLAGS += -I$(WASMER_PATH)
+
+LINK_FLAGS += -lwasmer -L$(WASMER_PATH)
+ifeq ($(MACOS_OR_WINDOWS),true)
+LINK_FLAGS += -Wl,-rpath,@loader_path
+endif
+endif
 
 # ------------------------------------------------------------------------------
 # Add build flags for web UI dependencies
@@ -180,19 +194,6 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
-# LV2 manifest files
-
-ifeq ($(CAN_GENERATE_TTL),true)
-APX_TARGET += lv2ttl
-
-lv2ttl: $(DPF_PATH)/utils/lv2_ttl_generator
-	@$(abspath $(DPF_PATH))/utils/generate-ttl.sh
-
-$(DPF_PATH)/utils/lv2_ttl_generator:
-	$(MAKE) -C $(DPF_PATH)/utils/lv2-ttl-generator
-endif
-
-# ------------------------------------------------------------------------------
 # Linux WebKitGTK helper binary
 
 ifeq ($(LINUX),true)
@@ -239,6 +240,54 @@ $(BUILD_DIR)/%.mm.o: %.mm
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
+endif
+
+# ------------------------------------------------------------------------------
+# Copy Wasmer shared library
+
+ifeq ($(WASM_DSP),true)
+APX_TARGET += wasmer
+
+WASMER_LIB = libwasmer$(LIB_EXT)
+WASMER_LIB_PATH = $(WASMER_PATH)/$(WASMER_LIB)
+
+wasmer:
+	@echo "Copying Wasmer shared library..."
+	@(test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME).exe || test -f $(TARGET_DIR)/$(NAME)-vst.dll \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)_res \
+		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR) \
+		) || true
+	@(test -d $(TARGET_DIR)/$(NAME).lv2 \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
+		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR)/$(NAME).lv2 \
+		) || true
+	@(test -d $(TARGET_DIR)/$(NAME)-dssi \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
+		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR)/$(NAME)-dssi \
+		) || true
+	@(test -d $(TARGET_DIR)/$(NAME).vst \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Libraries \
+		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR)/$(NAME).vst/Contents/Libraries \
+		&& install_name_tool -rpath @loader_path @loader_path/../Libraries $(TARGET_DIR)/$(NAME).vst/Contents/MacOS/$(NAME) \
+		) || true
+
+clean: clean_wasmer
+
+clean_wasmer:
+	@rm -rf $(TARGET_DIR)/$(WASMER_LIB)
+endif
+
+# ------------------------------------------------------------------------------
+# LV2 manifest files
+
+ifeq ($(CAN_GENERATE_TTL),true)
+APX_TARGET += lv2ttl
+
+lv2ttl: $(DPF_PATH)/utils/lv2_ttl_generator
+	@$(abspath $(DPF_PATH))/utils/generate-ttl.sh
+
+$(DPF_PATH)/utils/lv2_ttl_generator:
+	$(MAKE) -C $(DPF_PATH)/utils/lv2-ttl-generator
 endif
 
 # ------------------------------------------------------------------------------

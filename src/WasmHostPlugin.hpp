@@ -25,6 +25,30 @@ START_NAMESPACE_DISTRHO
 
 class WasmHostPlugin : public Plugin
 {
+public:
+    WasmHostPlugin();
+    ~WasmHostPlugin() {};
+
+    const char* getLabel() const override;
+    const char* getMaker() const override;
+    const char* getLicense() const override;
+
+    uint32_t getVersion() const override;
+    int64_t getUniqueId() const override;
+
+    void  initParameter(uint32_t index, Parameter& parameter) override;
+    float getParameterValue(uint32_t index) const override;
+    void  setParameterValue(uint32_t index, float value) override;
+
+#if (DISTRHO_PLUGIN_WANT_STATE == 1)
+    void   initState(uint32_t index, String& stateKey, String& defaultStateValue) override;
+    void   setState(const char* key, const char* value) override;
+#if (DISTRHO_PLUGIN_WANT_FULL_STATE == 1)
+    String getState(const char* key) const override;
+#endif
+#endif
+
+    void run(const float** inputs, float** outputs, uint32_t frames) override;
 
 };
 
