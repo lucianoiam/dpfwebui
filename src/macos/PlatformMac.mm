@@ -38,7 +38,7 @@ String platform::getBinaryPath()
     if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) != 0) {
         return String(dl_info.dli_fname);
     } else {
-        DISTRHO_LOG_STDERR(dlerror());
+        APX_LOG_STDERR(dlerror());
         return String();
     }
 }

@@ -52,12 +52,12 @@ int main(int argc, char* argv[])
     GIOChannel* channel;
 
     if (argc < 3) {
-        DISTRHO_LOG_STDERR("Invalid argument count");
+        APX_LOG_STDERR("Invalid argument count");
         return -1;
     }
 
     if ((sscanf(argv[1], "%d", &conf.fd_r) == 0) || (sscanf(argv[2], "%d", &conf.fd_w) == 0)) {
-        DISTRHO_LOG_STDERR("Invalid file descriptor");
+        APX_LOG_STDERR("Invalid file descriptor");
         return -1;
     }
 
@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 
     if (GDK_IS_X11_DISPLAY(gdk_display_get_default())
             && ((ctx.display = XOpenDisplay(NULL)) == NULL)) {
-        DISTRHO_LOG_STDERR("Cannot open display");
+        APX_LOG_STDERR("Cannot open display");
         return -1;
     }
 
@@ -131,7 +131,7 @@ static void set_parent(const helper_context_t *ctx, uintptr_t parentId)
         // TODO: show a message in parent plugin window explaining that Wayland is not supported
         //       yet and because of that the plugin web user interface will be displayed in a
         //       separate window. Ideally include a button to focus such separate window.
-        DISTRHO_LOG_STDERR_COLOR("Running Wayland, plugin will be displayed in a separate window");
+        APX_LOG_STDERR_COLOR("Running Wayland, plugin will be displayed in a separate window");
     }
 }
 
@@ -250,7 +250,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     }
 
     if (ipc_read(ctx->ipc, &packet) == -1) {
-        DISTRHO_LOG_STDERR_ERRNO("Could not read from IPC channel");
+        APX_LOG_STDERR_ERRNO("Could not read from IPC channel");
         return TRUE;
     }
 
@@ -308,7 +308,7 @@ static int ipc_write_simple(const helper_context_t *ctx, helper_opcode_t opcode,
     packet.v = payload;
 
     if ((retval = ipc_write(ctx->ipc, &packet)) == -1) {
-        DISTRHO_LOG_STDERR_ERRNO("Could not write to IPC channel");
+        APX_LOG_STDERR_ERRNO("Could not write to IPC channel");
     }
 
     return retval;

@@ -59,7 +59,7 @@ String platform::getBinaryPath()
     char path[MAX_PATH];
     
     if (GetModuleFileName((HINSTANCE)&__ImageBase, path, sizeof(path)) == 0) {
-        DISTRHO_LOG_STDERR_INT("Could not determine module path", GetLastError());
+        APX_LOG_STDERR_INT("Could not determine module path", GetLastError());
         path[0] = '\0';
     }
 
@@ -81,7 +81,7 @@ String platform::getTemporaryPath()
     char tempPath[MAX_PATH];
     HRESULT result = SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, 0, SHGFP_TYPE_DEFAULT, tempPath);
     if (FAILED(result)) {
-        DISTRHO_LOG_STDERR_INT("Could not determine user app data folder", result);
+        APX_LOG_STDERR_INT("Could not determine user app data folder", result);
         return String();
     }
 
@@ -90,7 +90,7 @@ String platform::getTemporaryPath()
     // simultaneously due to permissions. C:\Users\< USERNAME >\AppData\Local\DPF_Temp\< HOST_BIN >
     char exePath[MAX_PATH];
     if (GetModuleFileName(0, exePath, sizeof(exePath)) == 0) {
-        DISTRHO_LOG_STDERR_INT("Could not determine host executable path", GetLastError());
+        APX_LOG_STDERR_INT("Could not determine host executable path", GetLastError());
         return String();
     }
     LPSTR exeFilename = PathFindFileName(exePath);

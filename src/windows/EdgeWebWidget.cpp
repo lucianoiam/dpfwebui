@@ -310,7 +310,7 @@ void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
         << "Error 0x" << std::hex << result;
     std::wstring ws = wss.str();
     
-    DISTRHO_LOG_STDERR_COLOR(TO_LPCSTR(ws));
+    APX_LOG_STDERR_COLOR(TO_LPCSTR(ws));
 
     MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
 }
