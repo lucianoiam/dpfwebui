@@ -4,12 +4,12 @@
 # ------------------------------------------------------------------------------
 # Basic setup
 
-WEBUI_PROJECT_VERSION ?= 1
+APX_PROJECT_VERSION ?= 1
 
-WEBUI_ROOT_PATH := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
-WEBUI_SRC_PATH  ?= $(WEBUI_ROOT_PATH)/src
+APX_ROOT_PATH  := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+APX_SRC_PATH   ?= $(APX_ROOT_PATH)/src
 
-DPF_PATH       ?= $(WEBUI_ROOT_PATH)/dpf
+DPF_PATH       ?= $(APX_ROOT_PATH)/dpf
 DPF_TARGET_DIR ?= bin
 DPF_BUILD_DIR  ?= build
 
@@ -51,30 +51,30 @@ endif
 # ------------------------------------------------------------------------------
 # Add web UI source
 
-WEBUI_FILES_UI  = WebHostUI.cpp \
-                  AbstractWebWidget.cpp \
-                  ScriptValue.cpp \
-                  Platform.cpp
+APX_FILES_UI  = WebHostUI.cpp \
+                AbstractWebWidget.cpp \
+                ScriptValue.cpp \
+                Platform.cpp
 ifeq ($(LINUX),true)
-WEBUI_FILES_UI += linux/ExternalGtkWebWidget.cpp \
-                  linux/PlatformLinux.cpp \
-                  linux/extra/ipc.c
+APX_FILES_UI += linux/ExternalGtkWebWidget.cpp \
+                linux/PlatformLinux.cpp \
+                linux/extra/ipc.c
 endif
 ifeq ($(MACOS),true)
-WEBUI_FILES_UI += macos/CocoaWebWidget.mm \
-                  macos/PlatformMac.mm
+APX_FILES_UI += macos/CocoaWebWidget.mm \
+                macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
-WEBUI_FILES_UI += windows/EdgeWebWidget.cpp \
-                  windows/KeyboardRouter.cpp \
-                  windows/PlatformWindows.cpp \
-                  windows/extra/WebView2EventHandler.cpp \
-                  windows/extra/WinApiStub.cpp \
-                  windows/extra/cJSON.c \
-                  windows/res/plugin.rc
+APX_FILES_UI += windows/EdgeWebWidget.cpp \
+                windows/KeyboardRouter.cpp \
+                windows/PlatformWindows.cpp \
+                windows/extra/WebView2EventHandler.cpp \
+                windows/extra/WinApiStub.cpp \
+                windows/extra/cJSON.c \
+                windows/res/plugin.rc
 endif
 
-FILES_UI += $(WEBUI_FILES_UI:%=$(WEBUI_SRC_PATH)/%)
+FILES_UI += $(APX_FILES_UI:%=$(APX_SRC_PATH)/%)
 
 ifneq ($(WINDOWS),true)
 UI_TYPE = cairo
@@ -100,10 +100,10 @@ include $(DPF_PATH)/Makefile.plugins.mk
 # ------------------------------------------------------------------------------
 # Add build flags for web UI dependencies
 
-BASE_FLAGS += -I$(WEBUI_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
-              -DPROJECT_ID_HASH=$(shell echo $(NAME):$(WEBUI_PROJECT_VERSION) | shasum -a 256 | head -c 8)
-ifeq ($(WEBUI_PRINT_TRAFFIC),true)
-BASE_FLAGS += -DWEBUI_PRINT_TRAFFIC=1
+BASE_FLAGS += -I$(APX_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
+              -DPROJECT_ID_HASH=$(shell echo $(NAME):$(APX_PROJECT_VERSION) | shasum -a 256 | head -c 8)
+ifeq ($(APX_PRINT_TRAFFIC),true)
+BASE_FLAGS += -DAPX_PRINT_TRAFFIC=1
 endif
 ifeq ($(LINUX),true)
 LINK_FLAGS += -lpthread -ldl
@@ -124,10 +124,10 @@ endif
 TARGETS += info
 
 info:
-	@echo "DPF Web UI : $(WEBUI_ROOT_PATH)"
-	@echo "DPF        : $(DPF_PATH) @ $(DPF_GIT_BRANCH)"
-	@echo "Build      : $(DPF_BUILD_DIR)"
-	@echo "Target     : $(DPF_TARGET_DIR)"
+	@echo "Apices : $(APX_ROOT_PATH)"
+	@echo "DPF    : $(DPF_PATH) @ $(DPF_GIT_BRANCH)"
+	@echo "Build  : $(DPF_BUILD_DIR)"
+	@echo "Target : $(DPF_TARGET_DIR)"
 
 # ------------------------------------------------------------------------------
 # Basic dependencies
@@ -143,7 +143,7 @@ MACSIZEBUG:
 ifeq ($(MACOS),true)
 ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_PATH)/distrho/src/DistrhoUI.cpp),0)
 	@echo Patching DistrhoUI.cpp to workaround window size bug on macOS...
-	@cd $(WEBUI_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i DistrhoUI.cpp.patch
+	@cd $(APX_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i DistrhoUI.cpp.patch
 endif
 endif
 
@@ -174,7 +174,7 @@ endif
 # LV2 manifest files
 
 ifeq ($(CAN_GENERATE_TTL),true)
-WEBUI_TARGET += lv2ttl
+APX_TARGET += lv2ttl
 
 lv2ttl: $(DPF_PATH)/utils/lv2_ttl_generator
 	@$(abspath $(DPF_PATH))/utils/generate-ttl.sh
@@ -188,11 +188,11 @@ endif
 
 ifeq ($(LINUX),true)
 LXHELPER_BIN = $(BUILD_DIR)/$(NAME)_ui
-WEBUI_TARGET += $(LXHELPER_BIN)
+APX_TARGET += $(LXHELPER_BIN)
 
-$(LXHELPER_BIN): $(WEBUI_SRC_PATH)/linux/helper.c $(WEBUI_SRC_PATH)/linux/extra/ipc.c
+$(LXHELPER_BIN): $(APX_SRC_PATH)/linux/helper.c $(APX_SRC_PATH)/linux/extra/ipc.c
 	@echo "Building helper..."
-	$(SILENT)$(CC) $^ -I$(WEBUI_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
+	$(SILENT)$(CC) $^ -I$(APX_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
 	@(test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME)-vst.so \
@@ -216,7 +216,7 @@ endif
 # macOS VST bundle and Objective-C++ compilation
 
 ifeq ($(MACOS),true)
-WEBUI_TARGET += macvst
+APX_TARGET += macvst
 
 macvst:
 	@$(abspath $(DPF_PATH))/utils/generate-vst-bundles.sh
@@ -238,7 +238,7 @@ endif
 # The standalone JACK program requires a "bare" DLL instead of assembly
 
 ifeq ($(WINDOWS),true)
-WEBUI_TARGET += copywindll
+APX_TARGET += copywindll
 
 copywindll:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
@@ -248,12 +248,12 @@ copywindll:
 	@(test -d $(TARGET_DIR)/$(NAME).lv2 \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
-		&& cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		&& cp $(APX_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		) || true
 	@(test -f $(TARGET_DIR)/$(NAME)-vst.dll \
 		&& mkdir -p $(TARGET_DIR)/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader \
-		&& cp $(WEBUI_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
+		&& cp $(APX_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
 		) || true
 
 clean: clean_windll
@@ -270,24 +270,24 @@ endif
 # ------------------------------------------------------------------------------
 # Always copy UI files
 
-WEBUI_TARGET += resources
+APX_TARGET += resources
 
 resources:
 	@echo "Copying web UI resource files..."
 	@(test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME).exe || test -f $(TARGET_DIR)/$(NAME)-vst.dll \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_res \
-		&& cp -r $(WEBUI_RES_DIR)/* $(TARGET_DIR)/$(NAME)_res \
+		&& cp -r $(APX_RES_DIR)/* $(TARGET_DIR)/$(NAME)_res \
 		) || true
 	@(test -d $(TARGET_DIR)/$(NAME).lv2 \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
-		&& cp -r $(WEBUI_RES_DIR)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
+		&& cp -r $(APX_RES_DIR)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
 		) || true
 	@(test -d $(TARGET_DIR)/$(NAME)-dssi \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
-		&& cp -r $(WEBUI_RES_DIR)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
+		&& cp -r $(APX_RES_DIR)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
 		) || true
 	@(test -d $(TARGET_DIR)/$(NAME).vst \
-		&& cp -r $(WEBUI_RES_DIR)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources \
+		&& cp -r $(APX_RES_DIR)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources \
 		) || true
 
 clean: clean_resources

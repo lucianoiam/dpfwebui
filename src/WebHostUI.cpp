@@ -66,7 +66,7 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     fWebWidget.setSize(fInitWidth, fInitHeight);
     fWebWidget.setBackgroundColor(fBackgroundColor);
     fWebWidget.setEventHandler(this);
-#ifdef WEBUI_PRINT_TRAFFIC
+#ifdef APX_PRINT_TRAFFIC
     fWebWidget.setPrintTraffic(true);
 #endif
 

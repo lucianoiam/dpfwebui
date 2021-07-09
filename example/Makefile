@@ -13,12 +13,12 @@ NAME = d_webgain
 # --------------------------------------------------------------
 # Project version, used for generating unique symbol names
 
-WEBUI_PROJECT_VERSION = 1
+APX_PROJECT_VERSION = 1
 
 # --------------------------------------------------------------
 # Web files location
 
-WEBUI_RES_DIR = ui
+APX_RES_DIR = ui
 
 # --------------------------------------------------------------
 # Files to build
@@ -63,6 +63,6 @@ endif
 
 TARGETS += vst
 
-all: $(TARGETS) $(WEBUI_TARGET)
+all: $(TARGETS) $(APX_TARGET)
 
 # --------------------------------------------------------------
