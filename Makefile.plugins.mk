@@ -285,7 +285,7 @@ endif
 
 # ------------------------------------------------------------------------------
 # Post build - Determine built targets
-# Cannot rely on $(TARGETS) because it is set *after* inclusion of this Makefile
+# User $(TARGETS) is only available set *after* inclusion of this Makefile
 
 TEST_LINUX_OR_MACOS_JACK = test -f $(TARGET_DIR)/$(NAME)
 TEST_WINDOWS_JACK = test -f $(TARGET_DIR)/$(NAME).exe
