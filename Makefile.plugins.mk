@@ -52,8 +52,6 @@ endif
 # ------------------------------------------------------------------------------
 # Add optional Wasm-based DSP source
 
-#FIXME
-WASM_DSP=true
 ifeq ($(WASM_DSP),true)
 APX_FILES_DSP = WasmHostPlugin.cpp
 
