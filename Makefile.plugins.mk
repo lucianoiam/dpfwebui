@@ -185,22 +185,24 @@ WASMER_PATH = $(APX_LIB_PATH)/wasmer
 
 TARGETS += $(WASMER_PATH)
 
+ifeq ($(LINUX_OR_MACOS),true)
 ifeq ($(LINUX),true)
-WASMER_ARCH = linux
+WASMER_PKG_FILE = wasmer-linux-amd64.tar.gz
 endif
 ifeq ($(MACOS),true)
-WASMER_ARCH = darwin
+WASMER_PKG_FILE = wasmer-darwin-amd64.tar.gz
+endif
+WASMER_URL = https://github.com/wasmerio/wasmer/releases/download/2.0.0/$(WASMER_PKG_FILE)
 endif
 ifeq ($(WINDOWS),true)
-WASMER_ARCH = windows
+# Wasmer official binary distribution only supports MSVC 
+WASMER_PKG_FILE = wasmer-mingw-amd64.tar.gz
+WASMER_URL = https://FIXME/$(WASMER_PKG_FILE)
 endif
 
-WASMER_PKG_FILE = wasmer-$(WASMER_ARCH)-amd64.tar.gz
-WASMER_URL = https://github.com/wasmerio/wasmer/releases/download/2.0.0/$(WASMER_PKG_FILE)
-
 $(WASMER_PATH):
-	@mkdir -p $(WASMER_PATH)
 	@wget -O /tmp/$(WASMER_PKG_FILE) $(WASMER_URL)
+	@mkdir -p $(WASMER_PATH)
 	@tar xzf /tmp/$(WASMER_PKG_FILE) -C $(WASMER_PATH)
 	@rm /tmp/$(WASMER_PKG_FILE)
 endif
