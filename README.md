@@ -4,10 +4,9 @@ Apices - Audio Plugins In C++ & ES6
 Raw power meets versatility.
 
 Apices extends [DPF](http://github.com/DISTRHO/DPF) to provide the necessary
-scaffold for creating audio plugins with potentially complex user interfaces,
-without wasting precious CPU cycles in the critical realtime audio processing
-stage. Plugins implement a web view for running the UI, which interacts with the
-audio host through a small factory shipped JavaScript class.
+scaffold for creating audio plugins with potentially complex user interfaces.
+Plugins implement a web view for running the UI, which interacts with the audio
+host through a small factory shipped JavaScript class.
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
@@ -20,10 +19,14 @@ audio host through a small factory shipped JavaScript class.
 * Based on DISTRHO Plugin Framework
 * C++ for DSP code
 * HTML / CSS / JS for UI development
-* VST2 / LV2 plugin formats and JACK standalone app (BETA)
+* VST2 / LV2 plugin formats
 * Linux / Mac / Windows
 * Just the powerful basics
 * BSD-like license
+
+There is ongoing work for optional support of
+[WebAssembly](https://webassembly.org) in DSP code, thus allowing to develop a
+plugin completely based on web technologies.
 
 ### Example UI code
 

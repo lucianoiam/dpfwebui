@@ -18,10 +18,10 @@
 
 USE_NAMESPACE_DISTRHO
 
-/*Plugin* DISTRHO::createPlugin()
+Plugin* DISTRHO::createPlugin()
 {
     return new WebGainExamplePlugin;
-}*/
+}
 
 WebGainExamplePlugin::WebGainExamplePlugin()
     : Plugin(1 /* parameterCount */, 0 /* programCount */, 0 /* stateCount */)
