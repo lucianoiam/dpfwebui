@@ -101,7 +101,7 @@ include $(DPF_PATH)/Makefile.plugins.mk
 # Add build flags for web UI dependencies
 
 BASE_FLAGS += -I$(APX_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
-              -DPROJECT_ID_HASH=$(shell echo $(NAME):$(APX_PROJECT_VERSION) | shasum -a 256 | head -c 8)
+              -DAPX_PROJECT_ID_HASH=$(shell echo $(NAME):$(APX_PROJECT_VERSION) | shasum -a 256 | head -c 8)
 ifeq ($(APX_PRINT_TRAFFIC),true)
 BASE_FLAGS += -DAPX_PRINT_TRAFFIC=1
 endif
