@@ -32,9 +32,9 @@ FILES_UI  = \
 # --------------------------------------------------------------
 # Do some magic
 
-DPF_BUILD_DIR = build/example
+DPF_BUILD_DIR = build
 
-include ../Makefile.plugins.mk
+include ../../Makefile.plugins.mk
 
 # --------------------------------------------------------------
 # Enable all possible plugin types
