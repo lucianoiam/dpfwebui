@@ -18,6 +18,7 @@
 
 #include "WasmHostPlugin.hpp"
 
+#define WASM_API_EXTERN // link to static lib
 #include "wasmer.h"
 
 #include "macro.h"
