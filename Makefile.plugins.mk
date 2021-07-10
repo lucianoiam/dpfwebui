@@ -238,9 +238,9 @@ endif
 # The standalone JACK program requires a "bare" DLL instead of assembly
 
 ifeq ($(WINDOWS),true)
-APX_TARGET += copywindll
+APX_TARGET += edgelib
 
-copywindll:
+edgelib:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
 	@(test -f $(TARGET_DIR)/$(NAME).exe \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR) \
@@ -256,9 +256,9 @@ copywindll:
 		&& cp $(APX_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
 		) || true
 
-clean: clean_windll
+clean: clean_edgelib
 
-clean_windll:
+clean_edgelib:
 	@rm -rf $(TARGET_DIR)/WebView2Loader
 
 $(BUILD_DIR)/%.rc.o: %.rc
