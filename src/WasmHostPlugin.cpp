@@ -18,21 +18,23 @@
 
 #include "WasmHostPlugin.hpp"
 
-#define WASM_API_EXTERN // link to static lib
-#include "wasmer.h"
-
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
+/*Plugin* DISTRHO::createPlugin()
+{
+    return new WasmHostPlugin;
+}*/
+
 WasmHostPlugin::WasmHostPlugin()
     : Plugin(1 /* parameterCount */, 0 /* programCount */, 0 /* stateCount */)
+    , fWasmEngine(0)
+    , fWasmStore(0)
+    , fWasmInstance(0)
+    , fWasmModule(0)
 {
-
-
-    APX_LOG_STDERR("START features.c");
-
-
+    // TODO: load from file
     const char *wat_string =
         "(module\n"
         "  (type $swap_t (func (param i32 i64) (result i64 i32)))\n"
@@ -46,52 +48,43 @@ WasmHostPlugin::WasmHostPlugin()
     wasm_byte_vec_t wasm_bytes;
     wat2wasm(&wat, &wasm_bytes);
     wasm_byte_vec_delete(&wat);
+    // --------
 
-    printf("Creating the config and the features...\n");
     wasm_config_t* config = wasm_config_new();
-
     wasmer_features_t* features = wasmer_features_new();
-    wasmer_features_multi_value(features, true); // enable multi-value!
+    wasmer_features_multi_value(features, true);
     wasm_config_set_features(config, features);
 
-    printf("Creating the store...\n");
-    wasm_engine_t* engine = wasm_engine_new_with_config(config);
-    wasm_store_t* store = wasm_store_new(engine);
+    fWasmEngine = wasm_engine_new_with_config(config);
+    fWasmStore = wasm_store_new(fWasmEngine);
 
-    printf("Compiling module...\n");
-    wasm_module_t* module = wasm_module_new(store, &wasm_bytes);
+    // TODO: load from file
+    fWasmModule = wasm_module_new(fWasmStore, &wasm_bytes); // compile
 
-    if (!module) {
-        printf("> Error compiling module!\n");
-
-        return;
+    if (!fWasmModule) {
+        APX_LOG_STDERR_COLOR("Error compiling Wasm module");
+        abort();
     }
 
     wasm_byte_vec_delete(&wasm_bytes);
 
-    printf("Instantiating module...\n");
     wasm_extern_vec_t imports = WASM_EMPTY_VEC;
     wasm_trap_t* traps = NULL;
-    wasm_instance_t* instance = wasm_instance_new(store, module, &imports,&traps);
+    fWasmInstance = wasm_instance_new(fWasmStore, fWasmModule, &imports, &traps);
 
-    if (!instance) {
-        printf("> Error instantiating module!\n");
-
-        return;
+    if (!fWasmInstance) {
+        APX_LOG_STDERR_COLOR("Error instantiating Wasm module");
+        abort();
     }
 
-    printf("Retrieving exports...\n");
-    wasm_extern_vec_t exports;
-    wasm_instance_exports(instance, &exports);
+    wasm_instance_exports(fWasmInstance, &fWasmExports);
 
-    if (exports.size == 0) {
-        printf("> Error accessing exports!\n");
-
-        return;
+    if (fWasmExports.size == 0) {
+        APX_LOG_STDERR_COLOR("Error accessing Wasm exports");
+        abort();
     }
 
-    printf("Executing `swap(1, 2)`...\n");
-    wasm_func_t* swap = wasm_extern_as_func(exports.data[0]);
+    wasm_func_t* swap = wasm_extern_as_func(fWasmExports.data[0]);
 
     wasm_val_t arguments[2] = { WASM_I32_VAL(1), WASM_I64_VAL(2) };
     wasm_val_t results[2] = { WASM_INIT_VAL, WASM_INIT_VAL };
@@ -101,29 +94,25 @@ WasmHostPlugin::WasmHostPlugin()
     wasm_trap_t* trap = wasm_func_call(swap, &arguments_as_array, &results_as_array);
 
     if (trap != NULL) {
-        printf("> Failed to call `swap`.\n");
-
-        return;
+        APX_LOG_STDERR_COLOR("Error calling Wasm function");
+        abort();
     }
 
     if (results[0].of.i64 != 2 || results[1].of.i32 != 1) {
         printf("> Multi-value failed.\n");
-
-        return;
+        abort();
     }
 
     printf("Got `(2, 1)`!\n");
+}
 
-    wasm_extern_vec_delete(&exports);
-    wasm_module_delete(module);
-    wasm_instance_delete(instance);
-    wasm_store_delete(store);
-    wasm_engine_delete(engine);
-
-
-    APX_LOG_STDERR("END features.c");
-
-
+WasmHostPlugin::~WasmHostPlugin()
+{
+    wasm_extern_vec_delete(&fWasmExports);
+    wasm_module_delete(fWasmModule);
+    wasm_instance_delete(fWasmInstance);
+    wasm_store_delete(fWasmStore);
+    wasm_engine_delete(fWasmEngine);
 }
 
 const char* WasmHostPlugin::getLabel() const
