@@ -19,9 +19,6 @@ DPF_GIT_BRANCH ?= develop
 ifeq ($(APX_PROJECT_VERSION),)
 $(error APX_PROJECT_VERSION is not set)
 endif
-ifneq ($(APX_WASM_DSP_PATH),)
-WASM_DSP = true
-endif
 ifeq ($(APX_WEB_UI_PATH),)
 $(error APX_WEB_UI_PATH is not set)
 endif
@@ -59,8 +56,12 @@ else ifneq ($(EXE_WRAPPER),)
 CAN_GENERATE_TTL = true
 endif
 
+ifneq ($(APX_WASM_DSP_PATH),)
+WASM_DSP = true
+endif
+
 # ------------------------------------------------------------------------------
-# Add optional support Wasm-based DSP
+# Add optional support for Wasm-based DSP
 
 ifeq ($(WASM_DSP),true)
 APX_FILES_DSP = WasmHostPlugin.cpp
@@ -295,7 +296,7 @@ endif
 
 # ------------------------------------------------------------------------------
 # Post build - Determine built targets
-# User $(TARGETS) is only available set *after* inclusion of this Makefile
+# User defined $(TARGETS) are only available *after* inclusion of this Makefile
 
 TEST_LINUX_OR_MACOS_JACK = test -f $(TARGET_DIR)/$(NAME)
 TEST_WINDOWS_JACK = test -f $(TARGET_DIR)/$(NAME).exe
