@@ -114,11 +114,7 @@ include $(DPF_PATH)/Makefile.plugins.mk
 
 ifeq ($(WASM_DSP),true)
 BASE_FLAGS += -I$(WASMER_PATH)/include
-
 LINK_FLAGS += -L$(WASMER_PATH)/lib -lwasmer
-ifeq ($(LINUX),true)
-LINK_FLAGS += '-Wl,-rpath,$$ORIGIN'
-endif
 ifeq ($(WINDOWS),true)
 LINK_FLAGS += -Wl,-Bstatic -lWs2_32 -lBcrypt -lUserenv
 endif
@@ -201,8 +197,13 @@ $(WASMER_PATH):
 	@wget -O /tmp/$(WASMER_PKG_FILE) $(WASMER_URL)
 	@mkdir -p $(WASMER_PATH)
 	@tar xzf /tmp/$(WASMER_PKG_FILE) -C $(WASMER_PATH)
-	# https://stackoverflow.com/questions/37038472/osx-how-to-statically-link-a-library-and-dynamically-link-the-standard-library
+# https://stackoverflow.com/questions/37038472/osx-how-to-statically-link-a-library-and-dynamically-link-the-standard-library
+ifeq ($(LINUX),true)
+	@mv $(WASMER_PATH)/lib/libwasmer.so $(WASMER_PATH)/lib/libwasmer.so.ignore
+endif
+ifeq ($(MACOS),true)
 	@mv $(WASMER_PATH)/lib/libwasmer.dylib $(WASMER_PATH)/lib/libwasmer.dylib.ignore
+endif
 	@rm /tmp/$(WASMER_PKG_FILE)
 endif
 
@@ -309,40 +310,6 @@ clean: clean_macvst
 
 clean_macvst:
 	@rm -rf $(TARGET_DIR)/$(NAME).vst
-endif
-
-# ------------------------------------------------------------------------------
-# Post build - Copy Wasmer shared library
-
-ifeq ($(WASM_DSP),true)
-#APX_TARGET += wasmerlib
-
-WASMER_LIB = libwasmer$(LIB_EXT)
-WASMER_LIB_PATH = $(WASMER_PATH)/lib/$(WASMER_LIB)
-
-wasmerlib:
-	@echo "Copying Wasmer shared library..."
-	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)_res \
-		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR) \
-		) || true
-	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
-		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR)/$(NAME).lv2 \
-		) || true
-	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
-		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR)/$(NAME)-dssi \
-		) || true
-	@($(TEST_MAC_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Libraries \
-		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR)/$(NAME).vst/Contents/Libraries \
-		) || true
-
-clean: clean_wasmerlib
-
-clean_wasmerlib:
-	@rm -rf $(TARGET_DIR)/$(WASMER_LIB)
 endif
 
 # ------------------------------------------------------------------------------
