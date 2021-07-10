@@ -32,7 +32,8 @@ FILES_UI  = \
 # --------------------------------------------------------------
 # Do some magic
 
-DPF_BUILD_DIR = build
+DPF_TARGET_DIR = ../../bin
+DPF_BUILD_DIR = ../../build/examples/webgain
 
 include ../../Makefile.plugins.mk
 
