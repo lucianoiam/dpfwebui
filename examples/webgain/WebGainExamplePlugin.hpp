@@ -49,7 +49,7 @@ public:
 
     int64_t getUniqueId() const override
     {
-        return d_cconst('D', 'P', 'w', 'g');
+        return d_cconst('A', 'X', 'w', 'g');
     }
 
     void  initParameter(uint32_t index, Parameter& parameter) override;

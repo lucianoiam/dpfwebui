@@ -20,13 +20,8 @@
 
 USE_NAMESPACE_DISTRHO
 
-/*Plugin* DISTRHO::createPlugin()
-{
-    return new WasmHostPlugin;
-}*/
-
-WasmHostPlugin::WasmHostPlugin()
-    : Plugin(1 /* parameterCount */, 0 /* programCount */, 0 /* stateCount */)
+WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
+    : Plugin(parameterCount, programCount, stateCount)
     , fWasmEngine(0)
     , fWasmStore(0)
     , fWasmInstance(0)

@@ -3,6 +3,9 @@ GENERAL
 
 - Make web UI support optional
 - generate-vst-bundles.sh and generate-ttl.sh expect hardcoded directory bin/
+- generate-vst-bundles.sh deletes all existing .vst folders, it is not safe to
+  call on a plugin basis. DPF only calls it from the main Makefile after all
+  examples has been built.
 - Allow calling Window::openFileBrowser() from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs
 - Launch system browser for HTTP links
