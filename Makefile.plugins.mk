@@ -119,11 +119,7 @@ LINK_FLAGS += -L$(WASMER_PATH)/lib -lwasmer
 ifeq ($(LINUX),true)
 LINK_FLAGS += '-Wl,-rpath,$$ORIGIN'
 endif
-ifeq ($(MACOS),true)
-LINK_FLAGS += -Wl,-rpath,@loader_path
-endif
 ifeq ($(WINDOWS),true)
-# No rpath on Windows, see assembly approach below
 LINK_FLAGS += -Wl,-Bstatic -lWs2_32 -lBcrypt -lUserenv
 endif
 endif
@@ -205,6 +201,8 @@ $(WASMER_PATH):
 	@wget -O /tmp/$(WASMER_PKG_FILE) $(WASMER_URL)
 	@mkdir -p $(WASMER_PATH)
 	@tar xzf /tmp/$(WASMER_PKG_FILE) -C $(WASMER_PATH)
+	# https://stackoverflow.com/questions/37038472/osx-how-to-statically-link-a-library-and-dynamically-link-the-standard-library
+	@mv $(WASMER_PATH)/lib/libwasmer.dylib $(WASMER_PATH)/lib/libwasmer.dylib.ignore
 	@rm /tmp/$(WASMER_PKG_FILE)
 endif
 
@@ -339,7 +337,6 @@ wasmerlib:
 	@($(TEST_MAC_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Libraries \
 		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR)/$(NAME).vst/Contents/Libraries \
-		&& install_name_tool -rpath @loader_path @loader_path/../Libraries $(TARGET_DIR)/$(NAME).vst/Contents/MacOS/$(NAME) \
 		) || true
 
 clean: clean_wasmerlib
