@@ -1,10 +1,9 @@
 GENERAL
 -------
 
+- Make web UI support optional
 - Allow calling Window::openFileBrowser() from JavaScript
-
 - Map alert(), confirm(), prompt() to native dialogs
-
 - Launch system browser for HTTP links
 
 
@@ -12,7 +11,6 @@ LINUX
 -----
 
 - DSSI plugin builds but UI does not open
-
 - UI not displaying at all on Gnome Shell even running on Xorg. XEmbed related?
 
 
@@ -20,9 +18,7 @@ MACOS
 -----
 
 - Patch for https://github.com/DISTRHO/DPF/issues/291 with tag MACSIZEBUG
-
 - Workaround for https://github.com/DISTRHO/DPF/issues/298 with tag MACJACKBUG
-
 - Live 10 sporadically refuses to quit from the Mac menu or by pressing Cmd+Q
   when a plugin window is open. Behavior not reproducible on REAPER.
 
@@ -31,20 +27,15 @@ WINDOWS
 -------
 
 - Workaround with tag WINSIZEBUG
-
 - LV2 plugin builds but UI does not open
-
 - Standalone version build fails for latest DPF develop but works for e28b677,
   temporarily disable JACK target.
-
 - Standalone window appears empty on startup until clicking the window border
-
 - Files plugin.manifest and WebView2Loader.manifest contain a hardcoded dummy
   version for WebView2Loader.dll. It probably needs to be set to the real DLL
   version the plugin is linking against, for the cases where the host or other
   plugins try to load a different WebView2Loader.dll (not yet tested)
   https://stackoverflow.com/questions/4396754/can-different-versions-of-dll-be-loaded-in-same-application
-
 - As of Jun '21 Windows does not ship with the Edge runtime pre-installed. The
   plugin detects this and pops a message box, most users will figure out what
   to do but still it would be nice to present a link to the installer page.
