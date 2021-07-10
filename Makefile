@@ -1,12 +1,12 @@
 # Filename: Makefile
 # Author:   oss@lucianoiam.com
 
-example:
-	@make -C example
+examples:
+	@make -C examples/webgain
 
 clean:
-	@make -C example clean
+	@make -C examples/webgain clean
 
-all: example
+all: examples
 
-.PHONY: example
+.PHONY: examples
