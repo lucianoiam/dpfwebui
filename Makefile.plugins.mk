@@ -314,7 +314,7 @@ APX_TARGET += macvst
 
 macvst:
 	@# TODO - generate-vst-bundles.sh expects hardcoded directory bin/
-	@cd $(APX_ROOT_PATH) && $(abspath $(DPF_PATH))/utils/generate-vst-bundles.sh
+	@cd $(DPF_TARGET_DIR)/.. && $(abspath $(DPF_PATH))/utils/generate-vst-bundles.sh
 
 clean: clean_macvst
 
@@ -330,7 +330,7 @@ APX_TARGET += lv2ttl
 
 lv2ttl: $(DPF_PATH)/utils/lv2_ttl_generator
 	@# TODO - generate-ttl.sh expects hardcoded directory bin/
-	@cd $(APX_ROOT_PATH) && $(abspath $(DPF_PATH))/utils/generate-ttl.sh
+	@cd $(DPF_TARGET_DIR)/.. && $(abspath $(DPF_PATH))/utils/generate-ttl.sh
 
 $(DPF_PATH)/utils/lv2_ttl_generator:
 	$(MAKE) -C $(DPF_PATH)/utils/lv2-ttl-generator
