@@ -186,16 +186,16 @@ endif
 WASMER_URL = https://github.com/wasmerio/wasmer/releases/download/2.0.0/$(WASMER_PKG_FILE)
 endif
 ifeq ($(WINDOWS),true)
-# Wasmer official binary distribution only supports MSVC 
+# Wasmer official binary distribution requires MSVC 
 WASMER_PKG_FILE = wasmer-mingw-amd64.tar.gz
-WASMER_URL = https://FIXME/$(WASMER_PKG_FILE)
+WASMER_URL = https://github.com/lucianoiam/apices/files/6795372/wasmer-mingw-amd64.tar.gz
 endif
 
+# https://stackoverflow.com/questions/37038472/osx-how-to-statically-link-a-library-and-dynamically-link-the-standard-library
 $(WASMER_PATH):
 	@wget -O /tmp/$(WASMER_PKG_FILE) $(WASMER_URL)
 	@mkdir -p $(WASMER_PATH)
 	@tar xzf /tmp/$(WASMER_PKG_FILE) -C $(WASMER_PATH)
-# https://stackoverflow.com/questions/37038472/osx-how-to-statically-link-a-library-and-dynamically-link-the-standard-library
 ifeq ($(LINUX),true)
 	@mv $(WASMER_PATH)/lib/libwasmer.so $(WASMER_PATH)/lib/libwasmer.so.ignore
 endif
