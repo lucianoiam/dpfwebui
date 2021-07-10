@@ -2,7 +2,6 @@
 # Makefile for DISTRHO Plugins #
 # ---------------------------- #
 # Created by falkTX
-# Web UI by lucianoiam
 #
 
 # --------------------------------------------------------------
