@@ -16,6 +16,11 @@ NAME = d_webgain
 APX_PROJECT_VERSION = 1
 
 # --------------------------------------------------------------
+# Web UI files location
+
+APX_WEB_UI_PATH = ui
+
+# --------------------------------------------------------------
 # Files to build
 
 FILES_DSP = \

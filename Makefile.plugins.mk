@@ -4,17 +4,27 @@
 # ------------------------------------------------------------------------------
 # Basic setup
 
-APX_ROOT_PATH       := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
-APX_SRC_PATH        ?= $(APX_ROOT_PATH)/src
-APX_LIB_PATH        ?= $(APX_ROOT_PATH)/lib
-APX_WASM_DSP_PATH   ?= dsp
-APX_WEB_UI_PATH     ?= ui
-APX_PROJECT_VERSION ?= 1
+APX_ROOT_PATH  := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+APX_SRC_PATH   ?= $(APX_ROOT_PATH)/src
+APX_LIB_PATH   ?= $(APX_ROOT_PATH)/lib
 
 DPF_PATH       ?= $(APX_ROOT_PATH)/dpf
 DPF_TARGET_DIR ?= bin
 DPF_BUILD_DIR  ?= build
 DPF_GIT_BRANCH ?= develop
+
+# ------------------------------------------------------------------------------
+# Check for mandatory variables
+
+ifeq ($(APX_PROJECT_VERSION),)
+$(error APX_PROJECT_VERSION is not set)
+endif
+ifneq ($(APX_WASM_DSP_PATH),)
+WASM_DSP = true
+endif
+ifeq ($(APX_WEB_UI_PATH),)
+$(error APX_WEB_UI_PATH is not set)
+endif
 
 # ------------------------------------------------------------------------------
 # Determine build environment
