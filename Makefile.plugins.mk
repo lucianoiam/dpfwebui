@@ -8,14 +8,13 @@ APX_PROJECT_VERSION ?= 1
 
 APX_ROOT_PATH  := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 APX_SRC_PATH   ?= $(APX_ROOT_PATH)/src
+APX_LIB_PATH   ?= $(APX_ROOT_PATH)/lib
 
 DPF_PATH       ?= $(APX_ROOT_PATH)/dpf
 DPF_TARGET_DIR ?= bin
 DPF_BUILD_DIR  ?= build
 
 DPF_GIT_BRANCH ?= develop
-
-WASMER_PATH    ?= $(APX_ROOT_PATH)/wasmer
 
 # ------------------------------------------------------------------------------
 # Determine build environment
@@ -51,7 +50,9 @@ CAN_GENERATE_TTL = true
 endif
 
 # ------------------------------------------------------------------------------
-# Add optional Wasm DSP source
+# Add optional Wasm-based DSP source
+
+#FIXME
 WASM_DSP=true
 ifeq ($(WASM_DSP),true)
 APX_FILES_DSP = WasmHostPlugin.cpp
@@ -60,7 +61,7 @@ FILES_DSP += $(APX_FILES_DSP:%=$(APX_SRC_PATH)/%)
 endif
 
 # ------------------------------------------------------------------------------
-# Add web UI source
+# Add web-based UI source
 
 APX_FILES_UI  = WebHostUI.cpp \
                 AbstractWebWidget.cpp \
@@ -109,19 +110,19 @@ endif
 include $(DPF_PATH)/Makefile.plugins.mk
 
 # ------------------------------------------------------------------------------
-# Add build flags for Wasm DSP dependencies
+# Add build flags for Wasm-based DSP dependencies
 
 ifeq ($(WASM_DSP),true)
-BASE_FLAGS += -I$(WASMER_PATH)
+BASE_FLAGS += -I$(WASMER_PATH)/include
 
-LINK_FLAGS += -lwasmer -L$(WASMER_PATH)
+LINK_FLAGS += -lwasmer -L$(WASMER_PATH)/lib
 ifeq ($(MACOS_OR_WINDOWS),true)
 LINK_FLAGS += -Wl,-rpath,@loader_path
 endif
 endif
 
 # ------------------------------------------------------------------------------
-# Add build flags for web UI dependencies
+# Add build flags for web-based UI dependencies
 
 BASE_FLAGS += -I$(APX_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
               -DAPX_PROJECT_ID_HASH=$(shell echo $(NAME):$(APX_PROJECT_VERSION) | shasum -a 256 | head -c 8)
@@ -153,7 +154,7 @@ info:
 	@echo "Target : $(DPF_TARGET_DIR)"
 
 # ------------------------------------------------------------------------------
-# Basic dependencies
+# Dependency - Build DPF Graphics Library
 
 TARGETS += $(DPF_PATH)/build/libdgl.a
 
@@ -170,10 +171,43 @@ ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_PATH)/distrho/src/DistrhoUI.cpp
 endif
 endif
 
+# ------------------------------------------------------------------------------
+# Dependency - Download Wasmer
+
+ifeq ($(WASM_DSP),true)
+WASMER_PATH = $(APX_LIB_PATH)/wasmer
+
+TARGETS += $(WASMER_PATH)
+
+ifeq ($(LINUX),true)
+WASMER_ARCH = linux
+endif
+ifeq ($(MACOS),true)
+WASMER_ARCH = darwin
+endif
 ifeq ($(WINDOWS),true)
-EDGE_WEBVIEW2_PATH = /opt/Microsoft.Web.WebView2
+WASMER_ARCH = windows
+endif
+
+WASMER_PKG_FILE = wasmer-$(WASMER_ARCH)-amd64.tar.gz
+WASMER_URL = https://github.com/wasmerio/wasmer/releases/download/2.0.0/$(WASMER_PKG_FILE)
+
+$(WASMER_PATH):
+	@mkdir -p $(WASMER_PATH)
+	@wget -O /tmp/$(WASMER_PKG_FILE) $(WASMER_URL)
+	@tar xzf /tmp/$(WASMER_PKG_FILE) -C $(WASMER_PATH)
+	@rm /tmp/$(WASMER_PKG_FILE)
+endif
+
+# ------------------------------------------------------------------------------
+# Dependency - Download Edge WebView2
+
+ifeq ($(WINDOWS),true)
+EDGE_WEBVIEW2_PATH = $(APX_LIB_PATH)/Microsoft.Web.WebView2
 
 TARGETS += $(EDGE_WEBVIEW2_PATH)
+
+NUGET_URL = https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 
 ifeq ($(MSYS_MINGW),true)
 $(EDGE_WEBVIEW2_PATH): /usr/bin/nuget.exe
@@ -184,17 +218,18 @@ $(error NuGet not found, try sudo apt install nuget or the equivalent for your d
 endif
 endif
 	@echo Downloading Edge WebView2 SDK...
+	@mkdir -p $(APX_LIB_PATH)
 	@eval $(MSYS_MINGW_SYMLINKS)
-	@nuget install Microsoft.Web.WebView2 -OutputDirectory /opt
+	@nuget install Microsoft.Web.WebView2 -OutputDirectory $(APX_LIB_PATH)
 	@ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH)
 
 /usr/bin/nuget.exe:
 	@echo Downloading NuGet...
-	@wget -P /usr/bin https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+	@wget -P /usr/bin $(NUGET_URL)
 endif
 
 # ------------------------------------------------------------------------------
-# Linux WebKitGTK helper binary
+# Linux only - Build WebKitGTK helper binary
 
 ifeq ($(LINUX),true)
 LXHELPER_BIN = $(BUILD_DIR)/$(NAME)_ui
@@ -223,7 +258,27 @@ clean_lxhelper:
 endif
 
 # ------------------------------------------------------------------------------
-# macOS VST bundle and Objective-C++ compilation
+# Mac only - Build Objective-C++ files
+
+ifeq ($(MACOS),true)
+$(BUILD_DIR)/%.mm.o: %.mm
+	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	@echo "Compiling $<"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
+endif
+
+# ------------------------------------------------------------------------------
+# Windows only - Build resource files
+
+ifeq ($(WINDOWS),true)
+$(BUILD_DIR)/%.rc.o: %.rc
+	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	@echo "Compiling $<"
+	@windres --input $< --output $@ --output-format=coff
+endif
+
+# ------------------------------------------------------------------------------
+# Post build - Create macOS VST bundle
 
 ifeq ($(MACOS),true)
 APX_TARGET += macvst
@@ -235,23 +290,18 @@ clean: clean_macvst
 
 clean_macvst:
 	@rm -rf $(TARGET_DIR)/$(NAME).vst
-
-$(BUILD_DIR)/%.mm.o: %.mm
-	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
-	@echo "Compiling $<"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 endif
 
 # ------------------------------------------------------------------------------
-# Copy Wasmer shared library
+# Post build - Copy Wasmer shared library
 
 ifeq ($(WASM_DSP),true)
-APX_TARGET += wasmer
+APX_TARGET += wasmerlib
 
 WASMER_LIB = libwasmer$(LIB_EXT)
-WASMER_LIB_PATH = $(WASMER_PATH)/$(WASMER_LIB)
+WASMER_LIB_PATH = $(WASMER_PATH)/lib/$(WASMER_LIB)
 
-wasmer:
+wasmerlib:
 	@echo "Copying Wasmer shared library..."
 	@(test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME).exe || test -f $(TARGET_DIR)/$(NAME)-vst.dll \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_res \
@@ -271,14 +321,14 @@ wasmer:
 		&& install_name_tool -rpath @loader_path @loader_path/../Libraries $(TARGET_DIR)/$(NAME).vst/Contents/MacOS/$(NAME) \
 		) || true
 
-clean: clean_wasmer
+clean: clean_wasmerlib
 
-clean_wasmer:
+clean_wasmerlib:
 	@rm -rf $(TARGET_DIR)/$(WASMER_LIB)
 endif
 
 # ------------------------------------------------------------------------------
-# LV2 manifest files
+# Post build - Create LV2 manifest files
 
 ifeq ($(CAN_GENERATE_TTL),true)
 APX_TARGET += lv2ttl
@@ -291,9 +341,9 @@ $(DPF_PATH)/utils/lv2_ttl_generator:
 endif
 
 # ------------------------------------------------------------------------------
-# Windows requires compiling resource files and linking to Edge WebView2
-# This Makefile version is too lazy to support 32-bit but DLL is also available
-# The standalone JACK program requires a "bare" DLL instead of assembly
+# Post build - Copy Windows Edge WebView2 DLL
+# This Makefile version is too lazy to support 32-bit but DLL is also available.
+# The "bare" DLL is enough for the standalone JACK target, no need for assembly.
 
 ifeq ($(WINDOWS),true)
 APX_TARGET += edgelib
@@ -318,15 +368,10 @@ clean: clean_edgelib
 
 clean_edgelib:
 	@rm -rf $(TARGET_DIR)/WebView2Loader
-
-$(BUILD_DIR)/%.rc.o: %.rc
-	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
-	@echo "Compiling $<"
-	@windres --input $< --output $@ --output-format=coff
 endif
 
 # ------------------------------------------------------------------------------
-# Always copy UI files
+# Post build - Always copy UI files
 
 APX_TARGET += resources
 
