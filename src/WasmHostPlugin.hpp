@@ -17,6 +17,9 @@
 #ifndef WASMHOSTPLUGIN_HPP
 #define WASMHOSTPLUGIN_HPP
 
+#define WASM_API_EXTERN // link to static lib on win32
+#include "wasmer.h"
+
 #include "DistrhoPlugin.hpp"
 
 START_NAMESPACE_DISTRHO
@@ -25,7 +28,7 @@ class WasmHostPlugin : public Plugin
 {
 public:
     WasmHostPlugin();
-    ~WasmHostPlugin() {};
+    ~WasmHostPlugin();
 
     const char* getLabel() const override;
     const char* getMaker() const override;
@@ -47,6 +50,13 @@ public:
 #endif
 
     void run(const float** inputs, float** outputs, uint32_t frames) override;
+
+private:
+    wasm_engine_t*    fWasmEngine;
+    wasm_store_t*     fWasmStore;
+    wasm_instance_t*  fWasmInstance;
+    wasm_module_t*    fWasmModule;
+    wasm_extern_vec_t fWasmExports;
 
 };
 
