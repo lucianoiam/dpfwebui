@@ -359,7 +359,7 @@ endif
 APX_TARGET += resources
 
 resources:
-	@echo "Copying web UI resource files..."
+	@echo "Copying resource files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_res \
 		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME)_res \

@@ -14,12 +14,12 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-class StubWebUI {
+class StubUI {
 
     static installIfNeeded() {
-        if (typeof(DISTRHO_WebUI) == 'undefined') {
-            console.log('DISTRHO_WebUI is not defined, installing stub')
-            window.DISTRHO_WebUI = StubWebUI;
+        if (typeof(DISTRHO_UI) == 'undefined') {
+            console.log('DISTRHO_UI is not defined, installing stub')
+            window.DISTRHO_UI = StubUI;
         }
     }
 
@@ -85,4 +85,4 @@ class StubWebUI {
 
 }
 
-StubWebUI.installIfNeeded();
+StubUI.installIfNeeded();

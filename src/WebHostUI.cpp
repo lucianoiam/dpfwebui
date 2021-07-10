@@ -71,11 +71,11 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
 #endif
 
     String js = String(
-#include "js/webui.js"
+#include "js/ui.js"
     );
     fWebWidget.injectScript(js);
 
-    String url = "file://" + platform::getResourcePath() + "/index.html";
+    String url = "file://" + platform::getResourcePath() + "/ui/index.html";
     fWebWidget.navigate(url);
 }
 
@@ -101,14 +101,14 @@ void WebHostUI::uiReshape(uint width, uint height)
 
 void WebHostUI::parameterChanged(uint32_t index, float value)
 {
-    webPostMessage({"WebUI", "parameterChanged", index, value});
+    webPostMessage({"UI", "parameterChanged", index, value});
 }
 
 #if (DISTRHO_PLUGIN_WANT_STATE == 1)
 
 void WebHostUI::stateChanged(const char* key, const char* value)
 {
-    webPostMessage({"WebUI", "stateChanged", key, value});
+    webPostMessage({"UI", "stateChanged", key, value});
 }
 
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
@@ -162,7 +162,7 @@ void WebHostUI::handleWebWidgetContentLoadFinished()
 
 void WebHostUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& args)
 {
-    if (args[0].getString() != "WebUI") {
+    if (args[0].getString() != "UI") {
         webMessageReceived(args); // passthrough
         return;
     }
@@ -183,16 +183,16 @@ void WebHostUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& ar
         setKeyboardFocus(static_cast<bool>(args[kArg0].getBool()));
 
     } else if (method == "getInitWidth") {
-        webPostMessage({"WebUI", "getInitWidth", static_cast<double>(getInitWidth())});
+        webPostMessage({"UI", "getInitWidth", static_cast<double>(getInitWidth())});
 
     } else if (method == "getInitHeight") {
-        webPostMessage({"WebUI", "getInitHeight", static_cast<double>(getInitHeight())});
+        webPostMessage({"UI", "getInitHeight", static_cast<double>(getInitHeight())});
 
     } else if (method == "getWidth") {
-        webPostMessage({"WebUI", "getWidth", static_cast<double>(getWidth())});
+        webPostMessage({"UI", "getWidth", static_cast<double>(getWidth())});
 
     } else if (method == "getHeight") {
-        webPostMessage({"WebUI", "getHeight", static_cast<double>(getHeight())});
+        webPostMessage({"UI", "getHeight", static_cast<double>(getHeight())});
 
     } else if ((method == "setWidth") && (argc == 1)) {
         setWidth(static_cast<uint>(args[kArg0].getDouble()));
@@ -201,7 +201,7 @@ void WebHostUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& ar
         setHeight(static_cast<uint>(args[kArg0].getDouble()));
 
     } else if (method == "isResizable") {
-        webPostMessage({"WebUI", "isResizable", isResizable()});
+        webPostMessage({"UI", "isResizable", isResizable()});
 
     } else if ((method == "setSize") && (argc == 2)) {
         setSize(

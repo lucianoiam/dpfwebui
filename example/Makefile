@@ -18,7 +18,7 @@ APX_PROJECT_VERSION = 1
 # --------------------------------------------------------------
 # Web files location
 
-APX_RESOURCES_DIR = ui
+APX_RESOURCES_DIR = res
 
 # --------------------------------------------------------------
 # Files to build
