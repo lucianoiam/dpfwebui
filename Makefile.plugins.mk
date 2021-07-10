@@ -50,7 +50,7 @@ CAN_GENERATE_TTL = true
 endif
 
 # ------------------------------------------------------------------------------
-# Add optional Wasm-based DSP source
+# Add optional support Wasm-based DSP
 
 ifeq ($(WASM_DSP),true)
 APX_FILES_DSP = WasmHostPlugin.cpp

@@ -10,4 +10,3 @@ clean:
 all: example
 
 .PHONY: example
-
