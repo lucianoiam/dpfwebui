@@ -7,7 +7,8 @@
 APX_ROOT_PATH       := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 APX_SRC_PATH        ?= $(APX_ROOT_PATH)/src
 APX_LIB_PATH        ?= $(APX_ROOT_PATH)/lib
-APX_RESOURCES_PATH  ?= .
+APX_WASM_DSP_PATH   ?= dsp
+APX_WEB_UI_PATH     ?= ui
 APX_PROJECT_VERSION ?= 1
 
 DPF_PATH       ?= $(APX_ROOT_PATH)/dpf
@@ -360,19 +361,20 @@ APX_TARGET += resources
 resources:
 	@echo "Copying resource files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)_res \
-		&& cp -r $(APX_RESOURCES_PATH)/ui $(TARGET_DIR)/$(NAME)_res \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/ui \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_res/ui \
 		) || true
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
-		&& cp -r $(APX_RESOURCES_PATH)/ui $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/ui \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/ui \
 		) || true
 	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
-		&& cp -r $(APX_RESOURCES_PATH)/ui $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/ui \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/ui \
 		) || true
 	@($(TEST_MAC_VST) \
-		&& cp -r $(APX_RESOURCES_PATH)/ui $(TARGET_DIR)/$(NAME).vst/Contents/Resources \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
 		) || true
 
 clean: clean_resources
