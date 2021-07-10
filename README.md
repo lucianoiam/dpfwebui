@@ -31,7 +31,7 @@ plugin completely based on web technologies.
 ### Example UI code
 
 ```JavaScript
-class MyPluginUI extends DISTRHO_WebUI {
+class MyPluginUI extends DISTRHO_UI {
 
     constructor() {
     	super();

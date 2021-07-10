@@ -17,13 +17,13 @@
  */
  */
 
-class DISTRHO_WebUI {
+class DISTRHO_UI {
 
     constructor() {
         this._resolve = {};
 
         window.webviewHost.addMessageListener((args) => {
-            if (args[0] != 'WebUI') {
+            if (args[0] != 'UI') {
                 this.messageReceived(args); // passthrough
                 return;
             }
@@ -127,7 +127,7 @@ class DISTRHO_WebUI {
 
     // Helper for calling UI methods
     _call(method, ...args) {
-        this.postMessage('WebUI', method, ...args)
+        this.postMessage('UI', method, ...args)
     }
 
     // Helper for supporting synchronous calls using promises
@@ -143,4 +143,4 @@ class DISTRHO_WebUI {
 
 }
 
-)WEBUI_JS"
+)UI_JS"
