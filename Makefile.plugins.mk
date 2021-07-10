@@ -115,7 +115,7 @@ include $(DPF_PATH)/Makefile.plugins.mk
 ifeq ($(WASM_DSP),true)
 BASE_FLAGS += -I$(WASMER_PATH)/include
 
-LINK_FLAGS += -lwasmer -L$(WASMER_PATH)/lib
+LINK_FLAGS += -L$(WASMER_PATH)/lib -lwasmer
 ifeq ($(LINUX),true)
 LINK_FLAGS += '-Wl,-rpath,$$ORIGIN'
 endif
@@ -124,6 +124,7 @@ LINK_FLAGS += -Wl,-rpath,@loader_path
 endif
 ifeq ($(WINDOWS),true)
 # No rpath on Windows, see assembly approach below
+LINK_FLAGS += -Wl,-Bstatic -lWs2_32 -lBcrypt -lUserenv
 endif
 endif
 
@@ -316,7 +317,7 @@ endif
 # Post build - Copy Wasmer shared library
 
 ifeq ($(WASM_DSP),true)
-APX_TARGET += wasmerlib
+#APX_TARGET += wasmerlib
 
 WASMER_LIB = libwasmer$(LIB_EXT)
 WASMER_LIB_PATH = $(WASMER_PATH)/lib/$(WASMER_LIB)

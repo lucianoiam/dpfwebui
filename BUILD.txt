@@ -32,3 +32,22 @@ NOTES FOR WINDOWS
 
 3. For running the plugin, the Microsoft Edge WebView2 Runtime must be installed
    on the host machine https://developer.microsoft.com/microsoft-edge/webview2
+
+4. The official binary distribution of Wasmer requires MSVC. Compiling Wasmer
+   is a complex process beyond the scope of this project. To solve the issue
+   the Makefile downloads a custom MinGW compatible build. If building Wasmer
+   from source is needed, here are the instructions:
+
+   https://stackoverflow.com/questions/47379214/step-by-step-instruction-to
+   -install-rust-and-cargo-for-mingw-with-msys2
+
+   - wget -O rustup-init.exe https://win.rustup.rs/
+   - ./rustup-init   (select host triple: x86_64-pc-windows-gnu)
+   - export PATH="/c/Users/< USERNAME >/.cargo/bin:$PATH"
+   - git clone https://github.com/wasmerio/wasmer
+   - make -C wasmer
+   - mkdir -p apices/lib/wasmer/include
+   - cp wasmer/lib/c-api/tests/wasm-c-api/include/wasm.h apices/lib/wasmer/include
+   - cp wasmer/lib/c-api/wasmer.h apices/lib/wasmer/include
+   - mkdir -p apices/lib/wasmer/lib
+   - cp wasmer/target/release/libwasmer.a apices/lib/wasmer/lib
