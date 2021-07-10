@@ -16,11 +16,6 @@ NAME = d_webgain
 APX_PROJECT_VERSION = 1
 
 # --------------------------------------------------------------
-# Web files location
-
-APX_RESOURCES_DIR = res
-
-# --------------------------------------------------------------
 # Files to build
 
 FILES_DSP = \
