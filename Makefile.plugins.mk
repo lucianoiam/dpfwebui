@@ -367,12 +367,35 @@ clean_edgelib:
 endif
 
 # ------------------------------------------------------------------------------
-# Post build - Always copy UI files
+# Post build - Always copy resource files
 
-APX_TARGET += resources
+ifneq ($(WASM_DSP),)
+APX_TARGET += resourcesdsp
 
-resources:
-	@echo "Copying resource files..."
+resourcesdsp:
+	@echo "Copying DSP resource files..."
+	@($(TEST_JACK_OR_WINDOWS_VST) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/dsp \
+		&& cp -r $(APX_WASM_DSP_PATH)/* $(TARGET_DIR)/$(NAME)_res/dsp \
+		) || true
+	@($(TEST_LV2) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/dsp \
+		&& cp -r $(APX_WASM_DSP_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/dsp \
+		) || true
+	@($(TEST_DSSI) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/dsp \
+		&& cp -r $(APX_WASM_DSP_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/dsp \
+		) || true
+	@($(TEST_MAC_VST) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
+		&& cp -r $(APX_WASM_DSP_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
+		) || true
+endif
+
+APX_TARGET += resourcesui
+
+resourcesui:
+	@echo "Copying UI resource files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/ui \
 		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_res/ui \
