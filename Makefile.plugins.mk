@@ -4,16 +4,15 @@
 # ------------------------------------------------------------------------------
 # Basic setup
 
+APX_ROOT_PATH       := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+APX_SRC_PATH        ?= $(APX_ROOT_PATH)/src
+APX_LIB_PATH        ?= $(APX_ROOT_PATH)/lib
+APX_RESOURCES_PATH  ?= .
 APX_PROJECT_VERSION ?= 1
-
-APX_ROOT_PATH  := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
-APX_SRC_PATH   ?= $(APX_ROOT_PATH)/src
-APX_LIB_PATH   ?= $(APX_ROOT_PATH)/lib
 
 DPF_PATH       ?= $(APX_ROOT_PATH)/dpf
 DPF_TARGET_DIR ?= bin
 DPF_BUILD_DIR  ?= build
-
 DPF_GIT_BRANCH ?= develop
 
 # ------------------------------------------------------------------------------
@@ -362,18 +361,18 @@ resources:
 	@echo "Copying resource files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_res \
-		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME)_res \
+		&& cp -r $(APX_RESOURCES_PATH)/ui $(TARGET_DIR)/$(NAME)_res \
 		) || true
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
-		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
+		&& cp -r $(APX_RESOURCES_PATH)/ui $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
 		) || true
 	@($(TEST_DSSI) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
-		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
+		&& cp -r $(APX_RESOURCES_PATH)/ui $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
 		) || true
 	@($(TEST_MAC_VST) \
-		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources \
+		&& cp -r $(APX_RESOURCES_PATH)/ui $(TARGET_DIR)/$(NAME).vst/Contents/Resources \
 		) || true
 
 clean: clean_resources
