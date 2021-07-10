@@ -3,7 +3,7 @@
 
 # ------------------------------------------------------------------------------
 # Basic setup
-
+VERBOSE=true
 APX_PROJECT_VERSION ?= 1
 
 APX_ROOT_PATH  := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
@@ -116,8 +116,14 @@ ifeq ($(WASM_DSP),true)
 BASE_FLAGS += -I$(WASMER_PATH)/include
 
 LINK_FLAGS += -lwasmer -L$(WASMER_PATH)/lib
-ifeq ($(MACOS_OR_WINDOWS),true)
+ifeq ($(LINUX),true)
+LINK_FLAGS += '-Wl,-rpath,$$ORIGIN'
+endif
+ifeq ($(MACOS),true)
 LINK_FLAGS += -Wl,-rpath,@loader_path
+endif
+ifeq ($(WINDOWS),true)
+# No rpath on Windows, see assembly approach below
 endif
 endif
 
