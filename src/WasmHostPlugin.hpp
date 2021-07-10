@@ -29,7 +29,7 @@ START_NAMESPACE_DISTRHO
 class WasmHostPlugin : public Plugin
 {
 public:
-    WasmHostPlugin();
+    WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount);
     ~WasmHostPlugin();
 
     const char* getLabel() const override;
