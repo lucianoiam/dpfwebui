@@ -51,7 +51,7 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     // for initializing Edge WebView2, instead of the plugin window handle that
     // causes some hosts to hang when opening the UI, e.g. Carla.
     WCHAR className[256];
-    swprintf(className, sizeof(className), L"EdgeWebWidget_%s_%d", XSTR(PROJECT_ID_HASH), std::rand());
+    swprintf(className, sizeof(className), L"EdgeWebWidget_%s_%d", XSTR(APX_PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
     fHelperClass.cbSize = sizeof(WNDCLASSEX);
     fHelperClass.cbClsExtra = sizeof(LONG_PTR);
