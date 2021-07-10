@@ -2,6 +2,7 @@ GENERAL
 -------
 
 - Make web UI support optional
+- generate-vst-bundles.sh and generate-ttl.sh expect hardcoded directory bin/
 - Allow calling Window::openFileBrowser() from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs
 - Launch system browser for HTTP links
