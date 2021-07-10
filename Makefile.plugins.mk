@@ -3,7 +3,7 @@
 
 # ------------------------------------------------------------------------------
 # Basic setup
-VERBOSE=true
+
 APX_PROJECT_VERSION ?= 1
 
 APX_ROOT_PATH  := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
@@ -284,6 +284,18 @@ $(BUILD_DIR)/%.rc.o: %.rc
 endif
 
 # ------------------------------------------------------------------------------
+# Post build - Determine built targets
+# Cannot rely on $(TARGETS) because it is set *after* inclusion of this Makefile
+
+TEST_LINUX_OR_MACOS_JACK = test -f $(TARGET_DIR)/$(NAME)
+TEST_WINDOWS_JACK = test -f $(TARGET_DIR)/$(NAME).exe
+TEST_WINDOWS_VST = test -f $(TARGET_DIR)/$(NAME)-vst.dll
+TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) || $(TEST_WINDOWS_VST) 
+TEST_LV2 = test -d $(TARGET_DIR)/$(NAME).lv2
+TEST_DSSI = test -d $(TARGET_DIR)/$(NAME)-dssi
+TEST_MAC_VST = test -d $(TARGET_DIR)/$(NAME).vst
+
+# ------------------------------------------------------------------------------
 # Post build - Create macOS VST bundle
 
 ifeq ($(MACOS),true)
@@ -309,19 +321,19 @@ WASMER_LIB_PATH = $(WASMER_PATH)/lib/$(WASMER_LIB)
 
 wasmerlib:
 	@echo "Copying Wasmer shared library..."
-	@(test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME).exe || test -f $(TARGET_DIR)/$(NAME)-vst.dll \
+	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_res \
 		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR) \
 		) || true
-	@(test -d $(TARGET_DIR)/$(NAME).lv2 \
+	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
 		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR)/$(NAME).lv2 \
 		) || true
-	@(test -d $(TARGET_DIR)/$(NAME)-dssi \
+	@($(TEST_DSSI) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
 		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR)/$(NAME)-dssi \
 		) || true
-	@(test -d $(TARGET_DIR)/$(NAME).vst \
+	@($(TEST_MAC_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Libraries \
 		&& cp -r $(WASMER_LIB_PATH) $(TARGET_DIR)/$(NAME).vst/Contents/Libraries \
 		&& install_name_tool -rpath @loader_path @loader_path/../Libraries $(TARGET_DIR)/$(NAME).vst/Contents/MacOS/$(NAME) \
@@ -356,15 +368,15 @@ APX_TARGET += edgelib
 
 edgelib:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
-	@(test -f $(TARGET_DIR)/$(NAME).exe \
+	@($(TEST_WINDOWS_JACK) \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR) \
 		) || true
-	@(test -d $(TARGET_DIR)/$(NAME).lv2 \
+	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		&& cp $(APX_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		) || true
-	@(test -f $(TARGET_DIR)/$(NAME)-vst.dll \
+	@($(TEST_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader \
 		&& cp $(APX_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
@@ -383,19 +395,19 @@ APX_TARGET += resources
 
 resources:
 	@echo "Copying web UI resource files..."
-	@(test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME).exe || test -f $(TARGET_DIR)/$(NAME)-vst.dll \
+	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_res \
 		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME)_res \
 		) || true
-	@(test -d $(TARGET_DIR)/$(NAME).lv2 \
+	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
 		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res \
 		) || true
-	@(test -d $(TARGET_DIR)/$(NAME)-dssi \
+	@($(TEST_DSSI) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
 		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res \
 		) || true
-	@(test -d $(TARGET_DIR)/$(NAME).vst \
+	@($(TEST_MAC_VST) \
 		&& cp -r $(APX_RESOURCES_DIR)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources \
 		) || true
 
