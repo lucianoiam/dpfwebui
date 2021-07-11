@@ -13,6 +13,10 @@ DPF_TARGET_DIR ?= bin
 DPF_BUILD_DIR  ?= build
 DPF_GIT_BRANCH ?= develop
 
+ifneq ($(APX_WASM_DSP_PATH),)
+WASM_DSP = true
+endif
+
 # ------------------------------------------------------------------------------
 # Check for mandatory variables
 
@@ -50,21 +54,21 @@ MSYS_MINGW_SYMLINKS = export MSYS=winsymlinks:nativestrict
 endif
 endif
 
-ifneq ($(CROSS_COMPILING),true)
-CAN_GENERATE_TTL = true
-else ifneq ($(EXE_WRAPPER),)
-CAN_GENERATE_TTL = true
-endif
-
-ifneq ($(APX_WASM_DSP_PATH),)
-WASM_DSP = true
-endif
-
 # ------------------------------------------------------------------------------
 # Add optional support for Wasm-based DSP
 
 ifeq ($(WASM_DSP),true)
-APX_FILES_DSP = WasmHostPlugin.cpp
+APX_FILES_DSP = WasmHostPlugin.cpp \
+                Platform.cpp
+ifeq ($(LINUX),true)
+APX_FILES_DSP += linux/PlatformLinux.cpp
+endif
+ifeq ($(MACOS),true)
+APX_FILES_DSP += macos/PlatformMac.mm
+endif
+ifeq ($(WINDOWS),true)
+APX_FILES_DSP += windows/PlatformWindows.cpp
+endif
 
 FILES_DSP += $(APX_FILES_DSP:%=$(APX_SRC_PATH)/%)
 endif
@@ -124,6 +128,9 @@ include $(DPF_PATH)/Makefile.plugins.mk
 ifeq ($(WASM_DSP),true)
 BASE_FLAGS += -I$(WASMER_PATH)/include
 LINK_FLAGS += -L$(WASMER_PATH)/lib -lwasmer
+ifeq ($(MACOS),true)
+LINK_FLAGS += -framework AppKit 
+endif
 ifeq ($(WINDOWS),true)
 LINK_FLAGS += -Wl,-Bstatic -lWs2_32 -lBcrypt -lUserenv
 endif
@@ -323,20 +330,6 @@ clean_macvst:
 endif
 
 # ------------------------------------------------------------------------------
-# Post build - Create LV2 manifest files
-
-ifeq ($(CAN_GENERATE_TTL),true)
-APX_TARGET += lv2ttl
-
-lv2ttl: $(DPF_PATH)/utils/lv2_ttl_generator
-	@# TODO - generate-ttl.sh expects hardcoded directory bin/
-	@cd $(DPF_TARGET_DIR)/.. && $(abspath $(DPF_PATH))/utils/generate-ttl.sh
-
-$(DPF_PATH)/utils/lv2_ttl_generator:
-	$(MAKE) -C $(DPF_PATH)/utils/lv2-ttl-generator
-endif
-
-# ------------------------------------------------------------------------------
 # Post build - Copy Windows Edge WebView2 DLL
 # This Makefile version is too lazy to support 32-bit but DLL is also available.
 # The "bare" DLL is enough for the standalone JACK target, no need for assembly.
@@ -417,3 +410,23 @@ clean: clean_resources
 
 clean_resources:
 	@rm -rf $(TARGET_DIR)/$(NAME)_res
+
+# ------------------------------------------------------------------------------
+# Post build - Create LV2 manifest files
+
+ifneq ($(CROSS_COMPILING),true)
+CAN_GENERATE_TTL = true
+else ifneq ($(EXE_WRAPPER),)
+CAN_GENERATE_TTL = true
+endif
+
+ifeq ($(CAN_GENERATE_TTL),true)
+APX_TARGET += lv2ttl
+
+lv2ttl: $(DPF_PATH)/utils/lv2_ttl_generator
+	@# TODO - generate-ttl.sh expects hardcoded directory bin/
+	@cd $(DPF_TARGET_DIR)/.. && $(abspath $(DPF_PATH))/utils/generate-ttl.sh
+
+$(DPF_PATH)/utils/lv2_ttl_generator:
+	$(MAKE) -C $(DPF_PATH)/utils/lv2-ttl-generator
+endif

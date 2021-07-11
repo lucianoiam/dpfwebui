@@ -37,7 +37,7 @@ FILES_UI  = \
 # Do some magic
 
 DPF_TARGET_DIR = ../../bin
-DPF_BUILD_DIR = ../../build/examples/wasmtest
+DPF_BUILD_DIR = ../../build/wasmtest/1/2
 
 include ../../Makefile.plugins.mk
 
