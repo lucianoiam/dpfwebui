@@ -58,8 +58,8 @@ endif
 # Add optional support for Wasm-based DSP
 
 ifeq ($(WASM_DSP),true)
-APX_FILES_DSP = WasmHostPlugin.cpp \
-                Platform.cpp
+APX_FILES_DSP  = WasmHostPlugin.cpp \
+                 Platform.cpp
 ifeq ($(LINUX),true)
 APX_FILES_DSP += linux/PlatformLinux.cpp
 endif
