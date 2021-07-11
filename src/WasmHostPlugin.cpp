@@ -37,13 +37,13 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     }
 
     fseek(file, 0L, SEEK_END);
-    size_t file_size = ftell(file);
+    size_t fileSize = ftell(file);
     fseek(file, 0L, SEEK_SET);
 
-    wasm_byte_vec_t wasm_bytes;
-    wasm_byte_vec_new_uninitialized(&wasm_bytes, file_size);
+    wasm_byte_vec_t fileBytes;
+    wasm_byte_vec_new_uninitialized(&fileBytes, fileSize);
     
-    if (fread(wasm_bytes.data, file_size, 1, file) != 1) {
+    if (fread(fileBytes.data, fileSize, 1, file) != 1) {
         fclose(file);
         APX_LOG_STDERR_COLOR("Error loading Wasm module");
         return;
@@ -51,21 +51,22 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     fclose(file);
 
-    wasm_config_t* config = wasm_config_new();
+    /*wasm_config_t* config = wasm_config_new();
     wasmer_features_t* features = wasmer_features_new();
     wasmer_features_multi_value(features, true);
     wasm_config_set_features(config, features);
+    fWasmEngine = wasm_engine_new_with_config(config);*/
 
-    fWasmEngine = wasm_engine_new_with_config(config);
+    fWasmEngine = wasm_engine_new();
     fWasmStore = wasm_store_new(fWasmEngine);
-    fWasmModule = wasm_module_new(fWasmStore, &wasm_bytes); // compile
+    fWasmModule = wasm_module_new(fWasmStore, &fileBytes); // compile
 
     if (!fWasmModule) {
         APX_LOG_STDERR_COLOR("Error compiling Wasm module");
         return;
     }
 
-    wasm_byte_vec_delete(&wasm_bytes);
+    wasm_byte_vec_delete(&fileBytes);
 
     wasm_extern_vec_t imports = WASM_EMPTY_VEC;
     wasm_trap_t* traps = NULL;
@@ -85,29 +86,28 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     }
 
 
-    // Test function
+    // Test: call Wasm getLabel() compiled from TypeScript
 
-    wasm_func_t* swap = wasm_extern_as_func(fWasmExports.data[0]);
+    wasm_func_t* getLabel = wasm_extern_as_func(fWasmExports.data[0]);
+    wasm_memory_t* memory = wasm_extern_as_memory(fWasmExports.data[1]);
 
-    wasm_val_t arguments[2] = { WASM_I32_VAL(1), WASM_I64_VAL(2) };
-    wasm_val_t results[2] = { WASM_INIT_VAL, WASM_INIT_VAL };
-    wasm_val_vec_t arguments_as_array = WASM_ARRAY_VEC(arguments);
-    wasm_val_vec_t results_as_array = WASM_ARRAY_VEC(results);
+    wasm_val_t args[0] = {};
+    wasm_val_t res[1] = { WASM_INIT_VAL };
+    wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
+    wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
 
-    wasm_trap_t* trap = wasm_func_call(swap, &arguments_as_array, &results_as_array);
+    wasm_trap_t* trap = wasm_func_call(getLabel, &argsArray, &resArray);
 
     if (trap != NULL) {
         APX_LOG_STDERR_COLOR("Error calling Wasm function");
         return;
     }
 
-    if (results[0].of.i64 != 2 || results[1].of.i32 != 1) {
-        APX_LOG_STDERR("> Multi-value failed.\n");
-        return;
-    }
+    byte_t* memBytes = wasm_memory_data(memory);
 
-    APX_LOG_STDERR("Got `(2, 1)`!\n");
+    const char *s = &memBytes[res[0].of.i32];
 
+    printf("\ngetLabel() = %s\n\n", s);
 }
 
 WasmHostPlugin::~WasmHostPlugin()
