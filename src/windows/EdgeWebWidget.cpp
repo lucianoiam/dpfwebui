@@ -24,6 +24,8 @@
 #include <sstream>
 #include <winuser.h>
 
+#include "dgl/Application.hpp"
+
 #include "Platform.hpp"
 #include "macro.h"
 #include "extra/cJSON.h"
@@ -77,12 +79,7 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
 
-    // Start Edge WebView2 initialization
-    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0,
-        TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
-    if (FAILED(result)) {
-        webViewLoaderErrorMessageBox(result);
-    }
+    initWebView();
 }
 
 EdgeWebWidget::~EdgeWebWidget()
@@ -189,6 +186,41 @@ void EdgeWebWidget::updateWebViewBounds()
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
+void EdgeWebWidget::initWebView()
+{
+    // Make sure COM is initialized - 0x800401F0 CO_E_NOTINITIALIZED
+    CoInitializeEx(0, COINIT_APARTMENTTHREADED);
+
+    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0,
+                        TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
+    if (FAILED(result)) {
+        webViewLoaderErrorMessageBox(result);
+        return;
+    }
+
+    if (getWindow().getApp().isStandalone()) {
+        // handleWebView2ControllerCompleted() never gets called when running
+        // standalone unless pumping thread message queue. Possibly related to
+        // https://github.com/MicrosoftEdge/WebView2Feedback/issues/920
+
+        MSG msg;
+        
+        while ((fController == 0) && GetMessage(&msg, 0, 0, 0)) {
+            TranslateMessage(&msg); 
+            DispatchMessage(&msg); 
+        }
+
+        // handleWebView2NavigationCompleted() never gets called when running
+        // standalone unless an "open window menu" event is simulated. Otherwise
+        // the user needs to click the window border to achieve the same effect.
+        // All DPF standalone examples on Windows appear off-screen, with the
+        // non-client area hidden. Maybe it is not WebView2's fault this time.
+
+        HWND hWnd = (HWND)getWindow().getNativeWindowHandle();
+        PostMessage(hWnd, WM_SYSCOMMAND, SC_KEYMENU, 0);
+    }
+}
+
 HRESULT EdgeWebWidget::handleWebView2EnvironmentCompleted(HRESULT result,
                                                         ICoreWebView2Environment* environment)
 {
@@ -198,12 +230,7 @@ HRESULT EdgeWebWidget::handleWebView2EnvironmentCompleted(HRESULT result,
     }
 
     ICoreWebView2Environment_CreateCoreWebView2Controller(environment, fHelperHwnd, fHandler);
-    
-    // FIXME: handleWebView2ControllerCompleted() is never called when running
-    //        standalone unless the app window border is clicked. Looks like
-    //        window messages get stuck somewhere and does not seem related to
-    //        the usage of the fHelperHwnd.
-    
+
     return S_OK;
 }
 
@@ -236,7 +263,7 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
     fBackgroundColor = 0;
     fInjectedScripts.clear();
     fUrl.clear();
-    
+
     return S_OK;
 }
 

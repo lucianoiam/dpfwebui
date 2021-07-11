@@ -77,6 +77,7 @@ protected:
     bool onKeyboard(const KeyboardEvent& ev) override;
 
 private:
+    void initWebView();
     void updateWebViewBounds();
     
     void webViewLoaderErrorMessageBox(HRESULT result);

@@ -31,8 +31,6 @@ WINDOWS
 -------
 
 - Workaround with tag WINSIZEBUG
-- LV2 plugin builds but UI does not open
-- Standalone window appears empty on startup until clicking the window border
 - Files plugin.manifest and WebView2Loader.manifest contain a hardcoded dummy
   version for WebView2Loader.dll. It probably needs to be set to the real DLL
   version the plugin is linking against, for the cases where the host or other
