@@ -16,6 +16,7 @@
 
 #include "WasmHostPlugin.hpp"
 
+#include "Platform.hpp"
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
@@ -27,21 +28,28 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     , fWasmInstance(0)
     , fWasmModule(0)
 {
-    // TODO: load from file
-    const char *wat_string =
-        "(module\n"
-        "  (type $swap_t (func (param i32 i64) (result i64 i32)))\n"
-        "  (func $swap (type $swap_t) (param $x i32) (param $y i64) (result i64 i32)\n"
-        "    (local.get $y)\n"
-        "    (local.get $x))\n"
-        "  (export \"swap\" (func $swap)))";
+    String path = platform::getResourcePath() + "/dsp/main.wasm";
+    FILE* file = fopen(path, "rb");
 
-    wasm_byte_vec_t wat;
-    wasm_byte_vec_new(&wat, strlen(wat_string), wat_string);
+    if (file == 0) {
+        APX_LOG_STDERR_COLOR("Error opening Wasm module");
+        return;
+    }
+
+    fseek(file, 0L, SEEK_END);
+    size_t file_size = ftell(file);
+    fseek(file, 0L, SEEK_SET);
+
     wasm_byte_vec_t wasm_bytes;
-    wat2wasm(&wat, &wasm_bytes);
-    wasm_byte_vec_delete(&wat);
-    // --------
+    wasm_byte_vec_new_uninitialized(&wasm_bytes, file_size);
+    
+    if (fread(wasm_bytes.data, file_size, 1, file) != 1) {
+        fclose(file);
+        APX_LOG_STDERR_COLOR("Error loading Wasm module");
+        return;
+    }
+
+    fclose(file);
 
     wasm_config_t* config = wasm_config_new();
     wasmer_features_t* features = wasmer_features_new();
@@ -50,32 +58,34 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     fWasmEngine = wasm_engine_new_with_config(config);
     fWasmStore = wasm_store_new(fWasmEngine);
-
-    // TODO: load from file
     fWasmModule = wasm_module_new(fWasmStore, &wasm_bytes); // compile
 
     if (!fWasmModule) {
         APX_LOG_STDERR_COLOR("Error compiling Wasm module");
-        abort();
+        return;
     }
 
     wasm_byte_vec_delete(&wasm_bytes);
 
     wasm_extern_vec_t imports = WASM_EMPTY_VEC;
     wasm_trap_t* traps = NULL;
+
     fWasmInstance = wasm_instance_new(fWasmStore, fWasmModule, &imports, &traps);
 
     if (!fWasmInstance) {
         APX_LOG_STDERR_COLOR("Error instantiating Wasm module");
-        abort();
+        return;
     }
 
     wasm_instance_exports(fWasmInstance, &fWasmExports);
 
     if (fWasmExports.size == 0) {
         APX_LOG_STDERR_COLOR("Error accessing Wasm exports");
-        abort();
+        return;
     }
+
+
+    // Test function
 
     wasm_func_t* swap = wasm_extern_as_func(fWasmExports.data[0]);
 
@@ -88,15 +98,16 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     if (trap != NULL) {
         APX_LOG_STDERR_COLOR("Error calling Wasm function");
-        abort();
+        return;
     }
 
     if (results[0].of.i64 != 2 || results[1].of.i32 != 1) {
-        printf("> Multi-value failed.\n");
-        abort();
+        APX_LOG_STDERR("> Multi-value failed.\n");
+        return;
     }
 
-    printf("Got `(2, 1)`!\n");
+    APX_LOG_STDERR("Got `(2, 1)`!\n");
+
 }
 
 WasmHostPlugin::~WasmHostPlugin()
