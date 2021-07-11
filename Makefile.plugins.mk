@@ -67,7 +67,8 @@ ifeq ($(MACOS),true)
 APX_FILES_DSP += macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
-APX_FILES_DSP += windows/PlatformWindows.cpp
+APX_FILES_DSP += windows/PlatformWindows.cpp \
+                 windows/extra/WinApiStub.cpp 
 endif
 
 FILES_DSP += $(APX_FILES_DSP:%=$(APX_SRC_PATH)/%)
