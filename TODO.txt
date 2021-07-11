@@ -32,8 +32,6 @@ WINDOWS
 
 - Workaround with tag WINSIZEBUG
 - LV2 plugin builds but UI does not open
-- Standalone version build fails for latest DPF develop but works for e28b677,
-  temporarily disable JACK target.
 - Standalone window appears empty on startup until clicking the window border
 - Files plugin.manifest and WebView2Loader.manifest contain a hardcoded dummy
   version for WebView2Loader.dll. It probably needs to be set to the real DLL

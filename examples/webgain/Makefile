@@ -39,11 +39,9 @@ include ../../Makefile.plugins.mk
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-ifneq ($(WINDOWS),true)
 ifeq ($(HAVE_JACK),true)
 ifeq ($(HAVE_OPENGL),true)
 TARGETS += jack
-endif
 endif
 endif
 
