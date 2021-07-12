@@ -265,21 +265,6 @@ $(LXHELPER_BIN): $(APX_SRC_PATH)/linux/helper.c $(APX_SRC_PATH)/linux/extra/ipc.
 	$(SILENT)$(CC) $^ -I$(APX_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
-	@(test -f $(TARGET_DIR)/$(NAME) || test -f $(TARGET_DIR)/$(NAME)-vst.so \
-		&& cp $(LXHELPER_BIN) $(TARGET_DIR) \
-		) || true
-	@(test -d $(TARGET_DIR)/$(NAME).lv2 \
-		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME).lv2 \
-		) || true
-	@(test -d $(TARGET_DIR)/$(NAME)-dssi \
-		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME)-dssi \
-		) || true
-
-clean: clean_lxhelper
-
-clean_lxhelper:
-	@rm -rf $(TARGET_DIR)/$(notdir $(LXHELPER_BIN))
-	@rm -rf $(LXHELPER_BIN)
 endif
 
 # ------------------------------------------------------------------------------
@@ -306,13 +291,39 @@ endif
 # Post build - Determine built targets
 # User defined $(TARGETS) are only available *after* inclusion of this Makefile
 
-TEST_LINUX_OR_MACOS_JACK = test -f $(TARGET_DIR)/$(NAME)
-TEST_WINDOWS_JACK = test -f $(TARGET_DIR)/$(NAME).exe
-TEST_WINDOWS_VST = test -f $(TARGET_DIR)/$(NAME)-vst.dll
-TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) || $(TEST_WINDOWS_VST) 
 TEST_LV2 = test -d $(TARGET_DIR)/$(NAME).lv2
 TEST_DSSI = test -d $(TARGET_DIR)/$(NAME)-dssi
+TEST_LINUX_OR_MACOS_JACK = test -f $(TARGET_DIR)/$(NAME)
+TEST_LINUX_VST = test -f $(TARGET_DIR)/$(NAME)-vst.so
 TEST_MAC_VST = test -d $(TARGET_DIR)/$(NAME).vst
+TEST_WINDOWS_JACK = test -f $(TARGET_DIR)/$(NAME).exe
+TEST_WINDOWS_VST = test -f $(TARGET_DIR)/$(NAME)-vst.dll
+TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
+							|| $(TEST_WINDOWS_VST) 
+
+# ------------------------------------------------------------------------------
+# Post build - Copy Linux helper
+
+ifeq ($(LINUX),true)
+APX_TARGET += lxhelper
+
+lxhelper:
+	@($(TEST_LINUX_OR_MACOS_JACK) || $(TEST_LINUX_VST) \
+		&& cp $(LXHELPER_BIN) $(TARGET_DIR) \
+		) || true
+	@($(TEST_LV2) \
+		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME).lv2 \
+		) || true
+	@($(TEST_DSSI) \
+		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME)-dssi \
+		) || true
+
+clean: clean_lxhelper
+
+clean_lxhelper:
+	@rm -rf $(TARGET_DIR)/$(notdir $(LXHELPER_BIN))
+	@rm -rf $(LXHELPER_BIN)
+endif
 
 # ------------------------------------------------------------------------------
 # Post build - Create macOS VST bundle
@@ -365,46 +376,27 @@ endif
 
 ifneq ($(WASM_DSP),)
 APX_TARGET += resourcesdsp
-
-resourcesdsp:
-	@echo "Copying DSP resource files..."
-	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/dsp \
-		&& cp -r $(APX_WASM_DSP_PATH)/* $(TARGET_DIR)/$(NAME)_res/dsp \
-		) || true
-	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/dsp \
-		&& cp -r $(APX_WASM_DSP_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/dsp \
-		) || true
-	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/dsp \
-		&& cp -r $(APX_WASM_DSP_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/dsp \
-		) || true
-	@($(TEST_MAC_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
-		&& cp -r $(APX_WASM_DSP_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
-		) || true
 endif
 
 APX_TARGET += resourcesui
 
-resourcesui:
+resources$(RES_TYPE):
 	@echo "Copying UI resource files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/ui \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_res/ui \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/$(RES_TYPE) \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_res/$(RES_TYPE) \
 		) || true
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/ui \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/ui \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/$(RES_TYPE) \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/$(RES_TYPE) \
 		) || true
 	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/ui \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/ui \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/$(RES_TYPE) \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/$(RES_TYPE) \
 		) || true
 	@($(TEST_MAC_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(RES_TYPE) \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(RES_TYPE) \
 		) || true
 
 clean: clean_resources
