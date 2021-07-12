@@ -28,5 +28,8 @@ MACOS
 WINDOWS
 -------
 
-- Workaround with tag WINSIZEBUG
-- Workaround with tag WINJACKBUG
+- Workaround with tag WINSIZEBUG need to call UI::setSize() twice
+- Workaround with tag WINJACKBUG to avoid empty window on startup
+- Unresolved issue when running standalone: js->cpp messages get stuck unless
+  window is resized. There is something definitely wrong with the event loop
+  when running as a standalone application, probably related to WINJACKBUG.
