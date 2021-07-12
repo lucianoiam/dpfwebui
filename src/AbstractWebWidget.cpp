@@ -78,7 +78,7 @@ void AbstractWebWidget::postMessage(const ScriptValueVector& args)
     // symmetrical. Global window.webviewHost is an EventTarget that can be listened for messages.
     String payload = serializeScriptValues(args);
     if (fPrintTraffic) {
-        std::cerr << "cpp -> js : " << payload.buffer() << std::endl;
+        std::cerr << "cpp -> js : " << payload.buffer() << std::endl << std::flush;
     }
     String js = "window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:" + payload + "}));";
     runScript(js);
@@ -90,7 +90,8 @@ void AbstractWebWidget::handleScriptMessage(const ScriptValueVector& args)
         std::cerr << args[1].getString().buffer() << std::endl;
     } else {
         if (fPrintTraffic) {
-            std::cerr << "cpp <- js : " << serializeScriptValues(args).buffer() << std::endl;
+            std::cerr << "cpp <- js : " << serializeScriptValues(args).buffer()
+                << std::endl << std::flush;
         }
         if (fHandler != 0) {
             fHandler->handleWebWidgetScriptMessageReceived(args);
