@@ -31,6 +31,7 @@ typedef struct {
     Display*       display;
     GtkWindow*     window;
     WebKitWebView* webView;
+    gboolean       focus;
 } helper_context_t;
 
 static void create_webview(helper_context_t *ctx);
@@ -41,6 +42,7 @@ static void inject_keystroke(const helper_context_t *ctx, const helper_key_t *ke
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
+static gboolean web_view_keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
 static int ipc_write_simple(const helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
 
@@ -50,6 +52,8 @@ int main(int argc, char* argv[])
     helper_context_t ctx;
     ipc_conf_t conf;
     GIOChannel* channel;
+
+    memset(&ctx, 0, sizeof(ctx));
 
     if (argc < 3) {
         APX_LOG_STDERR("Invalid argument count");
@@ -102,6 +106,7 @@ static void create_webview(helper_context_t *ctx)
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
+    g_signal_connect(ctx->webView, "key_press_event", G_CALLBACK(web_view_keypress_cb), ctx);
 
     // Listen to script messages
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
@@ -240,6 +245,12 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
     }
 }
 
+static gboolean web_view_keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
+{
+    helper_context_t *ctx = (helper_context_t *)data;
+    return !ctx->focus;
+}
+
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
 {
     helper_context_t *ctx = (helper_context_t *)data;
@@ -274,6 +285,10 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             gtk_window_move(ctx->window, pos->x, pos->y);
             break;
         }
+
+        case OPC_SET_KEYBOARD_FOCUS:
+            ctx->focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
+            break;
 
         case OPC_NAVIGATE:
             webkit_web_view_load_uri(ctx->webView, packet.v);
