@@ -102,15 +102,16 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
                 // Let keystroke reach web view
             
             } else {
-                // Send keystroke to host
+                // Redirect keystroke to host
 
                 KBDLLHOOKSTRUCT* lpData = (KBDLLHOOKSTRUCT *)lParam;
 
                 KeyboardRouter::getInstance().hostSendLowLevelKeyEvent((UINT)wParam, lpData);
 
-                // Do not allow some keystrokes to reach the web view to keep consistent
-                // behavior across all platforms, keystrokes should be consumed in a single
-                // place. Allow everything else to pass, like Alt-Tab.
+                // Do not allow some keystrokes to reach the web view even if
+                // fHostWnd==0 to keep consistent behavior across all platforms,
+                // keystrokes should be consumed at a single place. Allow
+                // everything else to pass like Alt-Tab.
 
                 if (ISALPHANUM_VKCODE(lpData->vkCode)) {
                     return 1;
