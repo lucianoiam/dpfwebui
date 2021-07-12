@@ -209,11 +209,12 @@ void EdgeWebWidget::initWebView()
             DispatchMessage(&msg); 
         }
 
-        // handleWebView2NavigationCompleted() never gets called when running
-        // standalone unless an "open window menu" event is simulated. Otherwise
-        // the user needs to click the window border to achieve the same effect.
+        // WINJACKBUG - handleWebView2NavigationCompleted() never gets called
+        // when running standalone unless an "open window menu" event is
+        // simulated. Otherwise the user needs to click the window border to
+        // allow web content to load, providing DISTRHO_UI_USER_RESIZABLE=1.
         // Worth noting all DPF standalone examples on Windows appear off-screen
-        // with the non-client area hidden. Not sure it's WebView2 or DPF issue. 
+        // with the NC area hidden. Not sure it's a DPF or WebView2 issue though.
 
         HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
         PostMessage(hWnd, WM_SYSCOMMAND, SC_KEYMENU, 0);
