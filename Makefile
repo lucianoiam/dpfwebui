@@ -5,7 +5,8 @@ examples:
 	@make -C examples/webgain
 
 clean:
-	@make -C examples/webgain clean
+	rm -rf bin
+	rm -rf build
 
 all: examples
 
