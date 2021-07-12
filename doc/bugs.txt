@@ -1,0 +1,32 @@
+GENERAL
+-------
+
+- generate-ttl.sh expects hardcoded directory bin/
+
+
+LINUX
+-----
+
+- Mouse wheel events never fire
+- DSSI plugin builds but UI does not open
+- UI not displaying at all on Gnome Shell even running on Xorg. XEmbed related?
+
+
+MACOS
+-----
+
+- Workaround with tag MACSIZEBUG https://github.com/DISTRHO/DPF/issues/291
+- Workaround with tag MACJACKBUG https://github.com/DISTRHO/DPF/issues/298
+- generate-vst-bundles.sh expects hardcoded directory bin/
+- generate-vst-bundles.sh deletes all existing .vst folders, it is not safe to
+  run it on a plugin basis. DPF only calls it from the main Makefile after all
+  examples has been built.
+- Live 10 sporadically refuses to quit from the Mac menu or by pressing Cmd+Q
+  when a plugin window is open. Behavior not reproducible on REAPER.
+
+
+WINDOWS
+-------
+
+- Workaround with tag WINSIZEBUG
+- Workaround with tag WINJACKBUG
