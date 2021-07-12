@@ -141,7 +141,8 @@ endif
 # Add build flags for web-based UI dependencies
 
 BASE_FLAGS += -I$(APX_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
-              -DAPX_PROJECT_ID_HASH=$(shell echo $(NAME):$(APX_PROJECT_VERSION) | shasum -a 256 | head -c 8)
+              -DAPX_PROJECT_ID_HASH=$(shell echo $(NAME):$(APX_PROJECT_VERSION) \
+              	| shasum -a 256 | head -c 8)
 ifeq ($(APX_PRINT_TRAFFIC),true)
 BASE_FLAGS += -DAPX_PRINT_TRAFFIC=1
 endif
@@ -154,8 +155,9 @@ endif
 ifeq ($(WINDOWS),true)
 BASE_FLAGS += -I$(EDGE_WEBVIEW2_PATH)/build/native/include
 LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
-              -lole32 -lShlwapi -lMfplat -lksuser -lmfuuid -lwmcodecdspuuid -lWebView2Loader.dll \
-              -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread
+              -lole32 -lShlwapi -lMfplat -lksuser -lmfuuid -lwmcodecdspuuid \
+              -lWebView2Loader.dll -static-libgcc -static-libstdc++ -Wl,-Bstatic \
+              -lstdc++ -lpthread
 endif
 
 # ------------------------------------------------------------------------------
@@ -380,24 +382,29 @@ endif
 
 APX_TARGET += resourcesui
 
-resources$(RES_TYPE):
-	@echo "Copying UI resource files..."
+define RESOURCES_TEMPLATE
+resources$(1):
+	@echo "Copying $(shell echo $(1) | tr a-z A-Z) resource files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/$(RES_TYPE) \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_res/$(RES_TYPE) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/$(1) \
+		&& cp -r $(2)/* $(TARGET_DIR)/$(NAME)_res/$(1) \
 		) || true
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/$(RES_TYPE) \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/$(RES_TYPE) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/$(1) \
+		&& cp -r $(2)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/$(1) \
 		) || true
 	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/$(RES_TYPE) \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/$(RES_TYPE) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/$(1) \
+		&& cp -r $(2)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/$(1) \
 		) || true
 	@($(TEST_MAC_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(RES_TYPE) \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(RES_TYPE) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(1) \
+		&& cp -r $(2)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(1) \
 		) || true
+endef
+
+$(eval $(call RESOURCES_TEMPLATE,dsp,$(APX_WASM_DSP_PATH)))
+$(eval $(call RESOURCES_TEMPLATE,ui,$(APX_WEB_UI_PATH)))
 
 clean: clean_resources
 
