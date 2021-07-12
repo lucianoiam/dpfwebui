@@ -49,9 +49,8 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     , fController(0)
     , fView(0)
 {
-    // Pass a hidden orphan window handle to CreateCoreWebView2Controller
-    // for initializing Edge WebView2, instead of the plugin window handle that
-    // causes some hosts to hang when opening the UI, e.g. Carla.
+    // Use a hidden orphan window for initializing Edge WebView2. Helps reducing
+    // flicker and it is also required by the keyboard router for reading state.
     WCHAR className[256];
     swprintf(className, sizeof(className), L"EdgeWebWidget_%s_%d", XSTR(APX_PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
@@ -155,7 +154,7 @@ void EdgeWebWidget::runScript(String& source)
 {
     // For the plugin specific use case fView==0 means a programming error.
     // There is no point in queuing these, just wait for the view to load its
-    // contents before trying to run scripts. Otherwise use injectScript()
+    // contents before trying to run scripts. Otherwise use injectScript().
     assert(fView != 0);
     ICoreWebView2_ExecuteScript(fView, TO_LPCWSTR(source), 0);
 }
@@ -213,10 +212,10 @@ void EdgeWebWidget::initWebView()
         // handleWebView2NavigationCompleted() never gets called when running
         // standalone unless an "open window menu" event is simulated. Otherwise
         // the user needs to click the window border to achieve the same effect.
-        // All DPF standalone examples on Windows appear off-screen, with the
-        // non-client area hidden. Maybe it is not WebView2's fault this time.
+        // Worth noting all DPF standalone examples on Windows appear off-screen
+        // with the non-client area hidden. Not sure it's WebView2 or DPF issue. 
 
-        HWND hWnd = (HWND)getWindow().getNativeWindowHandle();
+        HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
         PostMessage(hWnd, WM_SYSCOMMAND, SC_KEYMENU, 0);
     }
 }
@@ -333,7 +332,7 @@ HRESULT EdgeWebWidget::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
 void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
 {
     // TODO: Add clickable link to installer. It would be also better to display
-    //       a message and button in the native window using DPF drawing methods.
+    //       a message and button in the native window using DGL widgets.
     std::wstringstream wss;
     wss << "Make sure you have installed the Microsoft Edge WebView2 Runtime. "
         << "Error 0x" << std::hex << result;

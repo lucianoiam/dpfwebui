@@ -96,14 +96,15 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
         }
 
         if (hFocusedPluginHelperWnd != 0) {
+            // Read plugin configuration
             bool keyboardFocus = (bool)GetClassLongPtr(hFocusedPluginHelperWnd, 0);
 
             if (keyboardFocus) {
                 // Do not forward keystroke
             
             } else {
-                // The root window is provided by the host and has DPF window as a child
-                // Key events may be delivered to the plugin root window or host main window
+                // The root window is provided by the host and has DPF window as a child.
+                // Key events may be delivered to the plugin root window or host main window.
 
                 HWND hPluginRootWnd = GetParent(hFocusedPluginHelperWnd);
 
