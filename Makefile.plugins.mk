@@ -144,7 +144,7 @@ BASE_FLAGS += -I$(APX_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
               -DAPX_PROJECT_ID_HASH=$(shell echo $(NAME):$(APX_PROJECT_VERSION) \
               	| shasum -a 256 | head -c 8)
 ifeq ($(APX_PRINT_TRAFFIC),true)
-BASE_FLAGS += -DAPX_PRINT_TRAFFIC=1
+BASE_FLAGS += -DAPX_PRINT_TRAFFIC
 endif
 ifeq ($(LINUX),true)
 LINK_FLAGS += -lpthread -ldl

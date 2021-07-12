@@ -95,21 +95,18 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
 
         if (hFocusedPluginHelperWnd != 0) {
             // Read plugin configuration
+
             bool keyboardFocus = (bool)GetClassLongPtr(hFocusedPluginHelperWnd, 0);
 
             if (keyboardFocus) {
-                // Do not forward keystroke
+                // Let keystroke reach web view
             
             } else {
-                // The root window is provided by the host and has DPF window as a child.
-                // Key events may be delivered to the plugin root window or host main window.
-
-                HWND hPluginRootWnd = GetParent(hFocusedPluginHelperWnd);
+                // Send keystroke to host
 
                 KBDLLHOOKSTRUCT* lpData = (KBDLLHOOKSTRUCT *)lParam;
 
-                KeyboardRouter::getInstance().handleLowLevelKeyEvent(hPluginRootWnd,
-                    (UINT)wParam, lpData);
+                KeyboardRouter::getInstance().hostSendLowLevelKeyEvent((UINT)wParam, lpData);
 
                 // Do not allow some keystrokes to reach the web view to keep consistent
                 // behavior across all platforms, keystrokes should be consumed in a single
@@ -140,17 +137,10 @@ BOOL CALLBACK KeyboardRouter::enumChildProc(HWND hWnd, LPARAM lParam)
     return TRUE;
 }
 
-void KeyboardRouter::handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT message, KBDLLHOOKSTRUCT* lpData)
+void KeyboardRouter::hostSendLowLevelKeyEvent(UINT message, KBDLLHOOKSTRUCT* lpData)
 {
-    // If targeting the plugin root window focus it first
-
-    HWND hTargetWnd;
-
     if (fHostHWnd == 0) {
-        hTargetWnd = hPluginRootWnd;
-        SetFocus(hTargetWnd);
-    } else {
-        hTargetWnd = fHostHWnd;
+        return;
     }
 
     // Translate low level keyboard events into a format suitable for SendMessage()
@@ -161,11 +151,11 @@ void KeyboardRouter::handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT message, K
     switch (message) {
         case WM_KEYDOWN:
             // Basic logic that forwards a-z to allow playing with Live's virtual keyboard.
-            SendMessage(hTargetWnd, WM_KEYDOWN, wParam, lParam);
+            SendMessage(fHostHWnd, WM_KEYDOWN, wParam, lParam);
 
             if (ISALPHA_VKCODE(lpData->vkCode)) {
                 wParam |= 0x20; // to lowercase
-                SendMessage(hTargetWnd, WM_CHAR, wParam, lParam);
+                SendMessage(fHostHWnd, WM_CHAR, wParam, lParam);
             }
 
             break;
@@ -173,7 +163,7 @@ void KeyboardRouter::handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT message, K
             // bit 30: The previous key state. The value is always 1 for a WM_KEYUP message.
             // bit 31: The transition state. The value is always 1 for a WM_KEYUP message.
             lParam |= 0xC0000000;
-            SendMessage(hTargetWnd, WM_KEYUP, wParam, lParam);
+            SendMessage(fHostHWnd, WM_KEYUP, wParam, lParam);
             
             break;
     }

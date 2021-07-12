@@ -39,7 +39,7 @@ class KeyboardRouter
         void incRefCount();
         void decRefCount();
 
-        void handleLowLevelKeyEvent(HWND hPluginRootWnd, UINT message, KBDLLHOOKSTRUCT* lpData);
+        void hostSendLowLevelKeyEvent(UINT message, KBDLLHOOKSTRUCT* lpData);
 
     private:
         KeyboardRouter();
