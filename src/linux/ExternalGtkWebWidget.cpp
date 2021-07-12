@@ -167,7 +167,7 @@ bool ExternalGtkWebWidget::onKeyboard(const KeyboardEvent& ev)
 
 void ExternalGtkWebWidget::setBackgroundColor(uint32_t rgba)
 {
-    ipcWrite(OPC_SET_BACKGROUND_COLOR, &rgba, sizeof(uint32_t));
+    ipcWrite(OPC_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
 }
 
 void ExternalGtkWebWidget::navigate(String& url)
@@ -187,10 +187,17 @@ void ExternalGtkWebWidget::injectScript(String& source)
 
 void ExternalGtkWebWidget::setKeyboardFocus(bool focus)
 {
+    AbstractWebWidget::setKeyboardFocus(focus);
+    
+    char val = focus ? 1 : 0;
+    ipcWrite(OPC_SET_KEYBOARD_FOCUS, &val, sizeof(val));
+
     // REAPER steals focus after plugin initialization, reset keyboard focus
     // because clicking on the web view is not enough for regaining it.
-    AbstractWebWidget::setKeyboardFocus(focus);
-    getWindow().focus();
+
+    if (focus) {
+        getWindow().focus();
+    }
 }
 
 int ExternalGtkWebWidget::ipcWriteString(helper_opcode_t opcode, String str) const
