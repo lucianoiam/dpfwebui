@@ -6,7 +6,8 @@ Raw power meets versatility.
 Apices extends [DPF](http://github.com/DISTRHO/DPF) to provide the necessary
 scaffold for creating audio plugins with potentially complex user interfaces.
 Plugins implement a web view for running the UI, which interacts with the audio
-host through a small factory shipped JavaScript class.
+host through a small factory shipped JavaScript class. The DSP core remains
+completely isolated and implemented in C/C++.
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
