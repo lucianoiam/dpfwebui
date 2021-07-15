@@ -40,12 +40,12 @@ class DISTRHO_UI {
 
     // UI::getWidth()
     async getWidth() {
-        return this._callWithReply('getWidth');
+        return this._callAndExpectReply('getWidth');
     }
 
     // UI::getHeight()
     async getHeight() {
-        return this._callWithReply('getHeight');
+        return this._callAndExpectReply('getHeight');
     }
 
     // UI::setWidth(uint width)
@@ -60,7 +60,7 @@ class DISTRHO_UI {
 
     // UI::isResizable()
     async isResizable() {
-        return this._callWithReply('isResizable');
+        return this._callAndExpectReply('isResizable');
     }
 
     // UI::setSize(uint width, uint height)
@@ -105,12 +105,17 @@ class DISTRHO_UI {
 
     // WebHostUI::getInitWidth()
     async getInitWidth() {
-        return this._callWithReply('getInitWidth');
+        return this._callAndExpectReply('getInitWidth');
     }
 
     // WebHostUI::getInitHeight()
     async getInitHeight() {
-        return this._callWithReply('getInitHeight');
+        return this._callAndExpectReply('getInitHeight');
+    }
+
+    // Application::isStandalone()
+    async isStandalone() {
+        return this._callAndExpectReply('isStandalone');
     }
 
     // WebHostUI::webPostMessage(const ScriptValueVector& args)
@@ -129,7 +134,7 @@ class DISTRHO_UI {
     }
 
     // Helper for supporting synchronous calls using promises
-    _callWithReply(method, ...args) {
+    _callAndExpectReply(method, ...args) {
         if (method in this._resolve) {
             this._resolve[method][1](); // reject previous
         }

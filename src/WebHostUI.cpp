@@ -236,6 +236,9 @@ void WebHostUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& ar
         );
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
 
+    } else if (method == "isStandalone") {
+        webPostMessage({"UI", "isStandalone", getWindow().getApp().isStandalone()});
+
     } else {
         APX_LOG_STDERR_COLOR("Invalid call to WebHostUI method");
     }
