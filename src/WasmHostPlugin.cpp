@@ -23,6 +23,28 @@
 
 USE_NAMESPACE_DISTRHO
 
+#define own
+
+// Convenience function, Wasmer provides up to wasm_functype_new_3_0()
+static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1,
+    own wasm_valtype_t* p2, own wasm_valtype_t* p3, own wasm_valtype_t* p4)
+{
+    wasm_valtype_t* ps[4] = {p1, p2, p3, p4};
+    wasm_valtype_vec_t params, results;
+    wasm_valtype_vec_new(&params, 4, ps);
+    wasm_valtype_vec_new_empty(&results);
+    return wasm_functype_new(&params, &results);
+}
+
+// Boilerplate for initializing Wasm modules compiled from AssemblyScript
+static own wasm_trap_t* as_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results)
+{
+    // no-op
+    (void)args;
+    (void)results;
+    return NULL;
+}
+
 WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
     : Plugin(parameterCount, programCount, stateCount)
     , fWasmEngine(0)
@@ -70,7 +92,14 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     wasm_byte_vec_delete(&fileBytes);
 
-    wasm_extern_vec_t imports = WASM_EMPTY_VEC;
+    wasm_functype_t *abortFuncType = wasm_functype_new_4_0(wasm_valtype_new_i32(),
+        wasm_valtype_new_i32(), wasm_valtype_new_i32(), wasm_valtype_new_i32());
+    wasm_func_t *abortFunc = wasm_func_new(fWasmStore, abortFuncType, as_abort);
+    wasm_functype_delete(abortFuncType);
+    wasm_extern_vec_t imports;
+    wasm_extern_vec_new_uninitialized(&imports, 1);
+    imports.data[0] = wasm_func_as_extern(abortFunc);
+
     wasm_trap_t* traps = NULL;
 
     fWasmInstance = wasm_instance_new(fWasmStore, fWasmModule, &imports, &traps);
