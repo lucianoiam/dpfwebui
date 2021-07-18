@@ -23,9 +23,12 @@ core remains completely isolated and implemented in C/C++.
 * Just the powerful basics
 * BSD-like license
 
-There is ongoing work for optional support of
-[WebAssembly](https://webassembly.org) in DSP code, thus allowing to develop a
-plugin completely based on web technologies.
+There is ongoing work for support of compiled [AssemblyScript](https://www.assemblyscript.org)
+in DSP code. AssemblyScript is a language similar to [TypeScript](https://www.typescriptlang.org)
+that can be compiled into [WebAssembly](https://webassembly.org) for faster than
+JavaScript performance. This would allow to develop a desktop plugin completely
+based on web technologies. Both JS for UI and TS for DSP will be optional
+features.
 
 ### Example UI code
 

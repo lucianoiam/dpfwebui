@@ -71,7 +71,7 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
 #endif
 
     String js = String(
-#include "js/ui.js"
+#include "ui/ui.js"
     );
     fWebWidget.injectScript(js);
 
