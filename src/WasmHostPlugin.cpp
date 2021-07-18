@@ -23,6 +23,16 @@
 
 USE_NAMESPACE_DISTRHO
 
+/*
+ TODO: is there a way to select exports by name with wasmer-c-api ?
+
+const wasmInstance = new WebAssembly.Instance(wasmModule, {env:{abort:()=>{}}});
+console.log(Object.keys(wasmInstance.exports));
+*/
+enum ExportIndex {
+    GET_LABEL, GET_MAKER, GET_LICENSE, MEMORY
+};
+
 #define own
 
 // Convenience function, Wasmer provides up to wasm_functype_new_3_0()
@@ -119,15 +129,17 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     // Test: call Wasm getLabel() compiled from TypeScript
 
-    wasm_func_t* getLabel = wasm_extern_as_func(fWasmExports.data[0]);
-    wasm_memory_t* memory = wasm_extern_as_memory(fWasmExports.data[1]);
+    wasm_func_t* getLabel = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_LABEL]);
+    wasm_func_t* getMaker = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_MAKER]);
+    wasm_func_t* getLicense = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_LICENSE]);
+    wasm_memory_t* memory = wasm_extern_as_memory(fWasmExports.data[ExportIndex::MEMORY]);
 
     wasm_val_t args[0] = {};
     wasm_val_t res[1] = { WASM_INIT_VAL };
     wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
     wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
 
-    wasm_trap_t* trap = wasm_func_call(getLabel, &argsArray, &resArray);
+    wasm_trap_t* trap = wasm_func_call(getLicense, &argsArray, &resArray);
 
     if (trap != NULL) {
         APX_LOG_STDERR_COLOR("Error calling Wasm function");
@@ -138,7 +150,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     const char *s = &memBytes[res[0].of.i32];
 
-    printf("\ngetLabel() = %s\n\n", s);
+    printf("\n result = %s\n\n", s);
 }
 
 WasmHostPlugin::~WasmHostPlugin()
