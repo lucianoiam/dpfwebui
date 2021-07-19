@@ -57,6 +57,7 @@ private:
     wasm_instance_t*  fWasmInstance;
     wasm_module_t*    fWasmModule;
     wasm_extern_vec_t fWasmExports;
+    byte_t*           fWasmMemoryBytes;
 
 };
 
