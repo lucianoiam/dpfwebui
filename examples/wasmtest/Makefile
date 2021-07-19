@@ -17,7 +17,7 @@ APX_PROJECT_VERSION = 1
 # --------------------------------------------------------------
 # Wasm DSP files location
 
-APX_WASM_DSP_PATH = dsp
+APX_AS_DSP_PATH = dsp
 
 # --------------------------------------------------------------
 # Web UI files location

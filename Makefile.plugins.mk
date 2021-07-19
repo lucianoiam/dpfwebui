@@ -13,8 +13,8 @@ DPF_TARGET_DIR ?= bin
 DPF_BUILD_DIR  ?= build
 DPF_GIT_BRANCH ?= develop
 
-ifneq ($(APX_WASM_DSP_PATH),)
-WASM_DSP = true
+ifneq ($(APX_AS_DSP_PATH),)
+AS_DSP = true
 endif
 
 # ------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ endif
 # ------------------------------------------------------------------------------
 # Add optional support for Wasm-based DSP
 
-ifeq ($(WASM_DSP),true)
+ifeq ($(AS_DSP),true)
 APX_FILES_DSP  = WasmHostPlugin.cpp \
                  Platform.cpp
 ifeq ($(LINUX),true)
@@ -126,7 +126,7 @@ include $(DPF_PATH)/Makefile.plugins.mk
 # ------------------------------------------------------------------------------
 # Add build flags for Wasm-based DSP dependencies
 
-ifeq ($(WASM_DSP),true)
+ifeq ($(AS_DSP),true)
 BASE_FLAGS += -I$(WASMER_PATH)/include
 LINK_FLAGS += -L$(WASMER_PATH)/lib -lwasmer
 ifeq ($(MACOS),true)
@@ -192,7 +192,7 @@ endif
 # ------------------------------------------------------------------------------
 # Dependency - Download Wasmer
 
-ifeq ($(WASM_DSP),true)
+ifeq ($(AS_DSP),true)
 WASMER_PATH = $(APX_LIB_PATH)/wasmer
 
 TARGETS += $(WASMER_PATH)
@@ -376,35 +376,54 @@ endif
 # ------------------------------------------------------------------------------
 # Post build - Always copy resource files
 
-ifneq ($(WASM_DSP),)
+ifneq ($(AS_DSP),)
 APX_TARGET += resourcesdsp
+
+WASM_SRC_PATH = $(APX_AS_DSP_PATH)/build/optimized.wasm
+WASM_DST_PATH = dsp/main.wasm
+
+resourcesdsp:
+	@echo "Building AssemblyScript project..."
+	@npm --prefix $(APX_AS_DSP_PATH) run asbuild
+	@echo "Copying WebAssembly DSP binary..."
+	@($(TEST_JACK_OR_WINDOWS_VST) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME)_res/$(WASM_DST_PATH) \
+		) || true
+	@($(TEST_LV2) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/$(WASM_DST_PATH) \
+		) || true
+	@($(TEST_DSSI) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/$(WASM_DST_PATH) \
+		) || true
+	@($(TEST_MAC_VST) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(WASM_DST_PATH) \
+		) || true
 endif
 
 APX_TARGET += resourcesui
 
-define RESOURCES_TEMPLATE
-resources$(1):
-	@echo "Copying $(shell echo $(1) | tr a-z A-Z) resource files..."
+resourcesui:
+	@echo "Copying web UI resource files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/$(1) \
-		&& cp -r $(2)/* $(TARGET_DIR)/$(NAME)_res/$(1) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/ui \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_res/ui \
 		) || true
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/$(1) \
-		&& cp -r $(2)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/$(1) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/ui \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/ui \
 		) || true
 	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/$(1) \
-		&& cp -r $(2)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/$(1) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/ui \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/ui \
 		) || true
 	@($(TEST_MAC_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(1) \
-		&& cp -r $(2)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(1) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
+		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
 		) || true
-endef
-
-$(eval $(call RESOURCES_TEMPLATE,dsp,$(APX_WASM_DSP_PATH)))
-$(eval $(call RESOURCES_TEMPLATE,ui,$(APX_WEB_UI_PATH)))
 
 clean: clean_resources
 
