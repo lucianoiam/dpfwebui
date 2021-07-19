@@ -17,12 +17,15 @@
 export default interface DISTRHO_Plugin {
 
     // const char* Plugin::getLabel()
-    getLabel(): string;
+    getLabel(): string
 
     // const char* Plugin::getMaker()
-    getMaker(): string;
+    getMaker(): string
 
     // const char* Plugin::getLicense()
-    getLicense(): string;
+    getLicense(): string
+
+    // void Plugin::run(const float** inputs, float** outputs, uint32_t frames)
+    run(inputs: Float32Array[], outputs: Float32Array[]): void
 
 }
