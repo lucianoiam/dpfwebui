@@ -49,10 +49,10 @@ static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1,
 // Boilerplate for initializing Wasm modules compiled from AssemblyScript
 static own wasm_trap_t* as_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results)
 {
-    // no-op
     (void)args;
     (void)results;
-    return NULL;
+    APX_LOG_STDERR_COLOR("AssemblyScript abort() called");
+    return 0;
 }
 
 WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
@@ -110,7 +110,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     wasm_extern_vec_new_uninitialized(&imports, 1);
     imports.data[0] = wasm_func_as_extern(abortFunc);
 
-    wasm_trap_t* traps = NULL;
+    wasm_trap_t* traps = 0;
 
     fWasmInstance = wasm_instance_new(fWasmStore, fWasmModule, &imports, &traps);
 
@@ -126,31 +126,8 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
         return;
     }
 
-
-    // Test: call Wasm getLabel() compiled from TypeScript
-
-    wasm_func_t* getLabel = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_LABEL]);
-    wasm_func_t* getMaker = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_MAKER]);
-    wasm_func_t* getLicense = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_LICENSE]);
     wasm_memory_t* memory = wasm_extern_as_memory(fWasmExports.data[ExportIndex::MEMORY]);
-
-    wasm_val_t args[0] = {};
-    wasm_val_t res[1] = { WASM_INIT_VAL };
-    wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
-    wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
-
-    wasm_trap_t* trap = wasm_func_call(getLicense, &argsArray, &resArray);
-
-    if (trap != NULL) {
-        APX_LOG_STDERR_COLOR("Error calling Wasm function");
-        return;
-    }
-
-    byte_t* memBytes = wasm_memory_data(memory);
-
-    const char *s = &memBytes[res[0].of.i32];
-
-    printf("\n result = %s\n\n", s);
+    fWasmMemoryBytes = wasm_memory_data(memory);
 }
 
 WasmHostPlugin::~WasmHostPlugin()
@@ -164,17 +141,62 @@ WasmHostPlugin::~WasmHostPlugin()
 
 const char* WasmHostPlugin::getLabel() const
 {
-    return "FIXME";
+    wasm_func_t* func = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_LABEL]);
+    wasm_val_t args[0] = {};
+    wasm_val_t res[1] = { WASM_INIT_VAL };
+    wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
+    wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
+
+    wasm_trap_t* trap = wasm_func_call(func, &argsArray, &resArray);
+
+    if (trap != 0) {
+        APX_LOG_STDERR_COLOR("Error calling Wasm function");
+        return 0;
+    }
+
+    const char *s = &fWasmMemoryBytes[res[0].of.i32];
+
+    return s;
 }
 
 const char* WasmHostPlugin::getMaker() const
 {
-    return "FIXME";
+    wasm_func_t* func = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_MAKER]);
+    wasm_val_t args[0] = {};
+    wasm_val_t res[1] = { WASM_INIT_VAL };
+    wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
+    wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
+
+    wasm_trap_t* trap = wasm_func_call(func, &argsArray, &resArray);
+
+    if (trap != 0) {
+        APX_LOG_STDERR_COLOR("Error calling Wasm function");
+        return 0;
+    }
+
+    const char *s = &fWasmMemoryBytes[res[0].of.i32];
+
+    return s;
 }
 
 const char* WasmHostPlugin::getLicense() const
 {
-    return "FIXME";
+    wasm_func_t* func = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_LICENSE]);
+    wasm_val_t args[0] = {};
+    wasm_val_t res[1] = { WASM_INIT_VAL };
+    wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
+    wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
+
+    wasm_trap_t* trap = wasm_func_call(func, &argsArray, &resArray);
+
+    if (trap != 0) {
+        APX_LOG_STDERR_COLOR("Error calling Wasm function");
+        return 0;
+    }
+
+    const char *s = &fWasmMemoryBytes[res[0].of.i32];
+
+    return s;
 }
 
 uint32_t WasmHostPlugin::getVersion() const
