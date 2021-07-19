@@ -16,22 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WASMEXAMPLEPLUGIN_HPP
-#define WASMEXAMPLEPLUGIN_HPP
+#include "AsExampleUI.hpp"
 
-#include "WasmHostPlugin.hpp"
+USE_NAMESPACE_DISTRHO
 
-START_NAMESPACE_DISTRHO
-
-class WasmExamplePlugin : public WasmHostPlugin
+UI* DISTRHO::createUI()
 {
-public:
-    WasmExamplePlugin() : WasmHostPlugin(1 /* parameterCount */, 0 /* programCount */,
-                                         0 /* stateCount */) {};
-    ~WasmExamplePlugin() {};
-
-};
-
-END_NAMESPACE_DISTRHO
-
-#endif  // WASMEXAMPLEPLUGIN_HPP
+    return new AsExampleUI;
+}

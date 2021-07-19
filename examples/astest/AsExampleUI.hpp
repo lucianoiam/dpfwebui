@@ -16,22 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WASMEXAMPLEUI_HPP
-#define WASMEXAMPLEUI_HPP
+#ifndef ASEXAMPLEUI_HPP
+#define ASEXAMPLEUI_HPP
 
 #include "WebHostUI.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class WasmExampleUI : public WebHostUI
+class AsExampleUI : public WebHostUI
 {
 public:
-    WasmExampleUI() : WebHostUI(600 /* baseWidth */, 300 /* baseHeight */,
+    AsExampleUI() : WebHostUI(600 /* baseWidth */, 300 /* baseHeight */,
                                 0xD4B6EFFF /* backgroundColor */) {};
-    ~WasmExampleUI() {};
+    ~AsExampleUI() {};
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WASMEXAMPLEUI_HPP
+#endif  // ASEXAMPLEUI_HPP

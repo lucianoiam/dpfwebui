@@ -16,11 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "WasmExampleUI.hpp"
+#include "AsExamplePlugin.hpp"
 
 USE_NAMESPACE_DISTRHO
 
-UI* DISTRHO::createUI()
+Plugin* DISTRHO::createPlugin()
 {
-    return new WasmExampleUI;
+    return new AsExamplePlugin;
 }
