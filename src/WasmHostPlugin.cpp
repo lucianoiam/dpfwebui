@@ -23,14 +23,27 @@
 
 USE_NAMESPACE_DISTRHO
 
-/*
- TODO: is there a way to select exports by name with wasmer-c-api ?
+/**
+ * FIXME: is it possible to select exports by name using the C API like in Rust?
+ * 
+ * Selecting by numeric index is not safe because indexes are likely to change
+ * and built-in exports like "memory" are not guaranteed to always appear last:
+ * 
+ *  (export "getLabel" (func $assembly/index/getLabel))
+ *  (export "getMaker" (func $assembly/index/getMaker))
+ *  (export "getLicense" (func $assembly/index/getLicense))
+ *  (export "memory" (memory $0))
+ *  (export "run" (func $export:assembly/index/run))
+ */
 
-const wasmInstance = new WebAssembly.Instance(wasmModule, {env:{abort:()=>{}}});
-console.log(Object.keys(wasmInstance.exports));
-*/
 enum ExportIndex {
-    GET_LABEL, GET_MAKER, GET_LICENSE, MEMORY
+    INPUT_BLOCK,
+    OUTPUT_BLOCK,
+    GET_LABEL,
+    GET_MAKER,
+    GET_LICENSE,
+    RUN,
+    MEMORY
 };
 
 #define own
@@ -128,6 +141,17 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     wasm_memory_t* memory = wasm_extern_as_memory(fWasmExports.data[ExportIndex::MEMORY]);
     fWasmMemoryBytes = wasm_memory_data(memory);
+
+    wasm_val_t blockPtr;
+    wasm_global_t* block;
+
+    block = wasm_extern_as_global(fWasmExports.data[ExportIndex::INPUT_BLOCK]);
+    wasm_global_get(block, &blockPtr);
+    fInputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
+
+    block = wasm_extern_as_global(fWasmExports.data[ExportIndex::OUTPUT_BLOCK]);
+    wasm_global_get(block, &blockPtr);
+    fOutputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
 }
 
 WasmHostPlugin::~WasmHostPlugin()
@@ -261,8 +285,28 @@ String WasmHostPlugin::getState(const char* key) const
 
 void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
 {
-    // FIXME
-    (void)inputs;
-    (void)outputs;
-    (void)frames;
+    for (int i = 0; i < DISTRHO_PLUGIN_NUM_INPUTS; i++) {
+        memcpy(fInputBlock + i * frames, inputs[i], frames * 4);
+    }
+
+    wasm_func_t* func = wasm_extern_as_func(fWasmExports.data[ExportIndex::RUN]);
+    wasm_val_t args[3] = {
+        WASM_I32_VAL(static_cast<int32_t>(DISTRHO_PLUGIN_NUM_INPUTS)),
+        WASM_I32_VAL(static_cast<int32_t>(DISTRHO_PLUGIN_NUM_OUTPUTS)),
+        WASM_I32_VAL(static_cast<int32_t>(frames))
+    };
+    wasm_val_t res[0] = {};
+    wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
+    wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
+
+    wasm_trap_t* trap = wasm_func_call(func, &argsArray, &resArray);
+
+    if (trap != 0) {
+        APX_LOG_STDERR_COLOR("Error calling Wasm function");
+        return;
+    }
+
+    for (int i = 0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; i++) {
+        memcpy(outputs[i], fOutputBlock + i * frames, frames * 4);
+    }
 }

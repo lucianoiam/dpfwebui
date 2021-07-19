@@ -60,6 +60,8 @@ private:
     wasm_module_t*    fWasmModule;
     wasm_extern_vec_t fWasmExports;
     byte_t*           fWasmMemoryBytes;
+    float32_t*        fInputBlock;
+    float32_t*        fOutputBlock;
 
 };
 
