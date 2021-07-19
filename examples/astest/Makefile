@@ -7,7 +7,7 @@
 # --------------------------------------------------------------
 # Project name, used for binaries
 
-NAME = d_wasmtest
+NAME = d_astest
 
 # --------------------------------------------------------------
 # Project version, used for generating unique symbol names
@@ -15,7 +15,7 @@ NAME = d_wasmtest
 APX_PROJECT_VERSION = 1
 
 # --------------------------------------------------------------
-# Wasm DSP files location
+# AssemblyScript DSP files location
 
 APX_AS_DSP_PATH = dsp
 
@@ -28,16 +28,16 @@ APX_WEB_UI_PATH = ui
 # Files to build
 
 FILES_DSP = \
-    WasmExamplePlugin.cpp
+    AsExamplePlugin.cpp
 
 FILES_UI  = \
-    WasmExampleUI.cpp
+    AsExampleUI.cpp
 
 # --------------------------------------------------------------
 # Do some magic
 
 DPF_TARGET_DIR = ../../bin
-DPF_BUILD_DIR = ../../build/wasmtest/1/2
+DPF_BUILD_DIR = ../../build/astest/1/2
 
 include ../../Makefile.plugins.mk
 

@@ -19,7 +19,7 @@
    This is used to identify your plugin before a Plugin instance can be created.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_NAME "WasmTest"
+#define DISTRHO_PLUGIN_NAME "AsTest"
 
 /**
    Number of audio inputs the plugin has.
@@ -37,7 +37,7 @@
    The plugin URI when exporting in LV2 format.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_URI "https://lucianoiam.com/apices/wasmtest"
+#define DISTRHO_PLUGIN_URI "https://lucianoiam.com/apices/astest"
 
 /**
    Wherever the plugin has a custom %UI.

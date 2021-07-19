@@ -19,7 +19,7 @@
 // namespace and guaranteed to be available after the document load event fires
 // and before any referenced script starts running.
 
-class WasmExampleUI extends DISTRHO_UI {
+class AsExampleUI extends DISTRHO_UI {
 
     constructor() {
         super(); // mandatory

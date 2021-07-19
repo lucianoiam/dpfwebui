@@ -14,22 +14,11 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WASMEXAMPLEPLUGIN_HPP
-#define WASMEXAMPLEPLUGIN_HPP
+#include "AsExamplePlugin.hpp"
 
-#include "WasmHostPlugin.hpp"
+USE_NAMESPACE_DISTRHO
 
-START_NAMESPACE_DISTRHO
-
-class WasmExamplePlugin : public WasmHostPlugin
+Plugin* DISTRHO::createPlugin()
 {
-public:
-    WasmExamplePlugin() : WasmHostPlugin(1 /* parameterCount */, 0 /* programCount */,
-                                         0 /* stateCount */) {};
-    ~WasmExamplePlugin() {};
-
-};
-
-END_NAMESPACE_DISTRHO
-
-#endif  // WASMEXAMPLEPLUGIN_HPP
+    return new AsExamplePlugin;
+}

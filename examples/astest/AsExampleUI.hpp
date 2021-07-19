@@ -14,11 +14,22 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "WasmExampleUI.hpp"
+#ifndef ASEXAMPLEUI_HPP
+#define ASEXAMPLEUI_HPP
 
-USE_NAMESPACE_DISTRHO
+#include "WebHostUI.hpp"
 
-UI* DISTRHO::createUI()
+START_NAMESPACE_DISTRHO
+
+class AsExampleUI : public WebHostUI
 {
-    return new WasmExampleUI;
-}
+public:
+    AsExampleUI() : WebHostUI(600 /* baseWidth */, 300 /* baseHeight */,
+                                0xD4B6EFFF /* backgroundColor */) {};
+    ~AsExampleUI() {};
+
+};
+
+END_NAMESPACE_DISTRHO
+
+#endif  // ASEXAMPLEUI_HPP
