@@ -1,6 +1,6 @@
-import Plugin from './plugin';
+import PluginImpl from './plugin';
 
-const instance = new Plugin;
+const instance = new PluginImpl;
 
 export function getLabel(): ArrayBuffer {
     return String.UTF8.encode(instance.getLabel(), true);

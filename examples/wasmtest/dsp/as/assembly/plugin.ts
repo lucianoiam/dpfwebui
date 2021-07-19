@@ -1,6 +1,6 @@
 import DISTRHO_Plugin from './interface';
 
-export default class Plugin implements DISTRHO_Plugin {
+export default class WasmTestPlugin implements DISTRHO_Plugin {
 
   getLabel(): string {
     return "WasmTest";
