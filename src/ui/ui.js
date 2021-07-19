@@ -40,92 +40,92 @@ class DISTRHO_UI {
         });
     }
 
-    // UI::getWidth()
+    // uint UI::getWidth()
     async getWidth() {
         return this._callAndExpectReply('getWidth');
     }
 
-    // UI::getHeight()
+    // uint UI::getHeight()
     async getHeight() {
         return this._callAndExpectReply('getHeight');
     }
 
-    // UI::setWidth(uint width)
+    // void UI::setWidth(uint width)
     setWidth(width) {
         this._call('setWidth', width);
     }
 
-    // UI::setHeight(uint height)
+    // void UI::setHeight(uint height)
     setHeight(height) {
         this._call('setHeight', height);
     }
 
-    // UI::isResizable()
+    // bool UI::isResizable()
     async isResizable() {
         return this._callAndExpectReply('isResizable');
     }
 
-    // UI::setSize(uint width, uint height)
+    // void UI::setSize(uint width, uint height)
     setSize(width, height) {
         this._call('setSize', width, height);
     }
 
-    // UI::editParameter(uint32_t index, bool started)
+    // void UI::editParameter(uint32_t index, bool started)
     editParameter(index, started) {
         this._call('editParameter', index, started);
     }
 
-    // UI::setParameterValue(uint32_t index, float value)
+    // void UI::setParameterValue(uint32_t index, float value)
     setParameterValue(index, value) {
         this._call('setParameterValue', index, value);
     }
 
-    // UI::setState(const char* key, const char* value)
+    // void UI::setState(const char* key, const char* value)
     setState(key, value) {
         this._call('setState', key, value);
     }
 
-    // UI::parameterChanged(uint32_t index, float value)
+    // void UI::parameterChanged(uint32_t index, float value)
     parameterChanged(index, value) {
         // default empty implementation
     }
 
-    // UI::stateChanged(const char* key, const char* value)
+    // void UI::stateChanged(const char* key, const char* value)
     stateChanged(key, value) {
         // default empty implementation
     }
 
-    // WebHostUI::flushInitMessageQueue()
+    // void WebHostUI::flushInitMessageQueue()
     flushInitMessageQueue() {
         this._call('flushInitMessageQueue');
     }
 
-    // WebHostUI::setKeyboardFocus()
+    // void WebHostUI::setKeyboardFocus()
     setKeyboardFocus(focus) {
         this._call('setKeyboardFocus', focus);
     }
 
-    // WebHostUI::getInitWidth()
+    // uint WebHostUI::getInitWidth()
     async getInitWidth() {
         return this._callAndExpectReply('getInitWidth');
     }
 
-    // WebHostUI::getInitHeight()
+    // uint WebHostUI::getInitHeight()
     async getInitHeight() {
         return this._callAndExpectReply('getInitHeight');
     }
 
-    // Application::isStandalone()
+    // bool Application::isStandalone()
     async isStandalone() {
         return this._callAndExpectReply('isStandalone');
     }
 
-    // WebHostUI::webPostMessage(const ScriptValueVector& args)
+    // void WebHostUI::webPostMessage(const ScriptValueVector& args)
     postMessage(...args) {
         window.webviewHost.postMessage(args);
     }
 
-    // WebHostUI::webMessageReceived(const ScriptValueVector& args)
+    // void WebHostUI::webMessageReceived(const ScriptValueVector& args)
     messageReceived(args) {
         // default empty implementation
     }
