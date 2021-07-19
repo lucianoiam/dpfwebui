@@ -1,4 +1,3 @@
-R"UI_JS(
 /*
  * Apices - Audio Plugins In C++ & ES6
  * Copyright (C) 2021 Luciano Iam <oss@lucianoiam.com>
@@ -145,5 +144,3 @@ class DISTRHO_UI {
     }
 
 }
-
-)UI_JS"
