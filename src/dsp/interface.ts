@@ -15,7 +15,14 @@
  */
 
 export default interface DISTRHO_Plugin {
+
+    // const char* Plugin::getLabel()
     getLabel(): string;
+
+    // const char* Plugin::getMaker()
     getMaker(): string;
+
+    // const char* Plugin::getLicense()
     getLicense(): string;
+
 }

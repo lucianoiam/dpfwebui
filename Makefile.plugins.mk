@@ -55,7 +55,7 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
-# Add optional support for Wasm-based DSP
+# Add optional support for AssemblyScript based DSP
 
 ifeq ($(AS_DSP),true)
 APX_FILES_DSP  = WasmHostPlugin.cpp \
@@ -124,7 +124,7 @@ endif
 include $(DPF_PATH)/Makefile.plugins.mk
 
 # ------------------------------------------------------------------------------
-# Add build flags for Wasm-based DSP dependencies
+# Add build flags for AssemblyScript DSP dependencies
 
 ifeq ($(AS_DSP),true)
 BASE_FLAGS += -I$(WASMER_PATH)/include
