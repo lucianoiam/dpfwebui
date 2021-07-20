@@ -18,32 +18,32 @@
 
 import PluginImpl from './plugin'
 
-const instance = new PluginImpl
+const pluginInstance = new PluginImpl
 
 // Keep getLabel(), getMaker() and getLicense() as function exports. They could
 // be replaced with globals initialized with their return values for a simpler
 // implementation, but maybe in the future index.ts gets automatically injected
 // into the Wasm VM (just like done with ui.js for the web view) and plugin
 // implementations are moved to "shared libraries". In such scheme the guarantee
-// that the global 'instance' is already initialized here no longer holds.
+// that the global 'pluginInstance' is already initialized here no longer holds.
 
-export function ext_getLabel(): ArrayBuffer {
-    return String.UTF8.encode(instance.getLabel(), true)
+export function apx_get_label(): ArrayBuffer {
+    return String.UTF8.encode(pluginInstance.getLabel(), true)
 }
 
-export function ext_getMaker(): ArrayBuffer {
-    return String.UTF8.encode(instance.getMaker(), true)
+export function apx_get_maker(): ArrayBuffer {
+    return String.UTF8.encode(pluginInstance.getMaker(), true)
 }
 
-export function ext_getLicense(): ArrayBuffer {
-    return String.UTF8.encode(instance.getLicense(), true)
+export function apx_get_license(): ArrayBuffer {
+    return String.UTF8.encode(pluginInstance.getLicense(), true)
 }
 
 // Number of inputs or outputs does not change during runtime so it makes sense
 // to init both once instead of passing them as arguments on every call to run()
 
-export let ext_numInputs: i32 = 0
-export let ext_numOutputs: i32 = 0
+export let apx_num_inputs: i32 = 0
+export let apx_num_outputs: i32 = 0
 
 // Using exported globals instead of passing buffer arguments to run() makes
 // implementation easier by avoiding Wasm memory allocation on the host side.
@@ -51,21 +51,21 @@ export let ext_numOutputs: i32 = 0
 
 const MAX_PROCESS_BLOCK_SIZE = 65536
 
-export let ext_inputBlock = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
-export let ext_outputBlock = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
+export let apx_input_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
+export let apx_output_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
 
-export function ext_run(frames: i32): void {
+export function apx_run(frames: i32): void {
     const inputs: Array<Float32Array> = []
 
-    for (let i = 0; i < ext_numInputs; i++) {
-        inputs.push(Float32Array.wrap(ext_inputBlock, i * frames * 4, frames))
+    for (let i = 0; i < apx_num_inputs; i++) {
+        inputs.push(Float32Array.wrap(apx_input_block, i * frames * 4, frames))
     }
 
     const outputs: Array<Float32Array> = []
 
-    for (let i = 0; i < ext_numOutputs; i++) {
-        outputs.push(Float32Array.wrap(ext_outputBlock, i * frames * 4, frames))
+    for (let i = 0; i < apx_num_outputs; i++) {
+        outputs.push(Float32Array.wrap(apx_output_block, i * frames * 4, frames))
     }
 
-    instance.run(inputs, outputs)
+    pluginInstance.run(inputs, outputs)
 }
