@@ -17,17 +17,8 @@
  */
 
 // There is no support for virtual methods in AssemblyScript. Methods that are
-// implemented by the native container must be placed in DISTRHO_Plugin_Base
-// and methods implemented by the plugin author placed in DISTRHO_Plugin .
-
-export class DISTRHO_Plugin_Base {
-    
-    // double Plugin::getSampleRate();
-    getSampleRate(): f32 {
-        return apx_get_sample_rate()
-    }
-
-}
+// implemented by the plugin author are declared in the DISTRHO_Plugin interface
+// and methods implemented by the native container placed in DISTRHO_Plugin_Base
 
 export interface DISTRHO_Plugin {
 
@@ -48,6 +39,15 @@ export interface DISTRHO_Plugin {
 
     // void Plugin::run(const float** inputs, float** outputs, uint32_t frames)
     run(inputs: Float32Array[], outputs: Float32Array[]): void
+
+}
+
+export class DISTRHO_Plugin_Base {
+    
+    // double Plugin::getSampleRate();
+    getSampleRate(): f32 {
+        return apx_get_sample_rate()
+    }
 
 }
 

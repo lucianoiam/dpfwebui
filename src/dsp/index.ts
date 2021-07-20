@@ -20,12 +20,13 @@ import PluginImpl from './plugin'
 
 const pluginInstance = new PluginImpl
 
-// Keep getLabel(), getMaker() and getLicense() as function exports. They could
-// be replaced with globals initialized with their return values for a simpler
-// implementation, but maybe in the future index.ts gets automatically injected
-// into the Wasm VM (just like done with ui.js for the web view) and plugin
-// implementations are moved to "shared libraries". In such scheme the guarantee
-// that the global 'pluginInstance' is already initialized here no longer holds.
+// Keep apx_get_label(), apx_get_maker() and apx_get_license() as function
+// exports. They could be replaced with globals initialized to these function
+// return values for a simpler implementation, but maybe in the future index.ts
+// gets automatically injected into the Wasm VM (just like done with ui.js for
+// the web view) and plugin implementations moved to "shared libraries". Under
+// such scheme the guarantee that the global pluginInstance variable is already
+// initialized at this point no longer holds.
 
 export function apx_get_label(): ArrayBuffer {
     return String.UTF8.encode(pluginInstance.getLabel(), true)
@@ -37,6 +38,14 @@ export function apx_get_maker(): ArrayBuffer {
 
 export function apx_get_license(): ArrayBuffer {
     return String.UTF8.encode(pluginInstance.getLicense(), true)
+}
+
+export function apx_activate(): void {
+    pluginInstance.activate()
+}
+
+export function apx_deactivate(): void {
+    pluginInstance.deactivate()
 }
 
 // Number of inputs or outputs does not change during runtime so it makes sense
