@@ -19,6 +19,20 @@
 #include "Platform.hpp"
 #include "macro.h"
 
+// Useful macros for reducing Wasmer C calls noise
+
+#define WASM_DEFINE_ARGS_VAL_VEC_1(var,arg0) wasm_val_t var[1] = { arg0 }; \
+                                             wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
+#define WASM_DEFINE_RES_VAL_VEC_1(var) wasm_val_t var[1] = { WASM_INIT_VAL }; \
+                                       wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
+
+#define WASM_FUNC_BY_INDEX(n) wasm_extern_as_func(fWasmExports.data[ExportIndex::n])
+#define WASM_FUNC_CALL(n,a,r) wasm_func_call(WASM_FUNC_BY_INDEX(n), a, r)
+
+#define WASM_LOG_FUNC_CALL_ERROR() APX_LOG_STDERR_COLOR("Error calling Wasm function")
+
+#define WASM_MEMORY_CSTR(val) &fWasmMemoryBytes[val.of.i32];
+
 USE_NAMESPACE_DISTRHO
 
 /**
@@ -34,6 +48,8 @@ enum ExportIndex {
     GET_LABEL,
     GET_MAKER,
     GET_LICENSE,
+    ACTIVATE,
+    DEACTIVATE,
     NUM_INPUTS,
     NUM_OUTPUTS,
     INPUT_BLOCK,
@@ -48,6 +64,9 @@ static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wa
                                                     own wasm_valtype_t* p3, own wasm_valtype_t* p4);
 static own wasm_trap_t* apx_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results);
 static own wasm_trap_t* apx_get_sample_rate(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results);
+
+static wasm_val_t     empty_val_array[0] = {};
+static wasm_val_vec_t empty_val_vec = WASM_ARRAY_VEC(empty_val_array);
 
 WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
     : Plugin(parameterCount, programCount, stateCount)
@@ -164,62 +183,38 @@ WasmHostPlugin::~WasmHostPlugin()
 
 const char* WasmHostPlugin::getLabel() const
 {
-    wasm_func_t* func = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_LABEL]);
-    wasm_val_t args[0] = {};
-    wasm_val_t res[1] = { WASM_INIT_VAL };
-    wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
-    wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
+    WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    wasm_trap_t* trap = wasm_func_call(func, &argsArray, &resArray);
-
-    if (trap != 0) {
-        APX_LOG_STDERR_COLOR("Error calling Wasm function");
+    if (WASM_FUNC_CALL(GET_LABEL, &empty_val_vec, &res_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
         return 0;
     }
 
-    const char *s = &fWasmMemoryBytes[res[0].of.i32];
-
-    return s;
+    return WASM_MEMORY_CSTR(res[0]);
 }
 
 const char* WasmHostPlugin::getMaker() const
 {
-    wasm_func_t* func = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_MAKER]);
-    wasm_val_t args[0] = {};
-    wasm_val_t res[1] = { WASM_INIT_VAL };
-    wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
-    wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
+    WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    wasm_trap_t* trap = wasm_func_call(func, &argsArray, &resArray);
-
-    if (trap != 0) {
-        APX_LOG_STDERR_COLOR("Error calling Wasm function");
+    if (WASM_FUNC_CALL(GET_MAKER, &empty_val_vec, &res_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
         return 0;
     }
 
-    const char *s = &fWasmMemoryBytes[res[0].of.i32];
-
-    return s;
+    return WASM_MEMORY_CSTR(res[0]);
 }
 
 const char* WasmHostPlugin::getLicense() const
 {
-    wasm_func_t* func = wasm_extern_as_func(fWasmExports.data[ExportIndex::GET_LICENSE]);
-    wasm_val_t args[0] = {};
-    wasm_val_t res[1] = { WASM_INIT_VAL };
-    wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
-    wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
+    WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    wasm_trap_t* trap = wasm_func_call(func, &argsArray, &resArray);
-
-    if (trap != 0) {
-        APX_LOG_STDERR_COLOR("Error calling Wasm function");
+    if (WASM_FUNC_CALL(GET_LICENSE, &empty_val_vec, &res_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
         return 0;
     }
 
-    const char *s = &fWasmMemoryBytes[res[0].of.i32];
-
-    return s;
+    return WASM_MEMORY_CSTR(res[0]);
 }
 
 uint32_t WasmHostPlugin::getVersion() const
@@ -284,12 +279,16 @@ String WasmHostPlugin::getState(const char* key) const
 
 void WasmHostPlugin::activate()
 {
-    
+    if (WASM_FUNC_CALL(ACTIVATE, &empty_val_vec, &empty_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
+    }
 }
 
 void WasmHostPlugin::deactivate()
 {
-    // Empty implementation
+    if (WASM_FUNC_CALL(DEACTIVATE, &empty_val_vec, &empty_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
+    }
 }
 
 void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
@@ -298,16 +297,10 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
         memcpy(fInputBlock + i * frames, inputs[i], frames * 4);
     }
 
-    wasm_func_t* func = wasm_extern_as_func(fWasmExports.data[ExportIndex::RUN]);
-    wasm_val_t args[1] = { WASM_I32_VAL(static_cast<int32_t>(frames)) };
-    wasm_val_t res[0] = {};
-    wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
-    wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
+    WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(frames)));
 
-    wasm_trap_t* trap = wasm_func_call(func, &argsArray, &resArray);
-
-    if (trap != 0) {
-        APX_LOG_STDERR_COLOR("Error calling Wasm function");
+    if (WASM_FUNC_CALL(RUN, &args_val_vec, &empty_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
         return;
     }
 
