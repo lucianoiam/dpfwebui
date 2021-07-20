@@ -73,7 +73,7 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
 #endif
 
     String js = String(
-#include "ui/ui.js.include"
+#include "ui/distrho-ui.js.include"
     );
     fWebWidget.injectScript(js);
 

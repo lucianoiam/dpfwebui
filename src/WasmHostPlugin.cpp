@@ -27,48 +27,29 @@ USE_NAMESPACE_DISTRHO
  * FIXME: is it possible to select exports by name using the C API like in Rust?
  * 
  * Selecting by numeric index is not safe because indexes are likely to change
- * and built-in exports like "memory" are not guaranteed to always appear last:
+ * and built-in exports like "memory" are not guaranteed to always appear last.
  * 
- *  (export "getLabel" (func $assembly/index/getLabel))
- *  (export "getMaker" (func $assembly/index/getMaker))
- *  (export "getLicense" (func $assembly/index/getLicense))
- *  (export "memory" (memory $0))
- *  (export "run" (func $export:assembly/index/run))
+ * Ditto for native symbols imported by the WebAssembly module.
  */
 
 enum ExportIndex {
+    GET_LABEL,
+    GET_MAKER,
+    GET_LICENSE,
     NUM_INPUTS,
     NUM_OUTPUTS,
     INPUT_BLOCK,
     OUTPUT_BLOCK,
-    GET_LABEL,
-    GET_MAKER,
-    GET_LICENSE,
     RUN,
     MEMORY
 };
 
 #define own
 
-// Convenience function, Wasmer provides up to wasm_functype_new_3_0()
-static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1,
-    own wasm_valtype_t* p2, own wasm_valtype_t* p3, own wasm_valtype_t* p4)
-{
-    wasm_valtype_t* ps[4] = {p1, p2, p3, p4};
-    wasm_valtype_vec_t params, results;
-    wasm_valtype_vec_new(&params, 4, ps);
-    wasm_valtype_vec_new_empty(&results);
-    return wasm_functype_new(&params, &results);
-}
-
-// Boilerplate for initializing Wasm modules compiled from AssemblyScript
-static own wasm_trap_t* as_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results)
-{
-    (void)args;
-    (void)results;
-    APX_LOG_STDERR_COLOR("AssemblyScript abort() called");
-    return 0;
-}
+static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
+                                                    own wasm_valtype_t* p3, own wasm_valtype_t* p4);
+static own wasm_trap_t* wasm_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results);
+static own wasm_trap_t* wasm_get_sample_rate(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results);
 
 WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
     : Plugin(parameterCount, programCount, stateCount)
@@ -117,13 +98,23 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     wasm_byte_vec_delete(&fileBytes);
 
-    wasm_functype_t *abortFuncType = wasm_functype_new_4_0(wasm_valtype_new_i32(),
-        wasm_valtype_new_i32(), wasm_valtype_new_i32(), wasm_valtype_new_i32());
-    wasm_func_t *abortFunc = wasm_func_new(fWasmStore, abortFuncType, as_abort);
-    wasm_functype_delete(abortFuncType);
+    // Allow Wasm to call some native functions
+
     wasm_extern_vec_t imports;
-    wasm_extern_vec_new_uninitialized(&imports, 1);
-    imports.data[0] = wasm_func_as_extern(abortFunc);
+    wasm_extern_vec_new_uninitialized(&imports, 2);
+    wasm_functype_t *funcType;
+    wasm_func_t *func;
+
+    funcType = wasm_functype_new_4_0(wasm_valtype_new_i32(), wasm_valtype_new_i32(),
+                                     wasm_valtype_new_i32(), wasm_valtype_new_i32());
+    func = wasm_func_new(fWasmStore, funcType, wasm_abort);
+    wasm_functype_delete(funcType);
+    imports.data[0] = wasm_func_as_extern(func);
+
+    funcType = wasm_functype_new_0_1(wasm_valtype_new_f32());
+    func = wasm_func_new_with_env(fWasmStore, funcType, wasm_get_sample_rate, this, 0);
+    wasm_functype_delete(funcType);
+    imports.data[1] = wasm_func_as_extern(func);
 
     wasm_trap_t* traps = 0;
 
@@ -293,6 +284,16 @@ String WasmHostPlugin::getState(const char* key) const
 
 #endif // DISTRHO_PLUGIN_WANT_STATE == 1
 
+void WasmHostPlugin::activate()
+{
+    
+}
+
+void WasmHostPlugin::deactivate()
+{
+    // Empty implementation
+}
+
 void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
 {
     for (int i = 0; i < DISTRHO_PLUGIN_NUM_INPUTS; i++) {
@@ -315,4 +316,34 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
     for (int i = 0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; i++) {
         memcpy(outputs[i], fOutputBlock + i * frames, frames * 4);
     }
+}
+
+// Convenience function, Wasmer provides up to wasm_functype_new_3_0()
+static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
+                                                    own wasm_valtype_t* p3, own wasm_valtype_t* p4)
+{
+    wasm_valtype_t* ps[4] = {p1, p2, p3, p4};
+    wasm_valtype_vec_t params, results;
+    wasm_valtype_vec_new(&params, 4, ps);
+    wasm_valtype_vec_new_empty(&results);
+    return wasm_functype_new(&params, &results);
+}
+
+// Boilerplate for initializing Wasm modules compiled from AssemblyScript
+static own wasm_trap_t* wasm_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results)
+{
+    // TODO - parse arguments and print them
+    (void)args;
+    (void)results;
+    APX_LOG_STDERR_COLOR("AssemblyScript abort() called");
+    return 0;
+}
+
+static own wasm_trap_t* wasm_get_sample_rate(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results)
+{
+    (void)args;
+    WasmHostPlugin* p = static_cast<WasmHostPlugin *>(env);
+    wasm_val_t res[1] = { WASM_F32_VAL(static_cast<float32_t>(p->getSampleRate())) };
+    wasm_val_vec_new(results, 1, res);
+    return 0;
 }
