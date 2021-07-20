@@ -22,7 +22,7 @@ export class DISTRHO_Plugin_Base {
     
     // double Plugin::getSampleRate();
     getSampleRate(): f32 {
-        return ext_getSampleRate()
+        return apx_get_sample_rate()
     }
 
 }
@@ -49,6 +49,6 @@ export interface DISTRHO_Plugin {
 
 }
 
-// Declare some external functions implemented by the native container
+// Declare some functions implemented by the native container
 
-declare function ext_getSampleRate(): f32
+declare function apx_get_sample_rate(): f32

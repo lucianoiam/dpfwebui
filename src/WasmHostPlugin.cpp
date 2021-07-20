@@ -46,8 +46,8 @@ enum ExportIndex {
 
 static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
                                                     own wasm_valtype_t* p3, own wasm_valtype_t* p4);
-static own wasm_trap_t* wasm_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results);
-static own wasm_trap_t* wasm_get_sample_rate(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results);
+static own wasm_trap_t* apx_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results);
+static own wasm_trap_t* apx_get_sample_rate(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results);
 
 WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
     : Plugin(parameterCount, programCount, stateCount)
@@ -105,12 +105,12 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     funcType = wasm_functype_new_4_0(wasm_valtype_new_i32(), wasm_valtype_new_i32(),
                                      wasm_valtype_new_i32(), wasm_valtype_new_i32());
-    func = wasm_func_new(fWasmStore, funcType, wasm_abort);
+    func = wasm_func_new(fWasmStore, funcType, apx_abort);
     wasm_functype_delete(funcType);
     imports.data[0] = wasm_func_as_extern(func);
 
     funcType = wasm_functype_new_0_1(wasm_valtype_new_f32());
-    func = wasm_func_new_with_env(fWasmStore, funcType, wasm_get_sample_rate, this, 0);
+    func = wasm_func_new_with_env(fWasmStore, funcType, apx_get_sample_rate, this, 0);
     wasm_functype_delete(funcType);
     imports.data[1] = wasm_func_as_extern(func);
 
@@ -328,7 +328,7 @@ static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wa
 }
 
 // Boilerplate for initializing Wasm modules compiled from AssemblyScript
-static own wasm_trap_t* wasm_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results)
+static own wasm_trap_t* apx_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results)
 {
     // TODO - parse arguments and print them
     (void)args;
@@ -337,7 +337,7 @@ static own wasm_trap_t* wasm_abort(const wasm_val_vec_t* args, wasm_val_vec_t* r
     return 0;
 }
 
-static own wasm_trap_t* wasm_get_sample_rate(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results)
+static own wasm_trap_t* apx_get_sample_rate(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results)
 {
     (void)args;
     WasmHostPlugin* p = static_cast<WasmHostPlugin *>(env);
