@@ -55,7 +55,7 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
-# Add optional support for AssemblyScript based DSP
+# Add optional support for AssemblyScript DSP
 
 ifeq ($(AS_DSP),true)
 APX_FILES_DSP  = WasmHostPlugin.cpp \
@@ -75,7 +75,7 @@ FILES_DSP += $(APX_FILES_DSP:%=$(APX_SRC_PATH)/%)
 endif
 
 # ------------------------------------------------------------------------------
-# Add web-based UI source
+# Add web UI source
 
 APX_FILES_UI  = WebHostUI.cpp \
                 AbstractWebWidget.cpp \
@@ -138,7 +138,7 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
-# Add build flags for web-based UI dependencies
+# Add build flags for web UI dependencies
 
 BASE_FLAGS += -I$(APX_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
               -DAPX_PROJECT_ID_HASH=$(shell echo $(NAME):$(APX_PROJECT_VERSION) \
@@ -303,7 +303,7 @@ endif
 
 # ------------------------------------------------------------------------------
 # Post build - Determine built targets
-# User defined $(TARGETS) are only available *after* inclusion of this Makefile
+# User defined TARGETS are only available *after* inclusion of this Makefile
 
 TEST_LV2 = test -d $(TARGET_DIR)/$(NAME).lv2
 TEST_DSSI = test -d $(TARGET_DIR)/$(NAME)-dssi
