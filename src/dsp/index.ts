@@ -29,17 +29,20 @@ const MAX_PROCESS_BLOCK_SIZE = 65536
 export let inputBlock = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
 export let outputBlock = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
 
-// TODO: avoid unnecessary function, export result as global instead
+// Keep getLabel(), getMaker() and getLicense() as function exports. They could
+// be replaced with globals initialized with their return values for a simpler
+// implementation, but maybe in the future index.ts gets automatically injected
+// into the Wasm VM (just like done with ui.js for the web view) and the
+// guarantee that 'instance' is already initialized no longer holds.
+
 export function getLabel(): ArrayBuffer {
     return String.UTF8.encode(instance.getLabel(), true)
 }
 
-// TODO: avoid unnecessary function, export result as global instead
 export function getMaker(): ArrayBuffer {
     return String.UTF8.encode(instance.getMaker(), true)
 }
 
-// TODO: avoid unnecessary function, export result as global instead
 export function getLicense(): ArrayBuffer {
     return String.UTF8.encode(instance.getLicense(), true)
 }
