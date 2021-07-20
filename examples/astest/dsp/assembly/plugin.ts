@@ -1,8 +1,10 @@
-import DISTRHO_Plugin from './interface'
+import { DISTRHO_Plugin_Base, DISTRHO_Plugin } from './distrho-plugin'
 
 @inline const PI2: f32 = Mathf.PI * 2
 
-export default class AsTestPlugin implements DISTRHO_Plugin {
+export default class AsTestPlugin extends DISTRHO_Plugin_Base implements DISTRHO_Plugin {
+
+  private phase: f32
 
   getLabel(): string {
     return "AsTest"
@@ -16,7 +18,13 @@ export default class AsTestPlugin implements DISTRHO_Plugin {
     return "ISC"
   }
 
-  private phase: f32
+  activate(): void {
+    // Empty implementation
+  }
+
+  deactivate(): void {
+    // Empty implementation
+  }
 
   run(inputs: Float32Array[], outputs: Float32Array[]): void {
     const output = outputs[0]
@@ -39,7 +47,7 @@ export default class AsTestPlugin implements DISTRHO_Plugin {
   }
 
   @inline freqToRadians(frequency: f32): f32 {
-    return frequency * PI2 * (1.0 / 48000 /* FIXME */)
+    return frequency * PI2 * (1.0 / this.getSampleRate())
   }
 
 }

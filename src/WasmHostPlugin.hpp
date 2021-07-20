@@ -49,6 +49,9 @@ public:
 #endif
 #endif
 
+    void activate() override;
+    void deactivate() override;
+
     void run(const float** inputs, float** outputs, uint32_t frames) override;
 
 private:

@@ -258,13 +258,13 @@ endif
 # ------------------------------------------------------------------------------
 # Dependency - Built-in JavaScript library include
 
-UI_JS_INCLUDE_PATH = $(APX_SRC_PATH)/ui/ui.js.include
+UI_JS_INCLUDE_PATH = $(APX_SRC_PATH)/ui/distrho-ui.js.include
 
 TARGETS += $(UI_JS_INCLUDE_PATH)
 
 $(UI_JS_INCLUDE_PATH):
 	@echo 'R"UI_JS(' > $(UI_JS_INCLUDE_PATH)
-	@cat $(APX_SRC_PATH)/ui/ui.js >> $(UI_JS_INCLUDE_PATH)
+	@cat $(APX_SRC_PATH)/ui/distrho-ui.js >> $(UI_JS_INCLUDE_PATH)
 	@echo ')UI_JS"' >> $(UI_JS_INCLUDE_PATH)
 
 # ------------------------------------------------------------------------------

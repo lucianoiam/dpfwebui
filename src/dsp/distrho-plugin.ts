@@ -14,7 +14,20 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-export default interface DISTRHO_Plugin {
+// There is no support for virtual methods in AssemblyScript. Methods that are
+// implemented by the native container must be placed in DISTRHO_Plugin_Base
+// and methods implemented by the plugin author placed in DISTRHO_Plugin .
+
+export class DISTRHO_Plugin_Base {
+    
+    // double Plugin::getSampleRate();
+    getSampleRate(): f32 {
+        return ext_getSampleRate()
+    }
+
+}
+
+export interface DISTRHO_Plugin {
 
     // const char* Plugin::getLabel()
     getLabel(): string
@@ -25,7 +38,17 @@ export default interface DISTRHO_Plugin {
     // const char* Plugin::getLicense()
     getLicense(): string
 
+    // void Plugin::activate()
+    activate(): void
+
+    // void Plugin::deactivate()
+    deactivate(): void
+
     // void Plugin::run(const float** inputs, float** outputs, uint32_t frames)
     run(inputs: Float32Array[], outputs: Float32Array[]): void
 
 }
+
+// Declare some external functions implemented by the native container
+
+declare function ext_getSampleRate(): f32
