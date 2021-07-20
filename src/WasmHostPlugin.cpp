@@ -37,6 +37,8 @@ USE_NAMESPACE_DISTRHO
  */
 
 enum ExportIndex {
+    NUM_INPUTS,
+    NUM_OUTPUTS,
     INPUT_BLOCK,
     OUTPUT_BLOCK,
     GET_LABEL,
@@ -143,15 +145,23 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     fWasmMemoryBytes = wasm_memory_data(memory);
 
     wasm_val_t blockPtr;
-    wasm_global_t* block;
+    wasm_global_t* g;
 
-    block = wasm_extern_as_global(fWasmExports.data[ExportIndex::INPUT_BLOCK]);
-    wasm_global_get(block, &blockPtr);
+    g = wasm_extern_as_global(fWasmExports.data[ExportIndex::INPUT_BLOCK]);
+    wasm_global_get(g, &blockPtr);
     fInputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
 
-    block = wasm_extern_as_global(fWasmExports.data[ExportIndex::OUTPUT_BLOCK]);
-    wasm_global_get(block, &blockPtr);
+    g = wasm_extern_as_global(fWasmExports.data[ExportIndex::OUTPUT_BLOCK]);
+    wasm_global_get(g, &blockPtr);
     fOutputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
+
+    g = wasm_extern_as_global(fWasmExports.data[ExportIndex::NUM_INPUTS]);
+    wasm_val_t numInputs WASM_I32_VAL(static_cast<int32_t>(DISTRHO_PLUGIN_NUM_INPUTS));
+    wasm_global_set(g, &numInputs);
+
+    g = wasm_extern_as_global(fWasmExports.data[ExportIndex::NUM_OUTPUTS]);
+    wasm_val_t numOutputs WASM_I32_VAL(static_cast<int32_t>(DISTRHO_PLUGIN_NUM_OUTPUTS));
+    wasm_global_set(g, &numOutputs);
 }
 
 WasmHostPlugin::~WasmHostPlugin()
@@ -290,11 +300,7 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
     }
 
     wasm_func_t* func = wasm_extern_as_func(fWasmExports.data[ExportIndex::RUN]);
-    wasm_val_t args[3] = {
-        WASM_I32_VAL(static_cast<int32_t>(DISTRHO_PLUGIN_NUM_INPUTS)),
-        WASM_I32_VAL(static_cast<int32_t>(DISTRHO_PLUGIN_NUM_OUTPUTS)),
-        WASM_I32_VAL(static_cast<int32_t>(frames))
-    };
+    wasm_val_t args[1] = { WASM_I32_VAL(static_cast<int32_t>(frames)) };
     wasm_val_t res[0] = {};
     wasm_val_vec_t argsArray = WASM_ARRAY_VEC(args);
     wasm_val_vec_t resArray = WASM_ARRAY_VEC(res);
