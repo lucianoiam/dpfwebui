@@ -18,9 +18,15 @@ import PluginImpl from './plugin'
 
 const instance = new PluginImpl
 
-// Using exported globals instead of arguments for run() makes implementation
-// easier by avoiding Wasm memory allocation on the host side. Block size should
-// not exceed 64Kb, or 16384 frames assuming 32-bit float samples.
+// Number of inputs or outputs does not change during runtime so it makes sense
+// to init both once instead of passing them as arguments on every call to run()
+
+export let numInputs: i32 = 0
+export let numOutputs: i32 = 0
+
+// Using exported globals instead of passing buffer arguments to run() makes
+// implementation easier by avoiding Wasm memory allocation on the host side.
+// Block size should not exceed 64Kb, or 16384 frames of 32-bit float samples.
 
 const MAX_PROCESS_BLOCK_SIZE = 65536
 
@@ -30,8 +36,9 @@ export let outputBlock = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
 // Keep getLabel(), getMaker() and getLicense() as function exports. They could
 // be replaced with globals initialized with their return values for a simpler
 // implementation, but maybe in the future index.ts gets automatically injected
-// into the Wasm VM (just like done with ui.js for the web view) and the
-// guarantee that 'instance' is already initialized no longer holds.
+// into the Wasm VM (just like done with ui.js for the web view) and plugin
+// implementations are moved to "shared libraries". In such scheme the guarantee
+// that the global 'instance' is already initialized here no longer holds.
 
 export function getLabel(): ArrayBuffer {
     return String.UTF8.encode(instance.getLabel(), true)
@@ -45,8 +52,7 @@ export function getLicense(): ArrayBuffer {
     return String.UTF8.encode(instance.getLicense(), true)
 }
 
-// TODO: avoid unnecessary arguments, convert numInputs and numOutputs into mutable globals
-export function run(numInputs: i32, numOutputs: i32, frames: i32): void {
+export function run(frames: i32): void {
     const inputs: Array<Float32Array> = []
 
     for (let i = 0; i < numInputs; i++) {
