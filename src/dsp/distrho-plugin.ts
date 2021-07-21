@@ -24,7 +24,7 @@ export default namespace DISTRHO {
     // There is no support for virtual methods in AssemblyScript. Methods that
     // are implemented by the plugin author are declared in PluginInterface
     // and methods provided by the native container implemented in Plugin class.
-    // C++ DISTRHO::Plugin = AS Plugin + AS PluginInterface
+    // C++ DISTRHO::Plugin = AS DISTRHO.Plugin + AS DISTRHO.PluginInterface
 
     export interface PluginInterface {
 
