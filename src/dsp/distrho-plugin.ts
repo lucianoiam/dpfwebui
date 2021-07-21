@@ -14,7 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// Any kind of interface to the native container is strictly handled by index.ts
+// Everything contained in this file attempts to mimic the C++ plugin interfaces
+// Low-level interactions with native container are strictly handled by index.ts
 
 import { dpf_get_sample_rate } from './index'
 
@@ -23,6 +24,7 @@ export default namespace DISTRHO {
     // There is no support for virtual methods in AssemblyScript. Methods that
     // are implemented by the plugin author are declared in PluginInterface
     // and methods provided by the native container implemented in Plugin class.
+    // C++ DISTRHO::Plugin = AS Plugin + AS PluginInterface
 
     export interface PluginInterface {
 
