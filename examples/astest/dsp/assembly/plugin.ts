@@ -4,18 +4,19 @@ import DISTRHO from './distrho-plugin'
 
 export default class AsTestPlugin extends DISTRHO.Plugin implements DISTRHO.PluginInterface {
 
+    private frequency: f32
     private phase: f32
 
     getLabel(): string {
-        return "AsTest"
+        return 'AssemblyScript Test'
     }
 
     getMaker(): string {
-        return "Luciano Iam"
+        return 'Luciano Iam'
     }
 
     getLicense(): string {
-        return "ISC"
+        return 'ISC'
     }
 
     getVersion(): u32 {
@@ -27,15 +28,30 @@ export default class AsTestPlugin extends DISTRHO.Plugin implements DISTRHO.Plug
     }
 
     initParameter(index: u32, parameter: DISTRHO.Parameter): void {
-        // Empty implementation
+        switch (index) {
+            case 0:
+                parameter.name = 'Frequency'
+                parameter.ranges.def = 440.0
+                parameter.ranges.min = 220.0
+                parameter.ranges.max = 880.0
+                this.frequency = parameter.ranges.def   // TODO: why?
+                break
+        }
     }
 
     getParameterValue(index: u32): f32 {
+        switch (index) {
+            case 0:
+                return this.frequency
+        }
         return 0
     }
 
     setParameterValue(index: u32, value: f32): void {
-        // Empty implementation
+        switch (index) {
+            case 0:
+                this.frequency = value
+        }
     }
 
     activate(): void {
@@ -49,13 +65,12 @@ export default class AsTestPlugin extends DISTRHO.Plugin implements DISTRHO.Plug
     run(inputs: Float32Array[], outputs: Float32Array[]): void {
         const outputl = outputs[0]
         const outputr = outputs[1]
-        const frequency: f32 = 440.0
         const gain: f32 = 1.0
 
         let sample: f32
         let phase: f32 = this.phase
 
-        const radiansPerSample = this.freqToRadians(frequency)
+        const radiansPerSample = this.freqToRadians(this.frequency)
         for (let i = 0; i < outputl.length; ++i) {
             sample = Mathf.sin(phase)
             phase += radiansPerSample

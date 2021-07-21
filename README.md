@@ -63,8 +63,6 @@ class MyPluginUI extends DISTRHO_UI {
             case 0:
                 document.getElementById('gain').value = value;
                 break;
-            default:
-                break;
         }
     }
     
