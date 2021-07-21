@@ -46,6 +46,7 @@ enum ExportIndex {
     GET_MAKER,
     GET_LICENSE,
     GET_VERSION,
+    GET_UNIQUE_ID,
     INIT_PARAMETER,
     GET_PARAMETER_VALUE,
     SET_PARAMETER_VALUE,
@@ -256,7 +257,7 @@ uint32_t WasmHostPlugin::getVersion() const
 {
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL_BY_INDEX(GET_LICENSE, &empty_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL_BY_INDEX(GET_VERSION, &empty_val_vec, &res_val_vec) != 0) {
         WASM_LOG_FUNC_CALL_ERROR();
         return 0;
     }
@@ -266,7 +267,14 @@ uint32_t WasmHostPlugin::getVersion() const
 
 int64_t WasmHostPlugin::getUniqueId() const
 {
-    return 1;   // TODO d_cconst('D', 'P', 'w', 'g');
+    WASM_DEFINE_RES_VAL_VEC_1(res);
+
+    if (WASM_FUNC_CALL_BY_INDEX(GET_UNIQUE_ID, &empty_val_vec, &res_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
+        return 0;
+    }
+
+    return static_cast<int64_t>(res[0].of.i64);
 }
 
 void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)

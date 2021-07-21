@@ -40,6 +40,9 @@ export default namespace DISTRHO {
         // uint32_t Plugin::getVersion()
         getVersion(): u32
 
+        // int64_t Plugin::getUniqueId()
+        getUniqueId(): i64
+        
         // void Plugin::initParameter(uint32_t index, Parameter& parameter)
         initParameter(index: u32, parameter: Parameter): void
 
@@ -84,6 +87,25 @@ export default namespace DISTRHO {
         min: f32
         max: f32
 
+    }
+
+    // These are implemented in DistrhoUtils.cpp and are useful for calling from
+    // Plugin methods getVersion() and getUniqueId()
+
+    export function d_version(major: u8, minor: u8, micro: u8): u32 {
+        return (<u32>major << 16) | (<u32>minor << 8) | (<u32>micro << 0)
+    }
+
+    export function d_cconst(a: u8, b: u8, c: u8, d: u8): i64 {
+        return (<i64>a << 24) | (<i64>b << 16) | (<i64>c << 8) | (<i64>d << 0)
+    }
+
+    // This is a variation of d_cconst not found in C++, suitable for use in AS
+    // because unlikely C++ writing 'A' denotes a string and not a numeric char.
+
+    export function d_sconst(s: string): i64 {
+        return d_cconst(<u8>s.charCodeAt(0), <u8>s.charCodeAt(1), 
+                        <u8>s.charCodeAt(2), <u8>s.charCodeAt(3))
     }
 
 }
