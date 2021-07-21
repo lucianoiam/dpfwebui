@@ -53,6 +53,7 @@ export function dpf_get_license(): ArrayBuffer {
 export function dpf_init_parameter(index: u32): void {
     const parameter = new DISTRHO.Parameter
     pluginInstance.initParameter(index, parameter)
+    // See explanation below for the odd value return convention
     ro_string_1 = String.UTF8.encode(parameter.name, true)
     rw_float_1 = parameter.ranges.def
     rw_float_2 = parameter.ranges.min
@@ -107,8 +108,7 @@ export let input_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
 export let output_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
 
 // AssemblyScript does not support multi-values yet. Export a couple of generic
-// variables for returning complex data types like initParameter() needs. These
-// can be also useful for passing string arguments from native to Wasm.
+// variables for returning complex data types like initParameter() needs.
 
 export let rw_int_1: i32
 export let rw_int_2: i32
