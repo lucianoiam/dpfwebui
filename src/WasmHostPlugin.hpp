@@ -20,7 +20,7 @@
 #define WASMHOSTPLUGIN_HPP
 
 #define WASM_API_EXTERN // link to static lib on win32
-#include "wasmer.h"
+#include "wasm.h"
 
 #include "DistrhoPlugin.hpp"
 
