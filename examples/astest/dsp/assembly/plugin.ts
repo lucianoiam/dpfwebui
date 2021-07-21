@@ -39,7 +39,8 @@ export default class AsTestPlugin extends DISTRHO.Plugin implements DISTRHO.Plug
     }
 
     run(inputs: Float32Array[], outputs: Float32Array[]): void {
-        const output = outputs[0]
+        const outputl = outputs[0]
+        const outputr = outputs[1]
         const frequency: f32 = 440.0
         const gain: f32 = 1.0
 
@@ -47,10 +48,10 @@ export default class AsTestPlugin extends DISTRHO.Plugin implements DISTRHO.Plug
         let phase: f32 = this.phase
 
         const radiansPerSample = this.freqToRadians(frequency)
-        for (let i = 0; i < output.length; ++i) {
+        for (let i = 0; i < outputl.length; ++i) {
             sample = Mathf.sin(phase)
             phase += radiansPerSample
-            output[i] = sample * gain
+            outputl[i] = outputr[i] = sample * gain
         }
 
         while (phase > PI2) phase -= PI2
