@@ -19,7 +19,11 @@ export default class AsTestPlugin extends DISTRHO.Plugin implements DISTRHO.Plug
     }
 
     getVersion(): u32 {
-        return 0
+        return DISTRHO.d_version(1, 2, 3)
+    }
+
+    getUniqueId(): i64 {
+        return DISTRHO.d_sconst('HHat')
     }
 
     initParameter(index: u32, parameter: DISTRHO.Parameter): void {

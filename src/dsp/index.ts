@@ -54,6 +54,10 @@ export function dpf_get_version(): u32 {
     return pluginInstance.getVersion()
 }
 
+export function dpf_get_unique_id(): i64 {
+    return pluginInstance.getUniqueId()
+}
+
 export function dpf_init_parameter(index: u32): void {
     const parameter = new DISTRHO.Parameter
     pluginInstance.initParameter(index, parameter)
