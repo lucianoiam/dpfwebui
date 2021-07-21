@@ -19,35 +19,47 @@
 #include "Platform.hpp"
 #include "macro.h"
 
-// Useful macros for reducing Wasmer C calls noise
+// FIXME: there is no public interface to wasm_val_vec_t contents
+typedef struct {
+    int         length;
+    wasm_val_t* val;
+} private_wasm_val_vec_t;
+
+// Useful macros for reducing Wasmer C interface noise
+
+#define own
+
+#define WASM_VAL_VEC_GET(vecptr,idx) ((private_wasm_val_vec_t *)vecptr)->val[idx]
 
 #define WASM_DEFINE_ARGS_VAL_VEC_1(var,arg0) wasm_val_t var[1] = { arg0 }; \
                                              wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
+#define WASM_DEFINE_ARGS_VAL_VEC_2(var,arg0,arg1) wasm_val_t var[2] = { arg0, arg1 }; \
+                                                  wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
 #define WASM_DEFINE_RES_VAL_VEC_1(var) wasm_val_t var[1] = { WASM_INIT_VAL }; \
                                        wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
 
-#define WASM_FUNC_BY_INDEX(n) wasm_extern_as_func(fWasmExports.data[ExportIndex::n])
-#define WASM_FUNC_CALL(n,a,r) wasm_func_call(WASM_FUNC_BY_INDEX(n), a, r)
+#define WASM_DECLARE_NATIVE_FUNC(func) static own wasm_trap_t* func(void *env, const wasm_val_vec_t* args, wasm_val_vec_t* results);
+
+#define WASM_FUNC_BY_INDEX(idx) wasm_extern_as_func(fWasmExports.data[ExportIndex::idx])
+#define WASM_FUNC_CALL(idx,args,res) wasm_func_call(WASM_FUNC_BY_INDEX(idx), args, res)
 
 #define WASM_LOG_FUNC_CALL_ERROR() APX_LOG_STDERR_COLOR("Error calling Wasm function")
 
-#define WASM_MEMORY_CSTR(val) &fWasmMemoryBytes[val.of.i32];
+#define WASM_MEMORY_CSTR(val) static_cast<char *>(&fWasmMemoryBytes[val.of.i32]);
 
 USE_NAMESPACE_DISTRHO
 
 /**
  * FIXME: is it possible to select exports by name using the C API like in Rust?
- * 
- * Selecting by numeric index is not safe because indexes are likely to change
- * and built-in exports like "memory" are not guaranteed to always appear last.
- * 
- * Ditto for native symbols imported by the WebAssembly module.
+ * Selecting by numeric index is not safe because indexes are likely to change.
  */
-
 enum ExportIndex {
+    _IGNORED_1,
     GET_LABEL,
     GET_MAKER,
     GET_LICENSE,
+    GET_PARAMETER_VALUE,
+    SET_PARAMETER_VALUE,
     ACTIVATE,
     DEACTIVATE,
     NUM_INPUTS,
@@ -55,18 +67,25 @@ enum ExportIndex {
     INPUT_BLOCK,
     OUTPUT_BLOCK,
     RUN,
-    MEMORY
+    MEMORY,
+    _LAST_EXPORT
 };
 
-#define own
+// FIXME: ditto for native symbols imported by the WebAssembly module
+enum ImportIndex {
+    ABORT,
+    GET_SAMPLE_RATE,
+    _LAST_IMPORT
+};
 
 static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
                                                     own wasm_valtype_t* p3, own wasm_valtype_t* p4);
-static own wasm_trap_t* apx_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results);
-static own wasm_trap_t* apx_get_sample_rate(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results);
+static own wasm_trap_t* ascript_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results);
 
 static wasm_val_t     empty_val_array[0] = {};
 static wasm_val_vec_t empty_val_vec = WASM_ARRAY_VEC(empty_val_array);
+
+WASM_DECLARE_NATIVE_FUNC(dpf_get_sample_rate)
 
 WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
     : Plugin(parameterCount, programCount, stateCount)
@@ -75,6 +94,9 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     , fWasmInstance(0)
     , fWasmModule(0)
 {
+    // -------------------------------------------------------------------------
+    // Load binary module file
+
     String path = platform::getResourcePath() + "/dsp/main.wasm";
     FILE* file = fopen(path, "rb");
 
@@ -98,49 +120,52 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     fclose(file);
 
-    /*wasm_config_t* config = wasm_config_new();
-    wasmer_features_t* features = wasmer_features_new();
-    wasmer_features_multi_value(features, true);
-    wasm_config_set_features(config, features);
-    fWasmEngine = wasm_engine_new_with_config(config);*/
+    // -------------------------------------------------------------------------
+    // Initialize Wasmer environment
 
     fWasmEngine = wasm_engine_new();
     fWasmStore = wasm_store_new(fWasmEngine);
-    fWasmModule = wasm_module_new(fWasmStore, &fileBytes); // compile
+    fWasmModule = wasm_module_new(fWasmStore, &fileBytes);
+    
+    wasm_byte_vec_delete(&fileBytes);
 
-    if (!fWasmModule) {
+    if (fWasmModule == 0) {
         APX_LOG_STDERR_COLOR("Error compiling Wasm module");
         return;
     }
 
-    wasm_byte_vec_delete(&fileBytes);
-
-    // Allow Wasm to call some native functions
+    // -------------------------------------------------------------------------
+    // Expose some native functions to Wasm
 
     wasm_extern_vec_t imports;
-    wasm_extern_vec_new_uninitialized(&imports, 2);
+    wasm_extern_vec_new_uninitialized(&imports, ImportIndex::_LAST_IMPORT);
     wasm_functype_t *funcType;
     wasm_func_t *func;
 
     funcType = wasm_functype_new_4_0(wasm_valtype_new_i32(), wasm_valtype_new_i32(),
                                      wasm_valtype_new_i32(), wasm_valtype_new_i32());
-    func = wasm_func_new(fWasmStore, funcType, apx_abort);
+    func = wasm_func_new(fWasmStore, funcType, ascript_abort);
     wasm_functype_delete(funcType);
-    imports.data[0] = wasm_func_as_extern(func);
+    imports.data[ImportIndex::ABORT] = wasm_func_as_extern(func);
 
     funcType = wasm_functype_new_0_1(wasm_valtype_new_f32());
-    func = wasm_func_new_with_env(fWasmStore, funcType, apx_get_sample_rate, this, 0);
+    func = wasm_func_new_with_env(fWasmStore, funcType, dpf_get_sample_rate, this, 0);
     wasm_functype_delete(funcType);
-    imports.data[1] = wasm_func_as_extern(func);
+    imports.data[ImportIndex::GET_SAMPLE_RATE] = wasm_func_as_extern(func);
+
+    // -------------------------------------------------------------------------
+    // Initialize Wasm module
 
     wasm_trap_t* traps = 0;
-
     fWasmInstance = wasm_instance_new(fWasmStore, fWasmModule, &imports, &traps);
 
-    if (!fWasmInstance) {
+    if (fWasmInstance == 0) {
         APX_LOG_STDERR_COLOR("Error instantiating Wasm module");
         return;
     }
+
+    // -------------------------------------------------------------------------
+    // Get pointers to shared memory areas
 
     wasm_instance_exports(fWasmInstance, &fWasmExports);
 
@@ -162,6 +187,9 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     g = wasm_extern_as_global(fWasmExports.data[ExportIndex::OUTPUT_BLOCK]);
     wasm_global_get(g, &blockPtr);
     fOutputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
+
+    // -------------------------------------------------------------------------
+    // Initialize module globals
 
     g = wasm_extern_as_global(fWasmExports.data[ExportIndex::NUM_INPUTS]);
     wasm_val_t numInputs WASM_I32_VAL(static_cast<int32_t>(DISTRHO_PLUGIN_NUM_INPUTS));
@@ -236,15 +264,25 @@ void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
 
 float WasmHostPlugin::getParameterValue(uint32_t index) const
 {
-    (void)index;
-    return 0;   // FIXME
+    WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(index)));
+    WASM_DEFINE_RES_VAL_VEC_1(res);
+
+    if (WASM_FUNC_CALL(GET_PARAMETER_VALUE, &args_val_vec, &res_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
+        return 0;
+    }
+
+    return res[0].of.f32;
 }
 
 void WasmHostPlugin::setParameterValue(uint32_t index, float value)
 {
-    // FIXME
-    (void)index;
-    (void)value;
+    WASM_DEFINE_ARGS_VAL_VEC_2(args, WASM_I32_VAL(static_cast<int32_t>(index)),
+                                        WASM_F32_VAL(static_cast<float32_t>(value)));
+    
+    if (WASM_FUNC_CALL(SET_PARAMETER_VALUE, &args_val_vec, &empty_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
+    }
 }
 
 #if (DISTRHO_PLUGIN_WANT_STATE == 1)
@@ -321,7 +359,7 @@ static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wa
 }
 
 // Boilerplate for initializing Wasm modules compiled from AssemblyScript
-static own wasm_trap_t* apx_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results)
+static own wasm_trap_t* ascript_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results)
 {
     // TODO - parse arguments and print them
     (void)args;
@@ -330,11 +368,12 @@ static own wasm_trap_t* apx_abort(const wasm_val_vec_t* args, wasm_val_vec_t* re
     return 0;
 }
 
-static own wasm_trap_t* apx_get_sample_rate(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results)
+static own wasm_trap_t* dpf_get_sample_rate(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results)
 {
     (void)args;
     WasmHostPlugin* p = static_cast<WasmHostPlugin *>(env);
-    wasm_val_t res[1] = { WASM_F32_VAL(static_cast<float32_t>(p->getSampleRate())) };
+    float32_t value = static_cast<float32_t>(p->getSampleRate());
+    wasm_val_t res[1] = { WASM_F32_VAL(value) };
     wasm_val_vec_new(results, 1, res);
     return 0;
 }
