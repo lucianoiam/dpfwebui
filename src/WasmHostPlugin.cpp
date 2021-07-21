@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <sstream>
+
 #include "WasmHostPlugin.hpp"
 
 #include "Platform.hpp"
@@ -73,6 +75,8 @@ enum ExportIndex {
     RW_STRING_1,
 // Built-ins
     MEMORY,
+// Helpers
+    ENCODE_STRING,
     _LAST_EXPORT
 };
 
@@ -85,13 +89,13 @@ enum ImportIndex {
     _LAST_IMPORT
 };
 
-static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
-                                                    own wasm_valtype_t* p3, own wasm_valtype_t* p4);
-static own wasm_trap_t* ascript_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results);
-
 static wasm_val_t     empty_val_array[0] = {};
 static wasm_val_vec_t empty_val_vec = WASM_ARRAY_VEC(empty_val_array);
 
+static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
+                                                    own wasm_valtype_t* p3, own wasm_valtype_t* p4);
+
+WASM_DECLARE_NATIVE_FUNC(ascript_abort)
 WASM_DECLARE_NATIVE_FUNC(dpf_get_sample_rate)
 
 WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
@@ -151,7 +155,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     funcType = wasm_functype_new_4_0(wasm_valtype_new_i32(), wasm_valtype_new_i32(),
                                      wasm_valtype_new_i32(), wasm_valtype_new_i32());
-    func = wasm_func_new(fWasmStore, funcType, ascript_abort);
+    func = wasm_func_new_with_env(fWasmStore, funcType, ascript_abort, this, 0);
     wasm_functype_delete(funcType);
     imports.data[ImportIndex::ABORT] = wasm_func_as_extern(func);
 
@@ -376,6 +380,23 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
     }
 }
 
+const char* WasmHostPlugin::encodeString(int32_t wasmStringPtr)
+{
+    if (wasmStringPtr == 0) {
+        return "(null)";
+    }
+
+    WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(wasmStringPtr)));
+    WASM_DEFINE_RES_VAL_VEC_1(res);
+
+    if (WASM_FUNC_CALL_BY_INDEX(ENCODE_STRING, &args_val_vec, &res_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
+        return 0;
+    }
+
+    return WASM_MEMORY_CSTR(res[0]);
+}
+
 // Convenience function, Wasmer provides up to wasm_functype_new_3_0()
 static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
                                                     own wasm_valtype_t* p3, own wasm_valtype_t* p4)
@@ -387,13 +408,24 @@ static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wa
     return wasm_functype_new(&params, &results);
 }
 
-// Boilerplate for initializing Wasm modules compiled from AssemblyScript
-static own wasm_trap_t* ascript_abort(const wasm_val_vec_t* args, wasm_val_vec_t* results)
+// Required by AssemblyScript
+static own wasm_trap_t* ascript_abort(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results)
 {
-    // TODO - parse arguments and print them
-    (void)args;
     (void)results;
-    HIPHAP_LOG_STDERR_COLOR("AssemblyScript abort() called");
+
+    WasmHostPlugin* p = static_cast<WasmHostPlugin *>(env);
+
+    const char *msg = p->encodeString(WASM_VAL_VEC_GET(args, 0).of.i32);
+    const char *filename = p->encodeString(WASM_VAL_VEC_GET(args, 1).of.i32);
+    int32_t lineNumber = WASM_VAL_VEC_GET(args, 2).of.i32;
+    int32_t columnNumber = WASM_VAL_VEC_GET(args, 3).of.i32;
+
+    std::stringstream ss;
+    ss << "AssemblyScript abort() called - msg: " << msg << ", filename: " << filename
+        << ", lineNumber: " << lineNumber << ", columnNumber: " << columnNumber;
+
+    HIPHAP_LOG_STDERR_COLOR(ss.str().c_str());
+
     return 0;
 }
 
