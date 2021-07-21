@@ -59,7 +59,7 @@ endif
 
 ifeq ($(AS_DSP),true)
 HIPHAP_FILES_DSP  = WasmHostPlugin.cpp \
-                 Platform.cpp
+                    Platform.cpp
 ifeq ($(LINUX),true)
 HIPHAP_FILES_DSP += linux/PlatformLinux.cpp
 endif
@@ -68,7 +68,7 @@ HIPHAP_FILES_DSP += macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
 HIPHAP_FILES_DSP += windows/PlatformWindows.cpp \
-                 windows/extra/WinApiStub.cpp 
+                    windows/extra/WinApiStub.cpp 
 endif
 
 FILES_DSP += $(HIPHAP_FILES_DSP:%=$(HIPHAP_SRC_PATH)/%)
@@ -78,26 +78,26 @@ endif
 # Add web UI source
 
 HIPHAP_FILES_UI  = WebHostUI.cpp \
-                AbstractWebWidget.cpp \
-                ScriptValue.cpp \
-                Platform.cpp
+                   AbstractWebWidget.cpp \
+                   ScriptValue.cpp \
+                   Platform.cpp
 ifeq ($(LINUX),true)
 HIPHAP_FILES_UI += linux/ExternalGtkWebWidget.cpp \
-                linux/PlatformLinux.cpp \
-                linux/extra/ipc.c
+                   linux/PlatformLinux.cpp \
+                   linux/extra/ipc.c
 endif
 ifeq ($(MACOS),true)
 HIPHAP_FILES_UI += macos/CocoaWebWidget.mm \
-                macos/PlatformMac.mm
+                   macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
 HIPHAP_FILES_UI += windows/EdgeWebWidget.cpp \
-                windows/KeyboardRouter.cpp \
-                windows/PlatformWindows.cpp \
-                windows/extra/WebView2EventHandler.cpp \
-                windows/extra/WinApiStub.cpp \
-                windows/extra/cJSON.c \
-                windows/res/plugin.rc
+                   windows/KeyboardRouter.cpp \
+                   windows/PlatformWindows.cpp \
+                   windows/extra/WebView2EventHandler.cpp \
+                   windows/extra/WinApiStub.cpp \
+                   windows/extra/cJSON.c \
+                   windows/res/plugin.rc
 endif
 
 FILES_UI += $(HIPHAP_FILES_UI:%=$(HIPHAP_SRC_PATH)/%)
