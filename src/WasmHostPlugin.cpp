@@ -36,26 +36,47 @@ USE_NAMESPACE_DISTRHO
  * Selecting by numeric index is not safe because indexes are likely to change.
  */
 enum ExportIndex {
+// Native re-exports
     _IGNORED_1,
+// Plugin interface
     GET_LABEL,
     GET_MAKER,
     GET_LICENSE,
+    INIT_PARAMETER,
     GET_PARAMETER_VALUE,
     SET_PARAMETER_VALUE,
     ACTIVATE,
     DEACTIVATE,
+    RUN,
+// Globals for run()
     NUM_INPUTS,
     NUM_OUTPUTS,
     INPUT_BLOCK,
     OUTPUT_BLOCK,
-    RUN,
+// Spare variables
+    RW_INT_1,
+    RW_INT_2,
+    RW_INT_3,
+    RW_INT_4,
+    RW_FLOAT_1,
+    RW_FLOAT_2,
+    RW_FLOAT_3,
+    RW_FLOAT_4,
+    RO_STRING_1,
+    RO_STRING_2,
+    RO_STRING_3,
+    RO_STRING_4,
+    RW_STRING_1,
+// Built-ins
     MEMORY,
     _LAST_EXPORT
 };
 
 // FIXME: ditto for native symbols imported by the WebAssembly module
 enum ImportIndex {
+// Required by AssemblyScript
     ABORT,
+// Plugin interface
     GET_SAMPLE_RATE,
     _LAST_IMPORT
 };

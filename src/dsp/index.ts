@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import DISTRHO from './distrho-plugin'
 import PluginImpl from './plugin'
 
 const pluginInstance = new PluginImpl
@@ -49,11 +50,20 @@ export function dpf_get_license(): ArrayBuffer {
     return String.UTF8.encode(pluginInstance.getLicense(), true)
 }
 
-export function dpf_get_parameter_value(index: i32): f32 {
+export function dpf_init_parameter(index: u32): void {
+    const parameter = new DISTRHO.Parameter
+    pluginInstance.initParameter(index, parameter)
+    ro_string_1 = String.UTF8.encode(parameter.name, true)
+    rw_float_1 = parameter.ranges.def
+    rw_float_2 = parameter.ranges.min
+    rw_float_3 = parameter.ranges.max
+}
+
+export function dpf_get_parameter_value(index: u32): f32 {
     return pluginInstance.getParameterValue(index)
 }
 
-export function dpf_set_parameter_value(index: i32, value: f32): void {
+export function dpf_set_parameter_value(index: u32, value: f32): void {
     pluginInstance.setParameterValue(index, value)
 }
 
@@ -65,11 +75,27 @@ export function dpf_deactivate(): void {
     pluginInstance.deactivate()
 }
 
+export function dpf_run(frames: u32): void {
+    const inputs: Array<Float32Array> = []
+
+    for (let i = 0; i < num_inputs; i++) {
+        inputs.push(Float32Array.wrap(input_block, i * frames * 4, frames))
+    }
+
+    const outputs: Array<Float32Array> = []
+
+    for (let i = 0; i < num_outputs; i++) {
+        outputs.push(Float32Array.wrap(output_block, i * frames * 4, frames))
+    }
+
+    pluginInstance.run(inputs, outputs)
+}
+
 // Number of inputs or outputs does not change during runtime so it makes sense
 // to init both once instead of passing them as arguments on every call to run()
 
-export let dpf_num_inputs: i32 = 0
-export let dpf_num_outputs: i32 = 0
+export let num_inputs: i32
+export let num_outputs: i32
 
 // Using exported globals instead of passing buffer arguments to run() allows
 // for a simpler implementation by avoiding Wasm memory alloc on the host side.
@@ -77,21 +103,28 @@ export let dpf_num_outputs: i32 = 0
 
 const MAX_PROCESS_BLOCK_SIZE = 65536
 
-export let dpf_input_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
-export let dpf_output_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
+export let input_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
+export let output_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
 
-export function dpf_run(frames: i32): void {
-    const inputs: Array<Float32Array> = []
+// AssemblyScript does not support multi-values yet. Export a couple of generic
+// variables for returning complex data types like initParameter() needs. These
+// can be also useful for passing string arguments from native to Wasm.
 
-    for (let i = 0; i < dpf_num_inputs; i++) {
-        inputs.push(Float32Array.wrap(dpf_input_block, i * frames * 4, frames))
-    }
+export let rw_int_1: i32
+export let rw_int_2: i32
+export let rw_int_3: i32
+export let rw_int_4: i32
+export let rw_float_1: f32
+export let rw_float_2: f32
+export let rw_float_3: f32
+export let rw_float_4: f32
+export let ro_string_1: ArrayBuffer
+export let ro_string_2: ArrayBuffer
+export let ro_string_3: ArrayBuffer
+export let ro_string_4: ArrayBuffer
 
-    const outputs: Array<Float32Array> = []
+// These are useful for passing string arguments from the native context to Wasm
 
-    for (let i = 0; i < dpf_num_outputs; i++) {
-        outputs.push(Float32Array.wrap(dpf_output_block, i * frames * 4, frames))
-    }
+const MAX_STRING = 1024
 
-    pluginInstance.run(inputs, outputs)
-}
+export let rw_string_1 = new ArrayBuffer(MAX_STRING)

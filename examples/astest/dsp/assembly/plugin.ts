@@ -1,8 +1,8 @@
-import { DISTRHO_Plugin_Base, DISTRHO_Plugin } from './distrho-plugin'
+import DISTRHO from './distrho-plugin'
 
 @inline const PI2: f32 = Mathf.PI * 2
 
-export default class AsTestPlugin extends DISTRHO_Plugin_Base implements DISTRHO_Plugin {
+export default class AsTestPlugin extends DISTRHO.Plugin implements DISTRHO.PluginInterface {
 
     private phase: f32
 
@@ -18,11 +18,15 @@ export default class AsTestPlugin extends DISTRHO_Plugin_Base implements DISTRHO
         return "ISC"
     }
 
-    getParameterValue(index: i32): f32 {
+    initParameter(index: u32, parameter: DISTRHO.Parameter): void {
+        // Empty implementation
+    }
+
+    getParameterValue(index: u32): f32 {
         return 0
     }
 
-    setParameterValue(index: i32, value: f32): void {
+    setParameterValue(index: u32, value: f32): void {
         // Empty implementation
     }
 
