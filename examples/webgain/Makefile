@@ -12,12 +12,12 @@ NAME = d_webgain
 # --------------------------------------------------------------
 # Project version, used for generating unique symbol names
 
-APX_PROJECT_VERSION = 1
+HIPHAP_PROJECT_VERSION = 1
 
 # --------------------------------------------------------------
 # Web UI files location
 
-APX_WEB_UI_PATH = ui
+HIPHAP_WEB_UI_PATH = ui
 
 # --------------------------------------------------------------
 # Files to build
@@ -61,6 +61,6 @@ endif
 
 TARGETS += vst
 
-all: $(TARGETS) $(APX_TARGET)
+all: $(TARGETS) $(HIPHAP_TARGET)
 
 # --------------------------------------------------------------

@@ -1,5 +1,5 @@
 /*
- * Apices - Audio Plugins In C++ & ES6
+ * Hip-Hap / High Performance Hybrid Audio Plugins
  * Copyright (C) 2021 Luciano Iam <oss@lucianoiam.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -46,7 +46,7 @@ static String getSharedLibraryPath()
     Dl_info dl_info;
 
     if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
-        APX_LOG_STDERR(dlerror());
+        HIPHAP_LOG_STDERR(dlerror());
         return String();
     } else {
         return String(dl_info.dli_fname);
@@ -59,7 +59,7 @@ static String getExecutablePath()
     ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
 
     if (len == -1) {
-        APX_LOG_STDERR_ERRNO("Could not determine executable path");
+        HIPHAP_LOG_STDERR_ERRNO("Could not determine executable path");
         return String();
     } else {
         return String(path);

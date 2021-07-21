@@ -1,5 +1,5 @@
 /*
- * Apices - Audio Plugins In C++ & ES6
+ * Hip-Hap / High Performance Hybrid Audio Plugins
  * Copyright (C) 2021 Luciano Iam <oss@lucianoiam.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -23,7 +23,7 @@
 #define WASM_FUNC_BY_INDEX(idx) wasm_extern_as_func(fWasmExports.data[ExportIndex::idx])
 #define WASM_FUNC_CALL(idx,args,res) wasm_func_call(WASM_FUNC_BY_INDEX(idx), args, res)
 
-#define WASM_LOG_FUNC_CALL_ERROR() APX_LOG_STDERR_COLOR("Error calling Wasm function")
+#define WASM_LOG_FUNC_CALL_ERROR() HIPHAP_LOG_STDERR_COLOR("Error calling Wasm function")
 
 #define WASM_MEMORY_CSTR(val) static_cast<char *>(&fWasmMemoryBytes[val.of.i32]);
 
@@ -102,7 +102,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     FILE* file = fopen(path, "rb");
 
     if (file == 0) {
-        APX_LOG_STDERR_COLOR("Error opening Wasm module");
+        HIPHAP_LOG_STDERR_COLOR("Error opening Wasm module");
         return;
     }
 
@@ -115,7 +115,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     
     if (fread(fileBytes.data, fileSize, 1, file) != 1) {
         fclose(file);
-        APX_LOG_STDERR_COLOR("Error loading Wasm module");
+        HIPHAP_LOG_STDERR_COLOR("Error loading Wasm module");
         return;
     }
 
@@ -131,7 +131,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     wasm_byte_vec_delete(&fileBytes);
 
     if (fWasmModule == 0) {
-        APX_LOG_STDERR_COLOR("Error compiling Wasm module");
+        HIPHAP_LOG_STDERR_COLOR("Error compiling Wasm module");
         return;
     }
 
@@ -161,7 +161,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     fWasmInstance = wasm_instance_new(fWasmStore, fWasmModule, &imports, &traps);
 
     if (fWasmInstance == 0) {
-        APX_LOG_STDERR_COLOR("Error instantiating Wasm module");
+        HIPHAP_LOG_STDERR_COLOR("Error instantiating Wasm module");
         return;
     }
 
@@ -171,7 +171,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     wasm_instance_exports(fWasmInstance, &fWasmExports);
 
     if (fWasmExports.size == 0) {
-        APX_LOG_STDERR_COLOR("Error accessing Wasm exports");
+        HIPHAP_LOG_STDERR_COLOR("Error accessing Wasm exports");
         return;
     }
 
@@ -365,7 +365,7 @@ static own wasm_trap_t* ascript_abort(const wasm_val_vec_t* args, wasm_val_vec_t
     // TODO - parse arguments and print them
     (void)args;
     (void)results;
-    APX_LOG_STDERR_COLOR("AssemblyScript abort() called");
+    HIPHAP_LOG_STDERR_COLOR("AssemblyScript abort() called");
     return 0;
 }
 

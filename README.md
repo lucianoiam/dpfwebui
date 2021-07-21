@@ -1,11 +1,11 @@
-Apices - Audio Plugins In C++ & ES6
------------------------------------
+Hip-Hap / High Performance Hybrid Audio Plugins
+-----------------------------------------------
 
 This project extends [DPF](http://github.com/DISTRHO/DPF) to provide the
 necessary scaffold for creating audio plugins with potentially complex user
 interfaces. Plugins implement a web view for running the UI, which interacts
 with the audio host through a small factory shipped JavaScript class. The DSP
-core remains completely isolated and implemented in C/C++.
+core remains completely isolated and implemented in C++ or AssemblyScript.
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
@@ -23,12 +23,19 @@ core remains completely isolated and implemented in C/C++.
 * Just the powerful basics
 * BSD-like license
 
-There is ongoing work for support of compiled [AssemblyScript](https://www.assemblyscript.org)
-in DSP code. AssemblyScript is a language similar to [TypeScript](https://www.typescriptlang.org)
-that can be compiled into [WebAssembly](https://webassembly.org) for faster than
-JavaScript performance. This would allow to develop a desktop plugin completely
-based on web technologies. Both JS for UI and TS for DSP will be optional
-features.
+**Support for [AssemblyScript](https://www.assemblyscript.org) is still work in
+progress.** AssemblyScript is a language very similar to [TypeScript](https://www.typescriptlang.org)
+specifically created for targeting [WebAssembly](https://webassembly.org).
+Plugins written with Hip-Hap implement a WebAssembly JIT engine for running
+precompiled AssemblyScript-based DSP code. This engine is completely independent
+from the web view. The following UI/DSP language combinations are available:
+
+DSP|UI |Comments
+---|---|---------------------------------------------------------------------------
+C++|Web|
+AS |Web|
+AS |C++|Widgets provided by DISTRHO Graphics Library (DGL)
+C++|C++|Do not use this project, check [DPF](http://github.com/DISTRHO/DPF) instead
 
 ### Example UI code
 
@@ -64,7 +71,7 @@ class MyPluginUI extends DISTRHO_UI {
 
 **Usage of JS frameworks is up to the developer**
 
-More information [here](https://github.com/lucianoiam/apices/blob/master/doc/internals.md)
+More information [here](https://github.com/lucianoiam/hiphap/blob/master/doc/internals.md)
 
 ### About DISTRHO Plugin Framework (DPF)
 
@@ -83,7 +90,7 @@ What makes it great?
 - Great experienced community around
 
 Its full documentation and code can be found at https://github.com/DISTRHO/DPF,
-this repo includes it as a git submodule in `dpf`.  Do not forget to visit
-https://github.com/DISTRHO for many other cool audio projects.
+this repo includes it as a git submodule in `dpf`.  There are lots of other cool
+audio projects worth checking at https://github.com/DISTRHO.
 
 If you find libre software useful please support the developers

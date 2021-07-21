@@ -1,5 +1,5 @@
 /*
- * Apices - Audio Plugins In C++ & ES6
+ * Hip-Hap / High Performance Hybrid Audio Plugins
  * Copyright (C) 2021 Luciano Iam <oss@lucianoiam.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -130,7 +130,7 @@ BOOL CALLBACK KeyboardRouter::enumChildProc(HWND hWnd, LPARAM lParam)
     char className[256];
     GetClassName(hWnd, (LPSTR)className, sizeof(className));
 
-    if ((strstr(className, "EdgeWebWidget") != 0) && (strstr(className, XSTR(APX_PROJECT_ID_HASH)) != 0)) {
+    if ((strstr(className, "EdgeWebWidget") != 0) && (strstr(className, XSTR(HIPHAP_PROJECT_ID_HASH)) != 0)) {
         *((HWND *)lParam) = hWnd;
         return FALSE;
     }

@@ -1,5 +1,5 @@
 /*
- * Apices - Audio Plugins In C++ & ES6
+ * Hip-Hap / High Performance Hybrid Audio Plugins
  * Copyright (C) 2021 Luciano Iam <oss@lucianoiam.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -50,7 +50,7 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     // Use a hidden orphan window for initializing Edge WebView2. Helps reducing
     // flicker and it is also required by the keyboard router for reading state.
     WCHAR className[256];
-    swprintf(className, sizeof(className), L"EdgeWebWidget_%s_%d", XSTR(APX_PROJECT_ID_HASH), std::rand());
+    swprintf(className, sizeof(className), L"EdgeWebWidget_%s_%d", XSTR(HIPHAP_PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
     fHelperClass.cbSize = sizeof(WNDCLASSEX);
     fHelperClass.cbClsExtra = sizeof(LONG_PTR);
@@ -337,7 +337,7 @@ void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
         << "Error 0x" << std::hex << result;
     std::wstring ws = wss.str();
     
-    APX_LOG_STDERR_COLOR(TO_LPCSTR(ws));
+    HIPHAP_LOG_STDERR_COLOR(TO_LPCSTR(ws));
 
     MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
 }

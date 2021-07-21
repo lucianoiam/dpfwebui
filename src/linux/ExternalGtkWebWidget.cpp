@@ -1,5 +1,5 @@
 /*
- * Apices - Audio Plugins In C++ & ES6
+ * Hip-Hap / High Performance Hybrid Audio Plugins
  * Copyright (C) 2021 Luciano Iam <oss@lucianoiam.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -51,12 +51,12 @@ ExternalGtkWebWidget::ExternalGtkWebWidget(Widget *parentWidget)
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
 
     if (pipe(fPipeFd[0]) == -1) {
-        APX_LOG_STDERR_ERRNO("Could not create parent->helper pipe");
+        HIPHAP_LOG_STDERR_ERRNO("Could not create parent->helper pipe");
         return;
     }
 
     if (pipe(fPipeFd[1]) == -1) {
-        APX_LOG_STDERR_ERRNO("Could not create helper->parent pipe");
+        HIPHAP_LOG_STDERR_ERRNO("Could not create helper->parent pipe");
         return;
     }
 
@@ -82,7 +82,7 @@ ExternalGtkWebWidget::ExternalGtkWebWidget(Widget *parentWidget)
     int status = posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
 
     if (status != 0) {
-        APX_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
+        HIPHAP_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
         return;
     }
 
@@ -100,7 +100,7 @@ ExternalGtkWebWidget::~ExternalGtkWebWidget()
             int stat;
             waitpid(fPid, &stat, 0);
         } else {
-            APX_LOG_STDERR_ERRNO("Could not terminate helper subprocess");
+            HIPHAP_LOG_STDERR_ERRNO("Could not terminate helper subprocess");
         }
 
         fPid = -1;
@@ -119,7 +119,7 @@ ExternalGtkWebWidget::~ExternalGtkWebWidget()
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             if ((fPipeFd[i][j] != -1) && (close(fPipeFd[i][j]) == -1)) {
-                APX_LOG_STDERR_ERRNO("Could not close pipe");
+                HIPHAP_LOG_STDERR_ERRNO("Could not close pipe");
             }
 
             fPipeFd[i][j] = -1;
@@ -214,7 +214,7 @@ int ExternalGtkWebWidget::ipcWrite(helper_opcode_t opcode, const void *payload, 
     int retval;
 
     if ((retval = ipc_write(fIpc, &packet)) == -1) {
-        APX_LOG_STDERR_ERRNO("Could not write to IPC channel");
+        HIPHAP_LOG_STDERR_ERRNO("Could not write to IPC channel");
     }
 
     return retval;
@@ -300,7 +300,7 @@ void IpcReadThread::run()
         int retval = select(fd + 1, &rfds, 0, 0, &tv);
 
         if (retval == -1) {
-            APX_LOG_STDERR_ERRNO("Failed select() on IPC channel");
+            HIPHAP_LOG_STDERR_ERRNO("Failed select() on IPC channel");
             break;
         }
 
@@ -313,7 +313,7 @@ void IpcReadThread::run()
         }
 
         if (ipc_read(fView.ipc(), &packet) == -1) {
-            APX_LOG_STDERR_ERRNO("Could not read from IPC channel");
+            HIPHAP_LOG_STDERR_ERRNO("Could not read from IPC channel");
             break;
         }
 
