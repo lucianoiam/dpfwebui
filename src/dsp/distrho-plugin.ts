@@ -31,6 +31,12 @@ export interface DISTRHO_Plugin {
     // const char* Plugin::getLicense()
     getLicense(): string
 
+    // float Plugin::getParameterValue(uint32_t index)
+    getParameterValue(index: i32): f32
+
+    // void Plugin::setParameterValue(uint32_t index, float value)
+    setParameterValue(index: i32, value: f32): void
+
     // void Plugin::activate()
     activate(): void
 
@@ -46,11 +52,11 @@ export class DISTRHO_Plugin_Base {
     
     // double Plugin::getSampleRate();
     getSampleRate(): f32 {
-        return apx_get_sample_rate()
+        return dpf_get_sample_rate()
     }
 
 }
 
-// Declare some functions implemented by the native container
+// Any kind of interface to the native container is strictly handled by index.ts
 
-declare function apx_get_sample_rate(): f32
+import { dpf_get_sample_rate } from './index'
