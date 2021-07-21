@@ -18,27 +18,7 @@
 
 #include "Platform.hpp"
 #include "macro.h"
-
-// FIXME: there is no public interface to wasm_val_vec_t contents
-typedef struct {
-    int         length;
-    wasm_val_t* val;
-} private_wasm_val_vec_t;
-
-// Useful macros for reducing Wasmer C interface noise
-
-#define own
-
-#define WASM_VAL_VEC_GET(vecptr,idx) ((private_wasm_val_vec_t *)vecptr)->val[idx]
-
-#define WASM_DEFINE_ARGS_VAL_VEC_1(var,arg0) wasm_val_t var[1] = { arg0 }; \
-                                             wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
-#define WASM_DEFINE_ARGS_VAL_VEC_2(var,arg0,arg1) wasm_val_t var[2] = { arg0, arg1 }; \
-                                                  wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
-#define WASM_DEFINE_RES_VAL_VEC_1(var) wasm_val_t var[1] = { WASM_INIT_VAL }; \
-                                       wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
-
-#define WASM_DECLARE_NATIVE_FUNC(func) static own wasm_trap_t* func(void *env, const wasm_val_vec_t* args, wasm_val_vec_t* results);
+#include "wasm_macro.h"
 
 #define WASM_FUNC_BY_INDEX(idx) wasm_extern_as_func(fWasmExports.data[ExportIndex::idx])
 #define WASM_FUNC_CALL(idx,args,res) wasm_func_call(WASM_FUNC_BY_INDEX(idx), args, res)
@@ -279,7 +259,7 @@ void WasmHostPlugin::setParameterValue(uint32_t index, float value)
 {
     WASM_DEFINE_ARGS_VAL_VEC_2(args, WASM_I32_VAL(static_cast<int32_t>(index)),
                                         WASM_F32_VAL(static_cast<float32_t>(value)));
-    
+
     if (WASM_FUNC_CALL(SET_PARAMETER_VALUE, &args_val_vec, &empty_val_vec) != 0) {
         WASM_LOG_FUNC_CALL_ERROR();
     }
