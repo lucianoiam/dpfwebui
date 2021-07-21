@@ -21,14 +21,17 @@
 
 #include "WasmHostPlugin.hpp"
 
+#define PARAMETER_COUNT 0
+#define PROGRAM_COUNT   0
+#define STATE_COUNT     0
+
 START_NAMESPACE_DISTRHO
 
 class AsExamplePlugin : public WasmHostPlugin
 {
 public:
-    AsExamplePlugin() : WasmHostPlugin(1 /* parameterCount */, 0 /* programCount */,
-                                         0 /* stateCount */) {};
-    ~AsExamplePlugin() {};
+    AsExamplePlugin() : WasmHostPlugin(PARAMETER_COUNT, PROGRAM_COUNT, STATE_COUNT) {}
+    ~AsExamplePlugin() {}
 
 };
 

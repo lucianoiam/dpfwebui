@@ -21,14 +21,17 @@
 
 #include "WebHostUI.hpp"
 
+#define BASE_WIDTH_PX  600
+#define BASE_HEIGHT_PX 300
+#define INIT_BACKGROUND_RGBA 0xD4B6EFFF
+
 START_NAMESPACE_DISTRHO
 
 class AsExampleUI : public WebHostUI
 {
 public:
-    AsExampleUI() : WebHostUI(600 /* baseWidth */, 300 /* baseHeight */,
-                                0xD4B6EFFF /* backgroundColor */) {};
-    ~AsExampleUI() {};
+    AsExampleUI() : WebHostUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA) {}
+    ~AsExampleUI() {}
 
 };
 
