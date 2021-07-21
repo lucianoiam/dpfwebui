@@ -16,7 +16,7 @@ core remains completely isolated and implemented in C/C++.
 ### Features
 
 * Based on DISTRHO Plugin Framework
-* C++ for DSP code
+* C++ or AssemblyScript for DSP code
 * HTML / CSS / JS for UI development
 * VST2 / LV2 plugin formats
 * Linux / Mac / Windows
