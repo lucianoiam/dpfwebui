@@ -28,7 +28,7 @@ class AsExampleUI extends DISTRHO_UI {
         const elem = (id) => document.getElementById(id);
 
         // Connect slider to plugin
-        elem('gain-slider').addEventListener('input', (ev) => {
+        elem('freq-slider').addEventListener('input', (ev) => {
             this.setParameterValue(0, parseFloat(ev.target.value));
         });
 
@@ -61,7 +61,7 @@ class AsExampleUI extends DISTRHO_UI {
     parameterChanged(index, value) {
         switch (index) {
             case 0:
-                document.getElementById('gain-slider').value = value;
+                document.getElementById('freq-slider').value = value;
                 break;
             default:
                 break;

@@ -19,7 +19,7 @@
 
 #include "WasmHostPlugin.hpp"
 
-#define PARAMETER_COUNT 0
+#define PARAMETER_COUNT 1
 #define PROGRAM_COUNT   0
 #define STATE_COUNT     0
 

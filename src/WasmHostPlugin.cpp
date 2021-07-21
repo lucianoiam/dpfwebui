@@ -279,9 +279,13 @@ int64_t WasmHostPlugin::getUniqueId() const
 
 void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
 {
+    // FIXME - this should be configured using AssemblyScript
+    parameter.hints = kParameterIsAutomable;
+
+
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(index)));
 
-    if (WASM_FUNC_CALL_BY_INDEX(GET_PARAMETER_VALUE, &args_val_vec, &empty_val_vec) != 0) {
+    if (WASM_FUNC_CALL_BY_INDEX(INIT_PARAMETER, &args_val_vec, &empty_val_vec) != 0) {
         WASM_LOG_FUNC_CALL_ERROR();
         return;
     }
