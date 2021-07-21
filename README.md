@@ -5,7 +5,7 @@ This project extends [DPF](http://github.com/DISTRHO/DPF) to provide the
 necessary scaffold for creating audio plugins with potentially complex user
 interfaces. Plugins implement a web view for running the UI, which interacts
 with the audio host through a small factory shipped JavaScript class. The DSP
-core remains completely isolated and implemented in C++ or AssemblyScript.
+core remains isolated and implemented in C++ or AssemblyScript.
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
@@ -23,17 +23,19 @@ core remains completely isolated and implemented in C++ or AssemblyScript.
 * Just the powerful basics
 * BSD-like license
 
-**Support for [AssemblyScript](https://www.assemblyscript.org) is still work in
-progress.** AssemblyScript is a language very similar to [TypeScript](https://www.typescriptlang.org)
+__Support for AssemblyScript is still work in progress.__ [AssemblyScript](https://www.assemblyscript.org)
+is a language very similar to [TypeScript](https://www.typescriptlang.org)
 specifically created for targeting [WebAssembly](https://webassembly.org).
-Plugins written with Hip-Hap implement a WebAssembly JIT engine for running
+Plugins written with Hip-Hap embed a WebAssembly JIT engine for running
 precompiled AssemblyScript-based DSP code. This engine is completely independent
-from the web view. The following UI/DSP language combinations are available:
+from the web view.
+
+The following DSP / UI language combinations are available:
 
 DSP|UI |Comments
 ---|---|---------------------------------------------------------------------------
-C++|Web|
-AS |Web|
+C++|JS |Web view user interface
+AS |JS |Web view user interface
 AS |C++|Widgets provided by DISTRHO Graphics Library (DGL)
 C++|C++|Do not use this project, check [DPF](http://github.com/DISTRHO/DPF) instead
 
