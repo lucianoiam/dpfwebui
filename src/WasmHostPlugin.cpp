@@ -22,12 +22,15 @@
 #include "macro.h"
 #include "wasm_macro.h"
 
+#define WASM_MEMORY_CSTR(wptr) static_cast<char *>(&fWasmMemoryBytes[wptr.of.i32])
+
+#define WASM_GLOBAL_BY_INDEX(idx) wasm_extern_as_global(fWasmExports.data[ExportIndex::idx])
+#define WASM_GLOBAL_GET_BY_INDEX(idx,pval) wasm_global_get(WASM_GLOBAL_BY_INDEX(idx), pval)
+
 #define WASM_FUNC_BY_INDEX(idx) wasm_extern_as_func(fWasmExports.data[ExportIndex::idx])
-#define WASM_FUNC_CALL(idx,args,res) wasm_func_call(WASM_FUNC_BY_INDEX(idx), args, res)
+#define WASM_FUNC_CALL_BY_INDEX(idx,args,res) wasm_func_call(WASM_FUNC_BY_INDEX(idx), args, res)
 
 #define WASM_LOG_FUNC_CALL_ERROR() HIPHAP_LOG_STDERR_COLOR("Error calling Wasm function")
-
-#define WASM_MEMORY_CSTR(val) static_cast<char *>(&fWasmMemoryBytes[val.of.i32]);
 
 USE_NAMESPACE_DISTRHO
 
@@ -183,12 +186,10 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     wasm_val_t blockPtr;
     wasm_global_t* g;
 
-    g = wasm_extern_as_global(fWasmExports.data[ExportIndex::INPUT_BLOCK]);
-    wasm_global_get(g, &blockPtr);
+    WASM_GLOBAL_GET_BY_INDEX(INPUT_BLOCK, &blockPtr);
     fInputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
 
-    g = wasm_extern_as_global(fWasmExports.data[ExportIndex::OUTPUT_BLOCK]);
-    wasm_global_get(g, &blockPtr);
+    WASM_GLOBAL_GET_BY_INDEX(OUTPUT_BLOCK, &blockPtr);
     fOutputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
 
     // -------------------------------------------------------------------------
@@ -216,7 +217,7 @@ const char* WasmHostPlugin::getLabel() const
 {
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL(GET_LABEL, &empty_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL_BY_INDEX(GET_LABEL, &empty_val_vec, &res_val_vec) != 0) {
         WASM_LOG_FUNC_CALL_ERROR();
         return 0;
     }
@@ -228,7 +229,7 @@ const char* WasmHostPlugin::getMaker() const
 {
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL(GET_MAKER, &empty_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL_BY_INDEX(GET_MAKER, &empty_val_vec, &res_val_vec) != 0) {
         WASM_LOG_FUNC_CALL_ERROR();
         return 0;
     }
@@ -240,7 +241,7 @@ const char* WasmHostPlugin::getLicense() const
 {
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL(GET_LICENSE, &empty_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL_BY_INDEX(GET_LICENSE, &empty_val_vec, &res_val_vec) != 0) {
         WASM_LOG_FUNC_CALL_ERROR();
         return 0;
     }
@@ -250,19 +251,36 @@ const char* WasmHostPlugin::getLicense() const
 
 uint32_t WasmHostPlugin::getVersion() const
 {
-    return 1;   // FIXME
+    return 1;   // TODO
 }
 
 int64_t WasmHostPlugin::getUniqueId() const
 {
-    return 1;   // FIXME d_cconst('D', 'P', 'w', 'g');
+    return 1;   // TODO d_cconst('D', 'P', 'w', 'g');
 }
 
 void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
 {
-    // FIXME
-    (void)index;
-    (void)parameter;
+    WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(index)));
+
+    if (WASM_FUNC_CALL_BY_INDEX(GET_PARAMETER_VALUE, &args_val_vec, &empty_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
+        return;
+    }
+
+    wasm_val_t res;
+
+    WASM_GLOBAL_GET_BY_INDEX(RO_STRING_1, &res);
+    parameter.name = String(WASM_MEMORY_CSTR(res));
+
+    WASM_GLOBAL_GET_BY_INDEX(RW_FLOAT_1, &res);
+    parameter.ranges.def = res.of.f32;
+
+    WASM_GLOBAL_GET_BY_INDEX(RW_FLOAT_2, &res);
+    parameter.ranges.min = res.of.f32;
+
+    WASM_GLOBAL_GET_BY_INDEX(RW_FLOAT_3, &res);
+    parameter.ranges.max = res.of.f32;
 }
 
 float WasmHostPlugin::getParameterValue(uint32_t index) const
@@ -270,7 +288,7 @@ float WasmHostPlugin::getParameterValue(uint32_t index) const
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(index)));
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL(GET_PARAMETER_VALUE, &args_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL_BY_INDEX(GET_PARAMETER_VALUE, &args_val_vec, &res_val_vec) != 0) {
         WASM_LOG_FUNC_CALL_ERROR();
         return 0;
     }
@@ -283,7 +301,7 @@ void WasmHostPlugin::setParameterValue(uint32_t index, float value)
     WASM_DEFINE_ARGS_VAL_VEC_2(args, WASM_I32_VAL(static_cast<int32_t>(index)),
                                         WASM_F32_VAL(static_cast<float32_t>(value)));
 
-    if (WASM_FUNC_CALL(SET_PARAMETER_VALUE, &args_val_vec, &empty_val_vec) != 0) {
+    if (WASM_FUNC_CALL_BY_INDEX(SET_PARAMETER_VALUE, &args_val_vec, &empty_val_vec) != 0) {
         WASM_LOG_FUNC_CALL_ERROR();
     }
 }
@@ -292,7 +310,7 @@ void WasmHostPlugin::setParameterValue(uint32_t index, float value)
 
 void WasmHostPlugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
 {
-    // FIXME
+    // TODO
     (void)index;
     (void)stateKey;
     (void)defaultStateValue;
@@ -300,7 +318,7 @@ void WasmHostPlugin::initState(uint32_t index, String& stateKey, String& default
 
 void WasmHostPlugin::setState(const char* key, const char* value)
 {
-    // FIXME
+    // TODO
     (void)key;
     (void)value;
 }
@@ -309,7 +327,7 @@ void WasmHostPlugin::setState(const char* key, const char* value)
 
 String WasmHostPlugin::getState(const char* key) const
 {
-    // FIXME
+    // TODO
     (void)key;
     return String();
 }
@@ -320,14 +338,14 @@ String WasmHostPlugin::getState(const char* key) const
 
 void WasmHostPlugin::activate()
 {
-    if (WASM_FUNC_CALL(ACTIVATE, &empty_val_vec, &empty_val_vec) != 0) {
+    if (WASM_FUNC_CALL_BY_INDEX(ACTIVATE, &empty_val_vec, &empty_val_vec) != 0) {
         WASM_LOG_FUNC_CALL_ERROR();
     }
 }
 
 void WasmHostPlugin::deactivate()
 {
-    if (WASM_FUNC_CALL(DEACTIVATE, &empty_val_vec, &empty_val_vec) != 0) {
+    if (WASM_FUNC_CALL_BY_INDEX(DEACTIVATE, &empty_val_vec, &empty_val_vec) != 0) {
         WASM_LOG_FUNC_CALL_ERROR();
     }
 }
@@ -340,7 +358,7 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
 
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(frames)));
 
-    if (WASM_FUNC_CALL(RUN, &args_val_vec, &empty_val_vec) != 0) {
+    if (WASM_FUNC_CALL_BY_INDEX(RUN, &args_val_vec, &empty_val_vec) != 0) {
         WASM_LOG_FUNC_CALL_ERROR();
         return;
     }
