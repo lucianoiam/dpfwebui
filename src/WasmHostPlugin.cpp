@@ -43,6 +43,7 @@ enum ExportIndex {
     GET_LABEL,
     GET_MAKER,
     GET_LICENSE,
+    GET_VERSION,
     INIT_PARAMETER,
     GET_PARAMETER_VALUE,
     SET_PARAMETER_VALUE,
@@ -249,7 +250,14 @@ const char* WasmHostPlugin::getLicense() const
 
 uint32_t WasmHostPlugin::getVersion() const
 {
-    return 1;   // TODO
+    WASM_DEFINE_RES_VAL_VEC_1(res);
+
+    if (WASM_FUNC_CALL_BY_INDEX(GET_LICENSE, &empty_val_vec, &res_val_vec) != 0) {
+        WASM_LOG_FUNC_CALL_ERROR();
+        return 0;
+    }
+
+    return static_cast<uint32_t>(res[0].of.i32);
 }
 
 int64_t WasmHostPlugin::getUniqueId() const

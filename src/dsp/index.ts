@@ -48,6 +48,10 @@ export function dpf_get_license(): ArrayBuffer {
     return String.UTF8.encode(pluginInstance.getLicense(), true)
 }
 
+export function dpf_get_version(): u32 {
+    return pluginInstance.getVersion()
+}
+
 export function dpf_init_parameter(index: u32): void {
     const parameter = new DISTRHO.Parameter
     pluginInstance.initParameter(index, parameter)

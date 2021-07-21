@@ -37,6 +37,9 @@ export default namespace DISTRHO {
         // const char* Plugin::getLicense()
         getLicense(): string
 
+        // uint32_t Plugin::getVersion()
+        getVersion(): u32
+
         // void Plugin::initParameter(uint32_t index, Parameter& parameter)
         initParameter(index: u32, parameter: Parameter): void
 
