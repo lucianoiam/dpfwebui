@@ -18,6 +18,10 @@ export default class AsTestPlugin extends DISTRHO.Plugin implements DISTRHO.Plug
         return "ISC"
     }
 
+    getVersion(): u32 {
+        return 0
+    }
+
     initParameter(index: u32, parameter: DISTRHO.Parameter): void {
         // Empty implementation
     }
