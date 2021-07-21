@@ -23,8 +23,12 @@ Plugin* DISTRHO::createPlugin()
     return new WebGainExamplePlugin;
 }
 
+#define PARAMETER_COUNT 1
+#define PROGRAM_COUNT   0
+#define STATE_COUNT     0
+
 WebGainExamplePlugin::WebGainExamplePlugin()
-    : Plugin(1 /* parameterCount */, 0 /* programCount */, 0 /* stateCount */)
+    : Plugin(PARAMETER_COUNT, PROGRAM_COUNT, STATE_COUNT)
     , fGain(1.f)
 {}
 
