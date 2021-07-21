@@ -1,5 +1,5 @@
 /*
- * Apices - Audio Plugins In C++ & ES6
+ * Hip-Hap / High Performance Hybrid Audio Plugins
  * Copyright (C) 2021 Luciano Iam <oss@lucianoiam.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -38,7 +38,7 @@ String platform::getBinaryPath()
     if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) != 0) {
         return String(dl_info.dli_fname);
     } else {
-        APX_LOG_STDERR(dlerror());
+        HIPHAP_LOG_STDERR(dlerror());
         return String();
     }
 }

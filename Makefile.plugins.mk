@@ -4,27 +4,27 @@
 # ------------------------------------------------------------------------------
 # Basic setup
 
-APX_ROOT_PATH  := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
-APX_SRC_PATH   ?= $(APX_ROOT_PATH)/src
-APX_LIB_PATH   ?= $(APX_ROOT_PATH)/lib
+HIPHAP_ROOT_PATH := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+HIPHAP_SRC_PATH  ?= $(HIPHAP_ROOT_PATH)/src
+HIPHAP_LIB_PATH  ?= $(HIPHAP_ROOT_PATH)/lib
 
-DPF_PATH       ?= $(APX_ROOT_PATH)/dpf
-DPF_TARGET_DIR ?= bin
-DPF_BUILD_DIR  ?= build
-DPF_GIT_BRANCH ?= develop
+DPF_PATH         ?= $(HIPHAP_ROOT_PATH)/dpf
+DPF_TARGET_DIR   ?= bin
+DPF_BUILD_DIR    ?= build
+DPF_GIT_BRANCH   ?= develop
 
-ifneq ($(APX_AS_DSP_PATH),)
+ifneq ($(HIPHAP_AS_DSP_PATH),)
 AS_DSP = true
 endif
 
 # ------------------------------------------------------------------------------
 # Check for mandatory variables
 
-ifeq ($(APX_PROJECT_VERSION),)
-$(error APX_PROJECT_VERSION is not set)
+ifeq ($(HIPHAP_PROJECT_VERSION),)
+$(error HIPHAP_PROJECT_VERSION is not set)
 endif
-ifeq ($(APX_WEB_UI_PATH),)
-$(error APX_WEB_UI_PATH is not set)
+ifeq ($(HIPHAP_WEB_UI_PATH),)
+$(error HIPHAP_WEB_UI_PATH is not set)
 endif
 
 # ------------------------------------------------------------------------------
@@ -58,40 +58,40 @@ endif
 # Add optional support for AssemblyScript DSP
 
 ifeq ($(AS_DSP),true)
-APX_FILES_DSP  = WasmHostPlugin.cpp \
+HIPHAP_FILES_DSP  = WasmHostPlugin.cpp \
                  Platform.cpp
 ifeq ($(LINUX),true)
-APX_FILES_DSP += linux/PlatformLinux.cpp
+HIPHAP_FILES_DSP += linux/PlatformLinux.cpp
 endif
 ifeq ($(MACOS),true)
-APX_FILES_DSP += macos/PlatformMac.mm
+HIPHAP_FILES_DSP += macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
-APX_FILES_DSP += windows/PlatformWindows.cpp \
+HIPHAP_FILES_DSP += windows/PlatformWindows.cpp \
                  windows/extra/WinApiStub.cpp 
 endif
 
-FILES_DSP += $(APX_FILES_DSP:%=$(APX_SRC_PATH)/%)
+FILES_DSP += $(HIPHAP_FILES_DSP:%=$(HIPHAP_SRC_PATH)/%)
 endif
 
 # ------------------------------------------------------------------------------
 # Add web UI source
 
-APX_FILES_UI  = WebHostUI.cpp \
+HIPHAP_FILES_UI  = WebHostUI.cpp \
                 AbstractWebWidget.cpp \
                 ScriptValue.cpp \
                 Platform.cpp
 ifeq ($(LINUX),true)
-APX_FILES_UI += linux/ExternalGtkWebWidget.cpp \
+HIPHAP_FILES_UI += linux/ExternalGtkWebWidget.cpp \
                 linux/PlatformLinux.cpp \
                 linux/extra/ipc.c
 endif
 ifeq ($(MACOS),true)
-APX_FILES_UI += macos/CocoaWebWidget.mm \
+HIPHAP_FILES_UI += macos/CocoaWebWidget.mm \
                 macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
-APX_FILES_UI += windows/EdgeWebWidget.cpp \
+HIPHAP_FILES_UI += windows/EdgeWebWidget.cpp \
                 windows/KeyboardRouter.cpp \
                 windows/PlatformWindows.cpp \
                 windows/extra/WebView2EventHandler.cpp \
@@ -100,7 +100,7 @@ APX_FILES_UI += windows/EdgeWebWidget.cpp \
                 windows/res/plugin.rc
 endif
 
-FILES_UI += $(APX_FILES_UI:%=$(APX_SRC_PATH)/%)
+FILES_UI += $(HIPHAP_FILES_UI:%=$(HIPHAP_SRC_PATH)/%)
 
 ifneq ($(WINDOWS),true)
 UI_TYPE = cairo
@@ -140,11 +140,11 @@ endif
 # ------------------------------------------------------------------------------
 # Add build flags for web UI dependencies
 
-BASE_FLAGS += -I$(APX_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
-              -DAPX_PROJECT_ID_HASH=$(shell echo $(NAME):$(APX_PROJECT_VERSION) \
+BASE_FLAGS += -I$(HIPHAP_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
+              -DHIPHAP_PROJECT_ID_HASH=$(shell echo $(NAME):$(HIPHAP_PROJECT_VERSION) \
               	| shasum -a 256 | head -c 8)
-ifeq ($(APX_PRINT_TRAFFIC),true)
-BASE_FLAGS += -DAPX_PRINT_TRAFFIC
+ifeq ($(HIPHAP_PRINT_TRAFFIC),true)
+BASE_FLAGS += -DHIPHAP_PRINT_TRAFFIC
 endif
 ifeq ($(LINUX),true)
 LINK_FLAGS += -lpthread -ldl
@@ -166,10 +166,10 @@ endif
 TARGETS += info
 
 info:
-	@echo "Apices : $(APX_ROOT_PATH)"
-	@echo "DPF    : $(DPF_PATH) @ $(DPF_GIT_BRANCH)"
-	@echo "Build  : $(DPF_BUILD_DIR)"
-	@echo "Target : $(DPF_TARGET_DIR)"
+	@echo "Hip-Hap : $(HIPHAP_ROOT_PATH)"
+	@echo "DPF     : $(DPF_PATH) @ $(DPF_GIT_BRANCH)"
+	@echo "Build   : $(DPF_BUILD_DIR)"
+	@echo "Target  : $(DPF_TARGET_DIR)"
 
 # ------------------------------------------------------------------------------
 # Dependency - Build DPF Graphics Library
@@ -185,7 +185,7 @@ MACSIZEBUG:
 ifeq ($(MACOS),true)
 ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_PATH)/distrho/src/DistrhoUI.cpp),0)
 	@echo Patching DistrhoUI.cpp to workaround window size bug on macOS...
-	@cd $(APX_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i DistrhoUI.cpp.patch
+	@cd $(HIPHAP_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i DistrhoUI.cpp.patch
 endif
 endif
 
@@ -193,7 +193,7 @@ endif
 # Dependency - Download Wasmer
 
 ifeq ($(AS_DSP),true)
-WASMER_PATH = $(APX_LIB_PATH)/wasmer
+WASMER_PATH = $(HIPHAP_LIB_PATH)/wasmer
 
 TARGETS += $(WASMER_PATH)
 
@@ -209,7 +209,7 @@ endif
 ifeq ($(WINDOWS),true)
 # Wasmer official binary distribution requires MSVC 
 WASMER_PKG_FILE = wasmer-mingw-amd64.tar.gz
-WASMER_URL = https://github.com/lucianoiam/apices/files/6795372/wasmer-mingw-amd64.tar.gz
+WASMER_URL = https://github.com/lucianoiam/hiphap/files/6795372/wasmer-mingw-amd64.tar.gz
 endif
 
 # https://stackoverflow.com/questions/37038472/osx-how-to-statically-link-a-library-and-dynamically-link-the-standard-library
@@ -230,7 +230,7 @@ endif
 # Dependency - Download Edge WebView2
 
 ifeq ($(WINDOWS),true)
-EDGE_WEBVIEW2_PATH = $(APX_LIB_PATH)/Microsoft.Web.WebView2
+EDGE_WEBVIEW2_PATH = $(HIPHAP_LIB_PATH)/Microsoft.Web.WebView2
 
 TARGETS += $(EDGE_WEBVIEW2_PATH)
 
@@ -245,9 +245,9 @@ $(error NuGet not found, try sudo apt install nuget or the equivalent for your d
 endif
 endif
 	@echo Downloading Edge WebView2 SDK...
-	@mkdir -p $(APX_LIB_PATH)
+	@mkdir -p $(HIPHAP_LIB_PATH)
 	@eval $(MSYS_MINGW_SYMLINKS)
-	@nuget install Microsoft.Web.WebView2 -OutputDirectory $(APX_LIB_PATH)
+	@nuget install Microsoft.Web.WebView2 -OutputDirectory $(HIPHAP_LIB_PATH)
 	@ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH)
 
 /usr/bin/nuget.exe:
@@ -258,13 +258,13 @@ endif
 # ------------------------------------------------------------------------------
 # Dependency - Built-in JavaScript library include
 
-UI_JS_INCLUDE_PATH = $(APX_SRC_PATH)/ui/distrho-ui.js.include
+UI_JS_INCLUDE_PATH = $(HIPHAP_SRC_PATH)/ui/distrho-ui.js.include
 
 TARGETS += $(UI_JS_INCLUDE_PATH)
 
 $(UI_JS_INCLUDE_PATH):
 	@echo 'R"UI_JS(' > $(UI_JS_INCLUDE_PATH)
-	@cat $(APX_SRC_PATH)/ui/distrho-ui.js >> $(UI_JS_INCLUDE_PATH)
+	@cat $(HIPHAP_SRC_PATH)/ui/distrho-ui.js >> $(UI_JS_INCLUDE_PATH)
 	@echo ')UI_JS"' >> $(UI_JS_INCLUDE_PATH)
 
 # ------------------------------------------------------------------------------
@@ -272,11 +272,11 @@ $(UI_JS_INCLUDE_PATH):
 
 ifeq ($(LINUX),true)
 LXHELPER_BIN = $(BUILD_DIR)/$(NAME)_ui
-APX_TARGET += $(LXHELPER_BIN)
+HIPHAP_TARGET += $(LXHELPER_BIN)
 
-$(LXHELPER_BIN): $(APX_SRC_PATH)/linux/helper.c $(APX_SRC_PATH)/linux/extra/ipc.c
+$(LXHELPER_BIN): $(HIPHAP_SRC_PATH)/linux/helper.c $(HIPHAP_SRC_PATH)/linux/extra/ipc.c
 	@echo "Building helper..."
-	$(SILENT)$(CC) $^ -I$(APX_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
+	$(SILENT)$(CC) $^ -I$(HIPHAP_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
 endif
@@ -319,7 +319,7 @@ TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
 # Post build - Copy Linux helper
 
 ifeq ($(LINUX),true)
-APX_TARGET += lxhelper
+HIPHAP_TARGET += lxhelper
 
 lxhelper:
 	@($(TEST_LINUX_OR_MACOS_JACK) || $(TEST_LINUX_VST) \
@@ -343,7 +343,7 @@ endif
 # Post build - Create macOS VST bundle
 
 ifeq ($(MACOS),true)
-APX_TARGET += macvst
+HIPHAP_TARGET += macvst
 
 macvst:
 	@# TODO - generate-vst-bundles.sh expects hardcoded directory bin/
@@ -361,7 +361,7 @@ endif
 # The "bare" DLL is enough for the standalone JACK target, no need for assembly.
 
 ifeq ($(WINDOWS),true)
-APX_TARGET += edgelib
+HIPHAP_TARGET += edgelib
 
 edgelib:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
@@ -371,12 +371,12 @@ edgelib:
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
-		&& cp $(APX_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		&& cp $(HIPHAP_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		) || true
 	@($(TEST_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader \
-		&& cp $(APX_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
+		&& cp $(HIPHAP_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
 		) || true
 
 clean: clean_edgelib
@@ -389,14 +389,14 @@ endif
 # Post build - Always copy resource files
 
 ifneq ($(AS_DSP),)
-APX_TARGET += resourcesdsp
+HIPHAP_TARGET += resourcesdsp
 
-WASM_SRC_PATH = $(APX_AS_DSP_PATH)/build/optimized.wasm
+WASM_SRC_PATH = $(HIPHAP_AS_DSP_PATH)/build/optimized.wasm
 WASM_DST_PATH = dsp/main.wasm
 
 resourcesdsp:
 	@echo "Building AssemblyScript project..."
-	@npm --prefix $(APX_AS_DSP_PATH) run asbuild
+	@npm --prefix $(HIPHAP_AS_DSP_PATH) run asbuild
 	@echo "Copying WebAssembly DSP binary..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/dsp \
@@ -416,25 +416,25 @@ resourcesdsp:
 		) || true
 endif
 
-APX_TARGET += resourcesui
+HIPHAP_TARGET += resourcesui
 
 resourcesui:
 	@echo "Copying web UI resource files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/ui \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_res/ui \
+		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_res/ui \
 		) || true
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/ui \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/ui \
+		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/ui \
 		) || true
 	@($(TEST_DSSI) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/ui \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/ui \
+		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/ui \
 		) || true
 	@($(TEST_MAC_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
-		&& cp -r $(APX_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
+		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
 		) || true
 
 clean: clean_resources
@@ -452,7 +452,7 @@ CAN_GENERATE_TTL = true
 endif
 
 ifeq ($(CAN_GENERATE_TTL),true)
-APX_TARGET += lv2ttl
+HIPHAP_TARGET += lv2ttl
 
 lv2ttl: $(DPF_PATH)/utils/lv2_ttl_generator
 	@# TODO - generate-ttl.sh expects hardcoded directory bin/

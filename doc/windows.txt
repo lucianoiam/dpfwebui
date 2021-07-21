@@ -40,8 +40,8 @@ NOTES FOR WINDOWS
    - export PATH="/c/Users/< USERNAME >/.cargo/bin:$PATH"
    - git clone https://github.com/wasmerio/wasmer
    - make -C wasmer
-   - mkdir -p apices/lib/wasmer/include
-   - cp wasmer/lib/c-api/tests/wasm-c-api/include/wasm.h apices/lib/wasmer/include
-   - cp wasmer/lib/c-api/wasmer.h apices/lib/wasmer/include
-   - mkdir -p apices/lib/wasmer/lib
-   - cp wasmer/target/release/libwasmer.a apices/lib/wasmer/lib
+   - mkdir -p hiphap/lib/wasmer/include
+   - cp wasmer/lib/c-api/tests/wasm-c-api/include/wasm.h hiphap/lib/wasmer/include
+   - cp wasmer/lib/c-api/wasmer.h hiphap/lib/wasmer/include
+   - mkdir -p hiphap/lib/wasmer/lib
+   - cp wasmer/target/release/libwasmer.a hiphap/lib/wasmer/lib

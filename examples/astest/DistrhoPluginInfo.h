@@ -37,7 +37,7 @@
    The plugin URI when exporting in LV2 format.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_URI "https://lucianoiam.com/apices/astest"
+#define DISTRHO_PLUGIN_URI "https://lucianoiam.com/hiphap/astest"
 
 /**
    Wherever the plugin has a custom %UI.
