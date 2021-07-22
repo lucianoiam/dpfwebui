@@ -21,14 +21,6 @@
 
 // Useful macros for reducing Wasmer C interface noise
 
-// FIXME: there is no public interface to wasm_val_vec_t contents
-typedef struct {
-    int         length;
-    wasm_val_t* val;
-} private_wasm_val_vec_t;
-
-#define WASM_VAL_VEC_GET(vecptr,idx) ((private_wasm_val_vec_t *)vecptr)->val[idx]
-
 #define WASM_DEFINE_ARGS_VAL_VEC_1(var,arg0) wasm_val_t var[1] = { arg0 }; \
                                              wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
 #define WASM_DEFINE_ARGS_VAL_VEC_2(var,arg0,arg1) wasm_val_t var[2] = { arg0, arg1 }; \

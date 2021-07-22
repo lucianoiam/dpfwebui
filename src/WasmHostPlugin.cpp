@@ -425,10 +425,10 @@ static own wasm_trap_t* ascript_abort(void* env, const wasm_val_vec_t* args, was
 
     WasmHostPlugin* p = static_cast<WasmHostPlugin *>(env);
 
-    const char *msg = p->encodeString(WASM_VAL_VEC_GET(args, 0).of.i32);
-    const char *filename = p->encodeString(WASM_VAL_VEC_GET(args, 1).of.i32);
-    int32_t lineNumber = WASM_VAL_VEC_GET(args, 2).of.i32;
-    int32_t columnNumber = WASM_VAL_VEC_GET(args, 3).of.i32;
+    const char *msg = p->encodeString(args->data[0].of.i32);
+    const char *filename = p->encodeString(args->data[1].of.i32);
+    int32_t lineNumber = args->data[2].of.i32;
+    int32_t columnNumber = args->data[3].of.i32;
 
     std::stringstream ss;
     ss << "AssemblyScript abort() called - msg: " << msg << ", filename: " << filename
