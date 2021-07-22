@@ -116,7 +116,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     // -------------------------------------------------------------------------
     // Load binary module file
 
-    String path = platform::getLibraryPath() + "/dsp/main.wasm";
+    String path = platform::getLibraryPath() + "/dsp/plugin.wasm";
     FILE* file = fopen(path, "rb");
 
     if (file == 0) {
