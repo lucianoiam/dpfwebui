@@ -403,6 +403,7 @@ WASM_DST_PATH = dsp/plugin.wasm
 
 libdsp:
 	@echo "Building AssemblyScript project..."
+	@test -d $(HIPHAP_AS_DSP_PATH)/node_modules || npm --prefix $(HIPHAP_AS_DSP_PATH) install
 	@npm --prefix $(HIPHAP_AS_DSP_PATH) run asbuild
 	@echo "Copying WebAssembly DSP binary..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
