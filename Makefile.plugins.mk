@@ -392,7 +392,7 @@ ifneq ($(AS_DSP),)
 HIPHAP_TARGET += libdsp
 
 WASM_SRC_PATH = $(HIPHAP_AS_DSP_PATH)/build/optimized.wasm
-WASM_DST_PATH = dsp/main.wasm
+WASM_DST_PATH = dsp/plugin.wasm
 
 libdsp:
 	@echo "Building AssemblyScript project..."
