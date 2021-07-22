@@ -77,6 +77,7 @@ export default namespace DISTRHO {
     // struct DISTRHO::Parameter
     export class Parameter {
 
+        hints: u32
         name: string = ''
         ranges: ParameterRanges = new ParameterRanges
 
@@ -90,6 +91,15 @@ export default namespace DISTRHO {
         max: f32
 
     }
+
+    // Parameter hint constants
+
+    export const kParameterIsAutomable: u32 = 0x01
+    export const kParameterIsBoolean: u32 = 0x02
+    export const kParameterIsInteger: u32 = 0x04
+    export const kParameterIsLogarithmic: u32 = 0x08
+    export const kParameterIsOutput: u32 = 0x10
+    export const kParameterIsTrigger: u32 = 0x20 | kParameterIsBoolean
 
     // These are implemented in DistrhoUtils.cpp and are useful for calling from
     // Plugin methods getVersion() and getUniqueId()

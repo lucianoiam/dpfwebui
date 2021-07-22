@@ -30,6 +30,7 @@ export default class AsTestPlugin extends DISTRHO.Plugin implements DISTRHO.Plug
     initParameter(index: u32, parameter: DISTRHO.Parameter): void {
         switch (index) {
             case 0:
+                parameter.hints = DISTRHO.kParameterIsAutomable
                 parameter.name = 'Frequency'
                 parameter.ranges.def = 440.0
                 parameter.ranges.min = 220.0

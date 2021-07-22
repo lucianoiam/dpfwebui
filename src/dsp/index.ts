@@ -62,6 +62,7 @@ export function dpf_init_parameter(index: u32): void {
     const parameter = new DISTRHO.Parameter
     pluginInstance.initParameter(index, parameter)
     // See explanation below for the odd value return convention
+    rw_int_1 = parameter.hints
     ro_string_1 = encode_string(parameter.name)
     rw_float_1 = parameter.ranges.def
     rw_float_2 = parameter.ranges.min

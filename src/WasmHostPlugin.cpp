@@ -287,10 +287,6 @@ int64_t WasmHostPlugin::getUniqueId() const
 
 void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
 {
-    // FIXME - this should be configured using AssemblyScript
-    parameter.hints = kParameterIsAutomable;
-
-
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(index)));
 
     if (WASM_FUNC_CALL_BY_INDEX(INIT_PARAMETER, &args_val_vec, &empty_val_vec) != 0) {
@@ -300,17 +296,11 @@ void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
 
     wasm_val_t res;
 
-    WASM_GLOBAL_GET_BY_INDEX(RO_STRING_1, &res);
-    parameter.name = String(WASM_MEMORY_CSTR(res));
-
-    WASM_GLOBAL_GET_BY_INDEX(RW_FLOAT_1, &res);
-    parameter.ranges.def = res.of.f32;
-
-    WASM_GLOBAL_GET_BY_INDEX(RW_FLOAT_2, &res);
-    parameter.ranges.min = res.of.f32;
-
-    WASM_GLOBAL_GET_BY_INDEX(RW_FLOAT_3, &res);
-    parameter.ranges.max = res.of.f32;
+    WASM_GLOBAL_GET_BY_INDEX(RW_INT_1, &res);    parameter.hints = res.of.i32;
+    WASM_GLOBAL_GET_BY_INDEX(RO_STRING_1, &res); parameter.name = String(WASM_MEMORY_CSTR(res));
+    WASM_GLOBAL_GET_BY_INDEX(RW_FLOAT_1, &res);  parameter.ranges.def = res.of.f32;
+    WASM_GLOBAL_GET_BY_INDEX(RW_FLOAT_2, &res);  parameter.ranges.min = res.of.f32;
+    WASM_GLOBAL_GET_BY_INDEX(RW_FLOAT_3, &res);  parameter.ranges.max = res.of.f32;
 }
 
 float WasmHostPlugin::getParameterValue(uint32_t index) const
