@@ -66,13 +66,13 @@ String platform::getBinaryPath()
     return String(path);
 }
 
-String platform::getResourcePath()
+String platform::getLibraryPath()
 {
     char path[MAX_PATH];
     strcpy(path, getBinaryPath());
     PathRemoveFileSpec(path);
 
-    return String(path) + "\\" + kDefaultResourcesSubdirectory;
+    return String(path) + "\\" + kDefaultLibrarySubdirectory;
 }
 
 String platform::getTemporaryPath()

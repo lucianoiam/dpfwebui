@@ -97,7 +97,7 @@ HIPHAP_FILES_UI += windows/EdgeWebWidget.cpp \
                    windows/extra/WebView2EventHandler.cpp \
                    windows/extra/WinApiStub.cpp \
                    windows/extra/cJSON.c \
-                   windows/res/plugin.rc
+                   windows/resources/plugin.rc
 endif
 
 FILES_UI += $(HIPHAP_FILES_UI:%=$(HIPHAP_SRC_PATH)/%)
@@ -371,12 +371,12 @@ edgelib:
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
-		&& cp $(HIPHAP_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		&& cp $(HIPHAP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		) || true
 	@($(TEST_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader \
-		&& cp $(HIPHAP_SRC_PATH)/windows/res/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
+		&& cp $(HIPHAP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
 		) || true
 
 clean: clean_edgelib
@@ -386,29 +386,29 @@ clean_edgelib:
 endif
 
 # ------------------------------------------------------------------------------
-# Post build - Always copy resource files
+# Post build - Always copy lib files
 
 ifneq ($(AS_DSP),)
-HIPHAP_TARGET += resourcesdsp
+HIPHAP_TARGET += libdsp
 
 WASM_SRC_PATH = $(HIPHAP_AS_DSP_PATH)/build/optimized.wasm
 WASM_DST_PATH = dsp/main.wasm
 
-resourcesdsp:
+libdsp:
 	@echo "Building AssemblyScript project..."
 	@npm --prefix $(HIPHAP_AS_DSP_PATH) run asbuild
 	@echo "Copying WebAssembly DSP binary..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME)_res/$(WASM_DST_PATH) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)_lib/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME)_lib/$(WASM_DST_PATH) \
 		) || true
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/$(WASM_DST_PATH) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_lib/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).lv2/$(NAME)_lib/$(WASM_DST_PATH) \
 		) || true
 	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/$(WASM_DST_PATH) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_lib/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_lib/$(WASM_DST_PATH) \
 		) || true
 	@($(TEST_MAC_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
@@ -416,31 +416,31 @@ resourcesdsp:
 		) || true
 endif
 
-HIPHAP_TARGET += resourcesui
+HIPHAP_TARGET += libui
 
-resourcesui:
-	@echo "Copying web UI resource files..."
+libui:
+	@echo "Copying web UI files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)_res/ui \
-		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_res/ui \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)_lib/ui \
+		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_lib/ui \
 		) || true
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/ui \
-		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_res/ui \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_lib/ui \
+		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_lib/ui \
 		) || true
 	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/ui \
-		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_res/ui \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_lib/ui \
+		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_lib/ui \
 		) || true
 	@($(TEST_MAC_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
 		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
 		) || true
 
-clean: clean_resources
+clean: clean_lib
 
-clean_resources:
-	@rm -rf $(TARGET_DIR)/$(NAME)_res
+clean_lib:
+	@rm -rf $(TARGET_DIR)/$(NAME)_lib
 
 # ------------------------------------------------------------------------------
 # Post build - Create LV2 manifest files
