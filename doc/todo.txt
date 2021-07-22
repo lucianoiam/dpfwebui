@@ -1,7 +1,6 @@
 GENERAL
 -------
 
-- Rename res directory to lib
 - Make web UI support optional
 - Wasm: console.log() support
 - Wasm: check environment is properly initialized in all WasmHostPlugin methods

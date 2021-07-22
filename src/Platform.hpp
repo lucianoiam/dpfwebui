@@ -48,10 +48,10 @@ namespace platform {
     float  getSystemDisplayScaleFactor();
 
     String getBinaryPath();
-    String getResourcePath();
+    String getLibraryPath();
     String getTemporaryPath();
 
-    const String kDefaultResourcesSubdirectory = String(XSTR(BIN_BASENAME) "_res");
+    const String kDefaultLibrarySubdirectory = String(XSTR(BIN_BASENAME) "_lib");
 
 }
 

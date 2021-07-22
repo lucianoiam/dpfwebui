@@ -77,7 +77,7 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     );
     fWebWidget.injectScript(js);
 
-    String url = "file://" + platform::getResourcePath() + "/ui/index.html";
+    String url = "file://" + platform::getLibraryPath() + "/ui/index.html";
     fWebWidget.navigate(url);
 }
 

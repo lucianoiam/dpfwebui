@@ -26,7 +26,8 @@
 // Macros for reducing Wasmer C interface noise
 
 #define own
-#define WASM_DECLARE_NATIVE_FUNC(func) static own wasm_trap_t* func(void *env, const wasm_val_vec_t* args, wasm_val_vec_t* results);
+#define WASM_DECLARE_NATIVE_FUNC(func) static own wasm_trap_t* func(void *env, \
+                                            const wasm_val_vec_t* args, wasm_val_vec_t* results);
 #define WASM_MEMORY_CSTR(wptr) static_cast<char *>(&fWasmMemoryBytes[wptr.of.i32])
 #define WASM_GLOBAL_BY_INDEX(idx) wasm_extern_as_global(fWasmExports.data[ExportIndex::idx])
 #define WASM_GLOBAL_GET_BY_INDEX(idx,pval) wasm_global_get(WASM_GLOBAL_BY_INDEX(idx), pval)
@@ -115,7 +116,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     // -------------------------------------------------------------------------
     // Load binary module file
 
-    String path = platform::getResourcePath() + "/dsp/main.wasm";
+    String path = platform::getLibraryPath() + "/dsp/main.wasm";
     FILE* file = fopen(path, "rb");
 
     if (file == 0) {
@@ -437,7 +438,8 @@ static own wasm_trap_t* ascript_abort(void* env, const wasm_val_vec_t* args, was
     return 0;
 }
 
-static own wasm_trap_t* dpf_get_sample_rate(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results)
+static own wasm_trap_t* dpf_get_sample_rate(void* env,
+                                            const wasm_val_vec_t* args, wasm_val_vec_t* results)
 {
     (void)args;
     WasmHostPlugin* p = static_cast<WasmHostPlugin *>(env);

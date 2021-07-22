@@ -43,7 +43,7 @@ String platform::getBinaryPath()
     }
 }
 
-String platform::getResourcePath()
+String platform::getLibraryPath()
 {
     // There is no DPF method for querying plugin format during runtime
     // Mac VST is the only special case though
@@ -61,7 +61,7 @@ String platform::getResourcePath()
 
     strcpy(path, getBinaryPath().buffer());
 
-    return String(dirname(path)) + "/" + kDefaultResourcesSubdirectory;
+    return String(dirname(path)) + "/" + kDefaultLibrarySubdirectory;
 }
 
 String platform::getTemporaryPath()
