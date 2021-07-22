@@ -27,21 +27,30 @@ NOTES FOR WINDOWS
 3. For running the plugin, the Microsoft Edge WebView2 Runtime must be installed
    on the host machine https://developer.microsoft.com/microsoft-edge/webview2
 
-4. The official binary distribution of Wasmer requires MSVC. Compiling Wasmer
-   is a complex process beyond the scope of this project. To solve the issue
-   the Makefile downloads a custom MinGW compatible build. If building Wasmer
-   from source is needed, here are the instructions:
+4. The official binary distribution of Wasmer requires MSVC. To overcome this
+   problem the Makefile downloads a custom build that is compatible with MinGW.
+   If rebuilding Wasmer from source is needed, these are the steps:
 
    https://stackoverflow.com/questions/47379214/step-by-step-instruction-to
    -install-rust-and-cargo-for-mingw-with-msys2
 
-   - wget -O rustup-init.exe https://win.rustup.rs/
-   - ./rustup-init   (select host triple: x86_64-pc-windows-gnu)
-   - export PATH="/c/Users/< USERNAME >/.cargo/bin:$PATH"
-   - git clone https://github.com/wasmerio/wasmer
-   - make -C wasmer
-   - mkdir -p hiphap/lib/wasmer/include
-   - cp wasmer/lib/c-api/tests/wasm-c-api/include/wasm.h hiphap/lib/wasmer/include
-   - cp wasmer/lib/c-api/wasmer.h hiphap/lib/wasmer/include
-   - mkdir -p hiphap/lib/wasmer/lib
-   - cp wasmer/target/release/libwasmer.a hiphap/lib/wasmer/lib
+   wget -O rustup-init.exe https://win.rustup.rs/
+   ./rustup-init   (select host triple: x86_64-pc-windows-gnu)
+   export PATH="/c/Users/< USERNAME >/.cargo/bin:$PATH"
+   git clone https://github.com/wasmerio/wasmer
+   make -C wasmer
+   mkdir -p hiphap/lib/wasmer/include
+   cp wasmer/lib/c-api/tests/wasm-c-api/include/wasm.h hiphap/lib/wasmer/include
+   cp wasmer/lib/c-api/wasmer.h hiphap/lib/wasmer/include
+   mkdir -p hiphap/lib/wasmer/lib
+   cp wasmer/target/release/libwasmer.a hiphap/lib/wasmer/lib
+
+5. npm is required for building the plugin AssemblyScript files. MinGW does not
+   provide a npm package but there is a recipe available for building it:
+
+   pacman -S mingw-w64-x86_64-python2 mingw-w64-x86_64-nasm \
+      mingw-w64-x86_64-c-ares mingw-w64-x86_64-http-parser \
+      mingw-w64-x86_64-nghttp2 mingw-w64-x86_64-libuv winpty
+   git clone https://github.com/msys2/MINGW-packages
+   cd MINGW-packages/mingw-w64-nodejs
+   makepkg
