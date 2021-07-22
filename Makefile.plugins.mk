@@ -295,6 +295,13 @@ endif
 # Windows only - Build resource files
 
 ifeq ($(WINDOWS),true)
+PLUGIN_MANIFEST_PATH = $(HIPHAP_SRC_PATH)/windows/resources/plugin.manifest
+
+TARGETS += $(PLUGIN_MANIFEST_PATH)
+
+$(PLUGIN_MANIFEST_PATH):
+	@sed 's/$${NAME}/$(NAME)/' $(PLUGIN_MANIFEST_PATH).template > $(PLUGIN_MANIFEST_PATH)
+
 $(BUILD_DIR)/%.rc.o: %.rc
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
