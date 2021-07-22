@@ -1,6 +1,7 @@
 GENERAL
 -------
 
+- Rename res directory to lib
 - Make web UI support optional
 - Wasm: console.log() support
 - Wasm: check environment is properly initialized in all WasmHostPlugin methods
@@ -13,7 +14,7 @@ GENERAL
 WINDOWS
 -------
 
-- Move WebView2Loader assembly folder to plugin res folder for easier deployment
+- Move WebView2Loader assembly folder to plugin lib folder for easier deployment
 - Files plugin.manifest and WebView2Loader.manifest contain a hardcoded dummy
   version for WebView2Loader.dll. It probably needs to be set to the real DLL
   version the plugin is linking against, for the cases where the host or other
