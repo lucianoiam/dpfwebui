@@ -20,17 +20,23 @@
 
 #include "Platform.hpp"
 #include "macro.h"
-#include "wasm_macro.h"
 
+// Macros for reducing Wasmer C interface noise
+
+#define own
+#define WASM_DECLARE_NATIVE_FUNC(func) static own wasm_trap_t* func(void *env, const wasm_val_vec_t* args, wasm_val_vec_t* results);
 #define WASM_MEMORY_CSTR(wptr) static_cast<char *>(&fWasmMemoryBytes[wptr.of.i32])
-
 #define WASM_GLOBAL_BY_INDEX(idx) wasm_extern_as_global(fWasmExports.data[ExportIndex::idx])
 #define WASM_GLOBAL_GET_BY_INDEX(idx,pval) wasm_global_get(WASM_GLOBAL_BY_INDEX(idx), pval)
-
 #define WASM_FUNC_BY_INDEX(idx) wasm_extern_as_func(fWasmExports.data[ExportIndex::idx])
 #define WASM_FUNC_CALL_BY_INDEX(idx,args,res) wasm_func_call(WASM_FUNC_BY_INDEX(idx), args, res)
-
 #define WASM_LOG_FUNC_CALL_ERROR() HIPHAP_LOG_STDERR_COLOR("Error calling Wasm function")
+#define WASM_DEFINE_ARGS_VAL_VEC_1(var,arg0) wasm_val_t var[1] = { arg0 }; \
+                                             wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
+#define WASM_DEFINE_ARGS_VAL_VEC_2(var,arg0,arg1) wasm_val_t var[2] = { arg0, arg1 }; \
+                                                  wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
+#define WASM_DEFINE_RES_VAL_VEC_1(var) wasm_val_t var[1] = { WASM_INIT_VAL }; \
+                                       wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
 
 USE_NAMESPACE_DISTRHO
 
