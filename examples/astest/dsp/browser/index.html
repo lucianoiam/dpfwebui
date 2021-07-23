@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <label>
+            Frequency :
+            <input id="frequency" type="range" min="220" max="880" step="1" value="440" />
+        </label>
+
+        <script type="module">
+            const audioContext = new AudioContext()
+
+            window.onload = async () => {
+                // Load AudioWorklet module and connect it.
+
+                await audioContext.audioWorklet.addModule('./worklet.js')
+
+                const worklet = new AudioWorkletNode(audioContext, 'tone', {
+                    numberOfInputs: 0,
+                    numberOfOutputs: 1,
+                    outputChannelCount: [2]
+                })
+
+                worklet.connect(audioContext.destination)
+
+                // Listen to parameter changes.
+
+                frequency.oninput = () => {
+                    worklet.parameters.get('Frequency').setValueAtTime(frequency.value, audioContext.currentTime + 0.15)
+                }
+            }
+        </script>
+    </body>
+</html>
