@@ -19,6 +19,9 @@
 #ifndef WASMHOSTPLUGIN_HPP
 #define WASMHOSTPLUGIN_HPP
 
+#import <unordered_map>
+#import <string>
+
 #define WASM_API_EXTERN // link to static lib on win32
 #include "wasm.h"
 
@@ -59,14 +62,17 @@ public:
     const char* encodeString(int32_t wasmStringPtr);
 
 private:
-    wasm_engine_t*    fWasmEngine;
-    wasm_store_t*     fWasmStore;
-    wasm_instance_t*  fWasmInstance;
-    wasm_module_t*    fWasmModule;
-    wasm_extern_vec_t fWasmExports;
-    byte_t*           fWasmMemoryBytes;
-    float32_t*        fInputBlock;
-    float32_t*        fOutputBlock;
+    wasm_engine_t*     fWasmEngine;
+    wasm_store_t*      fWasmStore;
+    wasm_instance_t*   fWasmInstance;
+    wasm_module_t*     fWasmModule;
+    wasm_extern_vec_t  fWasmExports;
+    byte_t*            fWasmMemoryBytes;
+    float32_t*         fInputBlock;
+    float32_t*         fOutputBlock;
+
+    typedef std::unordered_map<std::string, wasm_extern_t *> ExternMap;
+    mutable ExternMap fExternMap;
 
 };
 
