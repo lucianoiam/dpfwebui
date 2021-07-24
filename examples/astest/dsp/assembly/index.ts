@@ -86,6 +86,8 @@ export function dpf_deactivate(): void {
     pluginInstance.deactivate()
 }
 
+let run_count = 0
+
 export function dpf_run(frames: u32): void {
     let inputs: Array<Float32Array> = []
 
@@ -100,6 +102,15 @@ export function dpf_run(frames: u32): void {
     }
 
     pluginInstance.run(inputs, outputs)
+
+    // Run AS garbage collector every 100 calls. Default TLSF + incremental GC
+    // https://www.assemblyscript.org/garbage-collection.html#runtime-variants
+    // TODO: This is apperently only needed on Windows to avoid segfault after
+    //       a certain period of time. Need to investigate root cause.
+
+    if ((run_count++ % 100) == 0) {
+        __collect()
+    }
 }
 
 // Number of inputs or outputs does not change during runtime so it makes sense
