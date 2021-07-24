@@ -1,14 +1,33 @@
-import loader from './loader.js'
 import wasm from '../build/untouched.js'
 
-// Converts C-style strings returned by the plugin to JS.
+// AssemblyScript / Wasm memory utilities.
 
-const cStringToJs = (ptr) =>
-    String.fromCharCode.apply(null, Array.from(new Uint8Array(plugin.__getArrayBuffer(ptr)))).slice(0, -1)
+const SIZE_OFFSET = -4
+
+const getArrayBuffer = (ptr) => {
+    const buffer = plugin.memory.buffer
+    const length = new Uint32Array(buffer)[(ptr + SIZE_OFFSET) >>> 2]
+    return buffer.slice(ptr, ptr + length)
+}
+
+const getString = (ptr) => {
+    const buffer = plugin.memory.buffer
+    const len = new Uint32Array(buffer)[(ptr + SIZE_OFFSET) >>> 2] >>> 1
+    const arr = new Uint16Array(buffer, ptr, len)
+    return String.fromCharCode.apply(String, arr)
+}
+
+const getCString = (ptr) =>
+    String.fromCharCode.apply(null, Array.from(new Uint8Array(getArrayBuffer(ptr)))).slice(0, -1)
 
 // Instantiate Wasm module.
 
 const imports = {
+    env: {
+        abort(msg, file, line, colm) {
+            throw Error(`abort: ${getString(msg)} at ${getString(file)}:${line}:${colm}`)
+        }
+    },
     index: {
         dpf_get_sample_rate() {
             return sampleRate
@@ -16,9 +35,9 @@ const imports = {
     }
 }
 
-const module = loader.instantiateSync(wasm, imports)
-
-const plugin = module.exports
+const module = new WebAssembly.Module(wasm)
+const instance = new WebAssembly.Instance(module, imports)
+const plugin = instance.exports
 
 // Init and extract plugin parameters.
 
@@ -28,7 +47,7 @@ for (let i = 0; i < 127; i++) {
 
     const param = {
         // hints: plugin.rw_int_1.value,
-        name: cStringToJs(plugin.ro_string_1.value),
+        name: getCString(plugin.ro_string_1.value),
         defaultValue: plugin.rw_float_1.value,
         minValue: plugin.rw_float_2.value,
         maxValue: plugin.rw_float_3.value
