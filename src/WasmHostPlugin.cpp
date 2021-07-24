@@ -478,23 +478,6 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
     }
 }
 
-const char* WasmHostPlugin::encodeString(int32_t wasmStringPtr)
-{
-    if (wasmStringPtr == 0) {
-        return "(null)";
-    }
-
-    WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(wasmStringPtr)));
-    WASM_DEFINE_RES_VAL_VEC_1(res);
-
-    if (WASM_FUNC_CALL("encode_string", &args_val_vec, &res_val_vec) != 0) {
-        log_wasmer_last_error();
-        return 0;
-    }
-
-    return WASM_MEMORY_CSTR(res[0]);
-}
-
 static void log_wasmer_last_error()
 {
     int len = wasmer_last_error_length();

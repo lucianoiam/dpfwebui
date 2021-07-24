@@ -40,15 +40,15 @@ export { dpf_get_sample_rate }
 // initialized at this point no longer holds.
 
 export function dpf_get_label(): ArrayBuffer {
-    return encode_string(pluginInstance.getLabel())
+    return c_string(pluginInstance.getLabel())
 }
 
 export function dpf_get_maker(): ArrayBuffer {
-    return encode_string(pluginInstance.getMaker())
+    return c_string(pluginInstance.getMaker())
 }
 
 export function dpf_get_license(): ArrayBuffer {
-    return encode_string(pluginInstance.getLicense())
+    return c_string(pluginInstance.getLicense())
 }
 
 export function dpf_get_version(): u32 {
@@ -64,7 +64,7 @@ export function dpf_init_parameter(index: u32): void {
     pluginInstance.initParameter(index, parameter)
     // See explanation below for the odd value return convention
     rw_int_1 = parameter.hints
-    ro_string_1 = encode_string(parameter.name)
+    ro_string_1 = c_string(parameter.name)
     rw_float_1 = parameter.ranges.def
     rw_float_2 = parameter.ranges.min
     rw_float_3 = parameter.ranges.max
@@ -101,15 +101,6 @@ export function dpf_run(frames: u32): void {
 
     pluginInstance.run(inputs, outputs)
 }
-
-// Converting AssemblyScript strings to C-style strings here is simpler than
-// doing so on the native side. This function needs to be expoted because AS
-// requires an abort() function to be implemented by the host and it is called
-// with some arguments of type string which need to be accessed by the host.
-
-export function encode_string(s: string): ArrayBuffer {
-    return String.UTF8.encode(s, true)
-} 
 
 // Number of inputs or outputs does not change during runtime so it makes sense
 // to init both once instead of passing them as arguments on every call to run()
@@ -152,3 +143,7 @@ export let ro_string_4: ArrayBuffer
 const MAX_STRING = 1024
 
 export let rw_string_1 = new ArrayBuffer(MAX_STRING)
+
+function c_string(s: string): ArrayBuffer {
+    return String.UTF8.encode(s, true)
+} 
