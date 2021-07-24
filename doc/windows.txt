@@ -50,7 +50,8 @@ NOTES FOR WINDOWS
 
    pacman -S mingw-w64-x86_64-python2 mingw-w64-x86_64-nasm \
       mingw-w64-x86_64-c-ares mingw-w64-x86_64-http-parser \
-      mingw-w64-x86_64-nghttp2 mingw-w64-x86_64-libuv winpty
+      mingw-w64-x86_64-nghttp2 mingw-w64-x86_64-libuv winpty \
+      mingw-w64-x86_64-icu
    git clone https://github.com/msys2/MINGW-packages
    cd MINGW-packages/mingw-w64-nodejs
    makepkg

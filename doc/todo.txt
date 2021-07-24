@@ -2,9 +2,8 @@ GENERAL
 -------
 
 - Make web UI support optional
-- Wasm: console.log() support
-- Wasm: check environment is properly initialized in all WasmHostPlugin methods
-- Wasm: profile plugin for memory leaks, it is expected to find some
+- Wasm: states, programs and MIDI support
+- Wasm: profile plugin for memory leaks
 - Allow calling Window::openFileBrowser() from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs
 - Launch system browser for HTTP links
