@@ -17,8 +17,8 @@
 #ifndef WASMHOSTPLUGIN_HPP
 #define WASMHOSTPLUGIN_HPP
 
-#import <unordered_map>
-#import <string>
+#include <unordered_map>
+#include <string>
 
 #define WASM_API_EXTERN // link to static lib on win32
 #include "wasm.h"
