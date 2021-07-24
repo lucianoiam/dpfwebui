@@ -58,8 +58,6 @@ public:
 
     void run(const float** inputs, float** outputs, uint32_t frames) override;
 
-    const char* encodeString(int32_t wasmStringPtr);
-
 private:
     bool               fWasmReady;
     wasm_engine_t*     fWasmEngine;
