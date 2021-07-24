@@ -24,6 +24,7 @@
 
 #define WASM_API_EXTERN // link to static lib on win32
 #include "wasm.h"
+#include "wasmer.h"
 
 #include "DistrhoPlugin.hpp"
 
@@ -66,6 +67,7 @@ private:
     wasm_store_t*      fWasmStore;
     wasm_instance_t*   fWasmInstance;
     wasm_module_t*     fWasmModule;
+    wasi_env_t*        fWasiEnv;
     wasm_extern_vec_t  fWasmExports;
     byte_t*            fWasmMemoryBytes;
     float32_t*         fInputBlock;

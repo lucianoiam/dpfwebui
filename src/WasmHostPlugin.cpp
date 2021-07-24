@@ -42,14 +42,13 @@
 
 USE_NAMESPACE_DISTRHO
 
-static wasm_val_t     empty_val_array[0] = {};
-static wasm_val_vec_t empty_val_vec = WASM_ARRAY_VEC(empty_val_array);
+static wasm_val_vec_t empty_val_vec = WASM_EMPTY_VEC;
 
-static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
-                                                    own wasm_valtype_t* p3, own wasm_valtype_t* p4);
-WASM_DECLARE_NATIVE_FUNC(ascript_abort)
+static void print_wasmer_error();
+
 WASM_DECLARE_NATIVE_FUNC(dpf_get_sample_rate)
 
+#define BUF_SIZE 1024
 WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
     : Plugin(parameterCount, programCount, stateCount)
     , fWasmEngine(0)
@@ -58,7 +57,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     , fWasmModule(0)
 {
     // -------------------------------------------------------------------------
-    // Load binary module file
+    // Load and initialize binary module file
 
     String path = platform::getLibraryPath() + "/dsp/plugin.wasm";
     FILE* file = fopen(path, "rb");
@@ -83,9 +82,6 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     fclose(file);
 
-    // -------------------------------------------------------------------------
-    // Initialize Wasmer environment
-
     fWasmEngine = wasm_engine_new();
     fWasmStore = wasm_store_new(fWasmEngine);
     fWasmModule = wasm_module_new(fWasmStore, &fileBytes);
@@ -98,30 +94,56 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     }
 
     // -------------------------------------------------------------------------
-    // Expose some native functions to Wasm
+    // Build a map of WASI imports
+    // Call to wasi_get_imports() fails because of missing host imports, use
+    // wasi_get_unordered_imports() https://github.com/wasmerio/wasmer/issues/2450
 
-    wasm_importtype_vec_t importType;
-    wasm_module_imports(fWasmModule, &importType);
-    std::unordered_map<std::string, int> importIndex;
+    wasi_config_t* config = wasi_config_new(DISTRHO_PLUGIN_NAME);
+    fWasiEnv = wasi_env_new(config);
+
+    wasmer_named_extern_vec_t wasiImports;
+    wasi_get_unordered_imports(fWasmStore, fWasmModule, fWasiEnv, &wasiImports);
+    std::unordered_map<std::string, int> wasiImportIndex;
+    
     char name[128];
 
-    for (size_t i = 0; i < importType.size; i++) {
-        const wasm_name_t *wn = wasm_importtype_name(importType.data[i]);
+    for (size_t i = 0; i < wasiImports.size; i++) {
+        wasmer_named_extern_t *ne = wasiImports.data[i];
+        const wasm_name_t *wn = wasmer_named_extern_name(ne);
+        memcpy(name, wn->data, wn->size);
+        name[wn->size] = 0;
+        wasiImportIndex[name] = i;
+    }
+
+    // -------------------------------------------------------------------------
+    // Build module imports vector
+
+    wasm_importtype_vec_t importTypes;
+    wasm_module_imports(fWasmModule, &importTypes);
+    wasm_extern_vec_t imports;
+    wasm_extern_vec_new_uninitialized(&imports, importTypes.size);
+
+    std::unordered_map<std::string, int> importIndex;
+
+    for (size_t i = 0; i < importTypes.size; i++) {
+        const wasm_name_t *wn = wasm_importtype_name(importTypes.data[i]);
         memcpy(name, wn->data, wn->size);
         name[wn->size] = 0;
         importIndex[name] = i;
+
+        if (wasiImportIndex.find(name) != wasiImportIndex.end()) {
+            wasmer_named_extern_t* ne = wasiImports.data[wasiImportIndex[name]];
+            imports.data[i] = const_cast<wasm_extern_t *>(wasmer_named_extern_unwrap(ne));
+        }
     }
 
-    wasm_extern_vec_t imports;
-    wasm_extern_vec_new_uninitialized(&imports, importType.size);
+    wasm_importtype_vec_delete(&importTypes);
+
+    // -------------------------------------------------------------------------
+    // Insert host functions into imports vector
+
     wasm_functype_t *funcType;
     wasm_func_t *func;
-
-    funcType = wasm_functype_new_4_0(wasm_valtype_new_i32(), wasm_valtype_new_i32(),
-                                     wasm_valtype_new_i32(), wasm_valtype_new_i32());
-    func = wasm_func_new_with_env(fWasmStore, funcType, ascript_abort, this, 0);
-    wasm_functype_delete(funcType);
-    imports.data[importIndex["abort"]] = wasm_func_as_extern(func);
 
     funcType = wasm_functype_new_0_1(wasm_valtype_new_f32());
     func = wasm_func_new_with_env(fWasmStore, funcType, dpf_get_sample_rate, this, 0);
@@ -129,10 +151,9 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     imports.data[importIndex["dpf_get_sample_rate"]] = wasm_func_as_extern(func);
 
     // -------------------------------------------------------------------------
-    // Initialize Wasm module
+    // Create Wasm instance and start WASI
 
-    wasm_trap_t* traps = 0;
-    fWasmInstance = wasm_instance_new(fWasmStore, fWasmModule, &imports, &traps);
+    fWasmInstance = wasm_instance_new(fWasmStore, fWasmModule, &imports, 0);
 
     wasm_extern_vec_delete(&imports);
 
@@ -141,19 +162,25 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
         return;
     }
 
+    wasm_func_t* wasiStart = wasi_get_start_function(fWasmInstance);
+    wasm_func_call(wasiStart, &empty_val_vec, &empty_val_vec);
+    wasm_func_delete(wasiStart);
+
     // -------------------------------------------------------------------------
     // Build a map of externs indexed by name
 
     wasm_instance_exports(fWasmInstance, &fWasmExports);
-    wasm_exporttype_vec_t exportType;
-    wasm_module_exports(fWasmModule, &exportType);
+    wasm_exporttype_vec_t exportTypes;
+    wasm_module_exports(fWasmModule, &exportTypes);
 
     for (size_t i = 0; i < fWasmExports.size; i++) {
-        const wasm_name_t *wn = wasm_exporttype_name(exportType.data[i]);
+        const wasm_name_t *wn = wasm_exporttype_name(exportTypes.data[i]);
         memcpy(name, wn->data, wn->size);
         name[wn->size] = 0;
         fExternMap[name] = fWasmExports.data[i];
     }
+
+    wasm_exporttype_vec_delete(&exportTypes);
 
     // -------------------------------------------------------------------------
     // Get pointers to memory areas
@@ -168,7 +195,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     fOutputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
 
     // -------------------------------------------------------------------------
-    // Initialize module globals
+    // Set globals needed by run()
 
     wasm_val_t numInputs WASM_I32_VAL(static_cast<int32_t>(DISTRHO_PLUGIN_NUM_INPUTS));
     WASM_GLOBAL_SET("num_inputs", &numInputs);
@@ -179,6 +206,10 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 WasmHostPlugin::~WasmHostPlugin()
 {
     wasm_extern_vec_delete(&fWasmExports);
+
+    if (fWasiEnv != 0) {
+        wasi_env_delete(fWasiEnv);
+    }
 
     if (fWasmModule != 0) {
         wasm_module_delete(fWasmModule);
@@ -377,36 +408,13 @@ const char* WasmHostPlugin::encodeString(int32_t wasmStringPtr)
     return WASM_MEMORY_CSTR(res[0]);
 }
 
-// Convenience function, Wasmer provides up to wasm_functype_new_3_0()
-static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
-                                                    own wasm_valtype_t* p3, own wasm_valtype_t* p4)
+static void print_wasmer_error()
 {
-    wasm_valtype_t* ps[4] = {p1, p2, p3, p4};
-    wasm_valtype_vec_t params, results;
-    wasm_valtype_vec_new(&params, 4, ps);
-    wasm_valtype_vec_new_empty(&results);
-    return wasm_functype_new(&params, &results);
-}
-
-// Required by AssemblyScript
-static own wasm_trap_t* ascript_abort(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results)
-{
-    (void)results;
-
-    WasmHostPlugin* p = static_cast<WasmHostPlugin *>(env);
-
-    const char *msg = p->encodeString(args->data[0].of.i32);
-    const char *filename = p->encodeString(args->data[1].of.i32);
-    int32_t lineNumber = args->data[2].of.i32;
-    int32_t columnNumber = args->data[3].of.i32;
-
-    std::stringstream ss;
-    ss << "AssemblyScript abort() called - msg: " << msg << ", filename: " << filename
-        << ", lineNumber: " << lineNumber << ", columnNumber: " << columnNumber;
-
-    HIPHAP_LOG_STDERR_COLOR(ss.str().c_str());
-
-    return 0;
+    int error_len = wasmer_last_error_length();
+    printf("Error len: `%d`\n", error_len);
+    char *error_str = (char *)malloc(error_len);
+    wasmer_last_error_message(error_str, error_len);
+    printf("Error str: `%s`\n", error_str);
 }
 
 static own wasm_trap_t* dpf_get_sample_rate(void* env,

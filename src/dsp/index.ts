@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import "wasi"
 import DISTRHO from './distrho-plugin'
 import PluginImpl from './plugin'
 
