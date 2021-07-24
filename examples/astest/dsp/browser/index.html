@@ -6,6 +6,8 @@
             <input id="frequency" type="range" min="220" max="880" step="1" value="440" />
         </label>
 
+        <p>Click anywhere to start.</p>
+
         <script type="module">
             const audioContext = new AudioContext()
 
@@ -28,6 +30,8 @@
                     worklet.parameters.get('Frequency').setValueAtTime(frequency.value, audioContext.currentTime + 0.15)
                 }
             }
+
+            document.onmousedown = () => audioContext.resume()
         </script>
     </body>
 </html>
