@@ -123,11 +123,6 @@ const MAX_PROCESS_BLOCK_SIZE = 65536
 export let input_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
 export let output_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
 
-// TypedArray exports needed by the JS loader
-
-export let input_block_float32 = Float32Array.wrap(input_block)
-export let output_block_float32 = Float32Array.wrap(output_block)
-
 // AssemblyScript does not support multi-values yet. Export a couple of generic
 // variables for returning complex data types like initParameter() needs.
 

@@ -72,10 +72,13 @@ registerProcessor(
             if (input)
                 for (let i = 0; i < plugin.num_inputs.value; i++) {
                     if (!input[i]) break
-                    plugin
-                        .__getFloat32ArrayView(plugin.input_block_float32.value)
-                        .subarray(i * frames, (i + 1) * frames)
-                        .set(input[i])
+                    plugin_input[i].set(
+                        new Float32Array(
+                            plugin.memory.buffer,
+                            plugin.input_block.value + i * frames * Float32Array.BYTES_PER_ELEMENT,
+                            frames
+                        )
+                    )
                 }
 
             // Run dsp.
@@ -87,9 +90,11 @@ registerProcessor(
             for (let i = 0; i < plugin.num_outputs.value; i++) {
                 if (!output[i]) break
                 output[i].set(
-                    plugin
-                        .__getFloat32ArrayView(plugin.output_block_float32.value)
-                        .subarray(i * frames, (i + 1) * frames)
+                    new Float32Array(
+                        plugin.memory.buffer,
+                        plugin.output_block.value + i * frames * Float32Array.BYTES_PER_ELEMENT,
+                        frames
+                    )
                 )
             }
 
