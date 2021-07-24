@@ -61,6 +61,7 @@ public:
     const char* encodeString(int32_t wasmStringPtr);
 
 private:
+    bool               fWasmReady;
     wasm_engine_t*     fWasmEngine;
     wasm_store_t*      fWasmStore;
     wasm_instance_t*   fWasmInstance;
