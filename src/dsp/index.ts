@@ -14,6 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+import "wasi"
 import DISTRHO from './distrho-plugin'
 import PluginImpl from './plugin'
 
