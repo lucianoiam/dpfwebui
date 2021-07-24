@@ -210,17 +210,8 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     wasm_exporttype_vec_delete(&exportTypes);
 
-    // -------------------------------------------------------------------------
-    // Get pointers to memory areas
-
     wasm_memory_t* memory = wasm_extern_as_memory(fExternMap["memory"]);
     fWasmMemoryBytes = wasm_memory_data(memory);
-
-    wasm_val_t blockPtr;
-    WASM_GLOBAL_GET("input_block", &blockPtr);
-    fInputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
-    WASM_GLOBAL_GET("output_block", &blockPtr);
-    fOutputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
 
     // -------------------------------------------------------------------------
     // Set globals needed by run()
@@ -462,8 +453,13 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
         return;
     }
 
+    wasm_val_t blockPtr;
+    
+    WASM_GLOBAL_GET("input_block", &blockPtr);
+    float32_t* inputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
+
     for (int i = 0; i < DISTRHO_PLUGIN_NUM_INPUTS; i++) {
-        memcpy(fInputBlock + i * frames, inputs[i], frames * 4);
+        memcpy(inputBlock + i * frames, inputs[i], frames * 4);
     }
 
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(frames)));
@@ -473,8 +469,11 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
         return;
     }
 
+    WASM_GLOBAL_GET("output_block", &blockPtr);
+    float32_t* outputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
+
     for (int i = 0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; i++) {
-        memcpy(outputs[i], fOutputBlock + i * frames, frames * 4);
+        memcpy(outputs[i], outputBlock + i * frames, frames * 4);
     }
 }
 

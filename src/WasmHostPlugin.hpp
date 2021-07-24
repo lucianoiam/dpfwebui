@@ -69,8 +69,6 @@ private:
     wasi_env_t*        fWasiEnv;
     wasm_extern_vec_t  fWasmExports;
     byte_t*            fWasmMemoryBytes;
-    float32_t*         fInputBlock;
-    float32_t*         fOutputBlock;
 
     typedef std::unordered_map<std::string, wasm_extern_t *> ExternMap;
     mutable ExternMap fExternMap;
