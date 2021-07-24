@@ -23,16 +23,13 @@
 #include "Platform.hpp"
 #include "macro.h"
 
-// Macros for reducing Wasmer C interface noise
-
 #define own
 #define WASM_DECLARE_NATIVE_FUNC(func) static own wasm_trap_t* func(void *env, \
                                             const wasm_val_vec_t* args, wasm_val_vec_t* results);
 #define WASM_MEMORY_CSTR(wptr) static_cast<char *>(&fWasmMemoryBytes[wptr.of.i32]) 
+#define WASM_FUNC_CALL(name,args,res) wasm_func_call(wasm_extern_as_func(fExternMap[name]), args, res)
 #define WASM_GLOBAL_GET(name,pval) wasm_global_get(wasm_extern_as_global(fExternMap[name]), pval)
 #define WASM_GLOBAL_SET(name,pval) wasm_global_set(wasm_extern_as_global(fExternMap[name]), pval)
-#define WASM_FUNC_CALL(name,args,res) wasm_func_call(wasm_extern_as_func(fExternMap[name]), args, res)
-#define WASM_LOG_FUNC_CALL_ERROR() HIPHAP_LOG_STDERR_COLOR("Error calling Wasm function")
 #define WASM_DEFINE_ARGS_VAL_VEC_1(var,arg0) wasm_val_t var[1] = { arg0 }; \
                                              wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
 #define WASM_DEFINE_ARGS_VAL_VEC_2(var,arg0,arg1) wasm_val_t var[2] = { arg0, arg1 }; \
@@ -44,13 +41,13 @@ USE_NAMESPACE_DISTRHO
 
 static wasm_val_vec_t empty_val_vec = WASM_EMPTY_VEC;
 
-static void print_wasmer_error();
+static void log_wasmer_last_error();
 
 WASM_DECLARE_NATIVE_FUNC(dpf_get_sample_rate)
 
-#define BUF_SIZE 1024
 WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
     : Plugin(parameterCount, programCount, stateCount)
+    , fWasmReady(false)
     , fWasmEngine(0)
     , fWasmStore(0)
     , fWasmInstance(0)
@@ -63,7 +60,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     FILE* file = fopen(path, "rb");
 
     if (file == 0) {
-        HIPHAP_LOG_STDERR_COLOR("Error opening Wasm module");
+        log_wasmer_last_error();
         return;
     }
 
@@ -75,21 +72,36 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     wasm_byte_vec_new_uninitialized(&fileBytes, fileSize);
     
     if (fread(fileBytes.data, fileSize, 1, file) != 1) {
+        wasm_byte_vec_delete(&fileBytes);
         fclose(file);
-        HIPHAP_LOG_STDERR_COLOR("Error loading Wasm module");
+        log_wasmer_last_error();
         return;
     }
 
     fclose(file);
 
     fWasmEngine = wasm_engine_new();
+
+    if (fWasmEngine == 0) {
+        wasm_byte_vec_delete(&fileBytes);
+        log_wasmer_last_error();
+        return;
+    }
+
     fWasmStore = wasm_store_new(fWasmEngine);
+
+    if (fWasmEngine == 0) {
+        wasm_byte_vec_delete(&fileBytes);
+        log_wasmer_last_error();
+        return;
+    }
+
     fWasmModule = wasm_module_new(fWasmStore, &fileBytes);
     
     wasm_byte_vec_delete(&fileBytes);
 
     if (fWasmModule == 0) {
-        HIPHAP_LOG_STDERR_COLOR("Error compiling Wasm module");
+        log_wasmer_last_error();
         return;
     }
 
@@ -101,10 +113,20 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     wasi_config_t* config = wasi_config_new(DISTRHO_PLUGIN_NAME);
     fWasiEnv = wasi_env_new(config);
 
+    if (fWasiEnv == 0) {
+        log_wasmer_last_error();
+        return;
+    }
+
     wasmer_named_extern_vec_t wasiImports;
-    wasi_get_unordered_imports(fWasmStore, fWasmModule, fWasiEnv, &wasiImports);
+    bool res = wasi_get_unordered_imports(fWasmStore, fWasmModule, fWasiEnv, &wasiImports);
+
+    if (!res) {
+        log_wasmer_last_error();
+        return;
+    }
+
     std::unordered_map<std::string, int> wasiImportIndex;
-    
     char name[128];
 
     for (size_t i = 0; i < wasiImports.size; i++) {
@@ -158,11 +180,17 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     wasm_extern_vec_delete(&imports);
 
     if (fWasmInstance == 0) {
-        HIPHAP_LOG_STDERR_COLOR("Error instantiating Wasm module");
+        log_wasmer_last_error();
         return;
     }
 
     wasm_func_t* wasiStart = wasi_get_start_function(fWasmInstance);
+    
+    if (wasiStart == 0) {
+        log_wasmer_last_error();
+        return;
+    }
+
     wasm_func_call(wasiStart, &empty_val_vec, &empty_val_vec);
     wasm_func_delete(wasiStart);
 
@@ -201,6 +229,8 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     WASM_GLOBAL_SET("num_inputs", &numInputs);
     wasm_val_t numOutputs WASM_I32_VAL(static_cast<int32_t>(DISTRHO_PLUGIN_NUM_OUTPUTS));
     WASM_GLOBAL_SET("num_outputs", &numOutputs);
+
+    fWasmReady = true;
 }
 
 WasmHostPlugin::~WasmHostPlugin()
@@ -230,10 +260,14 @@ WasmHostPlugin::~WasmHostPlugin()
 
 const char* WasmHostPlugin::getLabel() const
 {
+    if (!fWasmReady) {
+        return "Uninitialized";
+    }
+
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
     if (WASM_FUNC_CALL("dpf_get_label", &empty_val_vec, &res_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
         return 0;
     }
 
@@ -242,10 +276,14 @@ const char* WasmHostPlugin::getLabel() const
 
 const char* WasmHostPlugin::getMaker() const
 {
+    if (!fWasmReady) {
+        return "Uninitialized";
+    }
+
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
     if (WASM_FUNC_CALL("dpf_get_maker", &empty_val_vec, &res_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
         return 0;
     }
 
@@ -254,10 +292,14 @@ const char* WasmHostPlugin::getMaker() const
 
 const char* WasmHostPlugin::getLicense() const
 {
+    if (!fWasmReady) {
+        return "Uninitialized";
+    }
+
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
     if (WASM_FUNC_CALL("dpf_get_license", &empty_val_vec, &res_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
         return 0;
     }
 
@@ -266,10 +308,14 @@ const char* WasmHostPlugin::getLicense() const
 
 uint32_t WasmHostPlugin::getVersion() const
 {
+    if (!fWasmReady) {
+        return 0;
+    }
+
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
     if (WASM_FUNC_CALL("dpf_get_version", &empty_val_vec, &res_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
         return 0;
     }
 
@@ -278,10 +324,14 @@ uint32_t WasmHostPlugin::getVersion() const
 
 int64_t WasmHostPlugin::getUniqueId() const
 {
+    if (!fWasmReady) {
+        return 0;
+    }
+
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
     if (WASM_FUNC_CALL("dpf_get_unique_id", &empty_val_vec, &res_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
         return 0;
     }
 
@@ -290,10 +340,14 @@ int64_t WasmHostPlugin::getUniqueId() const
 
 void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
 {
+    if (!fWasmReady) {
+        return;
+    }
+
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(index)));
 
     if (WASM_FUNC_CALL("dpf_init_parameter", &args_val_vec, &empty_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
         return;
     }
 
@@ -308,11 +362,15 @@ void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
 
 float WasmHostPlugin::getParameterValue(uint32_t index) const
 {
+    if (!fWasmReady) {
+        return 0;
+    }
+
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(index)));
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
     if (WASM_FUNC_CALL("dpf_get_parameter_value", &args_val_vec, &res_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
         return 0;
     }
 
@@ -321,11 +379,15 @@ float WasmHostPlugin::getParameterValue(uint32_t index) const
 
 void WasmHostPlugin::setParameterValue(uint32_t index, float value)
 {
+    if (!fWasmReady) {
+        return;
+    }
+
     WASM_DEFINE_ARGS_VAL_VEC_2(args, WASM_I32_VAL(static_cast<int32_t>(index)),
                                         WASM_F32_VAL(static_cast<float32_t>(value)));
 
     if (WASM_FUNC_CALL("dpf_set_parameter_value", &args_val_vec, &empty_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
     }
 }
 
@@ -333,6 +395,10 @@ void WasmHostPlugin::setParameterValue(uint32_t index, float value)
 
 void WasmHostPlugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
 {
+    if (!fWasmReady) {
+        return;
+    }
+
     // TODO
     (void)index;
     (void)stateKey;
@@ -341,6 +407,10 @@ void WasmHostPlugin::initState(uint32_t index, String& stateKey, String& default
 
 void WasmHostPlugin::setState(const char* key, const char* value)
 {
+    if (!fWasmReady) {
+        return;
+    }
+
     // TODO
     (void)key;
     (void)value;
@@ -350,8 +420,13 @@ void WasmHostPlugin::setState(const char* key, const char* value)
 
 String WasmHostPlugin::getState(const char* key) const
 {
+    if (!fWasmReady) {
+        return "Uninitialized";
+    }
+
     // TODO
     (void)key;
+
     return String();
 }
 
@@ -361,20 +436,32 @@ String WasmHostPlugin::getState(const char* key) const
 
 void WasmHostPlugin::activate()
 {
+    if (!fWasmReady) {
+        return;
+    }
+
     if (WASM_FUNC_CALL("dpf_activate", &empty_val_vec, &empty_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
     }
 }
 
 void WasmHostPlugin::deactivate()
 {
+    if (!fWasmReady) {
+        return;
+    }
+
     if (WASM_FUNC_CALL("dpf_deactivate", &empty_val_vec, &empty_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
     }
 }
 
 void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
 {
+    if (!fWasmReady) {
+        return;
+    }
+
     for (int i = 0; i < DISTRHO_PLUGIN_NUM_INPUTS; i++) {
         memcpy(fInputBlock + i * frames, inputs[i], frames * 4);
     }
@@ -382,7 +469,7 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(frames)));
 
     if (WASM_FUNC_CALL("dpf_run", &args_val_vec, &empty_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
         return;
     }
 
@@ -401,29 +488,38 @@ const char* WasmHostPlugin::encodeString(int32_t wasmStringPtr)
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
     if (WASM_FUNC_CALL("encode_string", &args_val_vec, &res_val_vec) != 0) {
-        WASM_LOG_FUNC_CALL_ERROR();
+        log_wasmer_last_error();
         return 0;
     }
 
     return WASM_MEMORY_CSTR(res[0]);
 }
 
-static void print_wasmer_error()
+static void log_wasmer_last_error()
 {
-    int error_len = wasmer_last_error_length();
-    printf("Error len: `%d`\n", error_len);
-    char *error_str = (char *)malloc(error_len);
-    wasmer_last_error_message(error_str, error_len);
-    printf("Error str: `%s`\n", error_str);
+    int len = wasmer_last_error_length();
+    
+    if (len == 0) {
+        HIPHAP_LOG_STDERR_COLOR("Unknown error");
+        return;
+    }
+
+    char s[len];
+    wasmer_last_error_message(s, len);
+    
+    HIPHAP_LOG_STDERR_COLOR(s);
 }
 
 static own wasm_trap_t* dpf_get_sample_rate(void* env,
                                             const wasm_val_vec_t* args, wasm_val_vec_t* results)
 {
     (void)args;
+
     WasmHostPlugin* p = static_cast<WasmHostPlugin *>(env);
     float32_t value = static_cast<float32_t>(p->getSampleRate());
     wasm_val_t res[1] = { WASM_F32_VAL(value) };
+
     wasm_val_vec_new(results, 1, res);
+    
     return 0;
 }
