@@ -86,20 +86,31 @@ export function dpf_deactivate(): void {
     pluginInstance.deactivate()
 }
 
+let run_count = 0
+
 export function dpf_run(frames: u32): void {
-    const inputs: Array<Float32Array> = []
+    let inputs: Array<Float32Array> = []
 
     for (let i = 0; i < num_inputs; i++) {
         inputs.push(Float32Array.wrap(input_block, i * frames * 4, frames))
     }
 
-    const outputs: Array<Float32Array> = []
+    let outputs: Array<Float32Array> = []
 
     for (let i = 0; i < num_outputs; i++) {
         outputs.push(Float32Array.wrap(output_block, i * frames * 4, frames))
     }
 
     pluginInstance.run(inputs, outputs)
+
+    // Run AS garbage collector every 100 calls. Default TLSF + incremental GC
+    // https://www.assemblyscript.org/garbage-collection.html#runtime-variants
+    // TODO: This is apperently only needed on Windows to avoid segfault after
+    //       a certain period of time. Need to investigate root cause.
+
+    if ((run_count++ % 100) == 0) {
+        __collect()
+    }
 }
 
 // Number of inputs or outputs does not change during runtime so it makes sense
