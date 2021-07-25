@@ -52,7 +52,10 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     , fWasmStore(0)
     , fWasmInstance(0)
     , fWasmModule(0)
+    , fWasiEnv(0)
 {
+    memset(&fWasmExports, 0, sizeof(fWasmExports));
+
     // -------------------------------------------------------------------------
     // Load and initialize binary module file
 
@@ -197,6 +200,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     // -------------------------------------------------------------------------
     // Build a map of externs indexed by name
 
+    fWasmExports.size = 0;
     wasm_instance_exports(fWasmInstance, &fWasmExports);
     wasm_exporttype_vec_t exportTypes;
     wasm_module_exports(fWasmModule, &exportTypes);
@@ -226,7 +230,9 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
 WasmHostPlugin::~WasmHostPlugin()
 {
-    wasm_extern_vec_delete(&fWasmExports);
+    if (fWasmExports.size != 0) {
+        wasm_extern_vec_delete(&fWasmExports);
+    }
 
     if (fWasiEnv != 0) {
         wasi_env_delete(fWasiEnv);
