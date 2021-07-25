@@ -391,12 +391,16 @@ endif
 ifneq ($(AS_DSP),)
 HIPHAP_TARGET += libdsp
 
+AS_ASSEMBLY_PATH = $(HIPHAP_AS_DSP_PATH)/assembly
+
 WASM_SRC_PATH = $(HIPHAP_AS_DSP_PATH)/build/optimized.wasm
 WASM_DST_PATH = dsp/plugin.wasm
 
 libdsp:
 	@echo "Building AssemblyScript project..."
 	@test -d $(HIPHAP_AS_DSP_PATH)/node_modules || npm --prefix $(HIPHAP_AS_DSP_PATH) install
+	@test -f $(AS_ASSEMBLY_PATH)/index.ts || ln -s $(abspath $(HIPHAP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
+	@test -f $(AS_ASSEMBLY_PATH)/distrho-plugin.ts || ln -s $(abspath $(HIPHAP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
 	@npm --prefix $(HIPHAP_AS_DSP_PATH) run asbuild
 	@echo "Copying WebAssembly DSP binary..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
