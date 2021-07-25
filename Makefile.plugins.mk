@@ -399,10 +399,10 @@ WASM_DST_PATH = dsp/plugin.wasm
 libdsp:
 	@echo "Building AssemblyScript project..."
 	@# npm --prefix fails on MinGW due to paths mixing \ and /
-	@test -d $(HIPHAP_AS_DSP_PATH)/node_modules || cd $(HIPHAP_AS_DSP_PATH) && npm install
+	@test -d $(HIPHAP_AS_DSP_PATH)/node_modules || (cd $(HIPHAP_AS_DSP_PATH) && npm install)
 	@test -f $(AS_ASSEMBLY_PATH)/index.ts || ln -s $(abspath $(HIPHAP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
 	@test -f $(AS_ASSEMBLY_PATH)/distrho-plugin.ts || ln -s $(abspath $(HIPHAP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
-	@cd $(HIPHAP_AS_DSP_PATH) && npm run asbuild
+	cd $(HIPHAP_AS_DSP_PATH) && npm run asbuild
 	@echo "Copying WebAssembly DSP binary..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_lib/dsp \
