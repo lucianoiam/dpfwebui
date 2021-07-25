@@ -26,7 +26,8 @@
 #define own
 #define WASM_DECLARE_NATIVE_FUNC(func) static own wasm_trap_t* func(void *env, \
                                             const wasm_val_vec_t* args, wasm_val_vec_t* results);
-#define WASM_MEMORY_CSTR(wptr) static_cast<char *>(&fWasmMemoryBytes[wptr.of.i32]) 
+#define WASM_MEMORY() wasm_memory_data(wasm_extern_as_memory(fExternMap["memory"]))
+#define WASM_MEMORY_CSTR(wptr) static_cast<char *>(&WASM_MEMORY()[wptr.of.i32]) 
 #define WASM_FUNC_CALL(name,args,res) wasm_func_call(wasm_extern_as_func(fExternMap[name]), args, res)
 #define WASM_GLOBAL_GET(name,pval) wasm_global_get(wasm_extern_as_global(fExternMap[name]), pval)
 #define WASM_GLOBAL_SET(name,pval) wasm_global_set(wasm_extern_as_global(fExternMap[name]), pval)
@@ -213,9 +214,6 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     }
 
     wasm_exporttype_vec_delete(&exportTypes);
-
-    wasm_memory_t* memory = wasm_extern_as_memory(fExternMap["memory"]);
-    fWasmMemoryBytes = wasm_memory_data(memory);
 
     // -------------------------------------------------------------------------
     // Set globals needed by run()
@@ -462,7 +460,7 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
     wasm_val_t blockPtr;
     
     WASM_GLOBAL_GET("input_block", &blockPtr);
-    float32_t* inputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
+    float32_t* inputBlock = reinterpret_cast<float32_t*>(&WASM_MEMORY()[blockPtr.of.i32]);
 
     for (int i = 0; i < DISTRHO_PLUGIN_NUM_INPUTS; i++) {
         memcpy(inputBlock + i * frames, inputs[i], frames * 4);
@@ -476,7 +474,7 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
     }
 
     WASM_GLOBAL_GET("output_block", &blockPtr);
-    float32_t* outputBlock = reinterpret_cast<float32_t*>(&fWasmMemoryBytes[blockPtr.of.i32]);
+    float32_t* outputBlock = reinterpret_cast<float32_t*>(&WASM_MEMORY()[blockPtr.of.i32]);
 
     for (int i = 0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; i++) {
         memcpy(outputs[i], outputBlock + i * frames, frames * 4);
