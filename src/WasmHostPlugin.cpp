@@ -195,7 +195,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     }
 #else
     if (needsWasi) {
-        HIPHAP_LOG_STDERR_COLOR("WASI is not enabled but module is WASI, remove 'import \"wasi\"' directive.");
+        HIPHAP_LOG_STDERR_COLOR("WASI is not enabled but module requires WASI, remove 'import \"wasi\"' directive.");
         return;
     }
 #endif
@@ -523,21 +523,6 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
     }
 }
 
-static void log_wasmer_last_error()
-{
-    int len = wasmer_last_error_length();
-    
-    if (len == 0) {
-        HIPHAP_LOG_STDERR_COLOR("Unknown error");
-        return;
-    }
-
-    char s[len];
-    wasmer_last_error_message(s, len);
-    
-    HIPHAP_LOG_STDERR_COLOR(s);
-}
-
 const char* WasmHostPlugin::readWasmString(int32_t wasmStringPtr)
 {
     if (wasmStringPtr == 0) {
@@ -553,6 +538,21 @@ const char* WasmHostPlugin::readWasmString(int32_t wasmStringPtr)
     }
 
     return WASM_MEMORY_CSTR(res[0]);
+}
+
+static void log_wasmer_last_error()
+{
+    int len = wasmer_last_error_length();
+    
+    if (len == 0) {
+        HIPHAP_LOG_STDERR_COLOR("Unknown error");
+        return;
+    }
+
+    char s[len];
+    wasmer_last_error_message(s, len);
+    
+    HIPHAP_LOG_STDERR_COLOR(s);
 }
 
 static own wasm_trap_t* get_sample_rate(void* env,

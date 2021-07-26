@@ -103,6 +103,7 @@ export function _run(frames: u32): void {
         outputs.push(Float32Array.wrap(_output_block, i * frames * 4, frames))
     }
 
+    // Frame count argument is redundant, it can be inferred from arrays length.
     pluginInstance.run(inputs, outputs)
 
     // Run AS garbage collector every N calls. Default TLSF + incremental GC
@@ -163,5 +164,5 @@ export let _rw_string_1 = new ArrayBuffer(MAX_STRING)
 // abort() is called with some string args which need to be read by the host.
 
 export function _c_string(s: string): ArrayBuffer {
-    return String.UTF8.encode(s, true)
+    return String.UTF8.encode(s, /* null terminated */ true)
 } 

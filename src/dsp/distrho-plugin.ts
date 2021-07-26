@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Everything contained in this file attempts to mimic the C++ plugin interfaces
-// Low-level interactions with the host are strictly confined to index.ts
+// This file attempts to mimic the C++ public plugin interfaces. Low level
+// interactions with the host are strictly confined to index.ts .
 
 import { _get_sample_rate } from './index'
 
@@ -94,12 +94,12 @@ export default namespace DISTRHO {
 
     // Parameter hint constants
 
-    export const kParameterIsAutomable: u32 = 0x01
-    export const kParameterIsBoolean: u32 = 0x02
-    export const kParameterIsInteger: u32 = 0x04
+    export const kParameterIsAutomable: u32   = 0x01
+    export const kParameterIsBoolean: u32     = 0x02
+    export const kParameterIsInteger: u32     = 0x04
     export const kParameterIsLogarithmic: u32 = 0x08
-    export const kParameterIsOutput: u32 = 0x10
-    export const kParameterIsTrigger: u32 = 0x20 | kParameterIsBoolean
+    export const kParameterIsOutput: u32      = 0x10
+    export const kParameterIsTrigger: u32     = 0x20 | kParameterIsBoolean
 
     // These are implemented in DistrhoUtils.cpp and are useful for calling from
     // Plugin methods getVersion() and getUniqueId()
