@@ -55,3 +55,6 @@ NOTES FOR WINDOWS
    git clone https://github.com/msys2/MINGW-packages
    cd MINGW-packages/mingw-w64-nodejs
    makepkg
+
+   FIXME: compilation seems to fail. Update Makefile to automatically download
+          official Node binary, then update this section.
