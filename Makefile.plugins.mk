@@ -17,15 +17,15 @@ ifneq ($(HIPHAP_AS_DSP_PATH),)
 AS_DSP = true
 HIPHAP_ENABLE_WASI ?= true
 endif
+ifneq ($(HIPHAP_WEB_UI_PATH),)
+WEB_UI = true
+endif
 
 # ------------------------------------------------------------------------------
 # Check for mandatory variables
 
 ifeq ($(HIPHAP_PROJECT_VERSION),)
 $(error HIPHAP_PROJECT_VERSION is not set)
-endif
-ifeq ($(HIPHAP_WEB_UI_PATH),)
-$(error HIPHAP_WEB_UI_PATH is not set)
 endif
 
 # ------------------------------------------------------------------------------
@@ -76,8 +76,9 @@ FILES_DSP += $(HIPHAP_FILES_DSP:%=$(HIPHAP_SRC_PATH)/%)
 endif
 
 # ------------------------------------------------------------------------------
-# Add web UI source
+# Add optional support for web UI
 
+ifeq ($(WEB_UI),true)
 HIPHAP_FILES_UI  = WebHostUI.cpp \
                    AbstractWebWidget.cpp \
                    ScriptValue.cpp \
@@ -102,11 +103,6 @@ HIPHAP_FILES_UI += windows/EdgeWebWidget.cpp \
 endif
 
 FILES_UI += $(HIPHAP_FILES_UI:%=$(HIPHAP_SRC_PATH)/%)
-
-ifneq ($(WINDOWS),true)
-UI_TYPE = cairo
-else
-UI_TYPE = opengl
 endif
 
 # ------------------------------------------------------------------------------
@@ -122,7 +118,19 @@ _ := $(shell git -C $(DPF_PATH) checkout $(DPF_GIT_BRANCH))
 endif
 endif
 
+ifneq ($(WINDOWS),true)
+UI_TYPE = cairo
+else
+UI_TYPE = opengl
+endif
+
 include $(DPF_PATH)/Makefile.plugins.mk
+
+# ------------------------------------------------------------------------------
+# Add shared build flags
+BASE_FLAGS += -I$(HIPHAP_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
+              -DHIPHAP_PROJECT_ID_HASH=$(shell echo $(NAME):$(HIPHAP_PROJECT_VERSION) \
+              	| shasum -a 256 | head -c 8)
 
 # ------------------------------------------------------------------------------
 # Add build flags for AssemblyScript DSP dependencies
@@ -144,9 +152,7 @@ endif
 # ------------------------------------------------------------------------------
 # Add build flags for web UI dependencies
 
-BASE_FLAGS += -I$(HIPHAP_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
-              -DHIPHAP_PROJECT_ID_HASH=$(shell echo $(NAME):$(HIPHAP_PROJECT_VERSION) \
-              	| shasum -a 256 | head -c 8)
+ifeq ($(WEB_UI),true)
 ifeq ($(HIPHAP_PRINT_TRAFFIC),true)
 BASE_FLAGS += -DHIPHAP_PRINT_TRAFFIC
 endif
@@ -162,6 +168,7 @@ LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
               -lole32 -lShlwapi -lMfplat -lksuser -lmfuuid -lwmcodecdspuuid \
               -lWebView2Loader.dll -static-libgcc -static-libstdc++ -Wl,-Bstatic \
               -lstdc++ -lpthread
+endif
 endif
 
 # ------------------------------------------------------------------------------
@@ -233,6 +240,7 @@ endif
 # ------------------------------------------------------------------------------
 # Dependency - Download Edge WebView2
 
+ifeq ($(WEB_UI),true)
 ifeq ($(WINDOWS),true)
 EDGE_WEBVIEW2_PATH = $(HIPHAP_LIB_PATH)/Microsoft.Web.WebView2
 
@@ -258,10 +266,12 @@ endif
 	@echo Downloading NuGet...
 	@wget -P /usr/bin $(NUGET_URL)
 endif
+endif
 
 # ------------------------------------------------------------------------------
 # Dependency - Built-in JavaScript library include
 
+ifeq ($(WEB_UI),true)
 UI_JS_INCLUDE_PATH = $(HIPHAP_SRC_PATH)/ui/distrho-ui.js.include
 
 TARGETS += $(UI_JS_INCLUDE_PATH)
@@ -270,10 +280,12 @@ $(UI_JS_INCLUDE_PATH):
 	@echo 'R"UI_JS(' > $(UI_JS_INCLUDE_PATH)
 	@cat $(HIPHAP_SRC_PATH)/ui/distrho-ui.js >> $(UI_JS_INCLUDE_PATH)
 	@echo ')UI_JS"' >> $(UI_JS_INCLUDE_PATH)
+endif
 
 # ------------------------------------------------------------------------------
 # Linux only - Build WebKitGTK helper binary
 
+ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
 LXHELPER_BIN = $(BUILD_DIR)/$(NAME)_ui
 HIPHAP_TARGET += $(LXHELPER_BIN)
@@ -283,6 +295,7 @@ $(LXHELPER_BIN): $(HIPHAP_SRC_PATH)/linux/helper.c $(HIPHAP_SRC_PATH)/linux/extr
 	$(SILENT)$(CC) $^ -I$(HIPHAP_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
+endif
 endif
 
 # ------------------------------------------------------------------------------
@@ -322,6 +335,7 @@ TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
 # ------------------------------------------------------------------------------
 # Post build - Copy Linux helper
 
+ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
 HIPHAP_TARGET += lxhelper
 
@@ -341,6 +355,7 @@ clean: clean_lxhelper
 clean_lxhelper:
 	@rm -rf $(TARGET_DIR)/$(notdir $(LXHELPER_BIN))
 	@rm -rf $(LXHELPER_BIN)
+endif
 endif
 
 # ------------------------------------------------------------------------------
@@ -364,6 +379,7 @@ endif
 # This Makefile version is too lazy to support 32-bit but DLL is also available.
 # The "bare" DLL is enough for the standalone JACK target, no need for assembly.
 
+ifeq ($(WEB_UI),true)
 ifeq ($(WINDOWS),true)
 HIPHAP_TARGET += edgelib
 
@@ -387,6 +403,7 @@ clean: clean_edgelib
 
 clean_edgelib:
 	@rm -rf $(TARGET_DIR)/WebView2Loader
+endif
 endif
 
 # ------------------------------------------------------------------------------
@@ -426,6 +443,7 @@ libdsp:
 		) || true
 endif
 
+ifeq ($(WEB_UI),true)
 HIPHAP_TARGET += libui
 
 libui:
@@ -451,6 +469,7 @@ clean: clean_lib
 
 clean_lib:
 	@rm -rf $(TARGET_DIR)/$(NAME)_lib
+endif
 
 # ------------------------------------------------------------------------------
 # Post build - Create LV2 manifest files

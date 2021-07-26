@@ -1,9 +1,9 @@
 GENERAL
 -------
 
-- Make web UI support optional
 - Wasm: states, programs and MIDI support
 - Wasm: profile plugin for memory leaks
+- Merge examples
 - Allow calling Window::openFileBrowser() from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs
 - Launch system browser for HTTP links
@@ -16,7 +16,7 @@ WINDOWS
 - Files plugin.manifest and WebView2Loader.manifest contain a hardcoded dummy
   version for WebView2Loader.dll. It probably needs to be set to the real DLL
   version the plugin is linking against, for the cases where the host or other
-  plugins try to load a different WebView2Loader.dll (not yet tested)
+  plugins try to load different versions of WebView2Loader.dll (not yet tested)
   https://stackoverflow.com/questions/4396754/can-different-versions-of-dll-be-loaded-in-same-application
 - As of Jun '21 Windows does not ship with the Edge runtime pre-installed. The
   plugin detects this and pops a message box, most users will figure out what
