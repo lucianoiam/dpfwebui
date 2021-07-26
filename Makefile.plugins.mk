@@ -55,6 +55,8 @@ MSYS_MINGW_SYMLINKS = export MSYS=winsymlinks:nativestrict
 endif
 endif
 
+NPM_ENV = true
+
 # ------------------------------------------------------------------------------
 # Add optional support for AssemblyScript DSP
 
