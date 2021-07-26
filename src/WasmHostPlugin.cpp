@@ -46,6 +46,13 @@ static void log_wasmer_last_error();
 
 WASM_DECLARE_NATIVE_FUNC(dpf_get_sample_rate)
 
+#ifndef HIPHAP_ENABLE_WASI
+WASM_DECLARE_NATIVE_FUNC(ascript_abort)
+
+static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
+                                                  own wasm_valtype_t* p3, own wasm_valtype_t* p4);
+#endif
+
 WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
     : Plugin(parameterCount, programCount, stateCount)
     , fWasmReady(false)
@@ -53,7 +60,9 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     , fWasmStore(0)
     , fWasmInstance(0)
     , fWasmModule(0)
+#ifdef HIPHAP_ENABLE_WASI
     , fWasiEnv(0)
+#endif
 {
     memset(&fWasmExports, 0, sizeof(fWasmExports));
 
@@ -109,6 +118,9 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
         return;
     }
 
+    char name[128];
+
+#ifdef HIPHAP_ENABLE_WASI
     // -------------------------------------------------------------------------
     // Build a map of WASI imports
     // Call to wasi_get_imports() fails because of missing host imports, use
@@ -131,7 +143,6 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     }
 
     std::unordered_map<std::string, int> wasiImportIndex;
-    char name[128];
 
     for (size_t i = 0; i < wasiImports.size; i++) {
         wasmer_named_extern_t *ne = wasiImports.data[i];
@@ -140,6 +151,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
         name[wn->size] = 0;
         wasiImportIndex[name] = i;
     }
+#endif // HIPHAP_ENABLE_WASI
 
     // -------------------------------------------------------------------------
     // Build module imports vector
@@ -150,6 +162,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     wasm_extern_vec_new_uninitialized(&imports, importTypes.size);
 
     std::unordered_map<std::string, int> importIndex;
+    bool needsWasi = false;
 
     for (size_t i = 0; i < importTypes.size; i++) {
         const wasm_name_t *wn = wasm_importtype_name(importTypes.data[i]);
@@ -157,13 +170,35 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
         name[wn->size] = 0;
         importIndex[name] = i;
 
+#ifdef HIPHAP_ENABLE_WASI
         if (wasiImportIndex.find(name) != wasiImportIndex.end()) {
             wasmer_named_extern_t* ne = wasiImports.data[wasiImportIndex[name]];
             imports.data[i] = const_cast<wasm_extern_t *>(wasmer_named_extern_unwrap(ne));
         }
+#endif
+        if (!needsWasi) {
+            wn = wasm_importtype_module(importTypes.data[i]);
+            memcpy(name, wn->data, wn->size);
+            name[wn->size] = 0;
+            if (strstr(name, "wasi_") == name) { // eg, wasi_snapshot_preview1
+                needsWasi = true;
+            }
+        }
     }
 
     wasm_importtype_vec_delete(&importTypes);
+
+#ifdef HIPHAP_ENABLE_WASI
+    if (!needsWasi) {
+        HIPHAP_LOG_STDERR_COLOR("WASI is enabled but module is non-WASI, add missing 'import \"wasi\"' directive.");
+        return;
+    }
+#else
+    if (needsWasi) {
+        HIPHAP_LOG_STDERR_COLOR("WASI is not enabled but module is WASI, remove 'import \"wasi\"' directive.");
+        return;
+    }
+#endif
 
     // -------------------------------------------------------------------------
     // Insert host functions into imports vector
@@ -171,6 +206,13 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     wasm_functype_t *funcType;
     wasm_func_t *func;
 
+#ifndef HIPHAP_ENABLE_WASI
+    funcType = wasm_functype_new_4_0(wasm_valtype_new_i32(), wasm_valtype_new_i32(),
+                                     wasm_valtype_new_i32(), wasm_valtype_new_i32());
+    func = wasm_func_new_with_env(fWasmStore, funcType, ascript_abort, this, 0);
+    wasm_functype_delete(funcType);
+    imports.data[importIndex["abort"]] = wasm_func_as_extern(func);
+#endif
     funcType = wasm_functype_new_0_1(wasm_valtype_new_f32());
     func = wasm_func_new_with_env(fWasmStore, funcType, dpf_get_sample_rate, this, 0);
     wasm_functype_delete(funcType);
@@ -187,7 +229,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
         log_wasmer_last_error();
         return;
     }
-
+#ifdef HIPHAP_ENABLE_WASI
     wasm_func_t* wasiStart = wasi_get_start_function(fWasmInstance);
     
     if (wasiStart == 0) {
@@ -197,7 +239,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     wasm_func_call(wasiStart, &empty_val_vec, &empty_val_vec);
     wasm_func_delete(wasiStart);
-
+#endif
     // -------------------------------------------------------------------------
     // Build a map of externs indexed by name
 
@@ -231,11 +273,11 @@ WasmHostPlugin::~WasmHostPlugin()
     if (fWasmExports.size != 0) {
         wasm_extern_vec_delete(&fWasmExports);
     }
-
+#ifdef HIPHAP_ENABLE_WASI
     if (fWasiEnv != 0) {
         wasi_env_delete(fWasiEnv);
     }
-
+#endif
     if (fWasmModule != 0) {
         wasm_module_delete(fWasmModule);
     }
@@ -495,6 +537,59 @@ static void log_wasmer_last_error()
     
     HIPHAP_LOG_STDERR_COLOR(s);
 }
+
+const char* WasmHostPlugin::readWasmString(int32_t wasmStringPtr)
+{
+    if (wasmStringPtr == 0) {
+        return "(null)";
+    }
+
+    WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(wasmStringPtr)));
+    WASM_DEFINE_RES_VAL_VEC_1(res);
+
+    if (WASM_FUNC_CALL("c_string", &args_val_vec, &res_val_vec) != 0) {
+        log_wasmer_last_error();
+        return 0;
+    }
+
+    return WASM_MEMORY_CSTR(res[0]);
+}
+
+#ifndef HIPHAP_ENABLE_WASI
+
+// Convenience function, Wasmer provides up to wasm_functype_new_3_0()
+static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
+                                                    own wasm_valtype_t* p3, own wasm_valtype_t* p4)
+{
+    wasm_valtype_t* ps[4] = {p1, p2, p3, p4};
+    wasm_valtype_vec_t params, results;
+    wasm_valtype_vec_new(&params, 4, ps);
+    wasm_valtype_vec_new_empty(&results);
+    return wasm_functype_new(&params, &results);
+}
+
+// Required when running in non-WASI mode
+static own wasm_trap_t* ascript_abort(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results)
+{
+    (void)results;
+
+    WasmHostPlugin* p = static_cast<WasmHostPlugin *>(env);
+
+    const char *msg = p->readWasmString(args->data[0].of.i32);
+    const char *filename = p->readWasmString(args->data[1].of.i32);
+    int32_t lineNumber = args->data[2].of.i32;
+    int32_t columnNumber = args->data[3].of.i32;
+
+    std::stringstream ss;
+    ss << "AssemblyScript abort() called - msg: " << msg << ", filename: " << filename
+        << ", lineNumber: " << lineNumber << ", columnNumber: " << columnNumber;
+
+    HIPHAP_LOG_STDERR_COLOR(ss.str().c_str());
+
+    return 0;
+}
+
+#endif // HIPHAP_ENABLE_WASI
 
 static own wasm_trap_t* dpf_get_sample_rate(void* env,
                                             const wasm_val_vec_t* args, wasm_val_vec_t* results)

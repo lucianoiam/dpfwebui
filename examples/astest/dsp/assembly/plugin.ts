@@ -1,3 +1,4 @@
+import "wasi"
 import DISTRHO from './distrho-plugin'
 
 @inline const PI2: f32 = Mathf.PI * 2

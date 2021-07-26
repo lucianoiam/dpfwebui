@@ -15,6 +15,7 @@ DPF_GIT_BRANCH   ?= develop
 
 ifneq ($(HIPHAP_AS_DSP_PATH),)
 AS_DSP = true
+HIPHAP_ENABLE_WASI ?= true
 endif
 
 # ------------------------------------------------------------------------------
@@ -128,6 +129,9 @@ include $(DPF_PATH)/Makefile.plugins.mk
 
 ifeq ($(AS_DSP),true)
 BASE_FLAGS += -I$(WASMER_PATH)/include
+ifeq ($(HIPHAP_ENABLE_WASI),true)
+BASE_FLAGS += -DHIPHAP_ENABLE_WASI
+endif
 LINK_FLAGS += -L$(WASMER_PATH)/lib -lwasmer
 ifeq ($(MACOS),true)
 LINK_FLAGS += -framework AppKit 

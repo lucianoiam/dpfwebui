@@ -1,7 +1,6 @@
 GENERAL
 -------
 
-- Make WASI support optional
 - Make web UI support optional
 - Wasm: states, programs and MIDI support
 - Wasm: profile plugin for memory leaks

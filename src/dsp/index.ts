@@ -16,9 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import "wasi"
 import DISTRHO from './distrho-plugin'
 import PluginImpl from './plugin'
+
+// The interface defined in this file is private to the framework and optimized
+// for Wasmer integration. Do not use it for creating plugins, use the public
+// interface provided by distrho-plugin.ts instead.
 
 const pluginInstance = new PluginImpl
 
@@ -35,7 +38,7 @@ export { dpf_get_sample_rate }
 // exports. They could be replaced with globals initialized to these function
 // return values for a simpler implementation, but maybe in the future index.ts
 // gets automatically injected into the Wasm VM (just like done with ui.js for
-// the web view) and plugin implementations moved to "shared libraries". Under
+// the web view) and plugin implementations moved to "linked modules". Under
 // such scheme the guarantee that the global pluginInstance variable is already
 // initialized at this point no longer holds.
 
@@ -103,7 +106,7 @@ export function dpf_run(frames: u32): void {
 
     pluginInstance.run(inputs, outputs)
 
-    // Run AS garbage collector every 100 calls. Default TLSF + incremental GC
+    // Run AS garbage collector every N calls. Default TLSF + incremental GC
     // https://www.assemblyscript.org/garbage-collection.html#runtime-variants
     // TODO: This is apperently only needed on Windows to avoid segfault after
     //       a certain period of time. Need to investigate root cause.
@@ -155,6 +158,11 @@ const MAX_STRING = 1024
 
 export let rw_string_1 = new ArrayBuffer(MAX_STRING)
 
-function c_string(s: string): ArrayBuffer {
+// Converting AssemblyScript strings to C-style strings here is simpler than
+// doing so on the native side. This function needs to be exported because AS
+// requires an abort() function to be implemented by the host in non-WASI mode.
+// abort() is called with some string args which need to be read by the host.
+
+export function c_string(s: string): ArrayBuffer {
     return String.UTF8.encode(s, true)
 } 

@@ -60,13 +60,18 @@ public:
 
     void run(const float** inputs, float** outputs, uint32_t frames) override;
 
+    const char* readWasmString(int32_t wasmStringPtr);
+
 private:
+
     bool               fWasmReady;
     wasm_engine_t*     fWasmEngine;
     wasm_store_t*      fWasmStore;
     wasm_instance_t*   fWasmInstance;
     wasm_module_t*     fWasmModule;
+#ifdef HIPHAP_ENABLE_WASI
     wasi_env_t*        fWasiEnv;
+#endif
     wasm_extern_vec_t  fWasmExports;
 
     typedef std::unordered_map<std::string, wasm_extern_t *> ExternMap;
