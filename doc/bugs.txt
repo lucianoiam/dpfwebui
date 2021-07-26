@@ -7,7 +7,6 @@ GENERAL
 LINUX
 -----
 
-- WasmHostPlugin crashes on Carla
 - Mouse wheel events never fire
 - DSSI plugin builds but UI does not open
 - UI not displaying at all on Gnome Shell even running on Xorg. XEmbed related?
@@ -29,6 +28,7 @@ MACOS
 WINDOWS
 -------
 
+- WasmHostPlugin crashes on Carla
 - Workaround with tag WINSIZEBUG need to call UI::setSize() twice
 - Workaround with tag WINJACKBUG to avoid empty window on startup
 - Unresolved issue when running standalone: js->cpp messages get stuck unless
