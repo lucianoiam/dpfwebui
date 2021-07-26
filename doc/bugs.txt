@@ -28,7 +28,7 @@ MACOS
 WINDOWS
 -------
 
-- WasmHostPlugin crashes on Carla
+- WasmHostPlugin crashes Carla on Windows 7, works fine on Windows 10.
 - Workaround with tag WINSIZEBUG need to call UI::setSize() twice
 - Workaround with tag WINJACKBUG to avoid empty window on startup
 - Unresolved issue when running standalone: js->cpp messages get stuck unless
