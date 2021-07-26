@@ -44,7 +44,7 @@ static wasm_val_vec_t empty_val_vec = WASM_EMPTY_VEC;
 
 static void log_wasmer_last_error();
 
-WASM_DECLARE_NATIVE_FUNC(dpf_get_sample_rate)
+WASM_DECLARE_NATIVE_FUNC(get_sample_rate)
 
 #ifndef HIPHAP_ENABLE_WASI
 WASM_DECLARE_NATIVE_FUNC(ascript_abort)
@@ -214,9 +214,9 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     imports.data[importIndex["abort"]] = wasm_func_as_extern(func);
 #endif
     funcType = wasm_functype_new_0_1(wasm_valtype_new_f32());
-    func = wasm_func_new_with_env(fWasmStore, funcType, dpf_get_sample_rate, this, 0);
+    func = wasm_func_new_with_env(fWasmStore, funcType, get_sample_rate, this, 0);
     wasm_functype_delete(funcType);
-    imports.data[importIndex["dpf_get_sample_rate"]] = wasm_func_as_extern(func);
+    imports.data[importIndex["_get_sample_rate"]] = wasm_func_as_extern(func);
 
     // -------------------------------------------------------------------------
     // Create Wasm instance and start WASI
@@ -261,9 +261,9 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     // Set globals needed by run()
 
     wasm_val_t numInputs WASM_I32_VAL(static_cast<int32_t>(DISTRHO_PLUGIN_NUM_INPUTS));
-    WASM_GLOBAL_SET("num_inputs", &numInputs);
+    WASM_GLOBAL_SET("_num_inputs", &numInputs);
     wasm_val_t numOutputs WASM_I32_VAL(static_cast<int32_t>(DISTRHO_PLUGIN_NUM_OUTPUTS));
-    WASM_GLOBAL_SET("num_outputs", &numOutputs);
+    WASM_GLOBAL_SET("_num_outputs", &numOutputs);
 
     fWasmReady = true;
 }
@@ -303,7 +303,7 @@ const char* WasmHostPlugin::getLabel() const
 
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL("dpf_get_label", &empty_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_get_label", &empty_val_vec, &res_val_vec) != 0) {
         log_wasmer_last_error();
         return 0;
     }
@@ -319,7 +319,7 @@ const char* WasmHostPlugin::getMaker() const
 
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL("dpf_get_maker", &empty_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_get_maker", &empty_val_vec, &res_val_vec) != 0) {
         log_wasmer_last_error();
         return 0;
     }
@@ -335,7 +335,7 @@ const char* WasmHostPlugin::getLicense() const
 
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL("dpf_get_license", &empty_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_get_license", &empty_val_vec, &res_val_vec) != 0) {
         log_wasmer_last_error();
         return 0;
     }
@@ -351,7 +351,7 @@ uint32_t WasmHostPlugin::getVersion() const
 
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL("dpf_get_version", &empty_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_get_version", &empty_val_vec, &res_val_vec) != 0) {
         log_wasmer_last_error();
         return 0;
     }
@@ -367,7 +367,7 @@ int64_t WasmHostPlugin::getUniqueId() const
 
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL("dpf_get_unique_id", &empty_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_get_unique_id", &empty_val_vec, &res_val_vec) != 0) {
         log_wasmer_last_error();
         return 0;
     }
@@ -383,18 +383,18 @@ void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
 
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(index)));
 
-    if (WASM_FUNC_CALL("dpf_init_parameter", &args_val_vec, &empty_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_init_parameter", &args_val_vec, &empty_val_vec) != 0) {
         log_wasmer_last_error();
         return;
     }
 
     wasm_val_t res;
 
-    WASM_GLOBAL_GET("rw_int_1", &res);    parameter.hints = res.of.i32;
-    WASM_GLOBAL_GET("ro_string_1", &res); parameter.name = String(WASM_MEMORY_CSTR(res));
-    WASM_GLOBAL_GET("rw_float_1", &res);  parameter.ranges.def = res.of.f32;
-    WASM_GLOBAL_GET("rw_float_2", &res);  parameter.ranges.min = res.of.f32;
-    WASM_GLOBAL_GET("rw_float_3", &res);  parameter.ranges.max = res.of.f32;
+    WASM_GLOBAL_GET("_rw_int_1", &res);    parameter.hints = res.of.i32;
+    WASM_GLOBAL_GET("_ro_string_1", &res); parameter.name = String(WASM_MEMORY_CSTR(res));
+    WASM_GLOBAL_GET("_rw_float_1", &res);  parameter.ranges.def = res.of.f32;
+    WASM_GLOBAL_GET("_rw_float_2", &res);  parameter.ranges.min = res.of.f32;
+    WASM_GLOBAL_GET("_rw_float_3", &res);  parameter.ranges.max = res.of.f32;
 }
 
 float WasmHostPlugin::getParameterValue(uint32_t index) const
@@ -406,7 +406,7 @@ float WasmHostPlugin::getParameterValue(uint32_t index) const
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(index)));
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL("dpf_get_parameter_value", &args_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_get_parameter_value", &args_val_vec, &res_val_vec) != 0) {
         log_wasmer_last_error();
         return 0;
     }
@@ -423,7 +423,7 @@ void WasmHostPlugin::setParameterValue(uint32_t index, float value)
     WASM_DEFINE_ARGS_VAL_VEC_2(args, WASM_I32_VAL(static_cast<int32_t>(index)),
                                         WASM_F32_VAL(static_cast<float32_t>(value)));
 
-    if (WASM_FUNC_CALL("dpf_set_parameter_value", &args_val_vec, &empty_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_set_parameter_value", &args_val_vec, &empty_val_vec) != 0) {
         log_wasmer_last_error();
     }
 }
@@ -477,7 +477,7 @@ void WasmHostPlugin::activate()
         return;
     }
 
-    if (WASM_FUNC_CALL("dpf_activate", &empty_val_vec, &empty_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_activate", &empty_val_vec, &empty_val_vec) != 0) {
         log_wasmer_last_error();
     }
 }
@@ -488,7 +488,7 @@ void WasmHostPlugin::deactivate()
         return;
     }
 
-    if (WASM_FUNC_CALL("dpf_deactivate", &empty_val_vec, &empty_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_deactivate", &empty_val_vec, &empty_val_vec) != 0) {
         log_wasmer_last_error();
     }
 }
@@ -501,7 +501,7 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
 
     wasm_val_t blockPtr;
     
-    WASM_GLOBAL_GET("input_block", &blockPtr);
+    WASM_GLOBAL_GET("_input_block", &blockPtr);
     float32_t* inputBlock = reinterpret_cast<float32_t*>(&WASM_MEMORY()[blockPtr.of.i32]);
 
     for (int i = 0; i < DISTRHO_PLUGIN_NUM_INPUTS; i++) {
@@ -510,12 +510,12 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
 
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(frames)));
 
-    if (WASM_FUNC_CALL("dpf_run", &args_val_vec, &empty_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_run", &args_val_vec, &empty_val_vec) != 0) {
         log_wasmer_last_error();
         return;
     }
 
-    WASM_GLOBAL_GET("output_block", &blockPtr);
+    WASM_GLOBAL_GET("_output_block", &blockPtr);
     float32_t* outputBlock = reinterpret_cast<float32_t*>(&WASM_MEMORY()[blockPtr.of.i32]);
 
     for (int i = 0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; i++) {
@@ -547,12 +547,26 @@ const char* WasmHostPlugin::readWasmString(int32_t wasmStringPtr)
     WASM_DEFINE_ARGS_VAL_VEC_1(args, WASM_I32_VAL(static_cast<int32_t>(wasmStringPtr)));
     WASM_DEFINE_RES_VAL_VEC_1(res);
 
-    if (WASM_FUNC_CALL("c_string", &args_val_vec, &res_val_vec) != 0) {
+    if (WASM_FUNC_CALL("_c_string", &args_val_vec, &res_val_vec) != 0) {
         log_wasmer_last_error();
         return 0;
     }
 
     return WASM_MEMORY_CSTR(res[0]);
+}
+
+static own wasm_trap_t* get_sample_rate(void* env,
+                                            const wasm_val_vec_t* args, wasm_val_vec_t* results)
+{
+    (void)args;
+
+    WasmHostPlugin* p = static_cast<WasmHostPlugin *>(env);
+    float32_t value = static_cast<float32_t>(p->getSampleRate());
+    wasm_val_t res[1] = { WASM_F32_VAL(value) };
+
+    wasm_val_vec_new(results, 1, res);
+    
+    return 0;
 }
 
 #ifndef HIPHAP_ENABLE_WASI
@@ -568,7 +582,7 @@ static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wa
     return wasm_functype_new(&params, &results);
 }
 
-// Required when running in non-WASI mode
+// Only required when running in non-WASI mode
 static own wasm_trap_t* ascript_abort(void* env, const wasm_val_vec_t* args, wasm_val_vec_t* results)
 {
     (void)results;
@@ -590,17 +604,3 @@ static own wasm_trap_t* ascript_abort(void* env, const wasm_val_vec_t* args, was
 }
 
 #endif // HIPHAP_ENABLE_WASI
-
-static own wasm_trap_t* dpf_get_sample_rate(void* env,
-                                            const wasm_val_vec_t* args, wasm_val_vec_t* results)
-{
-    (void)args;
-
-    WasmHostPlugin* p = static_cast<WasmHostPlugin *>(env);
-    float32_t value = static_cast<float32_t>(p->getSampleRate());
-    wasm_val_t res[1] = { WASM_F32_VAL(value) };
-
-    wasm_val_vec_new(results, 1, res);
-    
-    return 0;
-}

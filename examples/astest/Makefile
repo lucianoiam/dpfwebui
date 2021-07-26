@@ -3,7 +3,6 @@
 # ---------------------------- #
 # Created by falkTX
 #
-HIPHAP_ENABLE_WASI = true
 
 # --------------------------------------------------------------
 # Project name, used for binaries

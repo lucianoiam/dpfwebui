@@ -10,7 +10,7 @@ const cStringToJs = (ptr) =>
 
 const imports = {
     index: {
-        dpf_get_sample_rate() {
+        _get_sample_rate() {
             return sampleRate
         }
     }
@@ -24,14 +24,14 @@ const plugin = module.exports
 
 const params = []
 for (let i = 0; i < 127; i++) {
-    plugin.dpf_init_parameter(i)
+    plugin._init_parameter(i)
 
     const param = {
         // hints: plugin.rw_int_1.value,
-        name: cStringToJs(plugin.ro_string_1.value),
-        defaultValue: plugin.rw_float_1.value,
-        minValue: plugin.rw_float_2.value,
-        maxValue: plugin.rw_float_3.value
+        name: cStringToJs(plugin._ro_string_1.value),
+        defaultValue: plugin._rw_float_1.value,
+        minValue: plugin._rw_float_2.value,
+        maxValue: plugin._rw_float_3.value
     }
 
     // Heuristic for the end of parameters.
@@ -43,8 +43,8 @@ for (let i = 0; i < 127; i++) {
 
 // Set number of inputs and outputs.
 
-plugin.num_inputs.value = 0
-plugin.num_outputs.value = 2
+plugin._num_inputs.value = 0
+plugin._num_outputs.value = 2
 
 // Register plugin.
 
@@ -64,7 +64,7 @@ registerProcessor(
 
             for (let i = 0; i < params.length; i++) {
                 // TODO: Handle A-rated parameters. Currently handling only K-rated.
-                plugin.dpf_set_parameter_value(i, parameters[params[i].name][0])
+                plugin._set_parameter_value(i, parameters[params[i].name][0])
             }
 
             // Copy inputs from WebAudio -> Wasm.
@@ -73,14 +73,14 @@ registerProcessor(
                 for (let i = 0; i < plugin.num_inputs.value; i++) {
                     if (!input[i]) break
                     plugin
-                        .__getFloat32ArrayView(plugin.input_block_float32.value)
+                        .__getFloat32ArrayView(plugin._input_block_float32.value)
                         .subarray(i * frames, (i + 1) * frames)
                         .set(input[i])
                 }
 
             // Run dsp.
 
-            plugin.dpf_run(frames)
+            plugin._run(frames)
 
             // Copy outputs from Wasm -> WebAudio.
 
@@ -88,7 +88,7 @@ registerProcessor(
                 if (!output[i]) break
                 output[i].set(
                     plugin
-                        .__getFloat32ArrayView(plugin.output_block_float32.value)
+                        .__getFloat32ArrayView(plugin._output_block_float32.value)
                         .subarray(i * frames, (i + 1) * frames)
                 )
             }

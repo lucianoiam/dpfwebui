@@ -17,9 +17,9 @@
  */
 
 // Everything contained in this file attempts to mimic the C++ plugin interfaces
-// Low-level interactions with native container are strictly handled by index.ts
+// Low-level interactions with the host are strictly confined to index.ts
 
-import { dpf_get_sample_rate } from './index'
+import { _get_sample_rate } from './index'
 
 export default namespace DISTRHO {
 
@@ -69,7 +69,7 @@ export default namespace DISTRHO {
         
         // double Plugin::getSampleRate();
         getSampleRate(): f32 {
-            return dpf_get_sample_rate()
+            return _get_sample_rate()
         }
 
     }
