@@ -4,6 +4,7 @@ GENERAL
 - Wasm: states, programs and MIDI support
 - Wasm: profile plugin for memory leaks
 - Merge examples
+- Update internals.md to include information regarding AssemblyScript DSP
 - Allow calling Window::openFileBrowser() from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs
 - Launch system browser for HTTP links
@@ -12,7 +13,6 @@ GENERAL
 WINDOWS
 -------
 
-- Automatically download node if absent
 - Files plugin.manifest and WebView2Loader.manifest contain a hardcoded dummy
   version for WebView2Loader.dll. It probably needs to be set to the real DLL
   version the plugin is linking against, for the cases where the host or other

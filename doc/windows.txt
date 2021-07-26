@@ -45,8 +45,10 @@ NOTES FOR WINDOWS
    mkdir -p hiphap/lib/wasmer/lib
    cp wasmer/target/release/libwasmer.a hiphap/lib/wasmer/lib
 
-5. npm is required for building the plugin AssemblyScript files. MinGW does not
-   provide a npm package but there is a recipe available for building it:
+5. Node.js is required for building the plugin AssemblyScript files. There is no
+   official binary package for MinGW. Makefile will try to download the regular
+   Windows version if npm is absent. https://github.com/msys2/MINGW-packages
+   provides a recipe for building Node.js but as of Jul '21 it seems broken.
 
    pacman -S mingw-w64-x86_64-python2 mingw-w64-x86_64-nasm \
       mingw-w64-x86_64-c-ares mingw-w64-x86_64-http-parser \
@@ -55,6 +57,3 @@ NOTES FOR WINDOWS
    git clone https://github.com/msys2/MINGW-packages
    cd MINGW-packages/mingw-w64-nodejs
    makepkg
-
-   FIXME: compilation seems to fail. Update Makefile to automatically download
-          official Node binary, then update this section.

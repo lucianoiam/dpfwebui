@@ -238,6 +238,28 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
+# Dependency - Download Node.js for MinGW
+
+ifeq ($(AS_DSP),true)
+ifeq ($(MSYS_MINGW),true)
+NPM_ENV = export PATH=$$PATH:/opt/node && export NODE_SKIP_PLATFORM_CHECK=1
+ifeq (,$(wildcard /opt/node))
+NPM_FILENAME = node-v16.5.0-win-x64.zip
+NPM_URL = https://nodejs.org/dist/latest/$(NPM_FILENAME)
+
+TARGETS += /opt/node/npm
+
+/opt/node/npm:
+	@echo Downloading Node.js ...
+	@wget -P /tmp $(NPM_URL)
+	@unzip -o /tmp/$(NPM_FILENAME) -d /opt
+	@mv /opt/$(basename $(NPM_FILENAME)) /opt/node
+	@rm /tmp/$(NPM_FILENAME)
+endif
+endif
+endif
+
+# ------------------------------------------------------------------------------
 # Dependency - Download Edge WebView2
 
 ifeq ($(WEB_UI),true)
@@ -420,10 +442,13 @@ WASM_DST_PATH = dsp/plugin.wasm
 libdsp:
 	@echo "Building AssemblyScript project..."
 	@# npm --prefix fails on MinGW due to paths mixing \ and /
-	@test -d $(HIPHAP_AS_DSP_PATH)/node_modules || (cd $(HIPHAP_AS_DSP_PATH) && npm install)
-	@test -f $(AS_ASSEMBLY_PATH)/index.ts || ln -s $(abspath $(HIPHAP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
-	@test -f $(AS_ASSEMBLY_PATH)/distrho-plugin.ts || ln -s $(abspath $(HIPHAP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
-	@cd $(HIPHAP_AS_DSP_PATH) && npm run asbuild
+	@test -d $(HIPHAP_AS_DSP_PATH)/node_modules \
+		|| (cd $(HIPHAP_AS_DSP_PATH) && $(NPM_ENV) && npm install)
+	@test -f $(AS_ASSEMBLY_PATH)/index.ts \
+		|| ln -s $(abspath $(HIPHAP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
+	@test -f $(AS_ASSEMBLY_PATH)/distrho-plugin.ts \
+		|| ln -s $(abspath $(HIPHAP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
+	@cd $(HIPHAP_AS_DSP_PATH) && $(NPM_ENV) && npm run asbuild
 	@echo "Copying WebAssembly DSP binary..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_lib/dsp \
