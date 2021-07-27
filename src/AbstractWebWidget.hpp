@@ -27,17 +27,17 @@
 #include "extra/String.hpp"
 #include "Window.hpp"
 
-#include "ScriptValue.hpp"
+#include "JsValue.hpp"
 
 START_NAMESPACE_DISTRHO
 
-typedef std::vector<ScriptValue> ScriptValueVector;
+typedef std::vector<JsValue> JsValueVector;
 
 class WebWidgetEventHandler
 {
 public:
     virtual void handleWebWidgetContentLoadFinished() = 0;
-    virtual void handleWebWidgetScriptMessageReceived(const ScriptValueVector& args) = 0;
+    virtual void handleWebWidgetScriptMessageReceived(const JsValueVector& args) = 0;
 
 };
 
@@ -58,7 +58,7 @@ public:
 
     void setPrintTraffic(bool printTraffic) { fPrintTraffic = printTraffic; }
     void setEventHandler(WebWidgetEventHandler* handler) { fHandler = handler; }
-    void postMessage(const ScriptValueVector& args);
+    void postMessage(const JsValueVector& args);
 
 protected:
     void onDisplay() override { /* no-op */ }
@@ -66,12 +66,12 @@ protected:
     void injectDefaultScripts(String& platformSpecificScript);
     
     void handleLoadFinished();
-    void handleScriptMessage(const ScriptValueVector& args);
+    void handleScriptMessage(const JsValueVector& args);
 
     bool fKeyboardFocus;
 
 private:
-    String serializeScriptValues(const ScriptValueVector& args);
+    String serializeJsValues(const JsValueVector& args);
 
     void addStylesheet(String& source);
 

@@ -16,21 +16,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ScriptValue.hpp"
+#include "JsValue.hpp"
 
 USE_NAMESPACE_DISTRHO
 
-std::ostream& operator<<(std::ostream &os, const ScriptValue &val) {
+std::ostream& operator<<(std::ostream &os, const JsValue &val) {
     switch (val.getType()) {
-        case ScriptValue::TNull:
+        case JsValue::TNull:
             os << "null";
             break;
 
-        case ScriptValue::TBool:
+        case JsValue::TBool:
             os << (val.getBool() ? "true" : "false");
             break;
 
-        case ScriptValue::TDouble: {
+        case JsValue::TDouble: {
             double d = val.getDouble();
             if (std::isnan(d)) {
                 os << "NaN";
@@ -42,7 +42,7 @@ std::ostream& operator<<(std::ostream &os, const ScriptValue &val) {
             break;
         }
 
-        case ScriptValue::TString: {
+        case JsValue::TString: {
             const String& s = val.getString();
             const char *buf = s.buffer();
             int len = s.length();

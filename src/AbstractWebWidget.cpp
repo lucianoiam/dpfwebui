@@ -66,7 +66,7 @@ void AbstractWebWidget::handleLoadFinished()
     }
 }
 
-void AbstractWebWidget::postMessage(const ScriptValueVector& args)
+void AbstractWebWidget::postMessage(const JsValueVector& args)
 {
     // WebKit-based webviews implement a standard mechanism for transferring messages from JS to the
     // native side, carrying a payload of JavaScript values that can be accessed through jsc_value_*
@@ -76,7 +76,7 @@ void AbstractWebWidget::postMessage(const ScriptValueVector& args)
     // calling custom JavaScript using a function provided by webviews on all platforms.
     // This method implements something like a "reverse postMessage()" aiming to keep the bridge
     // symmetrical. Global window.webviewHost is an EventTarget that can be listened for messages.
-    String payload = serializeScriptValues(args);
+    String payload = serializeJsValues(args);
     if (fPrintTraffic) {
         std::cerr << "cpp -> js : " << payload.buffer() << std::endl << std::flush;
     }
@@ -84,13 +84,13 @@ void AbstractWebWidget::postMessage(const ScriptValueVector& args)
     runScript(js);
 }
 
-void AbstractWebWidget::handleScriptMessage(const ScriptValueVector& args)
+void AbstractWebWidget::handleScriptMessage(const JsValueVector& args)
 {
     if ((args.size() > 1) && (args[0].getString() == "console.log")) {
         std::cerr << args[1].getString().buffer() << std::endl;
     } else {
         if (fPrintTraffic) {
-            std::cerr << "cpp <- js : " << serializeScriptValues(args).buffer()
+            std::cerr << "cpp <- js : " << serializeJsValues(args).buffer()
                 << std::endl << std::flush;
         }
         if (fHandler != 0) {
@@ -99,12 +99,12 @@ void AbstractWebWidget::handleScriptMessage(const ScriptValueVector& args)
     }
 }
 
-String AbstractWebWidget::serializeScriptValues(const ScriptValueVector& args)
+String AbstractWebWidget::serializeJsValues(const JsValueVector& args)
 {
     std::stringstream ss;
     ss << '[';
 
-    for (ScriptValueVector::const_iterator it = args.cbegin(); it != args.cend(); ++it) {
+    for (JsValueVector::const_iterator it = args.cbegin(); it != args.cend(); ++it) {
         if (it != args.cbegin()) {
             ss << ',';
         }

@@ -50,7 +50,7 @@ void WebGainExampleUI::webContentReady()
     // now safe to call webWidget().runScript() and mapped DPF methods if needed.
 }
 
-void WebGainExampleUI::webMessageReceived(const ScriptValueVector& args)
+void WebGainExampleUI::webMessageReceived(const JsValueVector& args)
 {
     // Web view and DOM are guaranteed to be ready here.
     (void)args;

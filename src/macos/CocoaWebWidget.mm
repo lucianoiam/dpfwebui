@@ -296,17 +296,17 @@ void CocoaWebWidget::updateWebViewFrame()
         return;
     }
 
-    ScriptValueVector args;
+    JsValueVector args;
 
     for (id objcArg : (NSArray *)message.body) {
         if (CFGetTypeID(objcArg) == CFBooleanGetTypeID()) {
-            args.push_back(ScriptValue(static_cast<bool>([objcArg boolValue])));
+            args.push_back(JsValue(static_cast<bool>([objcArg boolValue])));
         } else if ([objcArg isKindOfClass:[NSNumber class]]) {
-            args.push_back(ScriptValue([objcArg doubleValue]));
+            args.push_back(JsValue([objcArg doubleValue]));
         } else if ([objcArg isKindOfClass:[NSString class]]) {
-            args.push_back(ScriptValue(String([objcArg cStringUsingEncoding:NSUTF8StringEncoding])));
+            args.push_back(JsValue(String([objcArg cStringUsingEncoding:NSUTF8StringEncoding])));
         } else {
-            args.push_back(ScriptValue()); // null
+            args.push_back(JsValue()); // null
         }
     }
 

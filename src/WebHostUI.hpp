@@ -47,21 +47,21 @@ protected:
 
     platform::WebWidget& webWidget() { return fWebWidget; }
 
-    void webPostMessage(const ScriptValueVector& args);
+    void webPostMessage(const JsValueVector& args);
 
     void flushInitMessageQueue();
     void setKeyboardFocus(bool focus);
 
     virtual void webContentReady() {};
-    virtual void webMessageReceived(const ScriptValueVector& args) { (void)args; };
+    virtual void webMessageReceived(const JsValueVector& args) { (void)args; };
 
 private:
     // WebWidgetEventHandler
 
     virtual void handleWebWidgetContentLoadFinished() override;
-    virtual void handleWebWidgetScriptMessageReceived(const ScriptValueVector& args) override;
+    virtual void handleWebWidgetScriptMessageReceived(const JsValueVector& args) override;
 
-    typedef std::vector<ScriptValueVector> InitMessageQueue;
+    typedef std::vector<JsValueVector> InitMessageQueue;
     
     platform::WebWidget fWebWidget;
     InitMessageQueue    fInitMsgQueue;

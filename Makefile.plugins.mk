@@ -84,7 +84,7 @@ endif
 ifeq ($(WEB_UI),true)
 HIPHAP_FILES_UI  = WebHostUI.cpp \
                    AbstractWebWidget.cpp \
-                   ScriptValue.cpp \
+                   JsValue.cpp \
                    Platform.cpp
 ifeq ($(LINUX),true)
 HIPHAP_FILES_UI += linux/ExternalGtkWebWidget.cpp \

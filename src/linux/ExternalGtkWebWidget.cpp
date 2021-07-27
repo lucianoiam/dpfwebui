@@ -243,7 +243,7 @@ void ExternalGtkWebWidget::ipcReadCallback(const tlv_t& packet)
 void ExternalGtkWebWidget::handleHelperScriptMessage(const char *payload, int payloadSize)
 {
     // Should validate payload is never read past payloadSize 
-    ScriptValueVector args;
+    JsValueVector args;
     int offset = 0;
 
     while (offset < payloadSize) {
@@ -253,27 +253,27 @@ void ExternalGtkWebWidget::handleHelperScriptMessage(const char *payload, int pa
         switch (*type) {
             case ARG_TYPE_FALSE:
                 offset += 1;
-                args.push_back(ScriptValue(false));
+                args.push_back(JsValue(false));
                 break;
 
             case ARG_TYPE_TRUE:
                 offset += 1;
-                args.push_back(ScriptValue(true));
+                args.push_back(JsValue(true));
                 break;
 
             case ARG_TYPE_DOUBLE:
                 offset += 1 + sizeof(double);
-                args.push_back(ScriptValue(*reinterpret_cast<const double *>(value)));
+                args.push_back(JsValue(*reinterpret_cast<const double *>(value)));
                 break;
 
             case ARG_TYPE_STRING:
                 offset += 1 /*type*/ + strlen(value) + 1 /*\0*/;
-                args.push_back(ScriptValue(String(value)));
+                args.push_back(JsValue(String(value)));
                 break;
 
             default:
                 offset += 1;
-                args.push_back(ScriptValue()); // null
+                args.push_back(JsValue()); // null
                 break;
         }
     }

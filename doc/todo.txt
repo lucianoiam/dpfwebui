@@ -2,8 +2,7 @@ GENERAL
 -------
 
 - Wasm: decouple engine from Plugin. Allow to instantiate both separately so
-  number of pins, parameters and states can be defined from AssemblyScript. Use
-  existing ScriptValue class for exchanging values between host and engine.
+  number of pins, parameters and states can be defined from AssemblyScript.
 - Wasm: states, programs and MIDI support
 - Wasm: profile plugin for memory leaks
 - Merge examples

@@ -119,12 +119,12 @@ class DISTRHO_UI {
         return this._callAndExpectReply('isStandalone');
     }
 
-    // void WebHostUI::webPostMessage(const ScriptValueVector& args)
+    // void WebHostUI::webPostMessage(const JsValueVector& args)
     postMessage(...args) {
         window.webviewHost.postMessage(args);
     }
 
-    // void WebHostUI::webMessageReceived(const ScriptValueVector& args)
+    // void WebHostUI::webMessageReceived(const JsValueVector& args)
     messageReceived(args) {
         // default empty implementation
     }

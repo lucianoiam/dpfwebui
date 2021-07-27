@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SCRIPTVALUE_HPP
-#define SCRIPTVALUE_HPP
+#ifndef JSVALUE_HPP
+#define JSVALUE_HPP
 
 #include <ostream>
 
@@ -25,7 +25,7 @@
 
 START_NAMESPACE_DISTRHO
 
-class ScriptValue {
+class JsValue {
 public:
     enum Type {
         TNull,
@@ -34,15 +34,15 @@ public:
         TString
     };
 
-    ScriptValue()         : fT(TNull),   fB(false), fD(0)  {};
-    ScriptValue(bool b)   : fT(TBool),   fB(b),     fD(0)  {};
-    ScriptValue(double d) : fT(TDouble), fB(false), fD(d)  {};
-    ScriptValue(String s) : fT(TString), fB(false), fD(0), fS(s) {};
+    JsValue()         : fT(TNull),   fB(false), fD(0)  {};
+    JsValue(bool b)   : fT(TBool),   fB(b),     fD(0)  {};
+    JsValue(double d) : fT(TDouble), fB(false), fD(d)  {};
+    JsValue(String s) : fT(TString), fB(false), fD(0), fS(s) {};
 
     // Convenience constructors
-    ScriptValue(uint32_t i)    : fT(TDouble), fB(false), fD(static_cast<double>(i)) {};
-    ScriptValue(float f)       : fT(TDouble), fB(false), fD(static_cast<double>(f)) {};
-    ScriptValue(const char *s) : fT(TString), fB(false), fD(0), fS(String(s)) {};
+    JsValue(uint32_t i)    : fT(TDouble), fB(false), fD(static_cast<double>(i)) {};
+    JsValue(float f)       : fT(TDouble), fB(false), fD(static_cast<double>(f)) {};
+    JsValue(const char *s) : fT(TString), fB(false), fD(0), fS(String(s)) {};
 
     bool   isNull()    const { return fT == TNull; }
     Type   getType()   const { return fT; }
@@ -64,6 +64,6 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-std::ostream& operator<<(std::ostream &os, const ScriptValue &val);
+std::ostream& operator<<(std::ostream &os, const JsValue &val);
 
-#endif // SCRIPTVALUE_HPP
+#endif // JSVALUE_HPP

@@ -125,7 +125,7 @@ uint WebHostUI::getInitHeight() const
     return fInitHeight;
 }
 
-void WebHostUI::webPostMessage(const ScriptValueVector& args) {
+void WebHostUI::webPostMessage(const JsValueVector& args) {
     if (fFlushedInitMsgQueue) {
         fWebWidget.postMessage(args);
     } else {
@@ -162,7 +162,7 @@ void WebHostUI::handleWebWidgetContentLoadFinished()
 #define kArg0 2
 #define kArg1 3
 
-void WebHostUI::handleWebWidgetScriptMessageReceived(const ScriptValueVector& args)
+void WebHostUI::handleWebWidgetScriptMessageReceived(const JsValueVector& args)
 {
     if (args[0].getString() != "UI") {
         webMessageReceived(args); // passthrough

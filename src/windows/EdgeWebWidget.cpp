@@ -299,7 +299,7 @@ HRESULT EdgeWebWidget::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
     cJSON* jArgs = cJSON_Parse(TO_LPCSTR(jsonStr));
     CoTaskMemFree(jsonStr);
 
-    ScriptValueVector args;
+    JsValueVector args;
     
     if (cJSON_IsArray(jArgs)) {
         int numArgs = cJSON_GetArraySize(jArgs);
@@ -309,15 +309,15 @@ HRESULT EdgeWebWidget::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                 cJSON* jArg = cJSON_GetArrayItem(jArgs, i);
 
                 if (cJSON_IsFalse(jArg)) {
-                    args.push_back(ScriptValue(false));
+                    args.push_back(JsValue(false));
                 } else if (cJSON_IsTrue(jArg)) {
-                    args.push_back(ScriptValue(true));
+                    args.push_back(JsValue(true));
                 } else if (cJSON_IsNumber(jArg)) {
-                    args.push_back(ScriptValue(cJSON_GetNumberValue(jArg)));
+                    args.push_back(JsValue(cJSON_GetNumberValue(jArg)));
                 } else if (cJSON_IsString(jArg)) {
-                    args.push_back(ScriptValue(String(cJSON_GetStringValue(jArg))));
+                    args.push_back(JsValue(String(cJSON_GetStringValue(jArg))));
                 } else {
-                    args.push_back(ScriptValue()); // null
+                    args.push_back(JsValue()); // null
                 }
             }
         }

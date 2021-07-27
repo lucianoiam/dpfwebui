@@ -31,7 +31,7 @@ public:
 
 protected:
     void webContentReady() override;
-    void webMessageReceived(const ScriptValueVector& args) override;
+    void webMessageReceived(const JsValueVector& args) override;
 
 };
 
