@@ -25,6 +25,7 @@
 
 #define WASM_API_EXTERN // link to static lib on win32
 #include "wasm.h"
+#define own
 #include "wasmer.h"
 
 #include "extra/String.hpp"
@@ -32,18 +33,26 @@
 START_NAMESPACE_DISTRHO
 
 struct HostFunctionDescriptor;
+struct HostFunctionContext;
+class  WasmEngine;
 
-typedef std::vector<wasm_val_t> WasmValueVector;
 typedef std::vector<enum wasm_valkind_enum> WasmValueKindVector;
+typedef std::vector<wasm_val_t> WasmValueVector;
 typedef std::function<WasmValueVector(WasmValueVector&)> WasmFunction;
-typedef std::unordered_map<std::string, HostFunctionDescriptor> HostImportMap;
-typedef std::unordered_map<std::string, wasm_extern_t*> ExternMap;
+typedef std::vector<std::unique_ptr<HostFunctionContext>> HostFunctionContextVector;
+typedef std::unordered_map<std::string, HostFunctionDescriptor> HostImportsMap;
+typedef std::unordered_map<std::string, wasm_extern_t*> ExternsMap;
 
 struct HostFunctionDescriptor
 {
-    WasmValueKindVector arguments;
+    WasmValueKindVector params;
     WasmValueKindVector result;
     WasmFunction        function;
+};
+
+struct HostFunctionContext
+{
+    WasmFunction function;
 };
 
 class WasmEngine
@@ -54,19 +63,26 @@ public:
 
     bool isStarted() { return fStarted; }
 
-    void start(String& modulePath, HostImportMap& hostImports);
+    void start(String& modulePath, HostImportsMap& hostImports);
     void stop();
 
     wasm_val_t getGlobal(String& name);
     void       setGlobal(String& name, wasm_val_t& value);
 
-    WasmValueVector callFunction(String& name, WasmValueVector& args);
-
-    void throwWasmerLastError();
+    WasmValueVector callModuleFunction(String& name, WasmValueVector& params);
 
     const char* readWasmString(int32_t wasmPtr);
 
+    static void throwWasmerLastError();
+
 private:
+    static void createWasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valtype_vec_t* types);
+
+    static own wasm_trap_t* invokeHostFunction(void *env, const wasm_val_vec_t* params, wasm_val_vec_t* results);
+#ifndef HIPHAP_ENABLE_WASI
+    static own wasm_trap_t* assemblyScriptAbort(void *env, const wasm_val_vec_t* params, wasm_val_vec_t* results);
+#endif
+
     bool               fStarted;
     wasm_engine_t*     fEngine;
     wasm_store_t*      fStore;
@@ -77,7 +93,8 @@ private:
     wasi_env_t*        fWasiEnv;
 #endif
 
-    mutable ExternMap  fExportsMap;
+    HostFunctionContextVector fHostFunctionContext;
+    mutable ExternsMap        fExportsMap;
 
 };
 
