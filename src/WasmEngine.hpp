@@ -34,15 +34,15 @@ START_NAMESPACE_DISTRHO
 struct HostFunctionDescriptor;
 
 typedef std::vector<wasm_val_t> WasmValueVector;
-typedef std::vector<wasm_valtype_t> WasmValueTypeVector;
+typedef std::vector<enum wasm_valkind_enum> WasmValueKindVector;
 typedef std::function<WasmValueVector(WasmValueVector&)> WasmFunction;
 typedef std::unordered_map<std::string, HostFunctionDescriptor> HostImportMap;
 typedef std::unordered_map<std::string, wasm_extern_t*> ExternMap;
 
 struct HostFunctionDescriptor
 {
-    WasmValueTypeVector arguments;
-    WasmValueTypeVector result;
+    WasmValueKindVector arguments;
+    WasmValueKindVector result;
     WasmFunction        function;
 };
 
