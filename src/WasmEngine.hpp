@@ -19,19 +19,65 @@
 #ifndef WASMENGINE_HPP
 #define WASMENGINE_HPP
 
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 #define WASM_API_EXTERN // link to static lib on win32
 #include "wasm.h"
 #include "wasmer.h"
 
-#include "src/DistrhoDefines.h"
+#include "extra/String.hpp"
 
 START_NAMESPACE_DISTRHO
 
+struct HostFunctionDescriptor;
+
+typedef std::vector<wasm_val_t> WasmValueVector;
+typedef std::vector<wasm_valtype_t> WasmValueTypeVector;
+typedef std::function<WasmValueVector(WasmValueVector&)> WasmFunction;
+typedef std::unordered_map<std::string, HostFunctionDescriptor> HostImportMap;
+typedef std::unordered_map<std::string, wasm_extern_t*> ExternMap;
+
+struct HostFunctionDescriptor
+{
+    WasmValueTypeVector arguments;
+    WasmValueTypeVector result;
+    WasmFunction        function;
+};
+
 class WasmEngine
 {
+public:
+    WasmEngine();
+    ~WasmEngine();
+
+    bool isStarted() { return fStarted; }
+
+    void start(String& modulePath, HostImportMap& hostImports);
+    void stop();
+
+    wasm_val_t getGlobal(String& name);
+    void       setGlobal(String& name, wasm_val_t& value);
+
+    WasmValueVector callFunction(String& name, WasmValueVector& args);
+
+    void throwWasmerLastError();
+
+    const char* readWasmString(int32_t wasmPtr);
+
+private:
+    bool               fStarted;
+    wasm_engine_t*     fEngine;
+    wasm_store_t*      fStore;
+    wasm_instance_t*   fInstance;
+    wasm_module_t*     fModule;
+    wasm_extern_vec_t  fExports;
+#ifdef HIPHAP_ENABLE_WASI
+    wasi_env_t*        fWasiEnv;
+#endif
+
+    mutable ExternMap  fExportsMap;
 
 };
 
