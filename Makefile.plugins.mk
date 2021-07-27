@@ -62,6 +62,7 @@ NPM_ENV = true
 
 ifeq ($(AS_DSP),true)
 HIPHAP_FILES_DSP  = WasmHostPlugin.cpp \
+                    WasmEngine.cpp \
                     Platform.cpp
 ifeq ($(LINUX),true)
 HIPHAP_FILES_DSP += linux/PlatformLinux.cpp
