@@ -36,8 +36,9 @@ struct HostFunctionDescriptor;
 struct HostFunctionContext;
 class  WasmEngine;
 
+typedef wasm_val_t WasmValue;
 typedef std::vector<enum wasm_valkind_enum> WasmValueKindVector;
-typedef std::vector<wasm_val_t> WasmValueVector;
+typedef std::vector<WasmValue> WasmValueVector;
 typedef std::function<WasmValueVector(WasmValueVector&)> WasmFunction;
 typedef std::vector<std::unique_ptr<HostFunctionContext>> HostFunctionContextVector;
 typedef std::unordered_map<std::string, HostFunctionDescriptor> HostImportsMap;
@@ -66,17 +67,19 @@ public:
     void start(String& modulePath, HostImportsMap& hostImports);
     void stop();
 
-    wasm_val_t getGlobal(String& name);
-    void       setGlobal(String& name, wasm_val_t& value);
+    void* getMemory(WasmValue& wasmBasePtr);
+
+    WasmValue getGlobal(String& name);
+    void      setGlobal(String& name, WasmValue& value);
 
     WasmValueVector callModuleFunction(String& name, WasmValueVector& params);
 
-    const char* readWasmString(int32_t wasmPtr);
+    const char* convertWasmString(WasmValue& wasmPtr);
 
     static void throwWasmerLastError();
 
 private:
-    static void createWasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valtype_vec_t* types);
+    static void wasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valtype_vec_t* types);
 
     static own wasm_trap_t* invokeHostFunction(void *env, const wasm_val_vec_t* params, wasm_val_vec_t* results);
 #ifndef HIPHAP_ENABLE_WASI

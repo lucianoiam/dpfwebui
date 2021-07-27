@@ -22,16 +22,7 @@
 
 #include "macro.h"
 
-#define WASM_MEMORY() wasm_memory_data(wasm_extern_as_memory(fExportsMap["memory"]))
-#define WASM_MEMORY_CSTR(wptr) static_cast<char *>(&WASM_MEMORY()[wptr.of.i32]) 
-#define WASM_FUNC_CALL(name,params,res) wasm_func_call(wasm_extern_as_func(fExportsMap[name]), params, res)
-//#define WASM_GLOBAL_GET(name,pval) wasm_global_get(wasm_extern_as_global(fExportsMap[name]), pval)
-//#define WASM_GLOBAL_SET(name,pval) wasm_global_set(wasm_extern_as_global(fExportsMap[name]), pval)
-#define WASM_DEFINE_VAL_VEC_1(var,arg0) wasm_val_t var[1] = { arg0 }; \
-                                        wasm_val_vec_t var##_val_vec = WASM_ARRAY_VEC(var);
 USE_NAMESPACE_DISTRHO
-
-static wasm_val_vec_t empty_val_vec = WASM_EMPTY_VEC;
 
 #ifndef HIPHAP_ENABLE_WASI
 static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
@@ -64,7 +55,7 @@ void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
     FILE* file = fopen(modulePath, "rb");
 
     if (file == 0) {
-        throwWasmerLastError();
+        throw new std::runtime_error("Error opening Wasm module file");
     }
 
     fseek(file, 0L, SEEK_END);
@@ -77,7 +68,7 @@ void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
     if (fread(fileBytes.data, fileSize, 1, file) != 1) {
         wasm_byte_vec_delete(&fileBytes);
         fclose(file);
-        throwWasmerLastError();
+        throw new std::runtime_error("Error reading Wasm module file");
     }
 
     fclose(file);
@@ -203,9 +194,9 @@ void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
         const WasmFunction& function = it->second.function;
 
         wasm_valtype_vec_t paramsType;
-        createWasmValueTypeVector(paramsKind, &paramsType);
+        wasmValueTypeVector(paramsKind, &paramsType);
         wasm_valtype_vec_t resultType;
-        createWasmValueTypeVector(resultKind, &resultType);
+        wasmValueTypeVector(resultKind, &resultType);
 
         funcType = wasm_functype_new(&paramsType, &resultType);
         std::unique_ptr<HostFunctionContext> ctx;
@@ -232,6 +223,7 @@ void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
         throwWasmerLastError();
     }
 
+    wasm_val_vec_t empty_val_vec = WASM_EMPTY_VEC;
     wasm_func_call(wasiStart, &empty_val_vec, &empty_val_vec);
     wasm_func_delete(wasiStart);
 #endif
@@ -291,19 +283,21 @@ void WasmEngine::stop()
     }
 }
 
-wasm_val_t WasmEngine::getGlobal(String& name)
+void* WasmEngine::getMemory(WasmValue& wasmBasePtr)
 {
-    // TODO
-    (void)name;
-    wasm_val_t value;
+    return wasm_memory_data(wasm_extern_as_memory(fExportsMap["memory"])) + wasmBasePtr.of.i32;
+}
+
+WasmValue WasmEngine::getGlobal(String& name)
+{
+    WasmValue value;
+    wasm_global_get(wasm_extern_as_global(fExportsMap[name.buffer()]), &value);
     return value;
 }
 
-void WasmEngine::setGlobal(String& name, wasm_val_t& value)
+void WasmEngine::setGlobal(String& name, WasmValue& value)
 {
-    // TODO
-    (void)name;
-    (void)value;
+    wasm_global_set(wasm_extern_as_global(fExportsMap[name.buffer()]), &value);
 }
 
 WasmValueVector WasmEngine::callModuleFunction(String& name, WasmValueVector& params)
@@ -315,20 +309,23 @@ WasmValueVector WasmEngine::callModuleFunction(String& name, WasmValueVector& pa
     return res;
 }
 
-const char* WasmEngine::readWasmString(int32_t wasmPtr)
+const char* WasmEngine::convertWasmString(WasmValue& wasmPtr)
 {
-    if (wasmPtr == 0) {
+    if (wasmPtr.of.i32 == 0) {
         return "(null)";
     }
 
-    WASM_DEFINE_VAL_VEC_1(params, WASM_I32_VAL(static_cast<int32_t>(wasmPtr)));
-    WASM_DEFINE_VAL_VEC_1(res, WASM_INIT_VAL);
+    wasm_val_t paramsArray[1] = { wasmPtr };
+    wasm_val_vec_t params = WASM_ARRAY_VEC(paramsArray);
+    wasm_val_t resultArray[1] = { WASM_INIT_VAL };
+    wasm_val_vec_t result = WASM_ARRAY_VEC(resultArray);
+    wasm_func_t* func = wasm_extern_as_func(fExportsMap["_c_string"]);
 
-    if (WASM_FUNC_CALL("_c_string", &params_val_vec, &res_val_vec) != 0) {
+    if (wasm_func_call(func, &params, &result) != 0) {
         throwWasmerLastError();
     }
 
-    return WASM_MEMORY_CSTR(res[0]);
+    return static_cast<const char *>(getMemory(resultArray[0]));
 }
 
 void WasmEngine::throwWasmerLastError()
@@ -339,13 +336,13 @@ void WasmEngine::throwWasmerLastError()
         throw new std::runtime_error("Wasmer unknown error");
     }
 
-    char s[len];
-    wasmer_last_error_message(s, len);
+    char msg[len];
+    wasmer_last_error_message(msg, len);
 
-    throw new std::runtime_error(std::string("Wasmer error: ") + s);
+    throw new std::runtime_error(std::string("Wasmer error - ") + msg);
 }
 
-void WasmEngine::createWasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valtype_vec_t *types)
+void WasmEngine::wasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valtype_vec_t *types)
 {
     int i = 0;
     int size = kinds.size();
@@ -378,8 +375,8 @@ own wasm_trap_t* WasmEngine::assemblyScriptAbort(void *env, const wasm_val_vec_t
 
     WasmEngine* p = static_cast<WasmEngine *>(env);
 
-    const char *msg = p->readWasmString(params->data[0].of.i32);
-    const char *filename = p->readWasmString(params->data[1].of.i32);
+    const char *msg = p->convertWasmString(params->data[0]);
+    const char *filename = p->convertWasmString(params->data[1]);
     int32_t lineNumber = params->data[2].of.i32;
     int32_t columnNumber = params->data[3].of.i32;
 
@@ -394,7 +391,7 @@ own wasm_trap_t* WasmEngine::assemblyScriptAbort(void *env, const wasm_val_vec_t
 
 // Convenience function, Wasmer provides up to wasm_functype_new_3_0()
 static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
-                                                    own wasm_valtype_t* p3, own wasm_valtype_t* p4)
+                                                  own wasm_valtype_t* p3, own wasm_valtype_t* p4)
 {
     wasm_valtype_t* ps[4] = {p1, p2, p3, p4};
     wasm_valtype_vec_t params, results;
