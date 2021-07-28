@@ -132,7 +132,10 @@ export let _input_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
 export let _output_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
 
 // TypedArray exports needed by the JS loader
-
+// FIXME: these do not belong here, a custom index.ts should be created for
+// projects that need additional low-level interfacing with the Wasm module.
+// A possible solution is importing framework's index.ts and re-exporting all
+// its imports then adding custom definitions.
 export let _input_block_float32 = Float32Array.wrap(_input_block)
 export let _output_block_float32 = Float32Array.wrap(_output_block)
 
