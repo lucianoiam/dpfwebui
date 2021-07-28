@@ -37,7 +37,7 @@ struct WasmFunctionDescriptor;
 typedef wasm_val_t WasmValue;
 typedef std::vector<WasmValue> WasmValueVector;
 typedef std::vector<enum wasm_valkind_enum> WasmValueKindVector;
-typedef std::function<WasmValueVector(WasmValueVector&)> WasmFunction;
+typedef std::function<WasmValueVector(const WasmValueVector&)> WasmFunction;
 typedef std::vector<WasmFunction> WasmFunctionVector;
 typedef std::unordered_map<std::string, WasmFunctionDescriptor> WasmFunctionMap;
 typedef std::unordered_map<std::string, wasm_extern_t*> WasmExternMap;
@@ -60,14 +60,14 @@ public:
     void start(String& modulePath, WasmFunctionMap& hostFunctions);
     void stop();
 
-    void* getMemory(WasmValue& wasmBasePtr);
+    void* getMemory(const WasmValue& wasmBasePtr);
 
     WasmValue getGlobal(String& name);
-    void      setGlobal(String& name, WasmValue& value);
+    void      setGlobal(String& name, const WasmValue& value);
 
-    WasmValueVector callModuleFunction(String& name, WasmValueVector& params);
+    WasmValueVector callModuleFunction(String& name, const WasmValueVector& params);
 
-    String fromWasmString(WasmValue& wasmPtr);
+    String fromWasmString(const WasmValue& wasmPtr);
 
 private:
     static void throwWasmerLastError();
@@ -76,7 +76,7 @@ private:
     static own wasm_trap_t* invokeHostFunction(void *env, const wasm_val_vec_t* params, wasm_val_vec_t* results);
 
 #ifndef HIPHAP_ENABLE_WASI
-    WasmValueVector assemblyScriptAbort(WasmValueVector& params);
+    WasmValueVector assemblyScriptAbort(const WasmValueVector& params);
 #endif
 
     bool               fStarted;

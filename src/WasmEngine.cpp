@@ -171,6 +171,7 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
     // Insert host functions into imports vector
 
 #ifndef HIPHAP_ENABLE_WASI
+    // Required by AssemblyScript when running in non-WASI mode
     hostFunctions["abort"] = { {WASM_I32, WASM_I32, WASM_I32, WASM_I32}, {}, 
         std::bind(&WasmEngine::assemblyScriptAbort, this, std::placeholders::_1) };
 #endif
@@ -275,7 +276,7 @@ void WasmEngine::stop()
     fStarted = false;
 }
 
-void* WasmEngine::getMemory(WasmValue& wasmBasePtr)
+void* WasmEngine::getMemory(const WasmValue& wasmBasePtr)
 {
     return wasm_memory_data(wasm_extern_as_memory(fModuleExports["memory"])) + wasmBasePtr.of.i32;
 }
@@ -287,12 +288,12 @@ WasmValue WasmEngine::getGlobal(String& name)
     return value;
 }
 
-void WasmEngine::setGlobal(String& name, WasmValue& value)
+void WasmEngine::setGlobal(String& name, const WasmValue& value)
 {
     wasm_global_set(wasm_extern_as_global(fModuleExports[name.buffer()]), &value);
 }
 
-WasmValueVector WasmEngine::callModuleFunction(String& name, WasmValueVector& params)
+WasmValueVector WasmEngine::callModuleFunction(String& name, const WasmValueVector& params)
 {
     // TODO
     (void)name;
@@ -301,7 +302,7 @@ WasmValueVector WasmEngine::callModuleFunction(String& name, WasmValueVector& pa
     return res;
 }
 
-String WasmEngine::fromWasmString(WasmValue& wasmPtr)
+String WasmEngine::fromWasmString(const WasmValue& wasmPtr)
 {
     if (wasmPtr.of.i32 == 0) {
         return String("(null)");
@@ -367,7 +368,7 @@ own wasm_trap_t* WasmEngine::invokeHostFunction(void* env, const wasm_val_vec_t*
 
 #ifndef HIPHAP_ENABLE_WASI
 
-WasmValueVector WasmEngine::assemblyScriptAbort(WasmValueVector& params)
+WasmValueVector WasmEngine::assemblyScriptAbort(const WasmValueVector& params)
 {
     const char *msg = fromWasmString(params[0]);
     const char *filename = fromWasmString(params[1]);
