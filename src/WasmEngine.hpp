@@ -19,6 +19,7 @@
 #ifndef WASMENGINE_HPP
 #define WASMENGINE_HPP
 
+#include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
