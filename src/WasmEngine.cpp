@@ -22,6 +22,8 @@
 
 #include "macro.h"
 
+#define MODULE_NAME_MAX 128
+
 USE_NAMESPACE_DISTRHO
 
 WasmEngine::WasmEngine()
@@ -42,7 +44,7 @@ WasmEngine::~WasmEngine()
     stop();
 }
 
-void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
+void WasmEngine::start(String& modulePath, WasmFunctionMap hostFunctions)
 {
     // -------------------------------------------------------------------------
     // Load and initialize binary module file
@@ -90,7 +92,7 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
         throwWasmerLastError();
     }
 
-    char name[128];
+    char name[MODULE_NAME_MAX];
 
 #ifdef HIPHOP_ENABLE_WASI
     // -------------------------------------------------------------------------
@@ -177,20 +179,20 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
 #endif
 
     for (WasmFunctionMap::const_iterator it = hostFunctions.begin(); it != hostFunctions.end(); ++it) {
-        std::string name = it->first;
-        const WasmValueKindVector& paramsKind = it->second.params;
-        const WasmValueKindVector& resultKind = it->second.result;
-
-        wasm_valtype_vec_t paramsType;
-        toWasmValueTypeVector(paramsKind, &paramsType);
-        wasm_valtype_vec_t resultType;
-        toWasmValueTypeVector(resultKind, &resultType);
-
-        wasm_functype_t* funcType = wasm_functype_new(&paramsType, &resultType);
         fHostFunctions.push_back(it->second.function);
+
+        wasm_valtype_vec_t params;
+        toCValueTypeVector(it->second.params, &params);
+        wasm_valtype_vec_delete(&params);
+        
+        wasm_valtype_vec_t result;
+        toCValueTypeVector(it->second.result, &result);
+        wasm_valtype_vec_delete(&result);
+        
+        wasm_functype_t* funcType = wasm_functype_new(&params, &result);
         wasm_func_t* func = wasm_func_new_with_env(fStore, funcType, WasmEngine::invokeHostFunction,
                                                     &fHostFunctions.back(), 0);
-        imports.data[importIndex[name]] = wasm_func_as_extern(func);
+        imports.data[importIndex[it->first]] = wasm_func_as_extern(func);
     }
 
     // -------------------------------------------------------------------------
@@ -278,28 +280,20 @@ void WasmEngine::stop()
 
 void* WasmEngine::getMemory(const WasmValue& wasmBasePtr)
 {
-    return wasm_memory_data(wasm_extern_as_memory(fModuleExports["memory"])) + wasmBasePtr.of.i32;
+    byte_t* ptr = wasm_memory_data(wasm_extern_as_memory(fModuleExports["memory"]));
+    return ptr + wasmBasePtr.of.i32;
 }
 
-WasmValue WasmEngine::getGlobal(String& name)
+WasmValue WasmEngine::getGlobal(const char* name)
 {
     WasmValue value;
-    wasm_global_get(wasm_extern_as_global(fModuleExports[name.buffer()]), &value);
+    wasm_global_get(wasm_extern_as_global(fModuleExports[name]), &value);
     return value;
 }
 
-void WasmEngine::setGlobal(String& name, const WasmValue& value)
+void WasmEngine::setGlobal(const char* name, const WasmValue& value)
 {
-    wasm_global_set(wasm_extern_as_global(fModuleExports[name.buffer()]), &value);
-}
-
-WasmValueVector WasmEngine::callModuleFunction(String& name, const WasmValueVector& params)
-{
-    // TODO
-    (void)name;
-    (void)params;
-    WasmValueVector res;
-    return res;
+    wasm_global_set(wasm_extern_as_global(fModuleExports[name]), &value);
 }
 
 String WasmEngine::fromWasmString(const WasmValue& wasmPtr)
@@ -308,17 +302,59 @@ String WasmEngine::fromWasmString(const WasmValue& wasmPtr)
         return String("(null)");
     }
 
-    wasm_val_t paramsArray[1] = { wasmPtr };
-    wasm_val_vec_t params = WASM_ARRAY_VEC(paramsArray);
-    wasm_val_t resultArray[1] = { WASM_INIT_VAL };
-    wasm_val_vec_t result = WASM_ARRAY_VEC(resultArray);
-    wasm_func_t* func = wasm_extern_as_func(fModuleExports["_c_string"]);
+    if (fModuleExports.find("_c_string") == fModuleExports.end()) {
+        throw new std::runtime_error("Wasm module does not export function _c_string");
+    }
 
-    if (wasm_func_call(func, &params, &result) != 0) {
+    WasmValueVector result = callModuleFunction("_c_string", { wasmPtr });
+
+    return String(static_cast<const char *>(getMemory(result[0])));
+}
+
+WasmValueVector WasmEngine::callModuleFunction(const char* name, WasmValueVector params)
+{
+    wasm_func_t* func = wasm_extern_as_func(fModuleExports[name]);
+
+    wasm_val_vec_t paramsVec;
+    paramsVec.size = params.size();
+    paramsVec.data = params.data();
+
+    wasm_val_t resultArray[1] = { WASM_INIT_VAL };
+    wasm_val_vec_t resultVec = WASM_ARRAY_VEC(resultArray);
+
+    wasm_trap_t* trap = wasm_func_call(func, &paramsVec, &resultVec);
+
+    if (trap != 0) {
         throwWasmerLastError();
     }
 
-    return String(static_cast<const char *>(getMemory(resultArray[0])));
+    return WasmValueVector(resultVec.data, resultVec.data + resultVec.size);
+}
+
+wasm_trap_t* WasmEngine::invokeHostFunction(void* env, const wasm_val_vec_t* paramsVec, wasm_val_vec_t* resultVec)
+{
+    WasmFunction* func = static_cast<WasmFunction *>(env);
+    WasmValueVector params (paramsVec->data, paramsVec->data + paramsVec->size);
+    WasmValueVector result = (*func)(params);
+
+    for (size_t i = 0; i < resultVec->size; i++) {
+        resultVec->data[i] = result[i];
+    }
+
+    return 0;
+}
+
+void WasmEngine::toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types)
+{
+    int i = 0;
+    size_t size = kinds.size();
+    wasm_valtype_t* typesArray[size];
+
+    for (WasmValueKindVector::const_iterator it = kinds.cbegin(); it != kinds.cend(); ++it) {
+        typesArray[i++] = wasm_valtype_new(*it);
+    }
+
+    wasm_valtype_vec_new(types, size, typesArray);
 }
 
 void WasmEngine::throwWasmerLastError()
@@ -335,40 +371,9 @@ void WasmEngine::throwWasmerLastError()
     throw new std::runtime_error(std::string("Wasmer error - ") + msg);
 }
 
-void WasmEngine::toWasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valtype_vec_t *types)
-{
-    int i = 0;
-    int size = kinds.size();
-    wasm_valtype_t* typesArray[size];
-
-    for (WasmValueKindVector::const_iterator it = kinds.cbegin(); it != kinds.cend(); ++it) {
-        typesArray[i++] = wasm_valtype_new(*it);
-    }
-
-    wasm_valtype_vec_new(types, size, typesArray);
-}
-
-wasm_trap_t* WasmEngine::invokeHostFunction(void* env, const wasm_val_vec_t* params, wasm_val_vec_t* results)
-{
-    WasmFunction* f = static_cast<WasmFunction *>(env);
-    
-    // TODO
-
-    // Convert wasm_val_vec_t to WasmValueVector
-    // Call
-    // Throw if needed
-    // Convert WasmValueVector to wasm_val_vec_t
-
-    (void)f;
-    (void)params;
-    (void)results;
-
-    return 0;
-}
-
 #ifndef HIPHOP_ENABLE_WASI
 
-WasmValueVector WasmEngine::assemblyScriptAbort(const WasmValueVector& params)
+WasmValueVector WasmEngine::assemblyScriptAbort(WasmValueVector params)
 {
     const char *msg = fromWasmString(params[0]);
     const char *filename = fromWasmString(params[1]);

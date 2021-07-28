@@ -1,4 +1,4 @@
-import "wasi"
+import 'wasi'
 import DISTRHO from './distrho-plugin'
 
 @inline const PI2: f32 = Mathf.PI * 2
@@ -56,14 +56,6 @@ export default class AsTestPlugin extends DISTRHO.Plugin implements DISTRHO.Plug
         }
     }
 
-    activate(): void {
-        // Empty implementation
-    }
-
-    deactivate(): void {
-        // Empty implementation
-    }
-
     run(inputs: Float32Array[], outputs: Float32Array[]): void {
         const outputl = outputs[0]
         const outputr = outputs[1]
@@ -86,6 +78,14 @@ export default class AsTestPlugin extends DISTRHO.Plugin implements DISTRHO.Plug
 
     @inline freqToRadians(frequency: f32): f32 {
         return frequency * PI2 * (1.0 / this.getSampleRate())
+    }
+
+    activate(): void {
+        // Empty implementation
+    }
+
+    deactivate(): void {
+        // Empty implementation
     }
 
 }
