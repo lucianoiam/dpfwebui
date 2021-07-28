@@ -24,11 +24,6 @@
 
 USE_NAMESPACE_DISTRHO
 
-#ifndef HIPHAP_ENABLE_WASI
-static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
-                                                  own wasm_valtype_t* p3, own wasm_valtype_t* p4);
-#endif
-
 WasmEngine::WasmEngine()
     : fStarted(false)
     , fEngine(0)
@@ -39,7 +34,7 @@ WasmEngine::WasmEngine()
     , fWasiEnv(0)
 #endif
 {
-    memset(&fExports, 0, sizeof(fExports));
+    memset(&fExportsVec, 0, sizeof(fExportsVec));
 }
 
 WasmEngine::~WasmEngine()
@@ -47,8 +42,8 @@ WasmEngine::~WasmEngine()
     stop();
 }
 
-void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
-
+void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
+{
     // -------------------------------------------------------------------------
     // Load and initialize binary module file
 
@@ -111,9 +106,8 @@ void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
     }
 
     wasmer_named_extern_vec_t wasiImports;
-    bool res = wasi_get_unordered_imports(fStore, fModule, fWasiEnv, &wasiImports);
 
-    if (!res) {
+    if (!wasi_get_unordered_imports(fStore, fModule, fWasiEnv, &wasiImports)) {
         throwWasmerLastError();
     }
 
@@ -137,7 +131,7 @@ void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
     wasm_extern_vec_new_uninitialized(&imports, importTypes.size);
 
     std::unordered_map<std::string, int> importIndex;
-    bool needsWasi = false;
+    bool moduleNeedsWasi = false;
 
     for (size_t i = 0; i < importTypes.size; i++) {
         const wasm_name_t *wn = wasm_importtype_name(importTypes.data[i]);
@@ -151,12 +145,12 @@ void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
             imports.data[i] = const_cast<wasm_extern_t *>(wasmer_named_extern_unwrap(ne));
         }
 #endif
-        if (!needsWasi) {
+        if (!moduleNeedsWasi) {
             wn = wasm_importtype_module(importTypes.data[i]);
             memcpy(name, wn->data, wn->size);
             name[wn->size] = 0;
             if (strstr(name, "wasi_") == name) { // eg, wasi_snapshot_preview1
-                needsWasi = true;
+                moduleNeedsWasi = true;
             }
         }
     }
@@ -164,11 +158,11 @@ void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
     wasm_importtype_vec_delete(&importTypes);
 
 #ifdef HIPHAP_ENABLE_WASI
-    if (!needsWasi) {
+    if (!moduleNeedsWasi) {
         throw new std::runtime_error("WASI is enabled but module is not WASI compliant");
     }
 #else
-    if (needsWasi) {
+    if (moduleNeedsWasi) {
         throw new std::runtime_error("WASI is not enabled but module requires WASI");
     }
 #endif
@@ -176,33 +170,25 @@ void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
     // -------------------------------------------------------------------------
     // Insert host functions into imports vector
 
-    wasm_functype_t* funcType;
-    wasm_func_t* func;
-
 #ifndef HIPHAP_ENABLE_WASI
-    funcType = wasm_functype_new_4_0(wasm_valtype_new_i32(), wasm_valtype_new_i32(),
-                                     wasm_valtype_new_i32(), wasm_valtype_new_i32());
-    func = wasm_func_new_with_env(fStore, funcType, assemblyScriptAbort, this, 0);
-    wasm_functype_delete(funcType);
-    imports.data[importIndex["abort"]] = wasm_func_as_extern(func);
+    hostFunctions["abort"] = { {WASM_I32, WASM_I32, WASM_I32, WASM_I32}, {}, 
+        std::bind(&WasmEngine::assemblyScriptAbort, this, std::placeholders::_1) };
 #endif
 
-    for (HostImportsMap::const_iterator it = hostImports.begin(); it != hostImports.end(); ++it) {
+    for (WasmFunctionMap::const_iterator it = hostFunctions.begin(); it != hostFunctions.end(); ++it) {
         std::string name = it->first;
         const WasmValueKindVector& paramsKind = it->second.params;
         const WasmValueKindVector& resultKind = it->second.result;
-        const WasmFunction& function = it->second.function;
 
         wasm_valtype_vec_t paramsType;
-        wasmValueTypeVector(paramsKind, &paramsType);
+        toWasmValueTypeVector(paramsKind, &paramsType);
         wasm_valtype_vec_t resultType;
-        wasmValueTypeVector(resultKind, &resultType);
+        toWasmValueTypeVector(resultKind, &resultType);
 
-        funcType = wasm_functype_new(&paramsType, &resultType);
-        std::unique_ptr<HostFunctionContext> ctx;
-        ctx->function = function;
-        fHostFunctionContext.push_back(std::move(ctx));
-        func = wasm_func_new_with_env(fStore, funcType, WasmEngine::invokeHostFunction, ctx.get(), 0);
+        wasm_functype_t* funcType = wasm_functype_new(&paramsType, &resultType);
+        fHostFunctions.push_back(it->second.function);
+        wasm_func_t* func = wasm_func_new_with_env(fStore, funcType, WasmEngine::invokeHostFunction,
+                                                    &fHostFunctions.back(), 0);
         imports.data[importIndex[name]] = wasm_func_as_extern(func);
     }
 
@@ -230,16 +216,16 @@ void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
     // -------------------------------------------------------------------------
     // Build a map of externs indexed by name
 
-    fExports.size = 0;
-    wasm_instance_exports(fInstance, &fExports);
+    fExportsVec.size = 0;
+    wasm_instance_exports(fInstance, &fExportsVec);
     wasm_exporttype_vec_t exportTypes;
     wasm_module_exports(fModule, &exportTypes);
 
-    for (size_t i = 0; i < fExports.size; i++) {
+    for (size_t i = 0; i < fExportsVec.size; i++) {
         const wasm_name_t *wn = wasm_exporttype_name(exportTypes.data[i]);
         memcpy(name, wn->data, wn->size);
         name[wn->size] = 0;
-        fExportsMap[name] = fExports.data[i];
+        fModuleExports[name] = fExportsVec.data[i];
     }
 
     wasm_exporttype_vec_delete(&exportTypes);
@@ -252,16 +238,17 @@ void WasmEngine::start(String& modulePath, HostImportsMap& hostImports) {
 
 void WasmEngine::stop()
 {
-    if (fExports.size != 0) {
-        wasm_extern_vec_delete(&fExports);
-        fExports.size = 0;
-    }
 #ifdef HIPHAP_ENABLE_WASI
     if (fWasiEnv != 0) {
         wasi_env_delete(fWasiEnv);
         fWasiEnv = 0;
     }
 #endif
+    if (fExportsVec.size != 0) {
+        wasm_extern_vec_delete(&fExportsVec);
+        fExportsVec.size = 0;
+    }
+
     if (fModule != 0) {
         wasm_module_delete(fModule);
         fModule = 0;
@@ -281,23 +268,28 @@ void WasmEngine::stop()
         wasm_engine_delete(fEngine);
         fEngine = 0;
     }
+
+    fHostFunctions.clear();
+    fModuleExports.clear();
+
+    fStarted = false;
 }
 
 void* WasmEngine::getMemory(WasmValue& wasmBasePtr)
 {
-    return wasm_memory_data(wasm_extern_as_memory(fExportsMap["memory"])) + wasmBasePtr.of.i32;
+    return wasm_memory_data(wasm_extern_as_memory(fModuleExports["memory"])) + wasmBasePtr.of.i32;
 }
 
 WasmValue WasmEngine::getGlobal(String& name)
 {
     WasmValue value;
-    wasm_global_get(wasm_extern_as_global(fExportsMap[name.buffer()]), &value);
+    wasm_global_get(wasm_extern_as_global(fModuleExports[name.buffer()]), &value);
     return value;
 }
 
 void WasmEngine::setGlobal(String& name, WasmValue& value)
 {
-    wasm_global_set(wasm_extern_as_global(fExportsMap[name.buffer()]), &value);
+    wasm_global_set(wasm_extern_as_global(fModuleExports[name.buffer()]), &value);
 }
 
 WasmValueVector WasmEngine::callModuleFunction(String& name, WasmValueVector& params)
@@ -309,23 +301,23 @@ WasmValueVector WasmEngine::callModuleFunction(String& name, WasmValueVector& pa
     return res;
 }
 
-const char* WasmEngine::convertWasmString(WasmValue& wasmPtr)
+String WasmEngine::fromWasmString(WasmValue& wasmPtr)
 {
     if (wasmPtr.of.i32 == 0) {
-        return "(null)";
+        return String("(null)");
     }
 
     wasm_val_t paramsArray[1] = { wasmPtr };
     wasm_val_vec_t params = WASM_ARRAY_VEC(paramsArray);
     wasm_val_t resultArray[1] = { WASM_INIT_VAL };
     wasm_val_vec_t result = WASM_ARRAY_VEC(resultArray);
-    wasm_func_t* func = wasm_extern_as_func(fExportsMap["_c_string"]);
+    wasm_func_t* func = wasm_extern_as_func(fModuleExports["_c_string"]);
 
     if (wasm_func_call(func, &params, &result) != 0) {
         throwWasmerLastError();
     }
 
-    return static_cast<const char *>(getMemory(resultArray[0]));
+    return String(static_cast<const char *>(getMemory(resultArray[0])));
 }
 
 void WasmEngine::throwWasmerLastError()
@@ -342,7 +334,7 @@ void WasmEngine::throwWasmerLastError()
     throw new std::runtime_error(std::string("Wasmer error - ") + msg);
 }
 
-void WasmEngine::wasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valtype_vec_t *types)
+void WasmEngine::toWasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valtype_vec_t *types)
 {
     int i = 0;
     int size = kinds.size();
@@ -357,10 +349,16 @@ void WasmEngine::wasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valt
 
 own wasm_trap_t* WasmEngine::invokeHostFunction(void* env, const wasm_val_vec_t* params, wasm_val_vec_t* results)
 {
-    HostFunctionContext* ctx = static_cast<HostFunctionContext *>(env);
+    WasmFunction* f = static_cast<WasmFunction *>(env);
     
     // TODO
-    (void)ctx;
+
+    // Convert wasm_val_vec_t to WasmValueVector
+    // Call
+    // Throw if needed
+    // Convert WasmValueVector to wasm_val_vec_t
+
+    (void)f;
     (void)params;
     (void)results;
 
@@ -369,16 +367,12 @@ own wasm_trap_t* WasmEngine::invokeHostFunction(void* env, const wasm_val_vec_t*
 
 #ifndef HIPHAP_ENABLE_WASI
 
-own wasm_trap_t* WasmEngine::assemblyScriptAbort(void *env, const wasm_val_vec_t* params, wasm_val_vec_t* results)
+WasmValueVector WasmEngine::assemblyScriptAbort(WasmValueVector& params)
 {
-    (void)results;
-
-    WasmEngine* p = static_cast<WasmEngine *>(env);
-
-    const char *msg = p->convertWasmString(params->data[0]);
-    const char *filename = p->convertWasmString(params->data[1]);
-    int32_t lineNumber = params->data[2].of.i32;
-    int32_t columnNumber = params->data[3].of.i32;
+    const char *msg = fromWasmString(params[0]);
+    const char *filename = fromWasmString(params[1]);
+    int32_t lineNumber = params[2].of.i32;
+    int32_t columnNumber = params[3].of.i32;
 
     std::stringstream ss;
     ss << "AssemblyScript abort() called - msg: " << msg << ", filename: " << filename
@@ -386,18 +380,7 @@ own wasm_trap_t* WasmEngine::assemblyScriptAbort(void *env, const wasm_val_vec_t
 
     HIPHAP_LOG_STDERR_COLOR(ss.str().c_str());
 
-    return 0;
-}
-
-// Convenience function, Wasmer provides up to wasm_functype_new_3_0()
-static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
-                                                  own wasm_valtype_t* p3, own wasm_valtype_t* p4)
-{
-    wasm_valtype_t* ps[4] = {p1, p2, p3, p4};
-    wasm_valtype_vec_t params, results;
-    wasm_valtype_vec_new(&params, 4, ps);
-    wasm_valtype_vec_new_empty(&results);
-    return wasm_functype_new(&params, &results);
+    return {};
 }
 
 #endif // HIPHAP_ENABLE_WASI

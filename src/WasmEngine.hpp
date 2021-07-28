@@ -32,28 +32,21 @@
 
 START_NAMESPACE_DISTRHO
 
-struct HostFunctionDescriptor;
-struct HostFunctionContext;
-class  WasmEngine;
+struct WasmFunctionDescriptor;
 
 typedef wasm_val_t WasmValue;
-typedef std::vector<enum wasm_valkind_enum> WasmValueKindVector;
 typedef std::vector<WasmValue> WasmValueVector;
+typedef std::vector<enum wasm_valkind_enum> WasmValueKindVector;
 typedef std::function<WasmValueVector(WasmValueVector&)> WasmFunction;
-typedef std::vector<std::unique_ptr<HostFunctionContext>> HostFunctionContextVector;
-typedef std::unordered_map<std::string, HostFunctionDescriptor> HostImportsMap;
-typedef std::unordered_map<std::string, wasm_extern_t*> ExternsMap;
+typedef std::vector<WasmFunction> WasmFunctionVector;
+typedef std::unordered_map<std::string, WasmFunctionDescriptor> WasmFunctionMap;
+typedef std::unordered_map<std::string, wasm_extern_t*> WasmExternMap;
 
-struct HostFunctionDescriptor
+struct WasmFunctionDescriptor
 {
     WasmValueKindVector params;
     WasmValueKindVector result;
     WasmFunction        function;
-};
-
-struct HostFunctionContext
-{
-    WasmFunction function;
 };
 
 class WasmEngine
@@ -64,7 +57,7 @@ public:
 
     bool isStarted() { return fStarted; }
 
-    void start(String& modulePath, HostImportsMap& hostImports);
+    void start(String& modulePath, WasmFunctionMap& hostFunctions);
     void stop();
 
     void* getMemory(WasmValue& wasmBasePtr);
@@ -74,16 +67,16 @@ public:
 
     WasmValueVector callModuleFunction(String& name, WasmValueVector& params);
 
-    const char* convertWasmString(WasmValue& wasmPtr);
-
-    static void throwWasmerLastError();
+    String fromWasmString(WasmValue& wasmPtr);
 
 private:
-    static void wasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valtype_vec_t* types);
+    static void throwWasmerLastError();
+    static void toWasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valtype_vec_t* types);
 
     static own wasm_trap_t* invokeHostFunction(void *env, const wasm_val_vec_t* params, wasm_val_vec_t* results);
+
 #ifndef HIPHAP_ENABLE_WASI
-    static own wasm_trap_t* assemblyScriptAbort(void *env, const wasm_val_vec_t* params, wasm_val_vec_t* results);
+    WasmValueVector assemblyScriptAbort(WasmValueVector& params);
 #endif
 
     bool               fStarted;
@@ -91,13 +84,12 @@ private:
     wasm_store_t*      fStore;
     wasm_instance_t*   fInstance;
     wasm_module_t*     fModule;
-    wasm_extern_vec_t  fExports;
+    wasm_extern_vec_t  fExportsVec;
 #ifdef HIPHAP_ENABLE_WASI
     wasi_env_t*        fWasiEnv;
 #endif
-
-    HostFunctionContextVector fHostFunctionContext;
-    mutable ExternsMap        fExportsMap;
+    WasmFunctionVector fHostFunctions;
+    WasmExternMap      fModuleExports;
 
 };
 
