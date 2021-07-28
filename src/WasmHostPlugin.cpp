@@ -46,7 +46,7 @@ static void log_wasmer_last_error();
 
 WASM_DECLARE_NATIVE_FUNC(get_sample_rate)
 
-#ifndef HIPHAP_ENABLE_WASI
+#ifndef HIPHOP_ENABLE_WASI
 WASM_DECLARE_NATIVE_FUNC(ascript_abort)
 
 static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
@@ -60,7 +60,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     , fWasmStore(0)
     , fWasmInstance(0)
     , fWasmModule(0)
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     , fWasiEnv(0)
 #endif
 {
@@ -120,7 +120,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     char name[128];
 
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     // -------------------------------------------------------------------------
     // Build a map of WASI imports
     // Call to wasi_get_imports() fails because of missing host imports, use
@@ -151,7 +151,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
         name[wn->size] = 0;
         wasiImportIndex[name] = i;
     }
-#endif // HIPHAP_ENABLE_WASI
+#endif // HIPHOP_ENABLE_WASI
 
     // -------------------------------------------------------------------------
     // Build module imports vector
@@ -170,7 +170,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
         name[wn->size] = 0;
         importIndex[name] = i;
 
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
         if (wasiImportIndex.find(name) != wasiImportIndex.end()) {
             wasmer_named_extern_t* ne = wasiImports.data[wasiImportIndex[name]];
             imports.data[i] = const_cast<wasm_extern_t *>(wasmer_named_extern_unwrap(ne));
@@ -188,14 +188,14 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     wasm_importtype_vec_delete(&importTypes);
 
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     if (!needsWasi) {
-        HIPHAP_LOG_STDERR_COLOR("WASI is enabled but module is non-WASI, add missing 'import \"wasi\"' directive.");
+        HIPHOP_LOG_STDERR_COLOR("WASI is enabled but module is non-WASI, add missing 'import \"wasi\"' directive.");
         return;
     }
 #else
     if (needsWasi) {
-        HIPHAP_LOG_STDERR_COLOR("WASI is not enabled but module requires WASI, remove 'import \"wasi\"' directive.");
+        HIPHOP_LOG_STDERR_COLOR("WASI is not enabled but module requires WASI, remove 'import \"wasi\"' directive.");
         return;
     }
 #endif
@@ -206,7 +206,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     wasm_functype_t *funcType;
     wasm_func_t *func;
 
-#ifndef HIPHAP_ENABLE_WASI
+#ifndef HIPHOP_ENABLE_WASI
     funcType = wasm_functype_new_4_0(wasm_valtype_new_i32(), wasm_valtype_new_i32(),
                                      wasm_valtype_new_i32(), wasm_valtype_new_i32());
     func = wasm_func_new_with_env(fWasmStore, funcType, ascript_abort, this, 0);
@@ -229,7 +229,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
         log_wasmer_last_error();
         return;
     }
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     wasm_func_t* wasiStart = wasi_get_start_function(fWasmInstance);
     
     if (wasiStart == 0) {
@@ -273,7 +273,7 @@ WasmHostPlugin::~WasmHostPlugin()
     if (fWasmExports.size != 0) {
         wasm_extern_vec_delete(&fWasmExports);
     }
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     if (fWasiEnv != 0) {
         wasi_env_delete(fWasiEnv);
     }
@@ -545,14 +545,14 @@ static void log_wasmer_last_error()
     int len = wasmer_last_error_length();
     
     if (len == 0) {
-        HIPHAP_LOG_STDERR_COLOR("Unknown error");
+        HIPHOP_LOG_STDERR_COLOR("Unknown error");
         return;
     }
 
     char s[len];
     wasmer_last_error_message(s, len);
     
-    HIPHAP_LOG_STDERR_COLOR(s);
+    HIPHOP_LOG_STDERR_COLOR(s);
 }
 
 static own wasm_trap_t* get_sample_rate(void* env,
@@ -569,7 +569,7 @@ static own wasm_trap_t* get_sample_rate(void* env,
     return 0;
 }
 
-#ifndef HIPHAP_ENABLE_WASI
+#ifndef HIPHOP_ENABLE_WASI
 
 // Convenience function, Wasmer provides up to wasm_functype_new_3_0()
 static own wasm_functype_t* wasm_functype_new_4_0(own wasm_valtype_t* p1, own wasm_valtype_t* p2,
@@ -598,9 +598,9 @@ static own wasm_trap_t* ascript_abort(void* env, const wasm_val_vec_t* args, was
     ss << "AssemblyScript abort() called - msg: " << msg << ", filename: " << filename
         << ", lineNumber: " << lineNumber << ", columnNumber: " << columnNumber;
 
-    HIPHAP_LOG_STDERR_COLOR(ss.str().c_str());
+    HIPHOP_LOG_STDERR_COLOR(ss.str().c_str());
 
     return 0;
 }
 
-#endif // HIPHAP_ENABLE_WASI
+#endif // HIPHOP_ENABLE_WASI

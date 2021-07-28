@@ -12,12 +12,12 @@ NAME = d_webgain
 # --------------------------------------------------------------
 # Project version, used for generating unique symbol names
 
-HIPHAP_PROJECT_VERSION = 1
+HIPHOP_PROJECT_VERSION = 1
 
 # --------------------------------------------------------------
 # Web UI files location
 
-HIPHAP_WEB_UI_PATH = ui
+HIPHOP_WEB_UI_PATH = ui
 
 # --------------------------------------------------------------
 # Files to build
@@ -61,6 +61,6 @@ endif
 
 TARGETS += vst
 
-all: $(TARGETS) $(HIPHAP_TARGET)
+all: $(TARGETS) $(HIPHOP_TARGET)
 
 # --------------------------------------------------------------

@@ -25,7 +25,6 @@
 
 #define WASM_API_EXTERN // link to static lib on win32
 #include "wasm.h"
-#define own
 #include "wasmer.h"
 
 #include "extra/String.hpp"
@@ -73,9 +72,9 @@ private:
     static void throwWasmerLastError();
     static void toWasmValueTypeVector(const WasmValueKindVector& kinds, wasm_valtype_vec_t* types);
 
-    static own wasm_trap_t* invokeHostFunction(void *env, const wasm_val_vec_t* params, wasm_val_vec_t* results);
+    static wasm_trap_t* invokeHostFunction(void *env, const wasm_val_vec_t* params, wasm_val_vec_t* results);
 
-#ifndef HIPHAP_ENABLE_WASI
+#ifndef HIPHOP_ENABLE_WASI
     WasmValueVector assemblyScriptAbort(const WasmValueVector& params);
 #endif
 
@@ -85,7 +84,7 @@ private:
     wasm_instance_t*   fInstance;
     wasm_module_t*     fModule;
     wasm_extern_vec_t  fExportsVec;
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     wasi_env_t*        fWasiEnv;
 #endif
     WasmFunctionVector fHostFunctions;

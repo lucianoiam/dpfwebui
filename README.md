@@ -1,11 +1,11 @@
-Hip-Hap / High Performance Hybrid Audio Plugins
+Hip-Hop / HIgh Performance Hybrid audiO Plugins
 -----------------------------------------------
 
 This project extends [DPF](http://github.com/DISTRHO/DPF) to provide the
 necessary scaffold for creating audio plugins with potentially complex user
 interfaces. Plugins implement a web view for running the UI, which interacts
 with the audio host through a small factory shipped JavaScript class. The DSP
-core remains isolated and implemented in C++ or AssemblyScript.
+core remains isolated and implemented in C++ or optionally AssemblyScript.
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
@@ -26,7 +26,7 @@ core remains isolated and implemented in C++ or AssemblyScript.
 __Support for AssemblyScript is still work in progress.__ [AssemblyScript](https://www.assemblyscript.org)
 is a language very similar to [TypeScript](https://www.typescriptlang.org)
 specifically created for targeting [WebAssembly](https://webassembly.org).
-Plugins written with Hip-Hap embed a WebAssembly JIT engine for running
+Plugins written with Hip-Hop embed a WebAssembly JIT engine for running
 precompiled AssemblyScript-based DSP code. This engine is completely independent
 from the web view.
 
@@ -71,7 +71,7 @@ class MyPluginUI extends DISTRHO_UI {
 
 **Usage of JS frameworks is up to the developer**
 
-More information [here](https://github.com/lucianoiam/hiphap/blob/master/doc/internals.md)
+More information [here](https://github.com/lucianoiam/hiphop/blob/master/doc/internals.md)
 
 ### About DISTRHO Plugin Framework (DPF)
 

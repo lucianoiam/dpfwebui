@@ -33,19 +33,19 @@
 
 #include "DistrhoUtils.hpp"
 
-#define HIPHAP_LOG_STDERR(msg)        d_stderr("%s : %s", __PRETTY_FUNCTION__, msg); fflush(stderr);
-#define HIPHAP_LOG_STDERR_INT(msg,n)  d_stderr("%s : %s - %x", __PRETTY_FUNCTION__, msg, n); fflush(stderr);
-#define HIPHAP_LOG_STDERR_ERRNO(msg)  d_stderr("%s : %s - %s", __PRETTY_FUNCTION__, msg, strerror(errno)); fflush(stderr);
-#define HIPHAP_LOG_STDERR_COLOR(msg)  d_stderr2("%s : %s", __PRETTY_FUNCTION__, msg); fflush(stderr);
+#define HIPHOP_LOG_STDERR(msg)        d_stderr("%s : %s", __PRETTY_FUNCTION__, msg); fflush(stderr);
+#define HIPHOP_LOG_STDERR_INT(msg,n)  d_stderr("%s : %s - %x", __PRETTY_FUNCTION__, msg, n); fflush(stderr);
+#define HIPHOP_LOG_STDERR_ERRNO(msg)  d_stderr("%s : %s - %s", __PRETTY_FUNCTION__, msg, strerror(errno)); fflush(stderr);
+#define HIPHOP_LOG_STDERR_COLOR(msg)  d_stderr2("%s : %s", __PRETTY_FUNCTION__, msg); fflush(stderr);
 
 #else
 
 #include <stdio.h>
 
-#define HIPHAP_LOG_STDERR(msg)        fprintf(stderr, "%s : %s\n", __PRETTY_FUNCTION__, msg);
-#define HIPHAP_LOG_STDERR_INT(msg,n)  fprintf(stderr, "%s : %s - %x\n", __PRETTY_FUNCTION__, msg, (unsigned int)n);
-#define HIPHAP_LOG_STDERR_ERRNO(msg)  fprintf(stderr, "%s : %s - %s\n", __PRETTY_FUNCTION__, msg, strerror(errno));
-#define HIPHAP_LOG_STDERR_COLOR(msg)  fprintf(stderr, "\x1b[31m%s : %s\x1b[0m\n", __PRETTY_FUNCTION__, msg);
+#define HIPHOP_LOG_STDERR(msg)        fprintf(stderr, "%s : %s\n", __PRETTY_FUNCTION__, msg);
+#define HIPHOP_LOG_STDERR_INT(msg,n)  fprintf(stderr, "%s : %s - %x\n", __PRETTY_FUNCTION__, msg, (unsigned int)n);
+#define HIPHOP_LOG_STDERR_ERRNO(msg)  fprintf(stderr, "%s : %s - %s\n", __PRETTY_FUNCTION__, msg, strerror(errno));
+#define HIPHOP_LOG_STDERR_COLOR(msg)  fprintf(stderr, "\x1b[31m%s : %s\x1b[0m\n", __PRETTY_FUNCTION__, msg);
 
 #endif
 

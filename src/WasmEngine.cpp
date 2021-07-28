@@ -30,7 +30,7 @@ WasmEngine::WasmEngine()
     , fStore(0)
     , fInstance(0)
     , fModule(0)
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     , fWasiEnv(0)
 #endif
 {
@@ -92,7 +92,7 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
 
     char name[128];
 
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     // -------------------------------------------------------------------------
     // Build a map of WASI imports
     // Call to wasi_get_imports() fails because of missing host imports, use
@@ -120,7 +120,7 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
         name[wn->size] = 0;
         wasiImportIndex[name] = i;
     }
-#endif // HIPHAP_ENABLE_WASI
+#endif // HIPHOP_ENABLE_WASI
 
     // -------------------------------------------------------------------------
     // Build module imports vector
@@ -139,7 +139,7 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
         name[wn->size] = 0;
         importIndex[name] = i;
 
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
         if (wasiImportIndex.find(name) != wasiImportIndex.end()) {
             wasmer_named_extern_t* ne = wasiImports.data[wasiImportIndex[name]];
             imports.data[i] = const_cast<wasm_extern_t *>(wasmer_named_extern_unwrap(ne));
@@ -157,7 +157,7 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
 
     wasm_importtype_vec_delete(&importTypes);
 
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     if (!moduleNeedsWasi) {
         throw new std::runtime_error("WASI is enabled but module is not WASI compliant");
     }
@@ -170,7 +170,7 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
     // -------------------------------------------------------------------------
     // Insert host functions into imports vector
 
-#ifndef HIPHAP_ENABLE_WASI
+#ifndef HIPHOP_ENABLE_WASI
     // Required by AssemblyScript when running in non-WASI mode
     hostFunctions["abort"] = { {WASM_I32, WASM_I32, WASM_I32, WASM_I32}, {}, 
         std::bind(&WasmEngine::assemblyScriptAbort, this, std::placeholders::_1) };
@@ -203,7 +203,7 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
     if (fInstance == 0) {
         throwWasmerLastError();
     }
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     wasm_func_t* wasiStart = wasi_get_start_function(fInstance);
     
     if (wasiStart == 0) {
@@ -239,7 +239,7 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap& hostFunctions)
 
 void WasmEngine::stop()
 {
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     if (fWasiEnv != 0) {
         wasi_env_delete(fWasiEnv);
         fWasiEnv = 0;
@@ -348,7 +348,7 @@ void WasmEngine::toWasmValueTypeVector(const WasmValueKindVector& kinds, wasm_va
     wasm_valtype_vec_new(types, size, typesArray);
 }
 
-own wasm_trap_t* WasmEngine::invokeHostFunction(void* env, const wasm_val_vec_t* params, wasm_val_vec_t* results)
+wasm_trap_t* WasmEngine::invokeHostFunction(void* env, const wasm_val_vec_t* params, wasm_val_vec_t* results)
 {
     WasmFunction* f = static_cast<WasmFunction *>(env);
     
@@ -366,7 +366,7 @@ own wasm_trap_t* WasmEngine::invokeHostFunction(void* env, const wasm_val_vec_t*
     return 0;
 }
 
-#ifndef HIPHAP_ENABLE_WASI
+#ifndef HIPHOP_ENABLE_WASI
 
 WasmValueVector WasmEngine::assemblyScriptAbort(const WasmValueVector& params)
 {
@@ -379,9 +379,9 @@ WasmValueVector WasmEngine::assemblyScriptAbort(const WasmValueVector& params)
     ss << "AssemblyScript abort() called - msg: " << msg << ", filename: " << filename
         << ", lineNumber: " << lineNumber << ", columnNumber: " << columnNumber;
 
-    HIPHAP_LOG_STDERR_COLOR(ss.str().c_str());
+    HIPHOP_LOG_STDERR_COLOR(ss.str().c_str());
 
     return {};
 }
 
-#endif // HIPHAP_ENABLE_WASI
+#endif // HIPHOP_ENABLE_WASI

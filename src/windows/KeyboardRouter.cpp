@@ -132,7 +132,7 @@ BOOL CALLBACK KeyboardRouter::enumChildProc(HWND hWnd, LPARAM lParam)
     char className[256];
     GetClassName(hWnd, (LPSTR)className, sizeof(className));
 
-    if ((strstr(className, "EdgeWebWidget") != 0) && (strstr(className, XSTR(HIPHAP_PROJECT_ID_HASH)) != 0)) {
+    if ((strstr(className, "EdgeWebWidget") != 0) && (strstr(className, XSTR(HIPHOP_PROJECT_ID_HASH)) != 0)) {
         *((HWND *)lParam) = hWnd;
         return FALSE;
     }

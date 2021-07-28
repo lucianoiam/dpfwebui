@@ -68,7 +68,7 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     fWebWidget.setSize(fInitWidth, fInitHeight);
     fWebWidget.setBackgroundColor(fBackgroundColor);
     fWebWidget.setEventHandler(this);
-#ifdef HIPHAP_PRINT_TRAFFIC
+#ifdef HIPHOP_PRINT_TRAFFIC
     fWebWidget.setPrintTraffic(true);
 #endif
 
@@ -242,6 +242,6 @@ void WebHostUI::handleWebWidgetScriptMessageReceived(const JsValueVector& args)
         webPostMessage({"UI", "isStandalone", getWindow().getApp().isStandalone()});
 
     } else {
-        HIPHAP_LOG_STDERR_COLOR("Invalid call to WebHostUI method");
+        HIPHOP_LOG_STDERR_COLOR("Invalid call to WebHostUI method");
     }
 }

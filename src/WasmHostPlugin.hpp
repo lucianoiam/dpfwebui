@@ -69,7 +69,7 @@ private:
     wasm_store_t*      fWasmStore;
     wasm_instance_t*   fWasmInstance;
     wasm_module_t*     fWasmModule;
-#ifdef HIPHAP_ENABLE_WASI
+#ifdef HIPHOP_ENABLE_WASI
     wasi_env_t*        fWasiEnv;
 #endif
     wasm_extern_vec_t  fWasmExports;

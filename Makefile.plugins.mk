@@ -4,28 +4,28 @@
 # ------------------------------------------------------------------------------
 # Basic setup
 
-HIPHAP_ROOT_PATH := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
-HIPHAP_SRC_PATH  ?= $(HIPHAP_ROOT_PATH)/src
-HIPHAP_LIB_PATH  ?= $(HIPHAP_ROOT_PATH)/lib
+HIPHOP_ROOT_PATH := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+HIPHOP_SRC_PATH  ?= $(HIPHOP_ROOT_PATH)/src
+HIPHOP_LIB_PATH  ?= $(HIPHOP_ROOT_PATH)/lib
 
-DPF_PATH         ?= $(HIPHAP_ROOT_PATH)/dpf
+DPF_PATH         ?= $(HIPHOP_ROOT_PATH)/dpf
 DPF_TARGET_DIR   ?= bin
 DPF_BUILD_DIR    ?= build
 DPF_GIT_BRANCH   ?= develop
 
-ifneq ($(HIPHAP_AS_DSP_PATH),)
+ifneq ($(HIPHOP_AS_DSP_PATH),)
 AS_DSP = true
-HIPHAP_ENABLE_WASI ?= true
+HIPHOP_ENABLE_WASI ?= true
 endif
-ifneq ($(HIPHAP_WEB_UI_PATH),)
+ifneq ($(HIPHOP_WEB_UI_PATH),)
 WEB_UI = true
 endif
 
 # ------------------------------------------------------------------------------
 # Check for mandatory variables
 
-ifeq ($(HIPHAP_PROJECT_VERSION),)
-$(error HIPHAP_PROJECT_VERSION is not set)
+ifeq ($(HIPHOP_PROJECT_VERSION),)
+$(error HIPHOP_PROJECT_VERSION is not set)
 endif
 
 # ------------------------------------------------------------------------------
@@ -61,42 +61,42 @@ NPM_ENV = true
 # Add optional support for AssemblyScript DSP
 
 ifeq ($(AS_DSP),true)
-HIPHAP_FILES_DSP  = WasmHostPlugin.cpp \
+HIPHOP_FILES_DSP  = WasmHostPlugin.cpp \
                     WasmEngine.cpp \
                     Platform.cpp
 ifeq ($(LINUX),true)
-HIPHAP_FILES_DSP += linux/PlatformLinux.cpp
+HIPHOP_FILES_DSP += linux/PlatformLinux.cpp
 endif
 ifeq ($(MACOS),true)
-HIPHAP_FILES_DSP += macos/PlatformMac.mm
+HIPHOP_FILES_DSP += macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
-HIPHAP_FILES_DSP += windows/PlatformWindows.cpp \
+HIPHOP_FILES_DSP += windows/PlatformWindows.cpp \
                     windows/extra/WinApiStub.cpp 
 endif
 
-FILES_DSP += $(HIPHAP_FILES_DSP:%=$(HIPHAP_SRC_PATH)/%)
+FILES_DSP += $(HIPHOP_FILES_DSP:%=$(HIPHOP_SRC_PATH)/%)
 endif
 
 # ------------------------------------------------------------------------------
 # Add optional support for web UI
 
 ifeq ($(WEB_UI),true)
-HIPHAP_FILES_UI  = WebHostUI.cpp \
+HIPHOP_FILES_UI  = WebHostUI.cpp \
                    AbstractWebWidget.cpp \
                    JsValue.cpp \
                    Platform.cpp
 ifeq ($(LINUX),true)
-HIPHAP_FILES_UI += linux/ExternalGtkWebWidget.cpp \
+HIPHOP_FILES_UI += linux/ExternalGtkWebWidget.cpp \
                    linux/PlatformLinux.cpp \
                    linux/extra/ipc.c
 endif
 ifeq ($(MACOS),true)
-HIPHAP_FILES_UI += macos/CocoaWebWidget.mm \
+HIPHOP_FILES_UI += macos/CocoaWebWidget.mm \
                    macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
-HIPHAP_FILES_UI += windows/EdgeWebWidget.cpp \
+HIPHOP_FILES_UI += windows/EdgeWebWidget.cpp \
                    windows/KeyboardRouter.cpp \
                    windows/PlatformWindows.cpp \
                    windows/extra/WebView2EventHandler.cpp \
@@ -105,7 +105,7 @@ HIPHAP_FILES_UI += windows/EdgeWebWidget.cpp \
                    windows/resources/plugin.rc
 endif
 
-FILES_UI += $(HIPHAP_FILES_UI:%=$(HIPHAP_SRC_PATH)/%)
+FILES_UI += $(HIPHOP_FILES_UI:%=$(HIPHOP_SRC_PATH)/%)
 endif
 
 # ------------------------------------------------------------------------------
@@ -131,8 +131,8 @@ include $(DPF_PATH)/Makefile.plugins.mk
 
 # ------------------------------------------------------------------------------
 # Add shared build flags
-BASE_FLAGS += -I$(HIPHAP_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
-              -DHIPHAP_PROJECT_ID_HASH=$(shell echo $(NAME):$(HIPHAP_PROJECT_VERSION) \
+BASE_FLAGS += -I$(HIPHOP_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
+              -DHIPHOP_PROJECT_ID_HASH=$(shell echo $(NAME):$(HIPHOP_PROJECT_VERSION) \
               	| shasum -a 256 | head -c 8)
 
 # ------------------------------------------------------------------------------
@@ -140,8 +140,8 @@ BASE_FLAGS += -I$(HIPHAP_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
 
 ifeq ($(AS_DSP),true)
 BASE_FLAGS += -I$(WASMER_PATH)/include
-ifeq ($(HIPHAP_ENABLE_WASI),true)
-BASE_FLAGS += -DHIPHAP_ENABLE_WASI
+ifeq ($(HIPHOP_ENABLE_WASI),true)
+BASE_FLAGS += -DHIPHOP_ENABLE_WASI
 endif
 LINK_FLAGS += -L$(WASMER_PATH)/lib -lwasmer
 ifeq ($(MACOS),true)
@@ -156,8 +156,8 @@ endif
 # Add build flags for web UI dependencies
 
 ifeq ($(WEB_UI),true)
-ifeq ($(HIPHAP_PRINT_TRAFFIC),true)
-BASE_FLAGS += -DHIPHAP_PRINT_TRAFFIC
+ifeq ($(HIPHOP_PRINT_TRAFFIC),true)
+BASE_FLAGS += -DHIPHOP_PRINT_TRAFFIC
 endif
 ifeq ($(LINUX),true)
 LINK_FLAGS += -lpthread -ldl
@@ -180,7 +180,7 @@ endif
 TARGETS += info
 
 info:
-	@echo "Hip-Hap : $(HIPHAP_ROOT_PATH)"
+	@echo "Hip-Hop : $(HIPHOP_ROOT_PATH)"
 	@echo "DPF     : $(DPF_PATH) @ $(DPF_GIT_BRANCH)"
 	@echo "Build   : $(DPF_BUILD_DIR)"
 	@echo "Target  : $(DPF_TARGET_DIR)"
@@ -199,7 +199,7 @@ MACSIZEBUG:
 ifeq ($(MACOS),true)
 ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_PATH)/distrho/src/DistrhoUI.cpp),0)
 	@echo Patching DistrhoUI.cpp to workaround window size bug on macOS...
-	@cd $(HIPHAP_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i DistrhoUI.cpp.patch
+	@cd $(HIPHOP_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i DistrhoUI.cpp.patch
 endif
 endif
 
@@ -207,7 +207,7 @@ endif
 # Dependency - Download Wasmer
 
 ifeq ($(AS_DSP),true)
-WASMER_PATH = $(HIPHAP_LIB_PATH)/wasmer
+WASMER_PATH = $(HIPHOP_LIB_PATH)/wasmer
 
 TARGETS += $(WASMER_PATH)
 
@@ -223,7 +223,7 @@ endif
 ifeq ($(WINDOWS),true)
 # Wasmer official binary distribution requires MSVC 
 WASMER_PKG_FILE = wasmer-mingw-amd64.tar.gz
-WASMER_URL = https://github.com/lucianoiam/hiphap/files/6795372/wasmer-mingw-amd64.tar.gz
+WASMER_URL = https://github.com/lucianoiam/hiphop/files/6795372/wasmer-mingw-amd64.tar.gz
 endif
 
 # https://stackoverflow.com/questions/37038472/osx-how-to-statically-link-a-library-and-dynamically-link-the-standard-library
@@ -267,7 +267,7 @@ endif
 
 ifeq ($(WEB_UI),true)
 ifeq ($(WINDOWS),true)
-EDGE_WEBVIEW2_PATH = $(HIPHAP_LIB_PATH)/Microsoft.Web.WebView2
+EDGE_WEBVIEW2_PATH = $(HIPHOP_LIB_PATH)/Microsoft.Web.WebView2
 
 TARGETS += $(EDGE_WEBVIEW2_PATH)
 
@@ -282,9 +282,9 @@ $(error NuGet not found, try sudo apt install nuget or the equivalent for your d
 endif
 endif
 	@echo Downloading Edge WebView2 SDK...
-	@mkdir -p $(HIPHAP_LIB_PATH)
+	@mkdir -p $(HIPHOP_LIB_PATH)
 	@eval $(MSYS_MINGW_SYMLINKS)
-	@nuget install Microsoft.Web.WebView2 -OutputDirectory $(HIPHAP_LIB_PATH)
+	@nuget install Microsoft.Web.WebView2 -OutputDirectory $(HIPHOP_LIB_PATH)
 	@ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH)
 
 /usr/bin/nuget.exe:
@@ -297,13 +297,13 @@ endif
 # Dependency - Built-in JavaScript library include
 
 ifeq ($(WEB_UI),true)
-UI_JS_INCLUDE_PATH = $(HIPHAP_SRC_PATH)/ui/distrho-ui.js.include
+UI_JS_INCLUDE_PATH = $(HIPHOP_SRC_PATH)/ui/distrho-ui.js.include
 
 TARGETS += $(UI_JS_INCLUDE_PATH)
 
 $(UI_JS_INCLUDE_PATH):
 	@echo 'R"UI_JS(' > $(UI_JS_INCLUDE_PATH)
-	@cat $(HIPHAP_SRC_PATH)/ui/distrho-ui.js >> $(UI_JS_INCLUDE_PATH)
+	@cat $(HIPHOP_SRC_PATH)/ui/distrho-ui.js >> $(UI_JS_INCLUDE_PATH)
 	@echo ')UI_JS"' >> $(UI_JS_INCLUDE_PATH)
 endif
 
@@ -313,11 +313,11 @@ endif
 ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
 LXHELPER_BIN = $(BUILD_DIR)/$(NAME)_ui
-HIPHAP_TARGET += $(LXHELPER_BIN)
+HIPHOP_TARGET += $(LXHELPER_BIN)
 
-$(LXHELPER_BIN): $(HIPHAP_SRC_PATH)/linux/helper.c $(HIPHAP_SRC_PATH)/linux/extra/ipc.c
+$(LXHELPER_BIN): $(HIPHOP_SRC_PATH)/linux/helper.c $(HIPHOP_SRC_PATH)/linux/extra/ipc.c
 	@echo "Building helper..."
-	$(SILENT)$(CC) $^ -I$(HIPHAP_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
+	$(SILENT)$(CC) $^ -I$(HIPHOP_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
 endif
@@ -362,7 +362,7 @@ TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
 
 ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
-HIPHAP_TARGET += lxhelper
+HIPHOP_TARGET += lxhelper
 
 lxhelper:
 	@($(TEST_LINUX_OR_MACOS_JACK) || $(TEST_LINUX_VST) \
@@ -387,7 +387,7 @@ endif
 # Post build - Create macOS VST bundle
 
 ifeq ($(MACOS),true)
-HIPHAP_TARGET += macvst
+HIPHOP_TARGET += macvst
 
 macvst:
 	@# TODO - generate-vst-bundles.sh expects hardcoded directory bin/
@@ -406,7 +406,7 @@ endif
 
 ifeq ($(WEB_UI),true)
 ifeq ($(WINDOWS),true)
-HIPHAP_TARGET += edgelib
+HIPHOP_TARGET += edgelib
 
 edgelib:
 	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
@@ -416,12 +416,12 @@ edgelib:
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
-		&& cp $(HIPHAP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		&& cp $(HIPHOP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		) || true
 	@($(TEST_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader \
-		&& cp $(HIPHAP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
+		&& cp $(HIPHOP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
 		) || true
 
 clean: clean_edgelib
@@ -435,23 +435,23 @@ endif
 # Post build - Always copy lib files
 
 ifneq ($(AS_DSP),)
-HIPHAP_TARGET += libdsp
+HIPHOP_TARGET += libdsp
 
-AS_ASSEMBLY_PATH = $(HIPHAP_AS_DSP_PATH)/assembly
+AS_ASSEMBLY_PATH = $(HIPHOP_AS_DSP_PATH)/assembly
 
-WASM_SRC_PATH = $(HIPHAP_AS_DSP_PATH)/build/optimized.wasm
+WASM_SRC_PATH = $(HIPHOP_AS_DSP_PATH)/build/optimized.wasm
 WASM_DST_PATH = dsp/plugin.wasm
 
 libdsp:
 	@echo "Building AssemblyScript project..."
 	@# npm --prefix fails on MinGW due to paths mixing \ and /
-	@test -d $(HIPHAP_AS_DSP_PATH)/node_modules \
-		|| (cd $(HIPHAP_AS_DSP_PATH) && $(NPM_ENV) && npm install)
+	@test -d $(HIPHOP_AS_DSP_PATH)/node_modules \
+		|| (cd $(HIPHOP_AS_DSP_PATH) && $(NPM_ENV) && npm install)
 	@test -f $(AS_ASSEMBLY_PATH)/index.ts \
-		|| ln -s $(abspath $(HIPHAP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
+		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
 	@test -f $(AS_ASSEMBLY_PATH)/distrho-plugin.ts \
-		|| ln -s $(abspath $(HIPHAP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
-	@cd $(HIPHAP_AS_DSP_PATH) && $(NPM_ENV) && npm run asbuild
+		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
+	@cd $(HIPHOP_AS_DSP_PATH) && $(NPM_ENV) && npm run asbuild
 	@echo "Copying WebAssembly DSP binary..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_lib/dsp \
@@ -472,25 +472,25 @@ libdsp:
 endif
 
 ifeq ($(WEB_UI),true)
-HIPHAP_TARGET += libui
+HIPHOP_TARGET += libui
 
 libui:
 	@echo "Copying web UI files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)_lib/ui \
-		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_lib/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_lib/ui \
 		) || true
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_lib/ui \
-		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_lib/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_lib/ui \
 		) || true
 	@($(TEST_DSSI) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_lib/ui \
-		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_lib/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_lib/ui \
 		) || true
 	@($(TEST_MAC_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
-		&& cp -r $(HIPHAP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
 		) || true
 
 clean: clean_lib
@@ -509,7 +509,7 @@ CAN_GENERATE_TTL = true
 endif
 
 ifeq ($(CAN_GENERATE_TTL),true)
-HIPHAP_TARGET += lv2ttl
+HIPHOP_TARGET += lv2ttl
 
 lv2ttl: $(DPF_PATH)/utils/lv2_ttl_generator
 	@# TODO - generate-ttl.sh expects hardcoded directory bin/

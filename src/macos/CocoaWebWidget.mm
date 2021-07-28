@@ -1,5 +1,5 @@
 /*
- * Hip-Hap / High Performance Hybrid Audio Plugins
+ * Hip-Hop / High Performance Hybrid Audio Plugins
  * Copyright (C) 2021 Luciano Iam <oss@lucianoiam.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -25,7 +25,7 @@
 // Avoid symbol name collisions
 #define OBJC_INTERFACE_NAME_HELPER_1(INAME, SEP, SUFFIX) INAME ## SEP ## SUFFIX
 #define OBJC_INTERFACE_NAME_HELPER_2(INAME, SUFFIX) OBJC_INTERFACE_NAME_HELPER_1(INAME, _, SUFFIX)
-#define OBJC_INTERFACE_NAME(INAME) OBJC_INTERFACE_NAME_HELPER_2(INAME, HIPHAP_PROJECT_ID_HASH)
+#define OBJC_INTERFACE_NAME(INAME) OBJC_INTERFACE_NAME_HELPER_2(INAME, HIPHOP_PROJECT_ID_HASH)
 
 #define DistrhoWebView         OBJC_INTERFACE_NAME(DistrhoWebView)
 #define DistrhoWebViewDelegate OBJC_INTERFACE_NAME(DistrhoWebViewDelegate)
