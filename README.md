@@ -5,11 +5,12 @@ This project extends [DPF](http://github.com/DISTRHO/DPF) to provide the
 necessary scaffold for creating audio plugins with potentially complex user
 interfaces. Plugins implement a web view for running the UI, which interacts
 with the audio host through a small factory shipped JavaScript class. The DSP
-core remains isolated and implemented in C++ or optionally AssemblyScript.
+core remains isolated and implemented in C++ or AssemblyScript.
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
-*WebGain example running on Bitwig. A real world plugin is under development [here](https://github.com/lucianoiam/castello-rev).*
+*WebGain example running on Bitwig. A real world plugin is under development
+[here](https://github.com/lucianoiam/castello-rev).*
 
 ****
 
@@ -25,10 +26,9 @@ core remains isolated and implemented in C++ or optionally AssemblyScript.
 
 __Support for AssemblyScript is still work in progress.__ [AssemblyScript](https://www.assemblyscript.org)
 is a language very similar to [TypeScript](https://www.typescriptlang.org)
-specifically created for targeting [WebAssembly](https://webassembly.org).
-Plugins written with Hip-Hop embed a WebAssembly JIT engine for running
-precompiled AssemblyScript-based DSP code. This engine is completely independent
-from the web view.
+specifically designed for targeting [WebAssembly](https://webassembly.org) (Wasm).
+Plugins created with Hip-Hop optionally embed a Wasm [JIT engine](https://github.com/wasmerio/wasmer) for running precompiled AssemblyScript-based
+DSP code. Such engine is completely independent from the web view.
 
 The following DSP / UI language combinations are available:
 
@@ -45,7 +45,7 @@ C++|C++|Do not use this project, check [DPF](http://github.com/DISTRHO/DPF) inst
 class MyPluginUI extends DISTRHO_UI {
 
     constructor() {
-    	super();
+        super();
     
         // Connect <input type="range" id="gain"> element to a parameter
 
