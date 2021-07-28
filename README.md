@@ -27,8 +27,8 @@ core remains isolated and implemented in C++ or AssemblyScript.
 __Support for AssemblyScript is still work in progress.__ [AssemblyScript](https://www.assemblyscript.org)
 is a language very similar to [TypeScript](https://www.typescriptlang.org)
 specifically designed for targeting [WebAssembly](https://webassembly.org) (Wasm).
-Plugins created with Hip-Hop optionally embed a Wasm [JIT engine](https://github.com/wasmerio/wasmer) for running precompiled AssemblyScript-based
-DSP code. Such engine is completely independent from the web view.
+Plugins created with Hip-Hop optionally embed a Wasm [JIT engine](https://github.com/wasmerio/wasmer)
+for running DSP code written in AssemblyScript. Such engine is completely independent from the web view.
 
 The following DSP / UI language combinations are available:
 
