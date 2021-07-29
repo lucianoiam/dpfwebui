@@ -34,9 +34,9 @@ The following DSP / UI language combinations are available:
 
 DSP|UI |Comments
 ---|---|---------------------------------------------------------------------------
-C++|JS |Web view user interface
-AS |JS |Web view user interface
-AS |C++|Widgets provided by DISTRHO Graphics Library (DGL)
+AS |JS |Web view user interface, no example available yet
+C++|JS |Web view user interface, see example [webgain](https://github.com/lucianoiam/hiphop/tree/master/examples/webgain)
+AS |C++|DPF Graphics Library (DGL) widgets, see example [astone](https://github.com/lucianoiam/hiphop/tree/master/examples/astone) (WIP)
 C++|C++|Do not use this project, check [DPF](http://github.com/DISTRHO/DPF) instead
 
 ### Example UI code
@@ -89,8 +89,6 @@ What makes it great?
 - High quality clean C++ codebase
 - Great experienced community around
 
-Its full documentation and code can be found at https://github.com/DISTRHO/DPF,
-this repo includes it as a git submodule in `dpf`.  There are lots of other cool
-audio projects worth checking at https://github.com/DISTRHO.
+Its full documentation and code can be found [here](https://github.com/DISTRHO/DPF)
 
 If you find libre software useful please support the developers
