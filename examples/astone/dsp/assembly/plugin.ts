@@ -75,6 +75,14 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
         }
     }
 
+    initState(index: u32, stateKey: Uint16Array, defaultStateValue: Uint16Array): void {
+        switch (index) {
+            case 0:
+                DISTRHO.strcpy(stateKey, 'state_1')
+                DISTRHO.strcpy(defaultStateValue, 'def_value')
+        }
+    }
+
     run(inputs: Float32Array[], outputs: Float32Array[]): void {
         const output_l = outputs[0]
         const output_r = outputs[1]

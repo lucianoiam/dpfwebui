@@ -62,9 +62,11 @@ export function _get_unique_id(): i64 {
 }
 
 export function _init_parameter(index: u32): void {
+    // See explanation below for the odd value return convention
+    
     const parameter = new DISTRHO.Parameter
     pluginInstance.initParameter(index, parameter)
-    // See explanation below for the odd value return convention
+
     _rw_int_1 = parameter.hints
     _ro_string_1 = _from_wtf16_string(parameter.name)
     _rw_float_1 = parameter.ranges.def
@@ -78,6 +80,23 @@ export function _get_parameter_value(index: u32): f32 {
 
 export function _set_parameter_value(index: u32, value: f32): void {
     pluginInstance.setParameterValue(index, value)
+}
+
+// Strings are immutable hence ArrayBuffer is used instead as inout parameter
+
+export function _init_state(index: u32): void {
+    // Use arrays to mimic mutable UTF-16 strings
+
+    let stateKey = new Uint16Array(128)
+    let defaultStateValue = new Uint16Array(128)
+    pluginInstance.initState(index, stateKey, defaultStateValue)
+
+    // Strings are null terminated but String.UTF16.decode reads array length
+
+    stateKey = stateKey.slice(0, stateKey.indexOf(0))
+    _ro_string_1 = _from_wtf16_string(String.UTF16.decode(stateKey.buffer))
+    defaultStateValue = defaultStateValue.slice(0, defaultStateValue.indexOf(0))
+    _ro_string_2 = _from_wtf16_string(String.UTF16.decode(defaultStateValue.buffer))
 }
 
 export function _activate(): void {
@@ -149,10 +168,10 @@ export let _ro_string_4: ArrayBuffer
 
 // These are useful for passing strings from host to Wasm
 
-const MAX_STRING = 1024
+const MAX_STRING_BYTES = 1024
 
-export let _rw_string_1 = new ArrayBuffer(MAX_STRING)
-export let _rw_string_2 = new ArrayBuffer(MAX_STRING)
+export let _rw_string_1 = new ArrayBuffer(MAX_STRING_BYTES)
+export let _rw_string_2 = new ArrayBuffer(MAX_STRING_BYTES)
 
 // Functions for converting between AssemblyScript and C strings
 

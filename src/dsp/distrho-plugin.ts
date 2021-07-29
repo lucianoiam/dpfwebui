@@ -54,6 +54,9 @@ export default namespace DISTRHO {
         // void Plugin::setParameterValue(uint32_t index, float value)
         setParameterValue(index: u32, value: f32): void
 
+        // void Plugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
+        initState(index: u32, stateKey: Uint16Array, defaultStateValue: Uint16Array): void
+
         // void Plugin::activate()
         activate(): void
 
@@ -118,6 +121,16 @@ export default namespace DISTRHO {
     export function d_sconst(s: string): i64 {
         return d_cconst(<u8>s.charCodeAt(0), <u8>s.charCodeAt(1), 
                         <u8>s.charCodeAt(2), <u8>s.charCodeAt(3))
+    }
+
+    // String utility
+
+    export function strcpy(arr: Uint16Array, s: string): void {
+        let i: i32
+        for (i = 0; i < s.length; ++i) {
+            arr[i] = s.charCodeAt(i);
+        }
+        arr[i] = 0
     }
 
 }

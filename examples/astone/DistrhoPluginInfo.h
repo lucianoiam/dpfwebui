@@ -97,7 +97,7 @@
    @see Plugin::initState(uint32_t, String&, String&)
    @see Plugin::setState(const char*, const char*)
  */
-#define DISTRHO_PLUGIN_WANT_STATE 0
+#define DISTRHO_PLUGIN_WANT_STATE 1
 
 /**
    Wherever the plugin implements the full state API.

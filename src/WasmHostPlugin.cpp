@@ -136,6 +136,7 @@ void WasmHostPlugin::setParameterValue(uint32_t index, float value)
 {
     try {
         checkEngineStarted();
+
         fEngine.callFunction("_set_parameter_value", {
             WASM_I32_VAL(static_cast<int32_t>(index)),
             WASM_F32_VAL(static_cast<float32_t>(value))
@@ -149,12 +150,16 @@ void WasmHostPlugin::setParameterValue(uint32_t index, float value)
 
 void WasmHostPlugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
 {
-    checkEngineStarted();
+    try {
+        checkEngineStarted();
 
-    // TODO
-    (void)index;
-    (void)stateKey;
-    (void)defaultStateValue;
+        fEngine.callFunction("_init_state", { WASM_I32_VAL(static_cast<int32_t>(index)) });
+
+        stateKey = fEngine.getMemoryAsCString(fEngine.getGlobal("_ro_string_1"));
+        defaultStateValue = fEngine.getMemoryAsCString(fEngine.getGlobal("_ro_string_2"));
+    } catch (const std::exception& ex) {
+        HIPHOP_LOG_STDERR_COLOR(ex.what());
+    }
 }
 
 void WasmHostPlugin::setState(const char* key, const char* value)
