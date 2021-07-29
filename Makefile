@@ -3,6 +3,7 @@
 
 examples:
 	@make -C examples/webgain
+	@make -C examples/astone
 
 clean:
 	rm -rf bin

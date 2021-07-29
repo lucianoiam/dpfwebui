@@ -7,7 +7,7 @@
 # --------------------------------------------------------------
 # Project name, used for binaries
 
-NAME = d_astest
+NAME = d_astone
 
 # --------------------------------------------------------------
 # Project version, used for generating unique symbol names
@@ -28,16 +28,16 @@ HIPHOP_WEB_UI_PATH = ui
 # Files to build
 
 FILES_DSP = \
-    AsExamplePlugin.cpp
+    AsToneExamplePlugin.cpp
 
 FILES_UI  = \
-    AsExampleUI.cpp
+    AsToneExampleUI.cpp
 
 # --------------------------------------------------------------
 # Do some magic
 
 DPF_TARGET_DIR = ../../bin
-DPF_BUILD_DIR = ../../build/astest/1/2
+DPF_BUILD_DIR = ../../build/astone/1/2
 
 include ../../Makefile.plugins.mk
 

@@ -19,13 +19,13 @@
    This is used to identify your plugin before a Plugin instance can be created.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_NAME "AsTest"
+#define DISTRHO_PLUGIN_NAME "ASTone"
 
 /**
    Number of audio inputs the plugin has.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_NUM_INPUTS 2
+#define DISTRHO_PLUGIN_NUM_INPUTS 0
 
 /**
    Number of audio outputs the plugin has.
@@ -37,7 +37,7 @@
    The plugin URI when exporting in LV2 format.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_URI "https://lucianoiam.com/hiphop/astest"
+#define DISTRHO_PLUGIN_URI "https://lucianoiam.com/hiphop/astone"
 
 /**
    Wherever the plugin has a custom %UI.

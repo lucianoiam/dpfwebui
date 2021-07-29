@@ -1,9 +1,10 @@
 GENERAL
 -------
 
+- Makefile flag for bypassing copy/link of framework TS files
 - Wasm: states, programs and MIDI support
 - Wasm: profile plugin for memory leaks
-- Rename 'astest' to 'astone' and write a DGL UI for it 
+- Write a DGL UI for example 'astone'
 - Update internals.md to include information regarding AssemblyScript DSP
 - Allow calling Window::openFileBrowser() from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs

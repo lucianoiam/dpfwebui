@@ -16,25 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ASEXAMPLEUI_HPP
-#define ASEXAMPLEUI_HPP
+#include "AsToneExampleUI.hpp"
 
-#include "WebHostUI.hpp"
+USE_NAMESPACE_DISTRHO
 
-#define BASE_WIDTH_PX  600
-#define BASE_HEIGHT_PX 300
-#define INIT_BACKGROUND_RGBA 0xD4B6EFFF
-
-START_NAMESPACE_DISTRHO
-
-class AsExampleUI : public WebHostUI
+UI* DISTRHO::createUI()
 {
-public:
-    AsExampleUI() : WebHostUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA) {}
-    ~AsExampleUI() {}
-
-};
-
-END_NAMESPACE_DISTRHO
-
-#endif  // ASEXAMPLEUI_HPP
+    return new AsToneExampleUI;
+}

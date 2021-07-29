@@ -16,11 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "AsExamplePlugin.hpp"
+#ifndef ASTONEEXAMPLEUI_HPP
+#define ASTONEEXAMPLEUI_HPP
 
-USE_NAMESPACE_DISTRHO
+#include "WebHostUI.hpp"
 
-Plugin* DISTRHO::createPlugin()
+#define BASE_WIDTH_PX  600
+#define BASE_HEIGHT_PX 300
+#define INIT_BACKGROUND_RGBA 0xFFFFFFFF
+
+START_NAMESPACE_DISTRHO
+
+class AsToneExampleUI : /* FIXME */ public WebHostUI
 {
-    return new AsExamplePlugin;
-}
+public:
+    AsToneExampleUI() : WebHostUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA) {}
+    ~AsToneExampleUI() {}
+
+};
+
+END_NAMESPACE_DISTRHO
+
+#endif  // ASTONEEXAMPLEUI_HPP
