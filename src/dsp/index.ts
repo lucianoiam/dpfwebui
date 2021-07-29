@@ -61,9 +61,9 @@ export function _get_unique_id(): i64 {
     return pluginInstance.getUniqueId()
 }
 
-export function _init_parameter(index: u32): void {
-    // See explanation below for the odd value return convention
+// See explanation below for the odd value return convention
     
+export function _init_parameter(index: u32): void {
     const parameter = new DISTRHO.Parameter
     pluginInstance.initParameter(index, parameter)
 
@@ -85,18 +85,13 @@ export function _set_parameter_value(index: u32, value: f32): void {
 // Strings are immutable hence ArrayBuffer is used instead as inout parameter
 
 export function _init_state(index: u32): void {
-    // Use arrays to mimic mutable UTF-16 strings
+    let stateKey = new DISTRHO.StringWrapper
+    let defaultStateValue = new DISTRHO.StringWrapper
 
-    let stateKey = new Uint16Array(128)
-    let defaultStateValue = new Uint16Array(128)
     pluginInstance.initState(index, stateKey, defaultStateValue)
 
-    // Strings are null terminated but String.UTF16.decode reads array length
-
-    stateKey = stateKey.slice(0, stateKey.indexOf(0))
-    _ro_string_1 = _from_wtf16_string(String.UTF16.decode(stateKey.buffer))
-    defaultStateValue = defaultStateValue.slice(0, defaultStateValue.indexOf(0))
-    _ro_string_2 = _from_wtf16_string(String.UTF16.decode(defaultStateValue.buffer))
+    _ro_string_1 = _from_wtf16_string(stateKey.string)
+    _ro_string_2 = _from_wtf16_string(defaultStateValue.string)
 }
 
 export function _activate(): void {
@@ -163,8 +158,6 @@ export let _rw_float_3: f32
 export let _rw_float_4: f32
 export let _ro_string_1: ArrayBuffer
 export let _ro_string_2: ArrayBuffer
-export let _ro_string_3: ArrayBuffer
-export let _ro_string_4: ArrayBuffer
 
 // These are useful for passing strings from host to Wasm
 

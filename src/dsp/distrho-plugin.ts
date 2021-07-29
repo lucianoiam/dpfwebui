@@ -55,7 +55,7 @@ export default namespace DISTRHO {
         setParameterValue(index: u32, value: f32): void
 
         // void Plugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
-        initState(index: u32, stateKey: Uint16Array, defaultStateValue: Uint16Array): void
+        initState(index: u32, stateKey: StringWrapper, defaultStateValue: StringWrapper): void
 
         // void Plugin::activate()
         activate(): void
@@ -123,14 +123,12 @@ export default namespace DISTRHO {
                         <u8>s.charCodeAt(2), <u8>s.charCodeAt(3))
     }
 
-    // String utility
+    // For use as mutable string argument
 
-    export function strcpy(arr: Uint16Array, s: string): void {
-        let i: i32
-        for (i = 0; i < s.length; ++i) {
-            arr[i] = s.charCodeAt(i);
-        }
-        arr[i] = 0
+    export class StringWrapper {
+
+        string: string = ''
+
     }
 
 }
