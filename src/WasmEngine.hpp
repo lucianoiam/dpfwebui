@@ -61,16 +61,13 @@ public:
     void stop();
 
     byte_t*     getMemory(const WasmValue& wasmPtr = WASM_I32_VAL(0));
-    float32_t*  getMemoryAsFloat32Pointer(const WasmValue& wasmPtr);
     const char* getMemoryAsCString(const WasmValue& wasmPtr);
 
     WasmValue   getGlobal(const char* name);
     void        setGlobal(const char* name, const WasmValue& value);
 
     WasmValueVector callFunction(const char* name, WasmValueVector params = {});
-    int32_t         callFunctionReturnInt32(const char* name, WasmValueVector params = {});
-    int64_t         callFunctionReturnInt64(const char* name, WasmValueVector params = {});
-    float32_t       callFunctionReturnFloat32(const char* name, WasmValueVector params = {});
+    WasmValue       callFunctionReturnSingleValue(const char* name, WasmValueVector params = {});
     const char*     callFunctionReturnCString(const char* name, WasmValueVector params = {});
 
 private:
@@ -80,6 +77,7 @@ private:
 
     static void toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types);    
     const char* fromWTF16String(const WasmValue& wasmPtr);
+
 
 #ifndef HIPHOP_ENABLE_WASI
     WasmValueVector assemblyScriptAbort(WasmValueVector params);

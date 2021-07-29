@@ -285,11 +285,6 @@ byte_t* WasmEngine::getMemory(const WasmValue& wasmPtr)
     return wasm_memory_data(wasm_extern_as_memory(fModuleExports["memory"])) + wasmPtr.of.i32;
 }
 
-float32_t* WasmEngine::getMemoryAsFloat32Pointer(const WasmValue& wasmPtr)
-{
-    return reinterpret_cast<float32_t *>(getMemory(wasmPtr));
-}
-
 const char* WasmEngine::getMemoryAsCString(const WasmValue& wasmPtr)
 {
     return static_cast<const char *>(getMemory(wasmPtr));
@@ -327,24 +322,14 @@ WasmValueVector WasmEngine::callFunction(const char* name, WasmValueVector param
     return WasmValueVector(resultVec.data, resultVec.data + resultVec.size);
 }
 
-int32_t WasmEngine::callFunctionReturnInt32(const char* name, WasmValueVector params)
+WasmValue WasmEngine::callFunctionReturnSingleValue(const char* name, WasmValueVector params)
 {
-    return callFunction(name, params)[0].of.i32;
-}
-
-int64_t WasmEngine::callFunctionReturnInt64(const char* name, WasmValueVector params)
-{
-    return callFunction(name, params)[0].of.i64;
-}
-
-float32_t WasmEngine::callFunctionReturnFloat32(const char* name, WasmValueVector params)
-{
-    return callFunction(name, params)[0].of.f32;
+    return callFunction(name, params)[0];
 }
 
 const char* WasmEngine::callFunctionReturnCString(const char* name, WasmValueVector params)
 {
-    return getMemoryAsCString(callFunction(name, params)[0]);
+    return getMemoryAsCString(callFunctionReturnSingleValue(name, params));
 }
 
 wasm_trap_t* WasmEngine::callHostFunction(void* env, const wasm_val_vec_t* paramsVec, wasm_val_vec_t* resultVec)
@@ -397,9 +382,8 @@ const char* WasmEngine::fromWTF16String(const WasmValue& wasmPtr)
         throw new std::runtime_error("Wasm module does not export function _from_wtf16_string");
     }
 
-    WasmValueVector result = callFunction("_from_wtf16_string", { wasmPtr });
+    return callFunctionReturnCString("_from_wtf16_string", { wasmPtr });
 
-    return getMemoryAsCString(result[0]);
 }
 
 #ifndef HIPHOP_ENABLE_WASI

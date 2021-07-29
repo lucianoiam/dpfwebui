@@ -81,7 +81,7 @@ uint32_t WasmHostPlugin::getVersion() const
 {
     try {
         checkEngineStarted();
-        return fEngine.callFunctionReturnInt32("_get_version");
+        return fEngine.callFunctionReturnSingleValue("_get_version").of.i32;
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }
@@ -93,7 +93,7 @@ int64_t WasmHostPlugin::getUniqueId() const
 {
     try {
         checkEngineStarted();
-        return fEngine.callFunctionReturnInt64("_get_unique_id");
+        return fEngine.callFunctionReturnSingleValue("_get_unique_id").of.i64;
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }
@@ -123,8 +123,8 @@ float WasmHostPlugin::getParameterValue(uint32_t index) const
 {
     try {
         checkEngineStarted();
-        return fEngine.callFunctionReturnFloat32("_get_parameter_value",
-            { WASM_I32_VAL(static_cast<int32_t>(index)) });
+        return fEngine.callFunctionReturnSingleValue("_get_parameter_value",
+            { WASM_I32_VAL(static_cast<int32_t>(index)) }).of.i32;
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }
@@ -208,7 +208,8 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
         checkEngineStarted();
 
         float32_t* block;
-        block = fEngine.getMemoryAsFloat32Pointer(fEngine.getGlobal("_input_block"));
+
+        block = reinterpret_cast<float32_t *>(fEngine.getMemory(fEngine.getGlobal("_input_block")));
 
         for (int i = 0; i < DISTRHO_PLUGIN_NUM_INPUTS; i++) {
             memcpy(block + i * frames, inputs[i], frames * 4);
@@ -216,7 +217,7 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
 
         fEngine.callFunction("_run", { WASM_I32_VAL(static_cast<int32_t>(frames)) });
 
-        block = fEngine.getMemoryAsFloat32Pointer(fEngine.getGlobal("_output_block"));
+        block = reinterpret_cast<float32_t *>(fEngine.getMemory(fEngine.getGlobal("_output_block")));
 
         for (int i = 0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; i++) {
             memcpy(outputs[i], block + i * frames, frames * 4);
