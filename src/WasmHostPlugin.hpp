@@ -19,14 +19,9 @@
 #ifndef WASMHOSTPLUGIN_HPP
 #define WASMHOSTPLUGIN_HPP
 
-#include <unordered_map>
-#include <string>
-
-#define WASM_API_EXTERN // link to static lib on win32
-#include "wasm.h"
-#include "wasmer.h"
-
 #include "DistrhoPlugin.hpp"
+
+#include "WasmEngine.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -34,7 +29,7 @@ class WasmHostPlugin : public Plugin
 {
 public:
     WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount);
-    ~WasmHostPlugin();
+    ~WasmHostPlugin() {};
 
     const char* getLabel() const override;
     const char* getMaker() const override;
@@ -60,22 +55,10 @@ public:
 
     void run(const float** inputs, float** outputs, uint32_t frames) override;
 
-    const char* readWasmString(int32_t wasmStringPtr);
-
 private:
+    void checkEngineStarted() const;
 
-    bool               fWasmReady;
-    wasm_engine_t*     fWasmEngine;
-    wasm_store_t*      fWasmStore;
-    wasm_instance_t*   fWasmInstance;
-    wasm_module_t*     fWasmModule;
-#ifdef HIPHOP_ENABLE_WASI
-    wasi_env_t*        fWasiEnv;
-#endif
-    wasm_extern_vec_t  fWasmExports;
-
-    typedef std::unordered_map<std::string, wasm_extern_t *> ExternMap;
-    mutable ExternMap fExternMap;
+    mutable WasmEngine fEngine;
 
 };
 

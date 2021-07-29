@@ -16,13 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <sstream>
+#include <iostream>
 
 #include "WasmEngine.hpp"
 
-#include "macro.h"
-
-#define MODULE_NAME_MAX 128
+#define MAX_MODULE_NAME    128
+#define MAX_HOST_FUNCTIONS 128
 
 USE_NAMESPACE_DISTRHO
 
@@ -44,7 +43,7 @@ WasmEngine::~WasmEngine()
     stop();
 }
 
-void WasmEngine::start(String& modulePath, WasmFunctionMap hostFunctions)
+void WasmEngine::start(const char* modulePath, WasmFunctionMap hostFunctions)
 {
     // -------------------------------------------------------------------------
     // Load and initialize binary module file
@@ -92,7 +91,7 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap hostFunctions)
         throwWasmerLastError();
     }
 
-    char name[MODULE_NAME_MAX];
+    char name[MAX_MODULE_NAME];
 
 #ifdef HIPHOP_ENABLE_WASI
     // -------------------------------------------------------------------------
@@ -172,9 +171,12 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap hostFunctions)
     // -------------------------------------------------------------------------
     // Insert host functions into imports vector
 
+    // Avoid reallocation to ensure pointers to elements remain valid through engine lifetime
+    fHostFunctions.reserve(MAX_HOST_FUNCTIONS);
+
 #ifndef HIPHOP_ENABLE_WASI
     // Required by AssemblyScript when running in non-WASI mode
-    hostFunctions["abort"] = { {WASM_I32, WASM_I32, WASM_I32, WASM_I32}, {}, 
+    hostFunctions["abort"] = { { WASM_I32, WASM_I32, WASM_I32, WASM_I32 }, {}, 
         std::bind(&WasmEngine::assemblyScriptAbort, this, std::placeholders::_1) };
 #endif
 
@@ -183,16 +185,16 @@ void WasmEngine::start(String& modulePath, WasmFunctionMap hostFunctions)
 
         wasm_valtype_vec_t params;
         toCValueTypeVector(it->second.params, &params);
-        wasm_valtype_vec_delete(&params);
-        
         wasm_valtype_vec_t result;
         toCValueTypeVector(it->second.result, &result);
-        wasm_valtype_vec_delete(&result);
-        
+
         wasm_functype_t* funcType = wasm_functype_new(&params, &result);
-        wasm_func_t* func = wasm_func_new_with_env(fStore, funcType, WasmEngine::invokeHostFunction,
+        wasm_func_t* func = wasm_func_new_with_env(fStore, funcType, WasmEngine::callHostFunction,
                                                     &fHostFunctions.back(), 0);
         imports.data[importIndex[it->first]] = wasm_func_as_extern(func);
+
+        wasm_valtype_vec_delete(&result);
+        wasm_valtype_vec_delete(&params);
     }
 
     // -------------------------------------------------------------------------
@@ -278,10 +280,19 @@ void WasmEngine::stop()
     fStarted = false;
 }
 
-void* WasmEngine::getMemory(const WasmValue& wasmBasePtr)
+byte_t* WasmEngine::getMemory(const WasmValue& wasmPtr)
 {
-    byte_t* ptr = wasm_memory_data(wasm_extern_as_memory(fModuleExports["memory"]));
-    return ptr + wasmBasePtr.of.i32;
+    return wasm_memory_data(wasm_extern_as_memory(fModuleExports["memory"])) + wasmPtr.of.i32;
+}
+
+float32_t* WasmEngine::getMemoryAsFloat32Pointer(const WasmValue& wasmPtr)
+{
+    return reinterpret_cast<float32_t *>(getMemory(wasmPtr));
+}
+
+const char* WasmEngine::getMemoryAsCString(const WasmValue& wasmPtr)
+{
+    return static_cast<const char *>(getMemory(wasmPtr));
 }
 
 WasmValue WasmEngine::getGlobal(const char* name)
@@ -296,22 +307,7 @@ void WasmEngine::setGlobal(const char* name, const WasmValue& value)
     wasm_global_set(wasm_extern_as_global(fModuleExports[name]), &value);
 }
 
-String WasmEngine::fromWasmString(const WasmValue& wasmPtr)
-{
-    if (wasmPtr.of.i32 == 0) {
-        return String("(null)");
-    }
-
-    if (fModuleExports.find("_c_string") == fModuleExports.end()) {
-        throw new std::runtime_error("Wasm module does not export function _c_string");
-    }
-
-    WasmValueVector result = callModuleFunction("_c_string", { wasmPtr });
-
-    return String(static_cast<const char *>(getMemory(result[0])));
-}
-
-WasmValueVector WasmEngine::callModuleFunction(const char* name, WasmValueVector params)
+WasmValueVector WasmEngine::callFunction(const char* name, WasmValueVector params)
 {
     wasm_func_t* func = wasm_extern_as_func(fModuleExports[name]);
 
@@ -331,7 +327,27 @@ WasmValueVector WasmEngine::callModuleFunction(const char* name, WasmValueVector
     return WasmValueVector(resultVec.data, resultVec.data + resultVec.size);
 }
 
-wasm_trap_t* WasmEngine::invokeHostFunction(void* env, const wasm_val_vec_t* paramsVec, wasm_val_vec_t* resultVec)
+int32_t WasmEngine::callFunctionReturnInt32(const char* name, WasmValueVector params)
+{
+    return callFunction(name, params)[0].of.i32;
+}
+
+int64_t WasmEngine::callFunctionReturnInt64(const char* name, WasmValueVector params)
+{
+    return callFunction(name, params)[0].of.i64;
+}
+
+float32_t WasmEngine::callFunctionReturnFloat32(const char* name, WasmValueVector params)
+{
+    return callFunction(name, params)[0].of.f32;
+}
+
+const char* WasmEngine::callFunctionReturnCString(const char* name, WasmValueVector params)
+{
+    return getMemoryAsCString(callFunction(name, params)[0]);
+}
+
+wasm_trap_t* WasmEngine::callHostFunction(void* env, const wasm_val_vec_t* paramsVec, wasm_val_vec_t* resultVec)
 {
     WasmFunction* func = static_cast<WasmFunction *>(env);
     WasmValueVector params (paramsVec->data, paramsVec->data + paramsVec->size);
@@ -342,19 +358,6 @@ wasm_trap_t* WasmEngine::invokeHostFunction(void* env, const wasm_val_vec_t* par
     }
 
     return 0;
-}
-
-void WasmEngine::toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types)
-{
-    int i = 0;
-    size_t size = kinds.size();
-    wasm_valtype_t* typesArray[size];
-
-    for (WasmValueKindVector::const_iterator it = kinds.cbegin(); it != kinds.cend(); ++it) {
-        typesArray[i++] = wasm_valtype_new(*it);
-    }
-
-    wasm_valtype_vec_new(types, size, typesArray);
 }
 
 void WasmEngine::throwWasmerLastError()
@@ -371,20 +374,48 @@ void WasmEngine::throwWasmerLastError()
     throw new std::runtime_error(std::string("Wasmer error - ") + msg);
 }
 
+void WasmEngine::toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types)
+{
+    int i = 0;
+    size_t size = kinds.size();
+    wasm_valtype_t* typesArray[size];
+
+    for (WasmValueKindVector::const_iterator it = kinds.cbegin(); it != kinds.cend(); ++it) {
+        typesArray[i++] = wasm_valtype_new(*it);
+    }
+
+    wasm_valtype_vec_new(types, size, typesArray);
+}
+
+const char* WasmEngine::toCString(const WasmValue& wasmPtr)
+{
+    if (wasmPtr.of.i32 == 0) {
+        return "(null)";
+    }
+
+    if (fModuleExports.find("_c_string") == fModuleExports.end()) {
+        throw new std::runtime_error("Wasm module does not export function _c_string");
+    }
+
+    WasmValueVector result = callFunction("_c_string", { wasmPtr });
+
+    return getMemoryAsCString(result[0]);
+}
+
 #ifndef HIPHOP_ENABLE_WASI
 
 WasmValueVector WasmEngine::assemblyScriptAbort(WasmValueVector params)
 {
-    const char *msg = fromWasmString(params[0]);
-    const char *filename = fromWasmString(params[1]);
+    const char *msg = toCString(params[0]);
+    const char *filename = toCString(params[1]);
     int32_t lineNumber = params[2].of.i32;
     int32_t columnNumber = params[3].of.i32;
 
-    std::stringstream ss;
-    ss << "AssemblyScript abort() called - msg: " << msg << ", filename: " << filename
-        << ", lineNumber: " << lineNumber << ", columnNumber: " << columnNumber;
+    // Copy format from WASI abort()
+    std::cerr << "abort: " << msg << " in " << filename << "(" << lineNumber
+        << ":" << columnNumber << ") - WASI is disabled" << std::endl;
 
-    HIPHOP_LOG_STDERR_COLOR(ss.str().c_str());
+    fStarted = false;
 
     return {};
 }

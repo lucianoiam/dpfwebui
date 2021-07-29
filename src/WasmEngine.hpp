@@ -28,7 +28,7 @@
 #include "wasm.h"
 #include "wasmer.h"
 
-#include "extra/String.hpp"
+#include "src/DistrhoDefines.h"
 
 START_NAMESPACE_DISTRHO
 
@@ -57,24 +57,29 @@ public:
 
     bool isStarted() { return fStarted; }
 
-    void start(String& modulePath, WasmFunctionMap hostFunctions);
+    void start(const char* modulePath, WasmFunctionMap hostFunctions);
     void stop();
 
-    void* getMemory(const WasmValue& wasmBasePtr);
+    byte_t*     getMemory(const WasmValue& wasmPtr = WASM_I32_VAL(0));
+    float32_t*  getMemoryAsFloat32Pointer(const WasmValue& wasmPtr);
+    const char* getMemoryAsCString(const WasmValue& wasmPtr);
 
-    WasmValue getGlobal(const char* name);
-    void      setGlobal(const char* name, const WasmValue& value);
+    WasmValue   getGlobal(const char* name);
+    void        setGlobal(const char* name, const WasmValue& value);
 
-    String fromWasmString(const WasmValue& wasmPtr);
+    WasmValueVector callFunction(const char* name, WasmValueVector params = {});
+    int32_t         callFunctionReturnInt32(const char* name, WasmValueVector params = {});
+    int64_t         callFunctionReturnInt64(const char* name, WasmValueVector params = {});
+    float32_t       callFunctionReturnFloat32(const char* name, WasmValueVector params = {});
+    const char*     callFunctionReturnCString(const char* name, WasmValueVector params = {});
 
-    WasmValueVector callModuleFunction(const char* name, WasmValueVector params);
-
-private:    
-    static wasm_trap_t* invokeHostFunction(void *env, const wasm_val_vec_t* paramsVec, wasm_val_vec_t* resultVec);
+private:
+    static wasm_trap_t* callHostFunction(void *env, const wasm_val_vec_t* paramsVec, wasm_val_vec_t* resultVec);
     
-    static void toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types);
-
     static void throwWasmerLastError();
+
+    static void toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types);    
+    const char* toCString(const WasmValue& wasmPtr);
 
 #ifndef HIPHOP_ENABLE_WASI
     WasmValueVector assemblyScriptAbort(WasmValueVector params);
