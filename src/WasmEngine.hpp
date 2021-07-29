@@ -60,8 +60,8 @@ public:
     void start(const char* modulePath, WasmFunctionMap hostFunctions);
     void stop();
 
-    byte_t*     getMemory(const WasmValue& wasmPtr = WASM_I32_VAL(0));
-    const char* getMemoryAsCString(const WasmValue& wasmPtr);
+    byte_t* getMemory(const WasmValue& wasmPtr = WASM_I32_VAL(0));
+    char*   getMemoryAsCString(const WasmValue& wasmPtr);
 
     WasmValue   getGlobal(const char* name);
     void        setGlobal(const char* name, const WasmValue& value);
@@ -77,7 +77,7 @@ private:
 
     static void toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types);    
     const char* fromWTF16String(const WasmValue& wasmPtr);
-
+    WasmValue   toWTF16String(const char* s);
 
 #ifndef HIPHOP_ENABLE_WASI
     WasmValueVector assemblyScriptAbort(WasmValueVector params);

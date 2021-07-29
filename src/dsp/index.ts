@@ -147,11 +147,14 @@ export let _ro_string_2: ArrayBuffer
 export let _ro_string_3: ArrayBuffer
 export let _ro_string_4: ArrayBuffer
 
-// Functions for converting between AssemblyScript and C strings
+// These are useful for passing strings from host to Wasm
 
 const MAX_STRING = 1024
 
 export let _rw_string_1 = new ArrayBuffer(MAX_STRING)
+export let _rw_string_2 = new ArrayBuffer(MAX_STRING)
+
+// Functions for converting between AssemblyScript and C strings
 
 export function _from_wtf16_string(s: string): ArrayBuffer {
     return String.UTF8.encode(s, /* null terminated */ true)
