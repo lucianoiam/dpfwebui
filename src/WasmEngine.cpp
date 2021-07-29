@@ -387,17 +387,17 @@ void WasmEngine::toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_
     wasm_valtype_vec_new(types, size, typesArray);
 }
 
-const char* WasmEngine::toCString(const WasmValue& wasmPtr)
+const char* WasmEngine::fromWTF16String(const WasmValue& wasmPtr)
 {
     if (wasmPtr.of.i32 == 0) {
         return "(null)";
     }
 
-    if (fModuleExports.find("_c_string") == fModuleExports.end()) {
-        throw new std::runtime_error("Wasm module does not export function _c_string");
+    if (fModuleExports.find("_from_wtf16_string") == fModuleExports.end()) {
+        throw new std::runtime_error("Wasm module does not export function _from_wtf16_string");
     }
 
-    WasmValueVector result = callFunction("_c_string", { wasmPtr });
+    WasmValueVector result = callFunction("_from_wtf16_string", { wasmPtr });
 
     return getMemoryAsCString(result[0]);
 }
@@ -406,8 +406,8 @@ const char* WasmEngine::toCString(const WasmValue& wasmPtr)
 
 WasmValueVector WasmEngine::assemblyScriptAbort(WasmValueVector params)
 {
-    const char *msg = toCString(params[0]);
-    const char *filename = toCString(params[1]);
+    const char *msg = fromWTF16String(params[0]);
+    const char *filename = fromWTF16String(params[1]);
     int32_t lineNumber = params[2].of.i32;
     int32_t columnNumber = params[3].of.i32;
 

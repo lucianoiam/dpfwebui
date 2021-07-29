@@ -79,7 +79,7 @@ private:
     static void throwWasmerLastError();
 
     static void toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types);    
-    const char* toCString(const WasmValue& wasmPtr);
+    const char* fromWTF16String(const WasmValue& wasmPtr);
 
 #ifndef HIPHOP_ENABLE_WASI
     WasmValueVector assemblyScriptAbort(WasmValueVector params);

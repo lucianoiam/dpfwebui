@@ -5,6 +5,7 @@ GENERAL
 - Wasm: states, programs and MIDI support
 - Wasm: profile plugin for memory leaks
 - Write a DGL UI for example 'astone'
+- Write a new example that includes both AS DSP and web UI, probably instrument
 - Update internals.md to include information regarding AssemblyScript DSP
 - Allow calling Window::openFileBrowser() from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs
