@@ -106,7 +106,7 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
         // empty implementation
     }
 
-    run(inputs: Float32Array[], outputs: Float32Array[]): void {
+    run(inputs: Float32Array[], outputs: Float32Array[], midiEvents: DISTRHO.MidiEvent[]): void {
         const output_l = outputs[0]
         const output_r = outputs[1]
         const radiansPerSample = PI_2 * this.frequency / this.samplerate

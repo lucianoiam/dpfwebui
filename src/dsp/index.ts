@@ -125,21 +125,35 @@ export function _deactivate(): void {
 
 let run_count = 0
 
-export function _run(frames: u32): void {
-    let inputs: Array<Float32Array> = []
+export function _run(frames: u32, midiEventCount: u32): void {
+    let inputs: Float32Array[] = []
 
-    for (let i = 0; i < _num_inputs; i++) {
-        inputs.push(Float32Array.wrap(_input_block, i * frames * 4, frames))
+    for (let i: i32 = 0; i < _rw_num_inputs; ++i) {
+        inputs.push(Float32Array.wrap(_rw_input_block, i * frames * 4, frames))
     }
 
-    let outputs: Array<Float32Array> = []
+    let outputs: Float32Array[] = []
 
-    for (let i = 0; i < _num_outputs; i++) {
-        outputs.push(Float32Array.wrap(_output_block, i * frames * 4, frames))
+    for (let i: i32 = 0; i < _rw_num_outputs; ++i) {
+        outputs.push(Float32Array.wrap(_rw_output_block, i * frames * 4, frames))
     }
 
-    // Frame count argument is redundant, it can be inferred from arrays length.
-    pluginInstance.run(inputs, outputs)
+    let midiEvents: DISTRHO.MidiEvent[] = []
+    let midiOffset: i32 = 0
+    
+    for (let i: u32 = 0; i < midiEventCount; ++i) {
+        let event = new DISTRHO.MidiEvent
+        event.frame = raw_midi_events.getUint32(midiOffset, /* LE */ true)
+        midiOffset += 4
+        let size = raw_midi_events.getUint32(midiOffset, /* LE */ true)
+        midiOffset += 4
+        event.data = Uint8Array.wrap(_rw_midi_block, midiOffset, size)
+        midiOffset += size
+        midiEvents.push(event)
+    }
+
+    // Count arguments are redundant, they can be inferred from arrays length.
+    pluginInstance.run(inputs, outputs, midiEvents)
 
     // Run AS garbage collector every N calls. Default TLSF + incremental GC
     // https://www.assemblyscript.org/garbage-collection.html#runtime-variants
@@ -154,17 +168,24 @@ export function _run(frames: u32): void {
 // Number of inputs or outputs does not change during runtime so it makes sense
 // to init both once instead of passing them as arguments on every call to run()
 
-export let _num_inputs: i32
-export let _num_outputs: i32
+export let _rw_num_inputs: i32
+export let _rw_num_outputs: i32
 
 // Using exported globals instead of passing buffer arguments to run() allows
 // for a simpler implementation by avoiding Wasm memory alloc on the host side.
-// Block size should not exceed 64Kb, or 16384 frames of 32-bit float samples.
+// Audio block size should not exceed 64Kb, or 16384 frames of 32-bit float
+// samples. Midi events should not exceed 1Kb, or 128 events of 8 bytes.
 
-const MAX_PROCESS_BLOCK_SIZE = 65536
+const MAX_AUDIO_BLOCK_BYTES = 65536
 
-export let _input_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
-export let _output_block = new ArrayBuffer(MAX_PROCESS_BLOCK_SIZE)
+export let _rw_input_block = new ArrayBuffer(MAX_AUDIO_BLOCK_BYTES)
+export let _rw_output_block = new ArrayBuffer(MAX_AUDIO_BLOCK_BYTES)
+
+const MAX_MIDI_EVENT_BYTES = 1024
+
+export let _rw_midi_block = new ArrayBuffer(MAX_MIDI_EVENT_BYTES)
+
+let raw_midi_events = new DataView(_rw_midi_block, 0, MAX_MIDI_EVENT_BYTES)
 
 // AssemblyScript does not support multi-values yet. Export a couple of generic
 // variables for returning complex data types like initParameter() requires.

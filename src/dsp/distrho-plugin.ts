@@ -75,8 +75,9 @@ export default namespace DISTRHO {
         // void Plugin::deactivate()
         deactivate(): void
 
-        // void Plugin::run(const float** inputs, float** outputs, uint32_t frames)
-        run(inputs: Float32Array[], outputs: Float32Array[]): void
+        // void Plugin::run(const float** inputs, float** outputs, uint32_t frames,
+        //                  const MidiEvent* midiEvents, uint32_t midiEventCount)
+        run(inputs: Float32Array[], outputs: Float32Array[], midiEvents: MidiEvent[]): void
 
     }
 
@@ -104,6 +105,14 @@ export default namespace DISTRHO {
         def: f32
         min: f32
         max: f32
+
+    }
+
+    // struct DISTRHO::MidiEvent
+    export class MidiEvent {
+
+        frame: u32
+        data: Uint8Array = new Uint8Array(0)
 
     }
 

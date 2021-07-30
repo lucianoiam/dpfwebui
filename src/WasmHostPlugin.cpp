@@ -37,8 +37,8 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 
     fEngine.start(path, hostFunctions);
 
-    fEngine.setGlobal("_num_inputs", MakeI32(DISTRHO_PLUGIN_NUM_INPUTS));
-    fEngine.setGlobal("_num_outputs", MakeI32(DISTRHO_PLUGIN_NUM_OUTPUTS));
+    fEngine.setGlobal("_rw_num_inputs", MakeI32(DISTRHO_PLUGIN_NUM_INPUTS));
+    fEngine.setGlobal("_rw_num_outputs", MakeI32(DISTRHO_PLUGIN_NUM_OUTPUTS));
 }
 
 const char* WasmHostPlugin::getLabel() const
@@ -233,25 +233,50 @@ void WasmHostPlugin::deactivate()
     }
 }
 
-void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames,
+                                const MidiEvent* midiEvents, uint32_t midiEventCount)
 {
+#else
+    void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
+{
+    const MidiEvent* midiEvents = 0;
+    uint32_t midiEventCount = 0;
+#endif
     try {
         checkEngineStarted();
 
-        float32_t* block;
+        float32_t* audioBlock;
 
-        block = reinterpret_cast<float32_t *>(fEngine.getMemory(fEngine.getGlobal("_input_block")));
+        audioBlock = reinterpret_cast<float32_t *>(fEngine.getMemory(
+            fEngine.getGlobal("_rw_input_block")));
 
         for (int i = 0; i < DISTRHO_PLUGIN_NUM_INPUTS; i++) {
-            memcpy(block + i * frames, inputs[i], frames * 4);
+            memcpy(audioBlock + i * frames, inputs[i], frames * 4);
         }
 
-        fEngine.callFunction("_run", { MakeI32(frames) });
+        byte_t* midiBlock = fEngine.getMemory(fEngine.getGlobal("_rw_midi_block"));
 
-        block = reinterpret_cast<float32_t *>(fEngine.getMemory(fEngine.getGlobal("_output_block")));
+        for (uint32_t i = 0; i < midiEventCount; i++) {
+            *reinterpret_cast<uint32_t *>(midiBlock) = midiEvents[i].frame;
+            midiBlock += 4;
+            *reinterpret_cast<uint32_t *>(midiBlock) = midiEvents[i].size;
+            midiBlock += 4;
+            if (midiEvents[i].size > MidiEvent::kDataSize) {
+                memcpy(midiBlock, midiEvents[i].dataExt, midiEvents[i].size);
+            } else {
+                memcpy(midiBlock, midiEvents[i].data, midiEvents[i].size);
+            }
+            midiBlock += midiEvents[i].size;
+        }
+
+        fEngine.callFunction("_run", { MakeI32(frames), MakeI32(midiEventCount) });
+
+        audioBlock = reinterpret_cast<float32_t *>(fEngine.getMemory(
+            fEngine.getGlobal("_rw_output_block")));
 
         for (int i = 0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; i++) {
-            memcpy(outputs[i], block + i * frames, frames * 4);
+            memcpy(outputs[i], audioBlock + i * frames, frames * 4);
         }
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());

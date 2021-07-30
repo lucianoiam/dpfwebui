@@ -58,7 +58,12 @@ public:
     void activate() override;
     void deactivate() override;
 
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void run(const float** inputs, float** outputs, uint32_t frames,
+                const MidiEvent* midiEvents, uint32_t midiEventCount) override;
+#else
     void run(const float** inputs, float** outputs, uint32_t frames) override;
+#endif
 
 private:
     inline void checkEngineStarted() const;
