@@ -30,6 +30,9 @@
 
 #include "src/DistrhoDefines.h"
 
+#define MakeI32(x) WASM_I32_VAL(static_cast<int32_t>(x))
+#define MakeF32(x) WASM_F32_VAL(static_cast<float32_t>(x))
+
 START_NAMESPACE_DISTRHO
 
 struct WasmFunctionDescriptor;

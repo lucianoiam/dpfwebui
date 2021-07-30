@@ -32,13 +32,13 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     WasmFunctionMap hostFunctions;
 
     hostFunctions["_get_sample_rate"] = { {}, { WASM_F32 }, [this](WasmValueVector) -> WasmValueVector {
-        return { WASM_F32_VAL(static_cast<float32_t>(getSampleRate())) };
+        return { MakeF32(getSampleRate()) };
     }};
 
     fEngine.start(path, hostFunctions);
 
-    fEngine.setGlobal("_num_inputs", WASM_I32_VAL(DISTRHO_PLUGIN_NUM_INPUTS));
-    fEngine.setGlobal("_num_outputs", WASM_I32_VAL(DISTRHO_PLUGIN_NUM_OUTPUTS));
+    fEngine.setGlobal("_num_inputs", MakeI32(DISTRHO_PLUGIN_NUM_INPUTS));
+    fEngine.setGlobal("_num_outputs", MakeI32(DISTRHO_PLUGIN_NUM_OUTPUTS));
 }
 
 const char* WasmHostPlugin::getLabel() const
@@ -105,7 +105,7 @@ void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
 {
     try {
         checkEngineStarted();
-        fEngine.callFunction("_init_parameter", { WASM_I32_VAL(static_cast<int32_t>(index)) });
+        fEngine.callFunction("_init_parameter", { MakeI32(index) });
         WasmValue res;
         res = fEngine.getGlobal("_rw_int_1");    parameter.hints = res.of.i32;
         res = fEngine.getGlobal("_ro_string_1"); parameter.name = fEngine.getMemoryAsCString(res);
@@ -122,7 +122,7 @@ float WasmHostPlugin::getParameterValue(uint32_t index) const
     try {
         checkEngineStarted();
         return fEngine.callFunctionReturnSingleValue("_get_parameter_value",
-            { WASM_I32_VAL(static_cast<int32_t>(index)) }).of.f32;
+            { MakeI32(index) }).of.f32;
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }
@@ -134,10 +134,7 @@ void WasmHostPlugin::setParameterValue(uint32_t index, float value)
 {
     try {
         checkEngineStarted();
-        fEngine.callFunction("_set_parameter_value", {
-            WASM_I32_VAL(static_cast<int32_t>(index)),
-            WASM_F32_VAL(static_cast<float32_t>(value))
-        });
+        fEngine.callFunction("_set_parameter_value", { MakeI32(index), MakeF32(value) });
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }
@@ -149,9 +146,7 @@ void WasmHostPlugin::initProgramName(uint32_t index, String& programName)
 {
     try {
         checkEngineStarted();
-        programName = fEngine.callFunctionReturnCString("_init_program_name",
-            { WASM_I32_VAL(static_cast<int32_t>(index)) }
-        );
+        programName = fEngine.callFunctionReturnCString("_init_program_name", { MakeI32(index) });
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }
@@ -161,7 +156,7 @@ void WasmHostPlugin::loadProgram(uint32_t index)
 {
     try {
         checkEngineStarted();
-        fEngine.callFunction("_load_program", { WASM_I32_VAL(static_cast<int32_t>(index)) });
+        fEngine.callFunction("_load_program", { MakeI32(index) });
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }
@@ -175,7 +170,7 @@ void WasmHostPlugin::initState(uint32_t index, String& stateKey, String& default
 {
     try {
         checkEngineStarted();
-        fEngine.callFunction("_init_state", { WASM_I32_VAL(static_cast<int32_t>(index)) });
+        fEngine.callFunction("_init_state", { MakeI32(index) });
         stateKey = fEngine.getMemoryAsCString(fEngine.getGlobal("_ro_string_1"));
         defaultStateValue = fEngine.getMemoryAsCString(fEngine.getGlobal("_ro_string_2"));
     } catch (const std::exception& ex) {
@@ -251,7 +246,7 @@ void WasmHostPlugin::run(const float** inputs, float** outputs, uint32_t frames)
             memcpy(block + i * frames, inputs[i], frames * 4);
         }
 
-        fEngine.callFunction("_run", { WASM_I32_VAL(static_cast<int32_t>(frames)) });
+        fEngine.callFunction("_run", { MakeI32(frames) });
 
         block = reinterpret_cast<float32_t *>(fEngine.getMemory(fEngine.getGlobal("_output_block")));
 
