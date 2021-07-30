@@ -76,6 +76,14 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
         }
     }
 
+    initProgramName(index: u32, programName: DISTRHO.StringWrapper): void {
+        // empty implementation
+    }
+
+    loadProgram(index: u32): void {
+        // empty implementation
+    }
+
     initState(index: u32, stateKey: DISTRHO.StringWrapper, defaultStateValue: DISTRHO.StringWrapper): void {
         switch (index) {
             case 0:
@@ -84,7 +92,9 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
         }
     }
 
-    setState(key: string, value: string): void { /* empty implementation */ }
+    setState(key: string, value: string): void {
+        // empty implementation
+    }
     
     getState(key: string): string { return '' }
 
@@ -92,7 +102,9 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
         this.samplerate = this.getSampleRate()
     }
 
-    deactivate(): void { /* empty implementation */ }
+    deactivate(): void {
+        // empty implementation
+    }
 
     run(inputs: Float32Array[], outputs: Float32Array[]): void {
         const output_l = outputs[0]

@@ -106,14 +106,23 @@ void WebHostUI::parameterChanged(uint32_t index, float value)
     webPostMessage({"UI", "parameterChanged", index, value});
 }
 
-#if (DISTRHO_PLUGIN_WANT_STATE == 1)
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+
+void WebHostUI::programLoaded(uint32_t index)
+{
+    webPostMessage({"UI", "programLoaded", index});
+}
+
+#endif // DISTRHO_PLUGIN_WANT_PROGRAMS
+
+#if DISTRHO_PLUGIN_WANT_STATE
 
 void WebHostUI::stateChanged(const char* key, const char* value)
 {
     webPostMessage({"UI", "stateChanged", key, value});
 }
 
-#endif // DISTRHO_PLUGIN_WANT_STATE == 1
+#endif // DISTRHO_PLUGIN_WANT_STATE
 
 uint WebHostUI::getInitWidth() const
 {
@@ -230,13 +239,13 @@ void WebHostUI::handleWebWidgetScriptMessageReceived(const JsValueVector& args)
             static_cast<float>(args[kArg1].getDouble())     // value
         );
 
-#if (DISTRHO_PLUGIN_WANT_STATE == 1)
+#if DISTRHO_PLUGIN_WANT_STATE
     } else if ((method == "setState") && (argc == 2)) {
         setState(
             args[kArg0].getString(), // key
             args[kArg1].getString()  // value
         );
-#endif // DISTRHO_PLUGIN_WANT_STATE == 1
+#endif // DISTRHO_PLUGIN_WANT_STATE
 
     } else if (method == "isStandalone") {
         webPostMessage({"UI", "isStandalone", getWindow().getApp().isStandalone()});

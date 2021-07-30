@@ -42,10 +42,15 @@ public:
     float getParameterValue(uint32_t index) const override;
     void  setParameterValue(uint32_t index, float value) override;
 
-#if (DISTRHO_PLUGIN_WANT_STATE == 1)
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+    void initProgramName(uint32_t index, String& programName) override;
+    void loadProgram(uint32_t index) override;
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATE
     void   initState(uint32_t index, String& stateKey, String& defaultStateValue) override;
     void   setState(const char* key, const char* value) override;
-#if (DISTRHO_PLUGIN_WANT_FULL_STATE == 1)
+#if DISTRHO_PLUGIN_WANT_FULL_STATE
     String getState(const char* key) const override;
 #endif
 #endif
@@ -56,7 +61,7 @@ public:
     void run(const float** inputs, float** outputs, uint32_t frames) override;
 
 private:
-    void checkEngineStarted() const;
+    inline void checkEngineStarted() const;
 
     mutable WasmEngine fEngine;
 

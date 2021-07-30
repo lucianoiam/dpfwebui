@@ -54,6 +54,12 @@ export default namespace DISTRHO {
         // void Plugin::setParameterValue(uint32_t index, float value)
         setParameterValue(index: u32, value: f32): void
 
+        // void Plugin::initProgramName(uint32_t index, String& programName)
+        initProgramName(index: u32, programName: StringWrapper): void
+
+        // void Plugin::loadProgram(uint32_t index)
+        loadProgram(index: u32): void
+
         // void Plugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
         initState(index: u32, stateKey: StringWrapper, defaultStateValue: StringWrapper): void
 
@@ -76,7 +82,7 @@ export default namespace DISTRHO {
 
     export class Plugin {
         
-        // double Plugin::getSampleRate();
+        // double Plugin::getSampleRate()
         getSampleRate(): f32 {
             return _get_sample_rate()
         }

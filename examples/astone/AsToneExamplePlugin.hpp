@@ -23,7 +23,7 @@
 
 #define PARAMETER_COUNT 1
 #define PROGRAM_COUNT   0
-#define STATE_COUNT     1
+#define STATE_COUNT     0
 
 START_NAMESPACE_DISTRHO
 

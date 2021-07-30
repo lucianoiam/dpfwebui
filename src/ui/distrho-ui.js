@@ -89,6 +89,11 @@ class DISTRHO_UI {
         // default empty implementation
     }
 
+    // void UI::programLoaded(uint32_t index)
+    programLoaded(index) {
+        // default empty implementation
+    }
+
     // void UI::stateChanged(const char* key, const char* value)
     stateChanged(key, value) {
         // default empty implementation

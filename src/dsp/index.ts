@@ -87,6 +87,16 @@ export function _set_parameter_value(index: u32, value: f32): void {
     pluginInstance.setParameterValue(index, value)
 }
 
+export function _init_program_name(index: u32): ArrayBuffer {
+    let programName = new DISTRHO.StringWrapper
+    pluginInstance.initProgramName(index, programName)
+    return _from_wtf16_string(programName.string)
+}
+
+export function _load_program(index: u32): void {
+    pluginInstance.loadProgram(index)
+}
+
 export function _init_state(index: u32): void {
     let stateKey = new DISTRHO.StringWrapper
     let defaultStateValue = new DISTRHO.StringWrapper

@@ -38,7 +38,10 @@ protected:
     void uiReshape(uint width, uint height) override;
 
     void parameterChanged(uint32_t index, float value) override;
-#if (DISTRHO_PLUGIN_WANT_STATE == 1)
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+    void programLoaded(uint32_t index) override;
+#endif
+#if DISTRHO_PLUGIN_WANT_STATE
     void stateChanged(const char* key, const char* value) override;
 #endif
     

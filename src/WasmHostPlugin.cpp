@@ -143,7 +143,33 @@ void WasmHostPlugin::setParameterValue(uint32_t index, float value)
     }
 }
 
-#if (DISTRHO_PLUGIN_WANT_STATE == 1)
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+
+void WasmHostPlugin::initProgramName(uint32_t index, String& programName)
+{
+    try {
+        checkEngineStarted();
+        programName = fEngine.callFunctionReturnCString("_init_program_name",
+            { WASM_I32_VAL(static_cast<int32_t>(index)) }
+        );
+    } catch (const std::exception& ex) {
+        HIPHOP_LOG_STDERR_COLOR(ex.what());
+    }
+}
+
+void WasmHostPlugin::loadProgram(uint32_t index)
+{
+    try {
+        checkEngineStarted();
+        fEngine.callFunction("_load_program", { WASM_I32_VAL(static_cast<int32_t>(index)) });
+    } catch (const std::exception& ex) {
+        HIPHOP_LOG_STDERR_COLOR(ex.what());
+    }
+}
+
+#endif // DISTRHO_PLUGIN_WANT_PROGRAMS
+
+#if DISTRHO_PLUGIN_WANT_STATE
 
 void WasmHostPlugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
 {
@@ -171,7 +197,7 @@ void WasmHostPlugin::setState(const char* key, const char* value)
     }
 }
 
-#if (DISTRHO_PLUGIN_WANT_FULL_STATE == 1)
+#if DISTRHO_PLUGIN_WANT_FULL_STATE
 
 String WasmHostPlugin::getState(const char* key) const
 {
@@ -188,9 +214,9 @@ String WasmHostPlugin::getState(const char* key) const
     return String();
 }
 
-#endif // DISTRHO_PLUGIN_WANT_FULL_STATE == 1
+#endif // DISTRHO_PLUGIN_WANT_FULL_STATE
 
-#endif // DISTRHO_PLUGIN_WANT_STATE == 1
+#endif // DISTRHO_PLUGIN_WANT_STATE
 
 void WasmHostPlugin::activate()
 {
