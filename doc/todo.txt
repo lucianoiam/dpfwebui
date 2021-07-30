@@ -2,7 +2,7 @@ GENERAL
 -------
 
 - Makefile flag for bypassing copy/link of framework TS files
-- Wasm: states, programs and MIDI support
+- Wasm: programs and MIDI support
 - Wasm: profile plugin for memory leaks
 - Write a DGL UI for example 'astone'
 - Write a new example that includes both AS DSP and web UI, probably instrument

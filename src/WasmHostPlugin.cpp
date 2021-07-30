@@ -105,9 +105,7 @@ void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
 {
     try {
         checkEngineStarted();
-
         fEngine.callFunction("_init_parameter", { WASM_I32_VAL(static_cast<int32_t>(index)) });
-        
         WasmValue res;
         res = fEngine.getGlobal("_rw_int_1");    parameter.hints = res.of.i32;
         res = fEngine.getGlobal("_ro_string_1"); parameter.name = fEngine.getMemoryAsCString(res);
@@ -136,7 +134,6 @@ void WasmHostPlugin::setParameterValue(uint32_t index, float value)
 {
     try {
         checkEngineStarted();
-
         fEngine.callFunction("_set_parameter_value", {
             WASM_I32_VAL(static_cast<int32_t>(index)),
             WASM_F32_VAL(static_cast<float32_t>(value))
@@ -152,9 +149,7 @@ void WasmHostPlugin::initState(uint32_t index, String& stateKey, String& default
 {
     try {
         checkEngineStarted();
-
         fEngine.callFunction("_init_state", { WASM_I32_VAL(static_cast<int32_t>(index)) });
-
         stateKey = fEngine.getMemoryAsCString(fEngine.getGlobal("_ro_string_1"));
         defaultStateValue = fEngine.getMemoryAsCString(fEngine.getGlobal("_ro_string_2"));
     } catch (const std::exception& ex) {
@@ -164,21 +159,31 @@ void WasmHostPlugin::initState(uint32_t index, String& stateKey, String& default
 
 void WasmHostPlugin::setState(const char* key, const char* value)
 {
-    checkEngineStarted();
-
-    // TODO
-    (void)key;
-    (void)value;
+    try {
+        checkEngineStarted();
+        WasmValue wkey = fEngine.getGlobal("_rw_string_1");
+        fEngine.copyCStringToMemory(wkey, key);
+        WasmValue wval = fEngine.getGlobal("_rw_string_2");
+        fEngine.copyCStringToMemory(wval, value);
+        fEngine.callFunction("_set_state", { wkey, wval });
+    } catch (const std::exception& ex) {
+        HIPHOP_LOG_STDERR_COLOR(ex.what());
+    }
 }
 
 #if (DISTRHO_PLUGIN_WANT_FULL_STATE == 1)
 
 String WasmHostPlugin::getState(const char* key) const
 {
-    checkEngineStarted();
-
-    // TODO
-    (void)key;
+    try {
+        checkEngineStarted();
+        WasmValue wkey = fEngine.getGlobal("_rw_string_1");
+        fEngine.copyCStringToMemory(wkey, key);
+        const char* val = fEngine.callFunctionReturnCString("_get_state", { wkey });
+        return String(val);
+    } catch (const std::exception& ex) {
+        HIPHOP_LOG_STDERR_COLOR(ex.what());
+    }
 
     return String();
 }

@@ -290,6 +290,11 @@ char* WasmEngine::getMemoryAsCString(const WasmValue& wasmPtr)
     return static_cast<char *>(getMemory(wasmPtr));
 }
 
+void WasmEngine::copyCStringToMemory(const WasmValue& wasmPtr, const char* s)
+{
+    strcpy(getMemoryAsCString(wasmPtr), s);
+}
+
 WasmValue WasmEngine::getGlobal(const char* name)
 {
     WasmValue value;
@@ -389,7 +394,8 @@ WasmValue WasmEngine::toWTF16String(const char* s)
     }
 
     WasmValue wasmPtr = getGlobal("_rw_string_1");
-    strcpy(getMemoryAsCString(wasmPtr), s);
+
+    copyCStringToMemory(wasmPtr, s);
 
     return callFunctionReturnSingleValue("_to_wtf16_string", { wasmPtr });
 }

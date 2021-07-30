@@ -83,6 +83,14 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
         }
     }
 
+    setState(key: string, value: string): void { /* empty implementation */ }
+    
+    getState(key: string): string { return '' }
+
+    activate(): void { /* empty implementation */ }
+
+    deactivate(): void { /* empty implementation */ }
+
     run(inputs: Float32Array[], outputs: Float32Array[]): void {
         const output_l = outputs[0]
         const output_r = outputs[1]
@@ -100,14 +108,6 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
         while (phase > PI_2) phase -= PI_2
 
         this.phase = phase
-    }
-
-    activate(): void {
-        // Empty implementation
-    }
-
-    deactivate(): void {
-        // Empty implementation
     }
 
 }

@@ -82,8 +82,6 @@ export function _set_parameter_value(index: u32, value: f32): void {
     pluginInstance.setParameterValue(index, value)
 }
 
-// Strings are immutable hence ArrayBuffer is used instead as inout parameter
-
 export function _init_state(index: u32): void {
     let stateKey = new DISTRHO.StringWrapper
     let defaultStateValue = new DISTRHO.StringWrapper
@@ -92,6 +90,14 @@ export function _init_state(index: u32): void {
 
     _ro_string_1 = _from_wtf16_string(stateKey.string)
     _ro_string_2 = _from_wtf16_string(defaultStateValue.string)
+}
+
+export function _set_state(key: ArrayBuffer, value: ArrayBuffer): void {
+    pluginInstance.setState(_to_wtf16_string(key), _to_wtf16_string(value))
+}
+
+export function _get_state(key: ArrayBuffer): ArrayBuffer {
+    return _from_wtf16_string(pluginInstance.getState(_to_wtf16_string(key)))
 }
 
 export function _activate(): void {
@@ -166,12 +172,15 @@ const MAX_STRING_BYTES = 1024
 export let _rw_string_1 = new ArrayBuffer(MAX_STRING_BYTES)
 export let _rw_string_2 = new ArrayBuffer(MAX_STRING_BYTES)
 
-// Functions for converting between AssemblyScript and C strings
+// Functions for converting between AssemblyScript and C strings. These are
+// exported but string conversions should be only done in AssemblyScript unless
+// strictly necessary to avoid cross function calls.
 
 export function _from_wtf16_string(s: string): ArrayBuffer {
     return String.UTF8.encode(s, /* null terminated */ true)
 }
 
 export function _to_wtf16_string(s: ArrayBuffer): string {
-    return String.UTF8.decode(s)
+    const nullPos = Uint8Array.wrap(s).indexOf(0)
+    return String.UTF8.decode(s.slice(0, nullPos))
 }

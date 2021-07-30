@@ -62,6 +62,7 @@ public:
 
     byte_t* getMemory(const WasmValue& wasmPtr = WASM_I32_VAL(0));
     char*   getMemoryAsCString(const WasmValue& wasmPtr);
+    void    copyCStringToMemory(const WasmValue& wasmPtr, const char* s);
 
     WasmValue   getGlobal(const char* name);
     void        setGlobal(const char* name, const WasmValue& value);

@@ -57,6 +57,12 @@ export default namespace DISTRHO {
         // void Plugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
         initState(index: u32, stateKey: StringWrapper, defaultStateValue: StringWrapper): void
 
+        // void Plugin::setState(const char* key, const char* value)
+        setState(key: string, value: string): void
+
+        // String Plugin::getState(const char* key)
+        getState(key: string): string
+
         // void Plugin::activate()
         activate(): void
 

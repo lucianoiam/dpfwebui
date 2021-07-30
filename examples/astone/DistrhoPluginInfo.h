@@ -107,7 +107,7 @@
    @note this macro is automatically enabled if a plugin has programs and state, as the key-value state pairs need to be updated when the current program changes.
    @see Plugin::getState(const char*)
  */
-#define DISTRHO_PLUGIN_WANT_FULL_STATE 0
+#define DISTRHO_PLUGIN_WANT_FULL_STATE 1
 
 /**
    Wherever the plugin wants time position information from the host.
