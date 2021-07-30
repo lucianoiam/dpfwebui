@@ -122,7 +122,7 @@ float WasmHostPlugin::getParameterValue(uint32_t index) const
     try {
         checkEngineStarted();
         return fEngine.callFunctionReturnSingleValue("_get_parameter_value",
-            { WASM_I32_VAL(static_cast<int32_t>(index)) }).of.i32;
+            { WASM_I32_VAL(static_cast<int32_t>(index)) }).of.f32;
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }
