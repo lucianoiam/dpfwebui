@@ -63,9 +63,9 @@ public:
     void start(const char* modulePath, WasmFunctionMap hostFunctions);
     void stop();
 
-    byte_t* getMemory(const WasmValue& wasmPtr = WASM_I32_VAL(0));
-    char*   getMemoryAsCString(const WasmValue& wasmPtr);
-    void    copyCStringToMemory(const WasmValue& wasmPtr, const char* s);
+    byte_t* getMemory(const WasmValue& wPtr = MakeI32(0));
+    char*   getMemoryAsCString(const WasmValue& wPtr);
+    void    copyCStringToMemory(const WasmValue& wPtr, const char* s);
 
     WasmValue   getGlobal(const char* name);
     void        setGlobal(const char* name, const WasmValue& value);
@@ -81,7 +81,7 @@ private:
 
     static void toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types);
        
-    const char* fromWTF16String(const WasmValue& wasmPtr);
+    const char* fromWTF16String(const WasmValue& wPtr);
     WasmValue   toWTF16String(const char* s);
 
 #ifndef HIPHOP_ENABLE_WASI

@@ -279,19 +279,19 @@ void WasmEngine::stop()
     fStarted = false;
 }
 
-byte_t* WasmEngine::getMemory(const WasmValue& wasmPtr)
+byte_t* WasmEngine::getMemory(const WasmValue& wPtr)
 {
-    return wasm_memory_data(wasm_extern_as_memory(fModuleExports["memory"])) + wasmPtr.of.i32;
+    return wasm_memory_data(wasm_extern_as_memory(fModuleExports["memory"])) + wPtr.of.i32;
 }
 
-char* WasmEngine::getMemoryAsCString(const WasmValue& wasmPtr)
+char* WasmEngine::getMemoryAsCString(const WasmValue& wPtr)
 {
-    return static_cast<char *>(getMemory(wasmPtr));
+    return static_cast<char *>(getMemory(wPtr));
 }
 
-void WasmEngine::copyCStringToMemory(const WasmValue& wasmPtr, const char* s)
+void WasmEngine::copyCStringToMemory(const WasmValue& wPtr, const char* s)
 {
-    strcpy(getMemoryAsCString(wasmPtr), s);
+    strcpy(getMemoryAsCString(wPtr), s);
 }
 
 WasmValue WasmEngine::getGlobal(const char* name)
@@ -376,13 +376,13 @@ void WasmEngine::toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_
     wasm_valtype_vec_new(types, size, typesArray);
 }
 
-const char* WasmEngine::fromWTF16String(const WasmValue& wasmPtr)
+const char* WasmEngine::fromWTF16String(const WasmValue& wPtr)
 {
     if (fModuleExports.find("_from_wtf16_string") == fModuleExports.end()) {
         throw new std::runtime_error("Wasm module does not export function _from_wtf16_string");
     }
 
-    return callFunctionReturnCString("_from_wtf16_string", { wasmPtr });
+    return callFunctionReturnCString("_from_wtf16_string", { wPtr });
 
 }
 
@@ -392,11 +392,11 @@ WasmValue WasmEngine::toWTF16String(const char* s)
         throw new std::runtime_error("Wasm module does not export function _to_wtf16_string");
     }
 
-    WasmValue wasmPtr = getGlobal("_rw_string_1");
+    WasmValue wPtr = getGlobal("_rw_string_1");
 
-    copyCStringToMemory(wasmPtr, s);
+    copyCStringToMemory(wPtr, s);
 
-    return callFunctionReturnSingleValue("_to_wtf16_string", { wasmPtr });
+    return callFunctionReturnSingleValue("_to_wtf16_string", { wPtr });
 }
 
 #ifndef HIPHOP_ENABLE_WASI
