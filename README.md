@@ -16,30 +16,24 @@ core remains isolated and implemented in C++ or AssemblyScript.
 
 ### Features
 
-* Based on DISTRHO Plugin Framework
-* C++ or AssemblyScript for DSP code
+* Based on [DISTRHO Plugin Framework](https://github.com/DISTRHO/DPF)
+* C++ or [AssemblyScript](https://www.assemblyscript.org) for DSP code
 * HTML / CSS / JS for UI development
 * VST2 / LV2 plugin formats
 * Linux / Mac / Windows
 * Just the powerful basics
 * BSD-like license
 
-__Support for AssemblyScript is still work in progress.__ [AssemblyScript](https://www.assemblyscript.org)
-is a language very similar to [TypeScript](https://www.typescriptlang.org)
-specifically designed for targeting [WebAssembly](https://webassembly.org) (Wasm).
-Plugins created with Hip-Hop optionally embed a Wasm [JIT engine](https://github.com/wasmerio/wasmer)
-for running DSP code written in AssemblyScript. Such engine is completely independent from the web view.
-
-The following DSP / UI language combinations are available:
+The following DSP / UI language combinations are possible:
 
 DSP|UI |Comments
 ---|---|---------------------------------------------------------------------------
-AS |JS |Web view user interface, no example available yet
-C++|JS |Web view user interface, see example [webgain](https://github.com/lucianoiam/hiphop/tree/master/examples/webgain)
-AS |C++|DPF Graphics Library (DGL) widgets, see example [astone](https://github.com/lucianoiam/hiphop/tree/master/examples/astone) (WIP)
-C++|C++|Do not use this project, check [DPF](http://github.com/DISTRHO/DPF) instead
+AS |JS |Web view user interface, no example available yet.
+C++|JS |Web view user interface, see example [webgain](https://github.com/lucianoiam/hiphop/tree/master/examples/webgain).
+AS |C++|DPF Graphics Library (DGL) widgets, see example [astone](https://github.com/lucianoiam/hiphop/tree/master/examples/astone). (WIP)
+C++|C++|Do not use this project, use DPF instead.
 
-### Example UI code
+### Example JavaScript UI code
 
 ```JavaScript
 class MyPluginUI extends DISTRHO_UI {
@@ -69,9 +63,20 @@ class MyPluginUI extends DISTRHO_UI {
 }
 ```
 
-**Usage of JS frameworks is up to the developer**
+Usage of JS frameworks is up to the developer. More information
+[here](https://github.com/lucianoiam/hiphop/blob/master/doc/internals.md).
 
-More information [here](https://github.com/lucianoiam/hiphop/blob/master/doc/internals.md)
+### Example AssemblyScript DSP code
+
+```TypeScript
+Example not yet available
+```
+
+AssemblyScript is a language similar to [TypeScript](https://www.typescriptlang.org)
+specifically designed for targeting [WebAssembly](https://webassembly.org)
+(Wasm). Plugins created with Hip-Hop optionally embed a Wasm
+[JIT engine](https://github.com/wasmerio/wasmer) for running precompiled
+AssemblyScript DSP code. Such engine is completely independent from the web view.
 
 ### About DISTRHO Plugin Framework (DPF)
 
@@ -88,7 +93,5 @@ What makes it great?
 - Extremely low learning curve
 - High quality clean C++ codebase
 - Great experienced community around
-
-Its full documentation and code can be found [here](https://github.com/DISTRHO/DPF)
 
 If you find libre software useful please support the developers
