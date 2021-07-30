@@ -437,8 +437,6 @@ endif
 ifneq ($(AS_DSP),)
 HIPHOP_TARGET += libdsp
 
-AS_ASSEMBLY_PATH = $(HIPHOP_AS_DSP_PATH)/assembly
-
 WASM_SRC_PATH = $(HIPHOP_AS_DSP_PATH)/build/optimized.wasm
 WASM_DST_PATH = dsp/plugin.wasm
 
@@ -447,10 +445,6 @@ libdsp:
 	@# npm --prefix fails on MinGW due to paths mixing \ and /
 	@test -d $(HIPHOP_AS_DSP_PATH)/node_modules \
 		|| (cd $(HIPHOP_AS_DSP_PATH) && $(NPM_ENV) && npm install)
-	@test -f $(AS_ASSEMBLY_PATH)/index.ts \
-		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
-	@test -f $(AS_ASSEMBLY_PATH)/distrho-plugin.ts \
-		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
 	@cd $(HIPHOP_AS_DSP_PATH) && $(NPM_ENV) && npm run asbuild
 	@echo "Copying WebAssembly DSP binary..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
@@ -469,6 +463,13 @@ libdsp:
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
 		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(WASM_DST_PATH) \
 		) || true
+
+# This recipe is optional
+AS_ASSEMBLY_PATH = $(HIPHOP_AS_DSP_PATH)/assembly
+
+frameworkts:
+	@ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
+	@ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
 endif
 
 ifeq ($(WEB_UI),true)

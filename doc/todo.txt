@@ -1,7 +1,6 @@
 GENERAL
 -------
 
-- Makefile flag for bypassing copy/link of framework TS files
 - Wasm: programs and MIDI support
 - Wasm: profile plugin for memory leaks
 - Write a DGL UI for example 'astone'

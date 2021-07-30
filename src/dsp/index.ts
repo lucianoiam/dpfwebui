@@ -23,12 +23,17 @@ import PluginImpl from './plugin'
 // for Wasmer integration. Do not use it for creating plugins, use the public
 // interface provided by distrho-plugin.ts instead.
 
+// As of Jul '21 AssemblyScript strings format has not completely settled down.
+// https://github.com/AssemblyScript/assemblyscript/issues/1653. Use C-style
+// strings (UTF-8, null terminated) for all interfaces exposed by this module
+// to keep it future-proof and perform all string conversions in AssemblyScript.
+
 const pluginInstance = new PluginImpl
 
 // These are external functions implemented by the host. They are declared here
 // instead of the caller module (distrho-plugin.ts) to keep all interfaces to
 // the host in a single place (index.ts) and also to make sure all declared
-// functions appear listed in the module imports table.
+// functions show up in the module imports table.
 
 declare function _get_sample_rate(): f32
 
@@ -173,8 +178,8 @@ export let _rw_string_1 = new ArrayBuffer(MAX_STRING_BYTES)
 export let _rw_string_2 = new ArrayBuffer(MAX_STRING_BYTES)
 
 // Functions for converting between AssemblyScript and C strings. These are
-// exported but string conversions should be only done in AssemblyScript unless
-// strictly necessary to avoid cross function calls.
+// exported to handle a few special cases like supporting non-WASI abort().
+// String conversions should be only performed by AssemblyScript code.
 
 export function _from_wtf16_string(s: string): ArrayBuffer {
     return String.UTF8.encode(s, /* null terminated */ true)
