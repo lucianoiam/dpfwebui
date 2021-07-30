@@ -23,6 +23,7 @@ const PI_2: f32 = Mathf.PI * 2
 
 export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTRHO.PluginInterface {
 
+    private samplerate: f32
     private frequency: f32
     private phase: f32
 
@@ -87,14 +88,16 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
     
     getState(key: string): string { return '' }
 
-    activate(): void { /* empty implementation */ }
+    activate(): void {
+        this.samplerate = this.getSampleRate()
+    }
 
     deactivate(): void { /* empty implementation */ }
 
     run(inputs: Float32Array[], outputs: Float32Array[]): void {
         const output_l = outputs[0]
         const output_r = outputs[1]
-        const radiansPerSample = PI_2 * this.frequency * (1.0 / this.getSampleRate())
+        const radiansPerSample = PI_2 * this.frequency / this.samplerate
 
         let sample: f32
         let phase: f32 = this.phase
