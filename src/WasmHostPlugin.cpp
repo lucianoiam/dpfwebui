@@ -31,9 +31,12 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     String path = platform::getLibraryPath() + "/dsp/plugin.wasm";
     WasmFunctionMap hostFunctions;
 
-    hostFunctions["_get_sample_rate"] = { {}, { WASM_F32 }, [this](WasmValueVector) -> WasmValueVector {
+    hostFunctions["_get_samplerate"] = { {}, { WASM_F32 }, [this](WasmValueVector) -> WasmValueVector {
         return { MakeF32(getSampleRate()) };
     }};
+
+    hostFunctions["_write_midi_event"] = { {}, { WASM_I32  }, 
+        std::bind(&WasmHostPlugin::wasmWriteMidiEvent, this, std::placeholders::_1) };
 
     fEngine.start(path, hostFunctions);
 
@@ -288,4 +291,40 @@ void WasmHostPlugin::checkEngineStarted() const
     if (!fEngine.isStarted()) {
         throw new std::runtime_error("Wasm engine is not running");
     }
+}
+
+WasmValueVector WasmHostPlugin::wasmWriteMidiEvent(WasmValueVector params)
+{
+    (void)params;
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+
+    MidiEvent event;
+    byte_t* midiBlock = fEngine.getMemory(fEngine.getGlobal("_rw_midi_block"));
+
+    event.frame = *reinterpret_cast<uint32_t *>(midiBlock);
+    midiBlock += 4;
+    event.size = *reinterpret_cast<uint32_t *>(midiBlock);
+    midiBlock += 4;
+
+    uint8_t* dataExt = 0;
+
+    if (event.size > MidiEvent::kDataSize) {
+        dataExt = static_cast<uint8_t *>(malloc(event.size));
+        memcpy(dataExt, midiBlock, event.size);
+        event.dataExt = dataExt;
+    } else {
+        memcpy(event.data, midiBlock, event.size);
+        event.dataExt = dataExt;
+    }
+
+    bool result = writeMidiEvent(event);
+
+    if (dataExt != 0) {
+        free(dataExt);
+    }
+
+    return { MakeI32(result) };
+#else
+    return { MakeI32(false) };
+#endif // DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 }

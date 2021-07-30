@@ -68,6 +68,8 @@ public:
 private:
     inline void checkEngineStarted() const;
 
+    WasmValueVector wasmWriteMidiEvent(WasmValueVector params);
+
     mutable WasmEngine fEngine;
 
 };

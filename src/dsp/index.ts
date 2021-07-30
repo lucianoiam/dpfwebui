@@ -22,7 +22,6 @@ import PluginImpl from './plugin'
 // The interface defined in this file is private to the framework and optimized
 // for Wasmer integration. Do not use it for creating plugins, use the public
 // interface provided by distrho-plugin.ts instead.
-
 // As of Jul '21 AssemblyScript strings format has not completely settled down.
 // https://github.com/AssemblyScript/assemblyscript/issues/1653. Use C-style
 // strings (UTF-8, null terminated) for all interfaces exposed by this module
@@ -35,9 +34,25 @@ const pluginInstance = new PluginImpl
 // the host in a single place (index.ts) and also to make sure all declared
 // functions show up in the module imports table.
 
-declare function _get_sample_rate(): f32
+declare function _get_samplerate(): f32
+declare function _write_midi_event(): bool
 
-export { _get_sample_rate }
+// Re-export host functions including glue code to support distrho-plugin.ts
+
+export { _get_samplerate as plugin_get_samplerate }
+
+export function plugin_write_midi_event(midiEvent: DISTRHO.MidiEvent): bool {
+    let midiOffset: i32 = 0
+    raw_midi_events.setUint32(midiOffset, midiEvent.frame, /* LE */ true)
+    midiOffset += 4
+    raw_midi_events.setUint32(midiOffset, midiEvent.data.length, /* LE */ true)
+    midiOffset += 4
+    for (let i = 0; i < midiEvent.data.length; ++i) {
+        raw_midi_events.setUint8(midiOffset, midiEvent.data[i])
+        midiOffset++
+    }
+    return _write_midi_event()
+}
 
 // Keep _get_label(), _get_maker() and _get_license() as function exports. They
 // could be replaced with globals initialized to these function return values
