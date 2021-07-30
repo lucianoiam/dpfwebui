@@ -76,12 +76,13 @@ private:
     
     static void throwWasmerLastError();
 
-    static void toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types);    
+    static void toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types);
+       
     const char* fromWTF16String(const WasmValue& wasmPtr);
     WasmValue   toWTF16String(const char* s);
 
 #ifndef HIPHOP_ENABLE_WASI
-    WasmValueVector assemblyScriptAbort(WasmValueVector params);
+    WasmValueVector nonWasiAssemblyScriptAbort(WasmValueVector params);
 #endif
 
     bool               fStarted;

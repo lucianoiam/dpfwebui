@@ -175,9 +175,8 @@ void WasmEngine::start(const char* modulePath, WasmFunctionMap hostFunctions)
     fHostFunctions.reserve(MAX_HOST_FUNCTIONS);
 
 #ifndef HIPHOP_ENABLE_WASI
-    // Required by AssemblyScript when running in non-WASI mode
     hostFunctions["abort"] = { { WASM_I32, WASM_I32, WASM_I32, WASM_I32 }, {}, 
-        std::bind(&WasmEngine::assemblyScriptAbort, this, std::placeholders::_1) };
+        std::bind(&WasmEngine::nonWasiAssemblyScriptAbort, this, std::placeholders::_1) };
 #endif
 
     for (WasmFunctionMap::const_iterator it = hostFunctions.begin(); it != hostFunctions.end(); ++it) {
@@ -402,7 +401,7 @@ WasmValue WasmEngine::toWTF16String(const char* s)
 
 #ifndef HIPHOP_ENABLE_WASI
 
-WasmValueVector WasmEngine::assemblyScriptAbort(WasmValueVector params)
+WasmValueVector WasmEngine::nonWasiAssemblyScriptAbort(WasmValueVector params)
 {
     const char *msg = fromWTF16String(params[0]);
     const char *filename = fromWTF16String(params[1]);
