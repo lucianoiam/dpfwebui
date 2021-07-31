@@ -116,8 +116,10 @@ export default namespace DISTRHO {
     // struct DISTRHO::MidiEvent
     export class MidiEvent {
 
+        static readonly kDataSize: u32 = 4
+        
         frame: u32
-        data: Uint8Array = new Uint8Array(0)
+        data: Uint8Array = new Uint8Array(MidiEvent.kDataSize)
 
     }
 
