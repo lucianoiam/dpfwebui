@@ -20,19 +20,25 @@
 #define ASTONEEXAMPLEUI_HPP
 
 #include "DistrhoUI.hpp"
+#include "EventHandlers.hpp"
+
 #include "Blendish.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class AsToneExampleUI : public UI
+class AsToneExampleUI : public UI, public KnobEventHandler::Callback
 {
 public:
     AsToneExampleUI();
     ~AsToneExampleUI() {}
 
+    void knobDragStarted(SubWidget*) override {}
+    void knobDragFinished(SubWidget*) override {}
+    void knobValueChanged(SubWidget*, float value) override;
+
 protected:
-    void onNanoDisplay() override;
-    void parameterChanged(uint32_t, float value) override;
+    void onNanoDisplay() override {}
+    void parameterChanged(uint32_t index, float value) override;
 
 private:
     BlendishSubWidgetSharedContext fBlendish;

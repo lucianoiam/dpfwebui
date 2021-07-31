@@ -29,14 +29,30 @@ AsToneExampleUI::AsToneExampleUI()
     : UI(600, 300)
     , fBlendish(this)
     , fKnob(&fBlendish)
-{}
-
-void AsToneExampleUI::onNanoDisplay()
 {
+    glClearColor(0.9f, 0.9f, 0.9f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    fBlendish.setSize(getSize());
+
+    fKnob.setAbsoluteX((getWidth() - fKnob.getWidth()) / 2);
+    fKnob.setAbsoluteY((getHeight() - fKnob.getHeight()) / 2);
+    fKnob.setRange(220.f, 880.f);
+    fKnob.setValue(440.f);
+    fKnob.setUnit("Hz");
+    fKnob.setCallback(this);
 }
 
-void AsToneExampleUI::parameterChanged(uint32_t, float value)
+void AsToneExampleUI::knobValueChanged(SubWidget*, float value)
 {
+    setParameterValue(0, value);
+}
 
+void AsToneExampleUI::parameterChanged(uint32_t index, float value)
+{
+    switch (index) {
+        case 0:
+            fKnob.setValue(value);
+            break;
+    }
 }
