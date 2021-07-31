@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WINAPISTUB_HPP
-#define WINAPISTUB_HPP
+#ifndef WINAPI_STUB_HPP
+#define WINAPI_STUB_HPP
 
 #include <shellscalingapi.h>
 #include <shtypes.h>
@@ -35,4 +35,4 @@ namespace stub {
 
 } // namespace stub
 
-#endif // WINAPISTUB_HPP
+#endif // WINAPI_STUB_HPP

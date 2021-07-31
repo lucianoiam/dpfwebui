@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBVIEW2ENVIRONMENTOPTIONS_HPP
-#define WEBVIEW2ENVIRONMENTOPTIONS_HPP
+#ifndef WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
+#define WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
 
 #define UNICODE
 #define CINTERFACE
@@ -42,4 +42,4 @@ public:
 
 } // namespace edge
 
-#endif // WEBVIEW2ENVIRONMENTOPTIONS_HPP
+#endif // WEBVIEW2_ENVIRONMENT_OPTIONS_HPP

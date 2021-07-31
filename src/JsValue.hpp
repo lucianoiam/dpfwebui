@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef JSVALUE_HPP
-#define JSVALUE_HPP
+#ifndef JS_VALUE_HPP
+#define JS_VALUE_HPP
 
 #include <ostream>
 
@@ -66,4 +66,4 @@ END_NAMESPACE_DISTRHO
 
 std::ostream& operator<<(std::ostream &os, const JsValue &val);
 
-#endif // JSVALUE_HPP
+#endif // JS_VALUE_HPP

@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef EDGEWEBVIEW_HPP
-#define EDGEWEBVIEW_HPP
+#ifndef EDGE_WEBVIEW_HPP
+#define EDGE_WEBVIEW_HPP
 
 #define UNICODE
 #define CINTERFACE
@@ -172,4 +172,4 @@ private:
 
 END_NAMESPACE_DGL
 
-#endif  // EDGEWEBVIEW_HPP
+#endif  // EDGE_WEBVIEW_HPP

@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WASMHOSTPLUGIN_HPP
-#define WASMHOSTPLUGIN_HPP
+#ifndef WASM_HOST_PLUGIN_HPP
+#define WASM_HOST_PLUGIN_HPP
 
 #include "DistrhoPlugin.hpp"
 
@@ -78,4 +78,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WASMHOSTPLUGIN_HPP
+#endif  // WASM_HOST_PLUGIN_HPP

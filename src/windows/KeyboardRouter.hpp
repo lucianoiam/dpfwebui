@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef KEYBOARDROUTER_HPP
-#define KEYBOARDROUTER_HPP
+#ifndef KEYBOARD_ROUTER_HPP
+#define KEYBOARD_ROUTER_HPP
 
 #include <WinDef.h>
 #include <winuser.h>
@@ -60,4 +60,4 @@ private:
 
 END_NAMESPACE_DGL
 
-#endif  // KEYBOARDROUTER_HPP
+#endif  // KEYBOARD_ROUTER_HPP

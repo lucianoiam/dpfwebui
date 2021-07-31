@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef EXTERNALGTKWEBVIEW_HPP
-#define EXTERNALGTKWEBVIEW_HPP
+#ifndef EXTERNAL_GTK_WEBVIEW_HPP
+#define EXTERNAL_GTK_WEBVIEW_HPP
 
 #include <cstdint>
 #include <sys/types.h>
@@ -82,4 +82,4 @@ private:
 
 END_NAMESPACE_DGL
 
-#endif  // EXTERNALGTKWEBVIEW_HPP
+#endif  // EXTERNAL_GTK_WEBVIEW_HPP

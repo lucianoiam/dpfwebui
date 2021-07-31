@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBVIEW2EVENTHANDLER_HPP
-#define WEBVIEW2EVENTHANDLER_HPP
+#ifndef WEBVIEW2_EVENT_HANDLER_HPP
+#define WEBVIEW2_EVENT_HANDLER_HPP
 
 #define UNICODE
 #define CINTERFACE
@@ -77,4 +77,4 @@ private:
 
 } // namespace edge
 
-#endif // WEBVIEW2EVENTHANDLER_HPP
+#endif // WEBVIEW2_EVENT_HANDLER_HPP

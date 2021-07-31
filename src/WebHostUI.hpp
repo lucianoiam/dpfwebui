@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBHOSTUI_HPP
-#define WEBHOSTUI_HPP
+#ifndef WEB_HOST_UI_HPP
+#define WEB_HOST_UI_HPP
 
 #include "DistrhoUI.hpp"
 
@@ -79,4 +79,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBHOSTUI_HPP
+#endif  // WEB_HOST_UI_HPP

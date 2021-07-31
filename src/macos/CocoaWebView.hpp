@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef COCOAWEBVIEW_HPP
-#define COCOAWEBVIEW_HPP
+#ifndef COCOA_WEBVIEW_HPP
+#define COCOA_WEBVIEW_HPP
 
 #include "AbstractWebView.hpp"
 
@@ -62,4 +62,4 @@ private:
 
 END_NAMESPACE_DGL
 
-#endif  // COCOAWEBVIEW_HPP
+#endif  // COCOA_WEBVIEW_HPP

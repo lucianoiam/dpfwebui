@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WASMENGINE_HPP
-#define WASMENGINE_HPP
+#ifndef WASM_ENGINE_HPP
+#define WASM_ENGINE_HPP
 
 #include <functional>
 #include <string>
@@ -107,4 +107,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WASMENGINE_HPP
+#endif  // WASM_ENGINE_HPP

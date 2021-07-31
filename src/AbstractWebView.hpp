@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ABSTRACTWEBVIEW_HPP
-#define ABSTRACTWEBVIEW_HPP
+#ifndef ABSTRACT_WEBVIEW_HPP
+#define ABSTRACT_WEBVIEW_HPP
 
 #include <cstdint>
 #include <vector>
@@ -83,4 +83,4 @@ private:
 
 END_NAMESPACE_DGL
 
-#endif // ABSTRACTWEBVIEW_HPP
+#endif // ABSTRACT_WEBVIEW_HPP
