@@ -16,28 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef EXTERNALGTKWEBWIDGET_HPP
-#define EXTERNALGTKWEBWIDGET_HPP
+#ifndef EXTERNALGTKWEBVIEW_HPP
+#define EXTERNALGTKWEBVIEW_HPP
 
 #include <cstdint>
 #include <sys/types.h>
 
 #include "extra/Thread.hpp"
 
-#include "AbstractWebWidget.hpp"
+#include "AbstractWebView.hpp"
 
 #include "extra/ipc.h"
 #include "helper.h"
 
 START_NAMESPACE_DISTRHO
 
-class ExternalGtkWebWidget : public AbstractWebWidget
+class ExternalGtkWebView : public AbstractWebView
 {
 friend class IpcReadThread;
 
 public:
-    ExternalGtkWebWidget(Widget *parentWidget);
-    ~ExternalGtkWebWidget();
+    ExternalGtkWebView(Widget *parentWidget);
+    ~ExternalGtkWebView();
 
     void setBackgroundColor(uint32_t rgba) override;
     void navigate(String& url) override;
@@ -69,15 +69,15 @@ private:
 class IpcReadThread : public Thread
 {
 public:
-    IpcReadThread(ExternalGtkWebWidget& view);
+    IpcReadThread(ExternalGtkWebView& view);
     
     void run() override;
 
 private:
-    ExternalGtkWebWidget& fView;
+    ExternalGtkWebView& fView;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // EXTERNALGTKWEBWIDGET_HPP
+#endif  // EXTERNALGTKWEBVIEW_HPP

@@ -42,7 +42,7 @@ namespace DISTRHO {
 
 WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(baseWidth, baseHeight)
-    , fWebWidget(this)
+    , fWebView(this)
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
 {
@@ -65,20 +65,20 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     setSize(fInitWidth, fInitHeight);
 #endif
 
-    fWebWidget.setSize(fInitWidth, fInitHeight);
-    fWebWidget.setBackgroundColor(fBackgroundColor);
-    fWebWidget.setEventHandler(this);
+    fWebView.setSize(fInitWidth, fInitHeight);
+    fWebView.setBackgroundColor(fBackgroundColor);
+    fWebView.setEventHandler(this);
 #ifdef HIPHOP_PRINT_TRAFFIC
-    fWebWidget.setPrintTraffic(true);
+    fWebView.setPrintTraffic(true);
 #endif
 
     String js = String(
 #include "ui/distrho-ui.js.include"
     );
-    fWebWidget.injectScript(js);
+    fWebView.injectScript(js);
 
     String url = "file://" + platform::getLibraryPath() + "/ui/index.html";
-    fWebWidget.navigate(url);
+    fWebView.navigate(url);
 }
 
 void WebHostUI::onDisplay()
@@ -98,7 +98,7 @@ void WebHostUI::onDisplay()
 
 void WebHostUI::uiReshape(uint width, uint height)
 {
-    fWebWidget.setSize(width, height);
+    fWebView.setSize(width, height);
 }
 
 void WebHostUI::parameterChanged(uint32_t index, float value)
@@ -136,7 +136,7 @@ uint WebHostUI::getInitHeight() const
 
 void WebHostUI::webPostMessage(const JsValueVector& args) {
     if (fFlushedInitMsgQueue) {
-        fWebWidget.postMessage(args);
+        fWebView.postMessage(args);
     } else {
         fInitMsgQueue.push_back(args);
     }
@@ -151,7 +151,7 @@ void WebHostUI::flushInitMessageQueue()
     fFlushedInitMsgQueue = true;
 
     for (InitMessageQueue::iterator it = fInitMsgQueue.begin(); it != fInitMsgQueue.end(); ++it) {
-        fWebWidget.postMessage(*it);
+        fWebView.postMessage(*it);
     }
     
     fInitMsgQueue.clear();
@@ -159,10 +159,10 @@ void WebHostUI::flushInitMessageQueue()
 
 void WebHostUI::setKeyboardFocus(bool focus)
 {
-    fWebWidget.setKeyboardFocus(focus);
+    fWebView.setKeyboardFocus(focus);
 }
 
-void WebHostUI::handleWebWidgetContentLoadFinished()
+void WebHostUI::handleWebViewContentLoadFinished()
 {
     // no-op, just let derived classes now
     webContentReady();
@@ -171,7 +171,7 @@ void WebHostUI::handleWebWidgetContentLoadFinished()
 #define kArg0 2
 #define kArg1 3
 
-void WebHostUI::handleWebWidgetScriptMessageReceived(const JsValueVector& args)
+void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
 {
     if (args[0].getString() != "UI") {
         webMessageReceived(args); // passthrough

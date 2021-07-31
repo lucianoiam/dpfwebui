@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef EDGEWEBWIDGET_HPP
-#define EDGEWEBWIDGET_HPP
+#ifndef EDGEWEBVIEW_HPP
+#define EDGEWEBVIEW_HPP
 
 #define UNICODE
 #define CINTERFACE
@@ -27,7 +27,7 @@
 
 #include "WebView2.h"
 
-#include "AbstractWebWidget.hpp"
+#include "AbstractWebView.hpp"
 #include "extra/WebView2EventHandler.hpp"
 
 /*
@@ -47,11 +47,11 @@ START_NAMESPACE_DISTRHO
 
 class InternalWebView2EventHandler;
 
-class EdgeWebWidget : public AbstractWebWidget, edge::WebView2EventHandler
+class EdgeWebView : public AbstractWebView, edge::WebView2EventHandler
 {
 public:
-    EdgeWebWidget(Widget *parentWidget);
-    ~EdgeWebWidget();
+    EdgeWebView(Widget *parentWidget);
+    ~EdgeWebView();
 
     void setBackgroundColor(uint32_t rgba) override;
     void navigate(String& url) override;
@@ -171,4 +171,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // EDGEWEBWIDGET_HPP
+#endif  // EDGEWEBVIEW_HPP

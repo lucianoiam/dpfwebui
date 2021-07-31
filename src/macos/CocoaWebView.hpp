@@ -16,22 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef COCOAWEBWIDGET_HPP
-#define COCOAWEBWIDGET_HPP
+#ifndef COCOAWEBVIEW_HPP
+#define COCOAWEBVIEW_HPP
 
-#include "AbstractWebWidget.hpp"
+#include "AbstractWebView.hpp"
 
 // While it is possible to #import Obj-C headers here, that would force all
-// source files importing CocoaWebWidget.hpp to do so before any other project
+// source files importing CocoaWebView.hpp to do so before any other project
 // headers to avoid symbol name collisions. Do not make any assumption.
 
 START_NAMESPACE_DISTRHO
 
-class CocoaWebWidget : public AbstractWebWidget
+class CocoaWebView : public AbstractWebView
 {
 public:
-    CocoaWebWidget(Widget *parentWidget);
-    ~CocoaWebWidget();
+    CocoaWebView(Widget *parentWidget);
+    ~CocoaWebView();
 
     void setBackgroundColor(uint32_t rgba) override;
     void navigate(String& url) override;
@@ -60,4 +60,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // COCOAWEBWIDGET_HPP
+#endif  // COCOAWEBVIEW_HPP

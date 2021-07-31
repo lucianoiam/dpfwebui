@@ -27,7 +27,7 @@
 
 START_NAMESPACE_DISTRHO
 
-class WebHostUI : public UI, private WebWidgetEventHandler
+class WebHostUI : public UI, private WebViewEventHandler
 {
 public:
     WebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
@@ -48,7 +48,7 @@ protected:
     uint getInitWidth() const;
     uint getInitHeight() const;
 
-    platform::WebWidget& webWidget() { return fWebWidget; }
+    platform::WebView& webView() { return fWebView; }
 
     void webPostMessage(const JsValueVector& args);
 
@@ -59,19 +59,19 @@ protected:
     virtual void webMessageReceived(const JsValueVector& args) { (void)args; };
 
 private:
-    // WebWidgetEventHandler
+    // WebViewEventHandler
 
-    virtual void handleWebWidgetContentLoadFinished() override;
-    virtual void handleWebWidgetScriptMessageReceived(const JsValueVector& args) override;
+    virtual void handleWebViewContentLoadFinished() override;
+    virtual void handleWebViewScriptMessageReceived(const JsValueVector& args) override;
 
     typedef std::vector<JsValueVector> InitMessageQueue;
     
-    platform::WebWidget fWebWidget;
-    InitMessageQueue    fInitMsgQueue;
-    bool                fFlushedInitMsgQueue;
-    uint32_t            fBackgroundColor;
-    uint                fInitWidth;
-    uint                fInitHeight;
+    platform::WebView fWebView;
+    InitMessageQueue  fInitMsgQueue;
+    bool              fFlushedInitMsgQueue;
+    uint32_t          fBackgroundColor;
+    uint              fInitWidth;
+    uint              fInitHeight;
 
 };
 

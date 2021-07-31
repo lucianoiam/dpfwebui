@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ABSTRACTWEBWIDGET_HPP
-#define ABSTRACTWEBWIDGET_HPP
+#ifndef ABSTRACTWEBVIEW_HPP
+#define ABSTRACTWEBVIEW_HPP
 
 #include <cstdint>
 #include <vector>
@@ -33,20 +33,20 @@ START_NAMESPACE_DISTRHO
 
 typedef std::vector<JsValue> JsValueVector;
 
-class WebWidgetEventHandler
+class WebViewEventHandler
 {
 public:
-    virtual void handleWebWidgetContentLoadFinished() = 0;
-    virtual void handleWebWidgetScriptMessageReceived(const JsValueVector& args) = 0;
+    virtual void handleWebViewContentLoadFinished() = 0;
+    virtual void handleWebViewScriptMessageReceived(const JsValueVector& args) = 0;
 
 };
 
-class AbstractWebWidget : public SubWidget
+class AbstractWebView : public SubWidget
 {
 public:
-    AbstractWebWidget(Widget *parentWidget) : SubWidget(parentWidget),
+    AbstractWebView(Widget *parentWidget) : SubWidget(parentWidget),
         fKeyboardFocus(false), fPrintTraffic(false) {}
-    virtual ~AbstractWebWidget() {};
+    virtual ~AbstractWebView() {};
 
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void navigate(String& url) = 0;
@@ -57,7 +57,7 @@ public:
     bool         isKeyboardFocus() { return fKeyboardFocus; }
 
     void setPrintTraffic(bool printTraffic) { fPrintTraffic = printTraffic; }
-    void setEventHandler(WebWidgetEventHandler* handler) { fHandler = handler; }
+    void setEventHandler(WebViewEventHandler* handler) { fHandler = handler; }
     void postMessage(const JsValueVector& args);
 
 protected:
@@ -77,10 +77,10 @@ private:
 
     bool fPrintTraffic;
 
-    WebWidgetEventHandler* fHandler;
+    WebViewEventHandler* fHandler;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif // ABSTRACTWEBWIDGET_HPP
+#endif // ABSTRACTWEBVIEW_HPP

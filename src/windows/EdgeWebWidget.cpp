@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "EdgeWebWidget.hpp"
+#include "EdgeWebView.hpp"
 
 #include <cassert>
 #include <codecvt>
@@ -41,8 +41,8 @@
 
 USE_NAMESPACE_DISTRHO
 
-EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
-    : AbstractWebWidget(parentWidget)
+EdgeWebView::EdgeWebView(Widget *parentWidget)
+    : AbstractWebView(parentWidget)
     , fHelperHwnd(0)
     , fBackgroundColor(0)
     , fHandler(0)
@@ -52,7 +52,7 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     // Use a hidden orphan window for initializing Edge WebView2. Helps reducing
     // flicker and it is also required by the keyboard router for reading state.
     WCHAR className[256];
-    swprintf(className, sizeof(className), L"EdgeWebWidget_%s_%d", XSTR(HIPHOP_PROJECT_ID_HASH), std::rand());
+    swprintf(className, sizeof(className), L"EdgeWebView_%s_%d", XSTR(HIPHOP_PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
     fHelperClass.cbSize = sizeof(WNDCLASSEX);
     fHelperClass.cbClsExtra = sizeof(LONG_PTR);
@@ -62,7 +62,7 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     fHelperHwnd = CreateWindowEx(
         WS_EX_TOOLWINDOW,
         fHelperClass.lpszClassName,
-        L"EdgeWebWidget Helper",
+        L"EdgeWebView Helper",
         WS_POPUPWINDOW | WS_CAPTION,
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         0, 0, 0, 0
@@ -81,7 +81,7 @@ EdgeWebWidget::EdgeWebWidget(Widget *parentWidget)
     initWebView();
 }
 
-EdgeWebWidget::~EdgeWebWidget()
+EdgeWebView::~EdgeWebView()
 {
     fHandler->release();
 
@@ -97,7 +97,7 @@ EdgeWebWidget::~EdgeWebWidget()
     free((void*)fHelperClass.lpszClassName);
 }
 
-void EdgeWebWidget::onResize(const ResizeEvent& ev)
+void EdgeWebView::onResize(const ResizeEvent& ev)
 {
     (void)ev;
     if (fController == 0) {
@@ -107,7 +107,7 @@ void EdgeWebWidget::onResize(const ResizeEvent& ev)
     updateWebViewBounds();
 }
 
-void EdgeWebWidget::onPositionChanged(const PositionChangedEvent& ev)
+void EdgeWebView::onPositionChanged(const PositionChangedEvent& ev)
 {
     (void)ev;
     if (fController == 0) {
@@ -117,13 +117,13 @@ void EdgeWebWidget::onPositionChanged(const PositionChangedEvent& ev)
     updateWebViewBounds();
 }
 
-bool EdgeWebWidget::onKeyboard(const KeyboardEvent& ev)
+bool EdgeWebView::onKeyboard(const KeyboardEvent& ev)
 {
     (void)ev;
     return false; // KeyboardRouter already takes care of this
 }
 
-void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
+void EdgeWebView::setBackgroundColor(uint32_t rgba)
 {
     if (fController == 0) {
         fBackgroundColor = rgba;
@@ -140,7 +140,7 @@ void EdgeWebWidget::setBackgroundColor(uint32_t rgba)
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 }
 
-void EdgeWebWidget::navigate(String& url)
+void EdgeWebView::navigate(String& url)
 {
     if (fView == 0) {
         fUrl = url;
@@ -150,7 +150,7 @@ void EdgeWebWidget::navigate(String& url)
     ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
 }
 
-void EdgeWebWidget::runScript(String& source)
+void EdgeWebView::runScript(String& source)
 {
     // For the plugin specific use case fView==0 means a programming error.
     // There is no point in queuing these, just wait for the view to load its
@@ -159,7 +159,7 @@ void EdgeWebWidget::runScript(String& source)
     ICoreWebView2_ExecuteScript(fView, TO_LPCWSTR(source), 0);
 }
 
-void EdgeWebWidget::injectScript(String& source)
+void EdgeWebView::injectScript(String& source)
 {
     if (fController == 0) {
         fInjectedScripts.push_back(source);
@@ -169,13 +169,13 @@ void EdgeWebWidget::injectScript(String& source)
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
 }
 
-void EdgeWebWidget::setKeyboardFocus(bool focus)
+void EdgeWebView::setKeyboardFocus(bool focus)
 {
-    AbstractWebWidget::setKeyboardFocus(focus);
+    AbstractWebView::setKeyboardFocus(focus);
     SetClassLongPtr(fHelperHwnd, 0, (LONG_PTR)focus); // allow KeyboardRouter to read it
 }
 
-void EdgeWebWidget::updateWebViewBounds()
+void EdgeWebView::updateWebViewBounds()
 {
     RECT bounds;
     bounds.left = (LONG)getAbsoluteX();
@@ -185,7 +185,7 @@ void EdgeWebWidget::updateWebViewBounds()
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
-void EdgeWebWidget::initWebView()
+void EdgeWebView::initWebView()
 {
     // Make sure COM is initialized - 0x800401F0 CO_E_NOTINITIALIZED
     CoInitializeEx(0, COINIT_APARTMENTTHREADED);
@@ -221,7 +221,7 @@ void EdgeWebWidget::initWebView()
     }
 }
 
-HRESULT EdgeWebWidget::handleWebView2EnvironmentCompleted(HRESULT result,
+HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
                                                         ICoreWebView2Environment* environment)
 {
     if (FAILED(result)) {
@@ -234,7 +234,7 @@ HRESULT EdgeWebWidget::handleWebView2EnvironmentCompleted(HRESULT result,
     return S_OK;
 }
 
-HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
+HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
                                                        ICoreWebView2Controller* controller)
 {
     if (FAILED(result)) {
@@ -267,7 +267,7 @@ HRESULT EdgeWebWidget::handleWebView2ControllerCompleted(HRESULT result,
     return S_OK;
 }
 
-HRESULT EdgeWebWidget::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
+HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
                                                        ICoreWebView2NavigationCompletedEventArgs *eventArgs)
 {
     (void)sender;
@@ -288,7 +288,7 @@ HRESULT EdgeWebWidget::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
     return S_OK;
 }
 
-HRESULT EdgeWebWidget::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
+HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                                       ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
 {
     // Edge WebView2 does not provide access to JSCore values; resort to parsing JSON
@@ -330,7 +330,7 @@ HRESULT EdgeWebWidget::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
     return S_OK;
 }
 
-void EdgeWebWidget::webViewLoaderErrorMessageBox(HRESULT result)
+void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
 {
     // TODO: Add clickable link to installer. It would be also better to display
     //       a message and button in the native window using DGL widgets.

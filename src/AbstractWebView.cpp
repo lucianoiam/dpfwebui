@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "AbstractWebWidget.hpp"
+#include "AbstractWebView.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -39,7 +39,7 @@
 
 USE_NAMESPACE_DISTRHO
 
-void AbstractWebWidget::injectDefaultScripts(String& platformSpecificScript)
+void AbstractWebView::injectDefaultScripts(String& platformSpecificScript)
 {
     String js = String()
         + String(JS_DISABLE_CONTEXT_MENU)
@@ -51,7 +51,7 @@ void AbstractWebWidget::injectDefaultScripts(String& platformSpecificScript)
     injectScript(js);
 }
 
-void AbstractWebWidget::handleLoadFinished()
+void AbstractWebView::handleLoadFinished()
 {
     String css = String()
         + String(CSS_DISABLE_IMAGE_DRAG)
@@ -62,16 +62,16 @@ void AbstractWebWidget::handleLoadFinished()
     addStylesheet(css);
 
     if (fHandler != 0) {
-        fHandler->handleWebWidgetContentLoadFinished();
+        fHandler->handleWebViewContentLoadFinished();
     }
 }
 
-void AbstractWebWidget::postMessage(const JsValueVector& args)
+void AbstractWebView::postMessage(const JsValueVector& args)
 {
     // WebKit-based webviews implement a standard mechanism for transferring messages from JS to the
     // native side, carrying a payload of JavaScript values that can be accessed through jsc_value_*
     // calls in WebKitGTK or automatically bridged to Objective-C objects in WKWebView. On Edge
-    // WebView2 only JSON is available, see EdgeWebWidget::handleWebView2WebMessageReceived().
+    // WebView2 only JSON is available, see EdgeWebView::handleWebView2WebMessageReceived().
     // There is no equivalent inverse mechanism for passing messages from native to JS, other than
     // calling custom JavaScript using a function provided by webviews on all platforms.
     // This method implements something like a "reverse postMessage()" aiming to keep the bridge
@@ -84,7 +84,7 @@ void AbstractWebWidget::postMessage(const JsValueVector& args)
     runScript(js);
 }
 
-void AbstractWebWidget::handleScriptMessage(const JsValueVector& args)
+void AbstractWebView::handleScriptMessage(const JsValueVector& args)
 {
     if ((args.size() > 1) && (args[0].getString() == "console.log")) {
         std::cerr << args[1].getString().buffer() << std::endl;
@@ -94,12 +94,12 @@ void AbstractWebWidget::handleScriptMessage(const JsValueVector& args)
                 << std::endl << std::flush;
         }
         if (fHandler != 0) {
-            fHandler->handleWebWidgetScriptMessageReceived(args);
+            fHandler->handleWebViewScriptMessageReceived(args);
         }
     }
 }
 
-String AbstractWebWidget::serializeJsValues(const JsValueVector& args)
+String AbstractWebView::serializeJsValues(const JsValueVector& args)
 {
     std::stringstream ss;
     ss << '[';
@@ -116,7 +116,7 @@ String AbstractWebWidget::serializeJsValues(const JsValueVector& args)
     return String(ss.str().c_str());
 }
 
-void AbstractWebWidget::addStylesheet(String& source)
+void AbstractWebView::addStylesheet(String& source)
 {
     String js = "document.head.insertAdjacentHTML('beforeend', '<style>" + source + "</style>');";
     runScript(js);

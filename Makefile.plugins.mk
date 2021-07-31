@@ -83,20 +83,20 @@ endif
 
 ifeq ($(WEB_UI),true)
 HIPHOP_FILES_UI  = WebHostUI.cpp \
-                   AbstractWebWidget.cpp \
+                   AbstractWebView.cpp \
                    JsValue.cpp \
                    Platform.cpp
 ifeq ($(LINUX),true)
-HIPHOP_FILES_UI += linux/ExternalGtkWebWidget.cpp \
+HIPHOP_FILES_UI += linux/ExternalGtkWebView.cpp \
                    linux/PlatformLinux.cpp \
                    linux/extra/ipc.c
 endif
 ifeq ($(MACOS),true)
-HIPHOP_FILES_UI += macos/CocoaWebWidget.mm \
+HIPHOP_FILES_UI += macos/CocoaWebView.mm \
                    macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
-HIPHOP_FILES_UI += windows/EdgeWebWidget.cpp \
+HIPHOP_FILES_UI += windows/EdgeWebView.cpp \
                    windows/KeyboardRouter.cpp \
                    windows/PlatformWindows.cpp \
                    windows/extra/WebView2EventHandler.cpp \

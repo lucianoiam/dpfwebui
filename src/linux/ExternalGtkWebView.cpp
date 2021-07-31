@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ExternalGtkWebWidget.hpp"
+#include "ExternalGtkWebView.hpp"
 
 #include <cstdio>
 #include <libgen.h>
@@ -44,8 +44,8 @@ extern char **environ;
 
 USE_NAMESPACE_DISTRHO
 
-ExternalGtkWebWidget::ExternalGtkWebWidget(Widget *parentWidget)
-    : AbstractWebWidget(parentWidget)
+ExternalGtkWebView::ExternalGtkWebView(Widget *parentWidget)
+    : AbstractWebView(parentWidget)
     , fPid(-1)
     , fIpc(nullptr)
     , fIpcThread(nullptr)
@@ -95,7 +95,7 @@ ExternalGtkWebWidget::ExternalGtkWebWidget(Widget *parentWidget)
     injectDefaultScripts(js);
 }
 
-ExternalGtkWebWidget::~ExternalGtkWebWidget()
+ExternalGtkWebView::~ExternalGtkWebView()
 {
     if (fPid != -1) {
         if (kill(fPid, SIGTERM) == 0) {
@@ -129,19 +129,19 @@ ExternalGtkWebWidget::~ExternalGtkWebWidget()
     }
 }
 
-void ExternalGtkWebWidget::onResize(const ResizeEvent& ev)
+void ExternalGtkWebView::onResize(const ResizeEvent& ev)
 {
     helper_size_t sizePkt = {ev.size.getWidth(), ev.size.getHeight()};
     ipcWrite(OPC_SET_SIZE, &sizePkt, sizeof(sizePkt));
 }
 
-void ExternalGtkWebWidget::onPositionChanged(const PositionChangedEvent& ev)
+void ExternalGtkWebView::onPositionChanged(const PositionChangedEvent& ev)
 {
     helper_pos_t posPkt = {ev.pos.getX(), ev.pos.getY()};
     ipcWrite(OPC_SET_POSITION, &posPkt, sizeof(posPkt));
 }
 
-bool ExternalGtkWebWidget::onKeyboard(const KeyboardEvent& ev)
+bool ExternalGtkWebView::onKeyboard(const KeyboardEvent& ev)
 {
     // Some hosts like Bitwig prevent the web view from gaining keyboard focus.
     // In such cases the web view can still get touch/mouse input, so assuming
@@ -165,29 +165,29 @@ bool ExternalGtkWebWidget::onKeyboard(const KeyboardEvent& ev)
     return true; // stop propagation
 }
 
-void ExternalGtkWebWidget::setBackgroundColor(uint32_t rgba)
+void ExternalGtkWebView::setBackgroundColor(uint32_t rgba)
 {
     ipcWrite(OPC_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
 }
 
-void ExternalGtkWebWidget::navigate(String& url)
+void ExternalGtkWebView::navigate(String& url)
 {
     ipcWriteString(OPC_NAVIGATE, url);
 }
 
-void ExternalGtkWebWidget::runScript(String& source)
+void ExternalGtkWebView::runScript(String& source)
 {
     ipcWriteString(OPC_RUN_SCRIPT, source);
 }
 
-void ExternalGtkWebWidget::injectScript(String& source)
+void ExternalGtkWebView::injectScript(String& source)
 {
     ipcWriteString(OPC_INJECT_SCRIPT, source);
 }
 
-void ExternalGtkWebWidget::setKeyboardFocus(bool focus)
+void ExternalGtkWebView::setKeyboardFocus(bool focus)
 {
-    AbstractWebWidget::setKeyboardFocus(focus);
+    AbstractWebView::setKeyboardFocus(focus);
     
     char val = focus ? 1 : 0;
     ipcWrite(OPC_SET_KEYBOARD_FOCUS, &val, sizeof(val));
@@ -200,13 +200,13 @@ void ExternalGtkWebWidget::setKeyboardFocus(bool focus)
     }
 }
 
-int ExternalGtkWebWidget::ipcWriteString(helper_opcode_t opcode, String str) const
+int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str) const
 {
     const char *cStr = static_cast<const char *>(str);
     return ipcWrite(opcode, cStr, strlen(cStr) + 1);
 }
 
-int ExternalGtkWebWidget::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize) const
+int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize) const
 {
     tlv_t packet;
     packet.t = static_cast<short>(opcode);
@@ -222,7 +222,7 @@ int ExternalGtkWebWidget::ipcWrite(helper_opcode_t opcode, const void *payload, 
     return retval;
 }
 
-void ExternalGtkWebWidget::ipcReadCallback(const tlv_t& packet)
+void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
 {
     switch (static_cast<helper_opcode_t>(packet.t)) {
         case OPC_HANDLE_LOAD_FINISHED: {
@@ -240,7 +240,7 @@ void ExternalGtkWebWidget::ipcReadCallback(const tlv_t& packet)
     }
 }
 
-void ExternalGtkWebWidget::handleHelperScriptMessage(const char *payload, int payloadSize)
+void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payloadSize)
 {
     // Should validate payload is never read past payloadSize 
     JsValueVector args;
@@ -281,7 +281,7 @@ void ExternalGtkWebWidget::handleHelperScriptMessage(const char *payload, int pa
     handleScriptMessage(args);
 }
 
-IpcReadThread::IpcReadThread(ExternalGtkWebWidget& view)
+IpcReadThread::IpcReadThread(ExternalGtkWebView& view)
     : Thread("ipc_read")
     , fView(view)
 {}

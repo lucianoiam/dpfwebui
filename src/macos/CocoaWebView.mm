@@ -20,7 +20,7 @@
 
 #include "dgl/Application.hpp" // MACJACKBUG
 
-#include "CocoaWebWidget.hpp"
+#include "CocoaWebView.hpp"
 
 // Avoid symbol name collisions
 #define OBJC_INTERFACE_NAME_HELPER_1(INAME, SEP, SUFFIX) INAME ## SEP ## SUFFIX
@@ -40,16 +40,16 @@
 USE_NAMESPACE_DISTRHO
 
 @interface DistrhoWebView: WKWebView
-@property (readonly, nonatomic) CocoaWebWidget* cppWidget;
+@property (readonly, nonatomic) CocoaWebView* cppWidget;
 @property (readonly, nonatomic) NSView* pluginRootView;
 @end
 
 @interface DistrhoWebViewDelegate: NSObject<WKNavigationDelegate, WKScriptMessageHandler>
-@property (assign, nonatomic) CocoaWebWidget *cppWidget;
+@property (assign, nonatomic) CocoaWebView *cppWidget;
 @end
 
-CocoaWebWidget::CocoaWebWidget(Widget *parentWidget)
-    : AbstractWebWidget(parentWidget)
+CocoaWebView::CocoaWebView(Widget *parentWidget)
+    : AbstractWebView(parentWidget)
     , fLastKeyboardEventTime(0)
 {
     // Create the web view
@@ -77,26 +77,26 @@ CocoaWebWidget::CocoaWebWidget(Widget *parentWidget)
     }
 }
 
-CocoaWebWidget::~CocoaWebWidget()
+CocoaWebView::~CocoaWebView()
 {
     [fWebView removeFromSuperview];
     [fWebView release];
     [fWebViewDelegate release];
 }
 
-void CocoaWebWidget::onResize(const ResizeEvent& ev)
+void CocoaWebView::onResize(const ResizeEvent& ev)
 {
     (void)ev;
     updateWebViewFrame();
 }
 
-void CocoaWebWidget::onPositionChanged(const PositionChangedEvent& ev)
+void CocoaWebView::onPositionChanged(const PositionChangedEvent& ev)
 {
     (void)ev;
     updateWebViewFrame();
 }
 
-bool CocoaWebWidget::onKeyboard(const KeyboardEvent& ev)
+bool CocoaWebView::onKeyboard(const KeyboardEvent& ev)
 {
     // Some hosts like REAPER prevent the web view from gaining keyboard focus.
     // In such cases the web view can still get touch/mouse input, so assuming
@@ -166,7 +166,7 @@ bool CocoaWebWidget::onKeyboard(const KeyboardEvent& ev)
     return true; // stop propagation
 }
 
-void CocoaWebWidget::setBackgroundColor(uint32_t rgba)
+void CocoaWebView::setBackgroundColor(uint32_t rgba)
 {
     // macOS WKWebView apparently does not offer a method for setting a background color, so the
     // background is removed altogether to reveal the underneath window paint. Do it safely.
@@ -184,7 +184,7 @@ void CocoaWebWidget::setBackgroundColor(uint32_t rgba)
     }
 }
 
-void CocoaWebWidget::navigate(String& url)
+void CocoaWebView::navigate(String& url)
 {
     NSString *urlStr = [[NSString alloc] initWithCString:url encoding:NSUTF8StringEncoding];
     NSURL *urlObj = [[NSURL alloc] initWithString:urlStr];
@@ -193,14 +193,14 @@ void CocoaWebWidget::navigate(String& url)
     [urlStr release];
 }
 
-void CocoaWebWidget::runScript(String& source)
+void CocoaWebView::runScript(String& source)
 {
     NSString *js = [[NSString alloc] initWithCString:source encoding:NSUTF8StringEncoding];
     [fWebView evaluateJavaScript:js completionHandler: nil];
     [js release];
 }
 
-void CocoaWebWidget::injectScript(String& source)
+void CocoaWebView::injectScript(String& source)
 {
     NSString *js = [[NSString alloc] initWithCString:source encoding:NSUTF8StringEncoding];
     WKUserScript *script = [[WKUserScript alloc] initWithSource:js
@@ -210,7 +210,7 @@ void CocoaWebWidget::injectScript(String& source)
     [js release];
 }
 
-void CocoaWebWidget::updateWebViewFrame()
+void CocoaWebView::updateWebViewFrame()
 {
     // MACSIZEBUG: There is a mismatch between DGL and AppKit coordinates
     CGFloat k = [NSScreen mainScreen].backingScaleFactor;
@@ -224,7 +224,7 @@ void CocoaWebWidget::updateWebViewFrame()
 
 @implementation DistrhoWebView
 
-- (CocoaWebWidget *)cppWidget
+- (CocoaWebView *)cppWidget
 {
     return ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget;
 }

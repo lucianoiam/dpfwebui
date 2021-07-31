@@ -24,23 +24,23 @@
 #include "macro.h"
 
 #ifdef DISTRHO_OS_LINUX
-#include "linux/ExternalGtkWebWidget.hpp"
-typedef ExternalGtkWebWidget _WebWidget;
+#include "linux/ExternalGtkWebView.hpp"
+typedef ExternalGtkWebView _WebView;
 #endif
 #ifdef DISTRHO_OS_MAC
-#include "macos/CocoaWebWidget.hpp"
-typedef CocoaWebWidget _WebWidget;
+#include "macos/CocoaWebView.hpp"
+typedef CocoaWebView _WebView;
 #endif
 #ifdef DISTRHO_OS_WINDOWS
-#include "windows/EdgeWebWidget.hpp"
-typedef EdgeWebWidget _WebWidget;
+#include "windows/EdgeWebView.hpp"
+typedef EdgeWebView _WebView;
 #endif
 
 START_NAMESPACE_DISTRHO
 
 namespace platform {
 
-    typedef _WebWidget WebWidget;
+    typedef _WebView WebView;
 
     bool   isRunningStandalone();
     void   setRunningStandalone(bool standalone);
