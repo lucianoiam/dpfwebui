@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ASTONEEXAMPLEPLUGIN_HPP
-#define ASTONEEXAMPLEPLUGIN_HPP
+#ifndef ASTONE_EXAMPLE_PLUGIN_HPP
+#define ASTONE_EXAMPLE_PLUGIN_HPP
 
 #include "WasmHostPlugin.hpp"
 
@@ -39,4 +39,4 @@ public:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // ASTONEEXAMPLEPLUGIN_HPP
+#endif  // ASTONE_EXAMPLE_PLUGIN_HPP

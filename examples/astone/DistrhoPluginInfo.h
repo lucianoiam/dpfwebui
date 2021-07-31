@@ -119,7 +119,7 @@
    Wherever the %UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n
    When enabled your %UI instance will subclass @ref NanoWidget instead of @ref Widget.
  */
-#define DISTRHO_UI_USE_NANOVG 1
+#define DISTRHO_UI_USE_NANOVG 0
 
 /**
    Wherever the %UI is resizable to any size by the user.@n

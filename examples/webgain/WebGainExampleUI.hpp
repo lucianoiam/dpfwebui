@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBGAINEXAMPLEUI_HPP
-#define WEBGAINEXAMPLEUI_HPP
+#ifndef WEBGAIN_EXAMPLE_UI_HPP
+#define WEBGAIN_EXAMPLE_UI_HPP
 
 #include "WebHostUI.hpp"
 
@@ -39,4 +39,4 @@ protected:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBGAINEXAMPLEUI_HPP
+#endif  // WEBGAIN_EXAMPLE_UI_HPP

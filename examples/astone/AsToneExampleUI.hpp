@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ASTONEEXAMPLEUI_HPP
-#define ASTONEEXAMPLEUI_HPP
+#ifndef ASTONE_EXAMPLE_UI_HPP
+#define ASTONE_EXAMPLE_UI_HPP
 
 #include "DistrhoUI.hpp"
 #include "EventHandlers.hpp"
@@ -37,7 +37,7 @@ public:
     void knobValueChanged(SubWidget*, float value) override;
 
 protected:
-    void onNanoDisplay() override {}
+    void onDisplay() override {}
     void parameterChanged(uint32_t index, float value) override;
 
 private:
@@ -50,4 +50,4 @@ private:
 
 END_NAMESPACE_DISTRHO
 
-#endif  // ASTONEEXAMPLEUI_HPP
+#endif  // ASTONE_EXAMPLE_UI_HPP
