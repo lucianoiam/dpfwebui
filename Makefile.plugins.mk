@@ -57,6 +57,11 @@ endif
 
 NPM_ENV = true
 
+ifeq ($(MACOS),true)
+# MACSIZEBUG
+FILES_UI += $(HIPHOP_SRC_PATH)/macos/PlatformMac.mm
+endif
+
 # ------------------------------------------------------------------------------
 # Add optional support for AssemblyScript DSP
 
@@ -119,12 +124,6 @@ ifneq (,$(DPF_GIT_BRANCH))
 ifeq (,$(findstring $(DPF_GIT_BRANCH),$(shell git -C $(DPF_PATH) branch --show-current)))
 _ := $(shell git -C $(DPF_PATH) checkout $(DPF_GIT_BRANCH))
 endif
-endif
-
-ifneq ($(WINDOWS),true)
-UI_TYPE = cairo
-else
-UI_TYPE = opengl
 endif
 
 include $(DPF_PATH)/Makefile.plugins.mk

@@ -20,18 +20,14 @@ HIPHOP_PROJECT_VERSION = 1
 HIPHOP_AS_DSP_PATH = dsp
 
 # --------------------------------------------------------------
-# Web UI files location
-
-HIPHOP_WEB_UI_PATH = ui
-
-# --------------------------------------------------------------
 # Files to build
 
 FILES_DSP = \
     AsToneExamplePlugin.cpp
 
 FILES_UI  = \
-    AsToneExampleUI.cpp
+    AsToneExampleUI.cpp \
+    Blendish.cpp
 
 # --------------------------------------------------------------
 # Do some magic

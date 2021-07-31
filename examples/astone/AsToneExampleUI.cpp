@@ -25,17 +25,13 @@ UI* DISTRHO::createUI()
     return new AsToneExampleUI;
 }
 
-AsToneExampleUI::AsToneExampleUI() : UI(600, 300)
-{
+AsToneExampleUI::AsToneExampleUI()
+    : UI(600, 300)
+    , fBlendish(this)
+    , fKnob(&fBlendish)
+{}
 
-}
-
-AsToneExampleUI::~AsToneExampleUI()
-{
-
-}
-
-void AsToneExampleUI::onDisplay()
+void AsToneExampleUI::onNanoDisplay()
 {
 
 }

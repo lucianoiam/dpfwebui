@@ -25,21 +25,6 @@
 
 USE_NAMESPACE_DISTRHO
 
-// It currently seems that on Mac+HiDPI the host is getting dimensions already
-// multiplied by the screen scale factor, resulting for example in REAPER
-// showing an excessively large canvas that does not tightly wrap the plugin UI,
-// or Live showing a floating window with plenty of empty space. Likely the host
-// is expecting unscaled values, ie. those specified by NSView frames. The issue
-// does not affect the standalone version of the plugin. Jun '21.
-#ifdef DISTRHO_OS_MAC
-namespace DISTRHO {
-    // MACSIZEBUG - Support for patched DistrhoUI.cpp
-    float FIXME_MacScaleFactor() {
-        return platform::getSystemDisplayScaleFactor();
-    }
-}
-#endif
-
 WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(baseWidth, baseHeight)
     , fWebView(this)

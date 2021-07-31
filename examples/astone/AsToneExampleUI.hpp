@@ -20,6 +20,7 @@
 #define ASTONEEXAMPLEUI_HPP
 
 #include "DistrhoUI.hpp"
+#include "Blendish.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -27,11 +28,15 @@ class AsToneExampleUI : public UI
 {
 public:
     AsToneExampleUI();
-    ~AsToneExampleUI();
+    ~AsToneExampleUI() {}
 
 protected:
-    void onDisplay() override;
+    void onNanoDisplay() override;
     void parameterChanged(uint32_t, float value) override;
+
+private:
+    BlendishSubWidgetSharedContext fBlendish;
+    BlendishKnob fKnob;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AsToneExampleUI)
 
