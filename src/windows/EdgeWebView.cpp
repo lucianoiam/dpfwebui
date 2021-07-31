@@ -78,7 +78,38 @@ EdgeWebView::EdgeWebView(Widget *parentWidget)
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
 
-    initWebView();
+    // Initialize Edge WebView2. Make sure COM is initialized - 0x800401F0 CO_E_NOTINITIALIZED
+    CoInitializeEx(0, COINIT_APARTMENTTHREADED);
+
+    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0,
+                        TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
+    if (FAILED(result)) {
+        webViewLoaderErrorMessageBox(result);
+        return;
+    }
+
+    if (getWindow().getApp().isStandalone()) {
+        // handleWebView2ControllerCompleted() never gets called when running
+        // standalone unless pumping thread message queue. Possibly related to
+        // https://github.com/MicrosoftEdge/WebView2Feedback/issues/920
+
+        MSG msg;
+        
+        while ((fController == 0) && GetMessage(&msg, 0, 0, 0)) {
+            TranslateMessage(&msg); 
+            DispatchMessage(&msg); 
+        }
+
+        // WINJACKBUG - handleWebView2NavigationCompleted() never gets called
+        // when running standalone unless an "open window menu" event is
+        // simulated. Otherwise the user needs to click the window border to
+        // allow web content to load, providing DISTRHO_UI_USER_RESIZABLE=1.
+        // Worth noting all DPF standalone examples on Windows appear off-screen
+        // with the NC area hidden. Not sure it's a DPF or WebView2 issue though.
+
+        HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
+        PostMessage(hWnd, WM_SYSCOMMAND, SC_KEYMENU, 0);
+    }
 }
 
 EdgeWebView::~EdgeWebView()
@@ -183,42 +214,6 @@ void EdgeWebView::updateWebViewBounds()
     bounds.right = bounds.left + (LONG)getWidth();
     bounds.bottom = bounds.top + (LONG)getHeight();
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
-}
-
-void EdgeWebView::initWebView()
-{
-    // Make sure COM is initialized - 0x800401F0 CO_E_NOTINITIALIZED
-    CoInitializeEx(0, COINIT_APARTMENTTHREADED);
-
-    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0,
-                        TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
-    if (FAILED(result)) {
-        webViewLoaderErrorMessageBox(result);
-        return;
-    }
-
-    if (getWindow().getApp().isStandalone()) {
-        // handleWebView2ControllerCompleted() never gets called when running
-        // standalone unless pumping thread message queue. Possibly related to
-        // https://github.com/MicrosoftEdge/WebView2Feedback/issues/920
-
-        MSG msg;
-        
-        while ((fController == 0) && GetMessage(&msg, 0, 0, 0)) {
-            TranslateMessage(&msg); 
-            DispatchMessage(&msg); 
-        }
-
-        // WINJACKBUG - handleWebView2NavigationCompleted() never gets called
-        // when running standalone unless an "open window menu" event is
-        // simulated. Otherwise the user needs to click the window border to
-        // allow web content to load, providing DISTRHO_UI_USER_RESIZABLE=1.
-        // Worth noting all DPF standalone examples on Windows appear off-screen
-        // with the NC area hidden. Not sure it's a DPF or WebView2 issue though.
-
-        HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
-        PostMessage(hWnd, WM_SYSCOMMAND, SC_KEYMENU, 0);
-    }
 }
 
 HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,

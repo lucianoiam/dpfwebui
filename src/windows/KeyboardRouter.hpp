@@ -22,39 +22,39 @@
 #include <WinDef.h>
 #include <winuser.h>
 
-#include "src/DistrhoDefines.h"
+#include "dgl/Base.hpp"
 
 START_NAMESPACE_DGL
 
 class KeyboardRouter
 {
-    public:
-        static KeyboardRouter& getInstance()
-        {
-            static KeyboardRouter instance;
-            return instance;
-        }
+public:
+    static KeyboardRouter& getInstance()
+    {
+        static KeyboardRouter instance;
+        return instance;
+    }
 
-        KeyboardRouter(const KeyboardRouter&) = delete;
-        void operator=(const KeyboardRouter&) = delete;
-        
-        void incRefCount();
-        void decRefCount();
+    KeyboardRouter(const KeyboardRouter&) = delete;
+    void operator=(const KeyboardRouter&) = delete;
+    
+    void incRefCount();
+    void decRefCount();
 
-        void hostSendLowLevelKeyEvent(UINT message, KBDLLHOOKSTRUCT* lpData);
+    void hostSendLowLevelKeyEvent(UINT message, KBDLLHOOKSTRUCT* lpData);
 
-    private:
-        KeyboardRouter();
+private:
+    KeyboardRouter();
 
-        // Win32 callbacks
+    // Win32 callbacks
 
-        static BOOL CALLBACK enumWindowsProc(HWND hWnd, LPARAM lParam);
-        static BOOL CALLBACK enumChildProc(HWND hWnd, LPARAM lParam);
-        static LRESULT CALLBACK keyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+    static BOOL CALLBACK enumWindowsProc(HWND hWnd, LPARAM lParam);
+    static BOOL CALLBACK enumChildProc(HWND hWnd, LPARAM lParam);
+    static LRESULT CALLBACK keyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 
-        int   fRefCount;
-        HWND  fHostHWnd;
-        HHOOK fKeyboardHook;
+    int   fRefCount;
+    HWND  fHostHWnd;
+    HHOOK fKeyboardHook;
 
 };
 

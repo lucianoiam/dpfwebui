@@ -64,6 +64,8 @@ private:
     ipc_t*  fIpc;
     Thread* fIpcThread;
 
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ExternalGtkWebView)
+
 };
 
 class IpcReadThread : public Thread

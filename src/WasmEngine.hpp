@@ -29,6 +29,7 @@
 #include "wasmer.h"
 
 #include "src/DistrhoDefines.h"
+#include "extra/LeakDetector.hpp"
 
 #define MakeI32(x) WASM_I32_VAL(static_cast<int32_t>(x))
 #define MakeF32(x) WASM_F32_VAL(static_cast<float32_t>(x))
@@ -99,6 +100,8 @@ private:
 #endif
     WasmFunctionVector fHostFunctions;
     WasmExternMap      fModuleExports;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WasmEngine)
 
 };
 

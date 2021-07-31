@@ -72,6 +72,8 @@ private:
 
     mutable WasmEngine fEngine;
 
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WasmHostPlugin)
+
 };
 
 END_NAMESPACE_DISTRHO

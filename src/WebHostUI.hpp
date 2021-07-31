@@ -73,6 +73,8 @@ private:
     uint              fInitWidth;
     uint              fInitHeight;
 
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WebHostUI)
+
 };
 
 END_NAMESPACE_DISTRHO

@@ -77,7 +77,6 @@ protected:
     bool onKeyboard(const KeyboardEvent& ev) override;
 
 private:
-    void initWebView();
     void updateWebViewBounds();
     
     void webViewLoaderErrorMessageBox(HRESULT result);
@@ -91,6 +90,8 @@ private:
     InternalWebView2EventHandler* fHandler;
     ICoreWebView2Controller*      fController;
     ICoreWebView2*                fView;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EdgeWebView)
 
 };
 
