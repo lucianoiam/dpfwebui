@@ -33,6 +33,8 @@ protected:
     void webContentReady() override;
     void webMessageReceived(const JsValueVector& args) override;
 
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WebGainExampleUI)
+
 };
 
 END_NAMESPACE_DISTRHO

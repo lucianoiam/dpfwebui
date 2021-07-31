@@ -33,6 +33,8 @@ public:
     AsToneExamplePlugin() : WasmHostPlugin(PARAMETER_COUNT, PROGRAM_COUNT, STATE_COUNT) {}
     ~AsToneExamplePlugin() {}
 
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AsToneExamplePlugin)
+
 };
 
 END_NAMESPACE_DISTRHO

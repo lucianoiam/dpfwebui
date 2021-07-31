@@ -19,19 +19,21 @@
 #ifndef ASTONEEXAMPLEUI_HPP
 #define ASTONEEXAMPLEUI_HPP
 
-#include "WebHostUI.hpp"
-
-#define BASE_WIDTH_PX  600
-#define BASE_HEIGHT_PX 300
-#define INIT_BACKGROUND_RGBA 0xFFFFFFFF
+#include "DistrhoUI.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class AsToneExampleUI : /* FIXME */ public WebHostUI
+class AsToneExampleUI : public UI
 {
 public:
-    AsToneExampleUI() : WebHostUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA) {}
-    ~AsToneExampleUI() {}
+    AsToneExampleUI();
+    ~AsToneExampleUI();
+
+protected:
+    void onDisplay() override;
+    void parameterChanged(uint32_t, float value) override;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AsToneExampleUI)
 
 };
 

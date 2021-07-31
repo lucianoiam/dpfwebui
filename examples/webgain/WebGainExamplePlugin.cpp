@@ -73,7 +73,7 @@ void WebGainExamplePlugin::setParameterValue(uint32_t index, float value)
     }
 }
 
-#if (DISTRHO_PLUGIN_WANT_STATE == 1)
+#if DISTRHO_PLUGIN_WANT_STATE
 
 void WebGainExamplePlugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
 {
@@ -90,7 +90,7 @@ void WebGainExamplePlugin::setState(const char* key, const char* value)
     (void)value;
 }
 
-#if (DISTRHO_PLUGIN_WANT_FULL_STATE == 1)
+#if DISTRHO_PLUGIN_WANT_FULL_STATE
 
 String WebGainExamplePlugin::getState(const char* key) const
 {
@@ -99,9 +99,9 @@ String WebGainExamplePlugin::getState(const char* key) const
     return String();
 }
 
-#endif // DISTRHO_PLUGIN_WANT_FULL_STATE == 1
+#endif // DISTRHO_PLUGIN_WANT_FULL_STATE
 
-#endif // DISTRHO_PLUGIN_WANT_STATE == 1
+#endif // DISTRHO_PLUGIN_WANT_STATE
 
 void WebGainExamplePlugin::run(const float** inputs, float** outputs, uint32_t frames)
 {

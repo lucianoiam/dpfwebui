@@ -56,10 +56,10 @@ public:
     float getParameterValue(uint32_t index) const override;
     void  setParameterValue(uint32_t index, float value) override;
 
-#if (DISTRHO_PLUGIN_WANT_STATE == 1)
+#if DISTRHO_PLUGIN_WANT_STATE
     void   initState(uint32_t index, String& stateKey, String& defaultStateValue) override;
     void   setState(const char* key, const char* value) override;
-#if (DISTRHO_PLUGIN_WANT_FULL_STATE == 1)
+#if DISTRHO_PLUGIN_WANT_FULL_STATE
     String getState(const char* key) const override;
 #endif
 #endif
@@ -68,6 +68,8 @@ public:
 
 private:
     float fGain;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WebGainExamplePlugin)
 
 };
 

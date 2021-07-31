@@ -24,3 +24,23 @@ UI* DISTRHO::createUI()
 {
     return new AsToneExampleUI;
 }
+
+AsToneExampleUI::AsToneExampleUI() : UI(600, 300)
+{
+
+}
+
+AsToneExampleUI::~AsToneExampleUI()
+{
+
+}
+
+void AsToneExampleUI::onDisplay()
+{
+
+}
+
+void AsToneExampleUI::parameterChanged(uint32_t, float value)
+{
+
+}

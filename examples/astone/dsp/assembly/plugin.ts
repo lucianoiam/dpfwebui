@@ -44,7 +44,7 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
     }
 
     getUniqueId(): i64 {
-        return DISTRHO.d_sconst('HHtg')
+        return DISTRHO.d_sconst('HHat')
     }
 
     initParameter(index: u32, parameter: DISTRHO.Parameter): void {
@@ -85,11 +85,7 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
     }
 
     initState(index: u32, stateKey: DISTRHO.StringWrapper, defaultStateValue: DISTRHO.StringWrapper): void {
-        switch (index) {
-            case 0:
-                stateKey.string = 'state_1'
-                defaultStateValue.string = 'def_value'
-        }
+        // empty implementation
     }
 
     setState(key: string, value: string): void {
