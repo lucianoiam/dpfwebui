@@ -258,8 +258,9 @@ ifeq ($(AS_DSP),true)
 ifeq ($(MSYS_MINGW),true)
 NPM_ENV = export PATH=$$PATH:/opt/node && export NODE_SKIP_PLATFORM_CHECK=1
 ifeq (,$(wildcard /opt/node))
-NPM_FILENAME = node-v16.5.0-win-x64.zip
-NPM_URL = https://nodejs.org/dist/latest/$(NPM_FILENAME)
+NPM_VERSION = 16.6.0
+NPM_FILENAME = node-v$(NPM_VERSION)-win-x64.zip
+NPM_URL = https://nodejs.org/dist/v$(NPM_VERSION)/$(NPM_FILENAME)
 
 TARGETS += /opt/node/npm
 
