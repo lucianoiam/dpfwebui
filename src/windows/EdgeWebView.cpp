@@ -39,7 +39,7 @@
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.chrome.webview.postMessage(args);"
 
-USE_NAMESPACE_DISTRHO
+USE_NAMESPACE_DGL
 
 EdgeWebView::EdgeWebView(Widget *parentWidget)
     : AbstractWebView(parentWidget)

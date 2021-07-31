@@ -37,7 +37,7 @@
 
 // Do not assume an autorelease pool exists or ARC is enabled.
 
-USE_NAMESPACE_DISTRHO
+USE_NAMESPACE_DGL
 
 @interface DistrhoWebView: WKWebView
 @property (readonly, nonatomic) CocoaWebView* cppWidget;

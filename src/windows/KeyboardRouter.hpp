@@ -24,7 +24,7 @@
 
 #include "src/DistrhoDefines.h"
 
-START_NAMESPACE_DISTRHO
+START_NAMESPACE_DGL
 
 class KeyboardRouter
 {
@@ -58,6 +58,6 @@ class KeyboardRouter
 
 };
 
-END_NAMESPACE_DISTRHO
+END_NAMESPACE_DGL
 
 #endif  // KEYBOARDROUTER_HPP

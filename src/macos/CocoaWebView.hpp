@@ -25,7 +25,7 @@
 // source files importing CocoaWebView.hpp to do so before any other project
 // headers to avoid symbol name collisions. Do not make any assumption.
 
-START_NAMESPACE_DISTRHO
+START_NAMESPACE_DGL
 
 class CocoaWebView : public AbstractWebView
 {
@@ -58,6 +58,6 @@ private:
 
 };
 
-END_NAMESPACE_DISTRHO
+END_NAMESPACE_DGL
 
 #endif  // COCOAWEBVIEW_HPP

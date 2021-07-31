@@ -43,7 +43,7 @@
   https://www.codeproject.com/Articles/13601/COM-in-plain-C
 */
 
-START_NAMESPACE_DISTRHO
+START_NAMESPACE_DGL
 
 class InternalWebView2EventHandler;
 
@@ -169,6 +169,6 @@ private:
 
 };
 
-END_NAMESPACE_DISTRHO
+END_NAMESPACE_DGL
 
 #endif  // EDGEWEBVIEW_HPP

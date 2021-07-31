@@ -22,7 +22,9 @@
 
 #include "macro.h"
 
-USE_NAMESPACE_DISTRHO
+// This class is part of EdgeWebView
+
+USE_NAMESPACE_DGL
 
 KeyboardRouter::KeyboardRouter()
     : fRefCount(0)

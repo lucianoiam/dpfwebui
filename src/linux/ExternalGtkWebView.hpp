@@ -29,7 +29,7 @@
 #include "extra/ipc.h"
 #include "helper.h"
 
-START_NAMESPACE_DISTRHO
+START_NAMESPACE_DGL
 
 class ExternalGtkWebView : public AbstractWebView
 {
@@ -78,6 +78,6 @@ private:
 
 };
 
-END_NAMESPACE_DISTRHO
+END_NAMESPACE_DGL
 
 #endif  // EXTERNALGTKWEBVIEW_HPP

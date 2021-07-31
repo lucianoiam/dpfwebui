@@ -29,7 +29,7 @@
 
 #include "JsValue.hpp"
 
-START_NAMESPACE_DISTRHO
+START_NAMESPACE_DGL
 
 typedef std::vector<JsValue> JsValueVector;
 
@@ -81,6 +81,6 @@ private:
 
 };
 
-END_NAMESPACE_DISTRHO
+END_NAMESPACE_DGL
 
 #endif // ABSTRACTWEBVIEW_HPP

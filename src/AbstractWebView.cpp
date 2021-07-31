@@ -37,7 +37,7 @@
    Keep this class generic; specific plugin features belong to WebHostUI.
  */
 
-USE_NAMESPACE_DISTRHO
+USE_NAMESPACE_DGL
 
 void AbstractWebView::injectDefaultScripts(String& platformSpecificScript)
 {

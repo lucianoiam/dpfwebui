@@ -42,7 +42,7 @@
 
 extern char **environ;
 
-USE_NAMESPACE_DISTRHO
+USE_NAMESPACE_DGL
 
 ExternalGtkWebView::ExternalGtkWebView(Widget *parentWidget)
     : AbstractWebView(parentWidget)
