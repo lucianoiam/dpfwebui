@@ -306,24 +306,14 @@ WasmValueVector WasmHostPlugin::wasmWriteMidiEvent(WasmValueVector params)
     event.size = *reinterpret_cast<uint32_t *>(midiBlock);
     midiBlock += 4;
 
-    uint8_t* dataExt = 0;
-
     if (event.size > MidiEvent::kDataSize) {
-        dataExt = static_cast<uint8_t *>(malloc(event.size));
-        memcpy(dataExt, midiBlock, event.size);
-        event.dataExt = dataExt;
+        event.dataExt = reinterpret_cast<uint8_t *>(midiBlock);
     } else {
         memcpy(event.data, midiBlock, event.size);
-        event.dataExt = dataExt;
+        event.dataExt = 0;
     }
 
-    bool result = writeMidiEvent(event);
-
-    if (dataExt != 0) {
-        free(dataExt);
-    }
-
-    return { MakeI32(result) };
+    return { MakeI32(writeMidiEvent(event)) };
 #else
     return { MakeI32(false) };
 #endif // DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
