@@ -151,7 +151,7 @@ export default namespace DISTRHO {
                         <u8>s.charCodeAt(2), <u8>s.charCodeAt(3))
     }
 
-    // For use as mutable string argument
+    // Custom class for use as mutable string argument
 
     export class StringWrapper {
 

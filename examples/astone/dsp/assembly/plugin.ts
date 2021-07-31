@@ -96,7 +96,9 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
         // empty implementation
     }
     
-    getState(key: string): string { return '' }
+    getState(key: string): string {
+        return '' // empty implementation
+    }
 
     activate(): void {
         this.samplerate = this.getSampleRate()

@@ -168,6 +168,7 @@ export function _run(frames: u32, midiEventCount: u32): void {
     }
 
     // Count arguments are redundant, they can be inferred from arrays length.
+
     pluginInstance.run(inputs, outputs, midiEvents)
 
     // Run AS garbage collector every N calls. Default TLSF + incremental GC
@@ -189,14 +190,14 @@ export let _rw_num_outputs: i32
 // Using exported globals instead of passing buffer arguments to run() allows
 // for a simpler implementation by avoiding Wasm memory alloc on the host side.
 // Audio block size should not exceed 64Kb, or 16384 frames of 32-bit float
-// samples. Midi events should not exceed 1Kb, or 128 events of 8 bytes.
+// samples. Midi should not exceed 1.5Kb, or 128 events of 12 bytes (def. size)
 
 const MAX_AUDIO_BLOCK_BYTES = 65536
 
 export let _rw_input_block = new ArrayBuffer(MAX_AUDIO_BLOCK_BYTES)
 export let _rw_output_block = new ArrayBuffer(MAX_AUDIO_BLOCK_BYTES)
 
-const MAX_MIDI_EVENT_BYTES = 1024
+const MAX_MIDI_EVENT_BYTES = 1536
 
 export let _rw_midi_block = new ArrayBuffer(MAX_MIDI_EVENT_BYTES)
 
