@@ -263,6 +263,17 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
+# Dependency - Link framework AS files to user project, to be manually called
+
+AS_ASSEMBLY_PATH = $(HIPHOP_AS_DSP_PATH)/assembly
+
+frameworkas:
+	@test -f $(AS_ASSEMBLY_PATH)/index.ts \
+		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
+	@test -f $(AS_ASSEMBLY_PATH)/distrho-plugin.ts \
+		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
+
+# ------------------------------------------------------------------------------
 # Dependency - Download Edge WebView2
 
 ifeq ($(WEB_UI),true)
@@ -463,13 +474,6 @@ libdsp:
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
 		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(WASM_DST_PATH) \
 		) || true
-
-# This recipe is optional
-AS_ASSEMBLY_PATH = $(HIPHOP_AS_DSP_PATH)/assembly
-
-frameworkts:
-	@ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
-	@ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
 endif
 
 ifeq ($(WEB_UI),true)
