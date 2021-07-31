@@ -13,19 +13,16 @@ DPF_TARGET_DIR   ?= bin
 DPF_BUILD_DIR    ?= build
 DPF_GIT_BRANCH   ?= develop
 
+ifeq ($(HIPHOP_PROJECT_VERSION),)
+$(error HIPHOP_PROJECT_VERSION is not set)
+endif
+
 ifneq ($(HIPHOP_AS_DSP_PATH),)
 AS_DSP = true
 HIPHOP_ENABLE_WASI ?= true
 endif
 ifneq ($(HIPHOP_WEB_UI_PATH),)
 WEB_UI = true
-endif
-
-# ------------------------------------------------------------------------------
-# Check for mandatory variables
-
-ifeq ($(HIPHOP_PROJECT_VERSION),)
-$(error HIPHOP_PROJECT_VERSION is not set)
 endif
 
 # ------------------------------------------------------------------------------
@@ -57,10 +54,24 @@ endif
 
 NPM_ENV = true
 
-ifeq ($(MACOS),true)
 # MACSIZEBUG
+ifeq ($(MACOS),true)
 FILES_UI += $(HIPHOP_SRC_PATH)/macos/PlatformMac.mm
 endif
+
+# ------------------------------------------------------------------------------
+# Utility for determining built targets
+# User defined TARGETS are only available *after* inclusion of this Makefile
+
+TEST_LV2 = test -d $(TARGET_DIR)/$(NAME).lv2
+TEST_DSSI = test -d $(TARGET_DIR)/$(NAME)-dssi
+TEST_LINUX_OR_MACOS_JACK = test -f $(TARGET_DIR)/$(NAME)
+TEST_LINUX_VST = test -f $(TARGET_DIR)/$(NAME)-vst.so
+TEST_MAC_VST = test -d $(TARGET_DIR)/$(NAME).vst
+TEST_WINDOWS_JACK = test -f $(TARGET_DIR)/$(NAME).exe
+TEST_WINDOWS_VST = test -f $(TARGET_DIR)/$(NAME)-vst.dll
+TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
+							|| $(TEST_WINDOWS_VST) 
 
 # ------------------------------------------------------------------------------
 # Add optional support for AssemblyScript DSP
@@ -130,6 +141,7 @@ include $(DPF_PATH)/Makefile.plugins.mk
 
 # ------------------------------------------------------------------------------
 # Add shared build flags
+
 BASE_FLAGS += -I$(HIPHOP_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
               -DHIPHOP_PROJECT_ID_HASH=$(shell echo $(NAME):$(HIPHOP_PROJECT_VERSION) \
               	| shasum -a 256 | head -c 8)
@@ -262,17 +274,6 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
-# Dependency - Link framework AS files to user project, to be manually called
-
-AS_ASSEMBLY_PATH = $(HIPHOP_AS_DSP_PATH)/assembly
-
-frameworkas:
-	@test -f $(AS_ASSEMBLY_PATH)/index.ts \
-		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
-	@test -f $(AS_ASSEMBLY_PATH)/distrho-plugin.ts \
-		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
-
-# ------------------------------------------------------------------------------
 # Dependency - Download Edge WebView2
 
 ifeq ($(WEB_UI),true)
@@ -354,20 +355,6 @@ $(BUILD_DIR)/%.rc.o: %.rc
 endif
 
 # ------------------------------------------------------------------------------
-# Post build - Determine built targets
-# User defined TARGETS are only available *after* inclusion of this Makefile
-
-TEST_LV2 = test -d $(TARGET_DIR)/$(NAME).lv2
-TEST_DSSI = test -d $(TARGET_DIR)/$(NAME)-dssi
-TEST_LINUX_OR_MACOS_JACK = test -f $(TARGET_DIR)/$(NAME)
-TEST_LINUX_VST = test -f $(TARGET_DIR)/$(NAME)-vst.so
-TEST_MAC_VST = test -d $(TARGET_DIR)/$(NAME).vst
-TEST_WINDOWS_JACK = test -f $(TARGET_DIR)/$(NAME).exe
-TEST_WINDOWS_VST = test -f $(TARGET_DIR)/$(NAME)-vst.dll
-TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
-							|| $(TEST_WINDOWS_VST) 
-
-# ------------------------------------------------------------------------------
 # Post build - Copy Linux helper
 
 ifeq ($(WEB_UI),true)
@@ -410,41 +397,21 @@ clean_macvst:
 endif
 
 # ------------------------------------------------------------------------------
-# Post build - Copy Windows Edge WebView2 DLL
-# This Makefile version is too lazy to support 32-bit but DLL is also available.
-# The "bare" DLL is enough for the standalone JACK target, no need for assembly.
-
-ifeq ($(WEB_UI),true)
-ifeq ($(WINDOWS),true)
-HIPHOP_TARGET += edgelib
-
-edgelib:
-	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
-	@($(TEST_WINDOWS_JACK) \
-		&& cp $(WEBVIEW_DLL) $(TARGET_DIR) \
-		) || true
-	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
-		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
-		&& cp $(HIPHOP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
-		) || true
-	@($(TEST_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/WebView2Loader \
-		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader \
-		&& cp $(HIPHOP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
-		) || true
-
-clean: clean_edgelib
-
-clean_edgelib:
-	@rm -rf $(TARGET_DIR)/WebView2Loader
-endif
-endif
-
-# ------------------------------------------------------------------------------
-# Post build - Always copy lib files
+# Post build - Compile AssemblyScript project and copy Wasm binary
 
 ifneq ($(AS_DSP),)
+ifneq ($(HIPHOP_OMIT_FRAMEWORK_AS_FILES),true)
+HIPHOP_TARGET += frameworkas
+
+AS_ASSEMBLY_PATH = $(HIPHOP_AS_DSP_PATH)/assembly
+
+frameworkas:
+	@test -f $(AS_ASSEMBLY_PATH)/index.ts \
+		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
+	@test -f $(AS_ASSEMBLY_PATH)/distrho-plugin.ts \
+		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
+endif
+
 HIPHOP_TARGET += libdsp
 
 WASM_SRC_PATH = $(HIPHOP_AS_DSP_PATH)/build/optimized.wasm
@@ -475,6 +442,9 @@ libdsp:
 		) || true
 endif
 
+# ------------------------------------------------------------------------------
+# Post build - Always copy web UI files
+
 ifeq ($(WEB_UI),true)
 HIPHOP_TARGET += libui
 
@@ -501,6 +471,38 @@ clean: clean_lib
 
 clean_lib:
 	@rm -rf $(TARGET_DIR)/$(NAME)_lib
+endif
+
+# ------------------------------------------------------------------------------
+# Post build - Copy Windows Edge WebView2 DLL
+# This Makefile version is too lazy to support 32-bit but DLL is also available.
+# The "bare" DLL is enough for the standalone JACK target, no need for assembly.
+
+ifeq ($(WEB_UI),true)
+ifeq ($(WINDOWS),true)
+HIPHOP_TARGET += edgelib
+
+edgelib:
+	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
+	@($(TEST_WINDOWS_JACK) \
+		&& cp $(WEBVIEW_DLL) $(TARGET_DIR) \
+		) || true
+	@($(TEST_LV2) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		&& cp $(HIPHOP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		) || true
+	@($(TEST_WINDOWS_VST) \
+		&& mkdir -p $(TARGET_DIR)/WebView2Loader \
+		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader \
+		&& cp $(HIPHOP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
+		) || true
+
+clean: clean_edgelib
+
+clean_edgelib:
+	@rm -rf $(TARGET_DIR)/WebView2Loader
+endif
 endif
 
 # ------------------------------------------------------------------------------
