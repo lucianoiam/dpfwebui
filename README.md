@@ -5,7 +5,7 @@ This project extends [DPF](http://github.com/DISTRHO/DPF) to provide the
 necessary scaffold for creating audio plugins with potentially complex user
 interfaces. Plugins implement a web view for running the UI, which interacts
 with the audio host through a small factory shipped JavaScript class. The DSP
-core remains isolated and implemented in C++ or AssemblyScript.
+core remains isolated and implemented in C++ or [AssemblyScript](https://www.assemblyscript.org).
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
@@ -16,8 +16,8 @@ core remains isolated and implemented in C++ or AssemblyScript.
 
 ### Features
 
-* Based on [DISTRHO Plugin Framework](https://github.com/DISTRHO/DPF)
-* C++ or [AssemblyScript](https://www.assemblyscript.org) for DSP code
+* Based on DISTRHO Plugin Framework (DPF)
+* C++ or AssemblyScript for DSP code
 * HTML / CSS / JS for UI development
 * VST2 / LV2 plugin formats
 * Linux / Mac / Windows
@@ -63,14 +63,21 @@ class MyPluginUI extends DISTRHO_UI {
 }
 ```
 
-Usage of JS frameworks is up to the developer. More information
-[here](https://github.com/lucianoiam/hiphop/blob/master/doc/internals.md).
+Usage of JS frameworks is up to the developer. The complete `DISTRHO_UI` interface
+is defined [here](https://github.com/lucianoiam/hiphop/blob/master/src/ui/distrho-ui.js).
+
+More information [here](https://github.com/lucianoiam/hiphop/blob/master/doc/internals.md).
 
 ### Example AssemblyScript DSP code
 
 ```TypeScript
-Example not yet available
+// Short example not yet available
 ```
+
+See example code [here](https://github.com/lucianoiam/hiphop/blob/master/examples/astone/dsp/assembly/plugin.ts)
+instead.
+
+The complete `DISTRHO.Plugin` interface is defined [here](https://github.com/lucianoiam/hiphop/blob/master/src/dsp/distrho-plugin.ts).
 
 AssemblyScript is a language similar to [TypeScript](https://www.typescriptlang.org)
 specifically designed for targeting [WebAssembly](https://webassembly.org)
