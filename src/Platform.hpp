@@ -23,24 +23,9 @@
 
 #include "macro.h"
 
-#ifdef DISTRHO_OS_LINUX
-#include "linux/ExternalGtkWebView.hpp"
-typedef ExternalGtkWebView _WebView;
-#endif
-#ifdef DISTRHO_OS_MAC
-#include "macos/CocoaWebView.hpp"
-typedef CocoaWebView _WebView;
-#endif
-#ifdef DISTRHO_OS_WINDOWS
-#include "windows/EdgeWebView.hpp"
-typedef EdgeWebView _WebView;
-#endif
-
 START_NAMESPACE_DISTRHO
 
 namespace platform {
-
-    typedef _WebView WebView;
 
     bool   isRunningStandalone();
     void   setRunningStandalone(bool standalone);

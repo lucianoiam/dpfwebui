@@ -159,7 +159,7 @@ ifeq ($(MACOS),true)
 LINK_FLAGS += -framework AppKit 
 endif
 ifeq ($(WINDOWS),true)
-LINK_FLAGS += -Wl,-Bstatic -lWs2_32 -lBcrypt -lUserenv
+LINK_FLAGS += -Wl,-Bstatic -lWs2_32 -lBcrypt -lUserenv -lShlwapi
 endif
 endif
 

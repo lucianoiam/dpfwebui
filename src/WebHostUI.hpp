@@ -19,11 +19,22 @@
 #ifndef WEB_HOST_UI_HPP
 #define WEB_HOST_UI_HPP
 
-#include "DistrhoUI.hpp"
-
 #include <vector>
 
-#include "Platform.hpp"
+#include "DistrhoUI.hpp"
+
+#ifdef DISTRHO_OS_LINUX
+#include "linux/ExternalGtkWebView.hpp"
+typedef ExternalGtkWebView PlatformWebView;
+#endif
+#ifdef DISTRHO_OS_MAC
+#include "macos/CocoaWebView.hpp"
+typedef CocoaWebView PlatformWebView;
+#endif
+#ifdef DISTRHO_OS_WINDOWS
+#include "windows/EdgeWebView.hpp"
+typedef EdgeWebView PlatformWebView;
+#endif
 
 START_NAMESPACE_DISTRHO
 
@@ -48,7 +59,7 @@ protected:
     uint getInitWidth() const;
     uint getInitHeight() const;
 
-    platform::WebView& webView() { return fWebView; }
+    PlatformWebView& webView() { return fWebView; }
 
     void webPostMessage(const JsValueVector& args);
 
@@ -66,12 +77,12 @@ private:
 
     typedef std::vector<JsValueVector> InitMessageQueue;
     
-    platform::WebView fWebView;
-    InitMessageQueue  fInitMsgQueue;
-    bool              fFlushedInitMsgQueue;
-    uint32_t          fBackgroundColor;
-    uint              fInitWidth;
-    uint              fInitHeight;
+    PlatformWebView  fWebView;
+    InitMessageQueue fInitMsgQueue;
+    bool             fFlushedInitMsgQueue;
+    uint32_t         fBackgroundColor;
+    uint             fInitWidth;
+    uint             fInitHeight;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WebHostUI)
 
