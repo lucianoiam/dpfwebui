@@ -26,7 +26,7 @@ UI* DISTRHO::createUI()
 }
 
 AsToneExampleUI::AsToneExampleUI()
-    : UI(600, 300)
+    : UI(400, 200)
     , fBlendish(this)
     , fKnob(&fBlendish)
 {
