@@ -66,9 +66,9 @@ public:
 #endif
 
 private:
-    inline void checkEngineStarted() const;
+    inline void throwIfEngineStopped() const;
 
-    WasmValueVector wasmWriteMidiEvent(WasmValueVector params);
+    WasmValueVector writeMidiEvent(WasmValueVector params);
 
     mutable WasmEngine fEngine;
 

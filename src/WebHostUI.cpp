@@ -169,9 +169,7 @@ void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
 
     String method = args[1].getString();
     int argc = args.size() - kArg0;
-
-    // How about using a hashtable of methods instead of comparing strings?
-
+    
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
 
