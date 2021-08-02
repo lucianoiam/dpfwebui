@@ -7,7 +7,6 @@ GENERAL
 LINUX
 -----
 
-- Resizing not working
 - Mouse wheel events never fire
 - DSSI plugin builds but UI does not open
 

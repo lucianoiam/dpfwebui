@@ -33,10 +33,12 @@ typedef struct {
     GtkWindow*     window;
     WebKitWebView* webView;
     gboolean       focus;
+    helper_size_t  size;
 } helper_context_t;
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId);
 static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t);
+static void set_fake_size(const helper_context_t *ctx);
 static void inject_script(const helper_context_t *ctx, const char* js);
 static void inject_keystroke(const helper_context_t *ctx, const helper_key_t *key);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
@@ -103,6 +105,7 @@ static void create_view(helper_context_t *ctx, uintptr_t parentId)
     g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkChild);
     gtk_widget_set_has_window(GTK_WIDGET(ctx->window), TRUE);
     //gtk_widget_realize(GTK_WIDGET(ctx->window));
+    gtk_window_resize(ctx->window, 2000, 2000); // arbitrary max size
 
     // Create the web view
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
@@ -125,6 +128,16 @@ static void set_background_color(const helper_context_t *ctx, uint32_t rgba)
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
 #pragma GCC diagnostic pop
+}
+
+static void set_fake_size(const helper_context_t *ctx)
+{
+    // This is ugly but gets the work done
+    char js[1024];
+    sprintf(js, "document.body.style.width = '%dpx';"
+                "document.body.style.height = '%dpx';",
+                ctx->size.width, ctx->size.height);
+    webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
 }
 
 static void inject_script(const helper_context_t *ctx, const char* js)
@@ -165,8 +178,9 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
+            set_fake_size(ctx);
             gtk_widget_show(GTK_WIDGET(ctx->window));
-            usleep(50000L); // FIXME: prevent flicker and occasional blank view
+            usleep(50000L); // prevent flicker and occasional blank view
             ipc_write_simple(ctx, OPC_HANDLE_LOAD_FINISHED, NULL, 0);
             break;
 
@@ -264,7 +278,12 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
 
         case OPC_SET_SIZE: {
             const helper_size_t *size = (const helper_size_t *)packet.v;
-            gtk_window_resize(ctx->window, size->width, size->height);
+            // gtk_window_resize() will not cause the webview content to resize,
+            // this issue is probably related to the wrapped native window which
+            // is not emitting Glib events like configure-event. Do it in JS.
+            //gtk_window_resize(ctx->window, size->width, size->height);
+            ctx->size = *size;
+            set_fake_size(ctx);
             break;
         }
 
