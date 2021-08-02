@@ -127,7 +127,7 @@
    Enabling this options makes it possible for the user to resize the plugin UI at anytime.
    @see UI::setGeometryConstraints(uint, uint, bool, bool)
  */
-#define DISTRHO_UI_USER_RESIZABLE 0
+#define DISTRHO_UI_USER_RESIZABLE 1
 
 /**
    The %UI URI when exporting in LV2 format.@n

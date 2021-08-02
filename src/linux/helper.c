@@ -21,7 +21,6 @@
 #include <stdint.h>
 #include <X11/Xlib.h>
 #include <gdk/gdkx.h>
-#include <gdk/gdkwayland.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
@@ -36,9 +35,8 @@ typedef struct {
     gboolean       focus;
 } helper_context_t;
 
-static void create_webview(helper_context_t *ctx);
+static void create_view(helper_context_t *ctx, uintptr_t parentId);
 static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t);
-static void set_parent(const helper_context_t *ctx, uintptr_t parentId);
 static void inject_script(const helper_context_t *ctx, const char* js);
 static void inject_keystroke(const helper_context_t *ctx, const helper_key_t *key);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
@@ -68,7 +66,8 @@ int main(int argc, char* argv[])
     }
 
     ctx.ipc = ipc_init(&conf);
-    //gdk_set_allowed_backends("x11,wayland");
+
+    gdk_set_allowed_backends("x11");
     gtk_init(0, NULL);
 
     if (GDK_IS_X11_DISPLAY(gdk_display_get_default())
@@ -76,8 +75,6 @@ int main(int argc, char* argv[])
         HIPHOP_LOG_STDERR("Cannot open display");
         return -1;
     }
-
-    create_webview(&ctx);
 
     channel = g_io_channel_unix_new(conf.fd_r);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
@@ -91,22 +88,26 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-static void create_webview(helper_context_t *ctx)
+static void create_view(helper_context_t *ctx, uintptr_t parentId)
 {
-    ctx->window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    // Create a native child window of arbitrary initial size
+    Window child = XCreateWindow(ctx->display, (Window)parentId, 0, 0, 100, 100, 0,
+                                    CopyFromParent, CopyFromParent, CopyFromParent, 0, 0);
+    XFlush(ctx->display);
 
-    if (!GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) {
-        // Do not remove decorations on Wayland
-        gtk_window_set_decorated(ctx->window, FALSE);
-    }
-
-    // Set up callback so that if the main window is closed, the program will exit
+    // Wrap child in a GDK window
+    GdkDisplay* gdkDisplay = gdk_display_get_default();
+    GdkWindow* gdkChild = gdk_x11_window_foreign_new_for_display(gdkDisplay, child);
+    ctx->window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), ctx);
-    gtk_widget_show(GTK_WIDGET(ctx->window));
+    g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkChild);
+    gtk_widget_set_has_window(GTK_WIDGET(ctx->window), TRUE);
+    //gtk_widget_realize(GTK_WIDGET(ctx->window));
 
     // Create the web view
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
+    gtk_widget_show(GTK_WIDGET(ctx->webView));
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
     g_signal_connect(ctx->webView, "key_press_event", G_CALLBACK(web_view_keypress_cb), ctx);
 
@@ -124,22 +125,6 @@ static void set_background_color(const helper_context_t *ctx, uint32_t rgba)
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
 #pragma GCC diagnostic pop
-}
-
-static void set_parent(const helper_context_t *ctx, uintptr_t parentId)
-{
-    GdkDisplay *gdkDisplay = gdk_display_get_default();
-
-    if (GDK_IS_X11_DISPLAY(gdk_display_get_default())) {
-        Window childId = gdk_x11_window_get_xid(gtk_widget_get_window(GTK_WIDGET(ctx->window)));
-        XReparentWindow(ctx->display, childId, parentId, 0, 0);
-        XFlush(ctx->display);
-    } else if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) {
-        // TODO: show a message in parent plugin window explaining that Wayland is not supported
-        //       yet and because of that the plugin web user interface will be displayed in a
-        //       separate window. Ideally include a button to focus such separate window.
-        HIPHOP_LOG_STDERR_COLOR("Running Wayland, plugin will be displayed in a separate window");
-    }
 }
 
 static void inject_script(const helper_context_t *ctx, const char* js)
@@ -180,8 +165,9 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
+            gtk_widget_show(GTK_WIDGET(ctx->window));
+            usleep(50000L); // FIXME: prevent flicker and occasional blank view
             ipc_write_simple(ctx, OPC_HANDLE_LOAD_FINISHED, NULL, 0);
-            gtk_widget_show(GTK_WIDGET(view));
             break;
 
         default:
@@ -268,12 +254,12 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     }
 
     switch (packet.t) {
-        case OPC_SET_BACKGROUND_COLOR:
-            set_background_color(ctx, *((uint32_t *)packet.v));
+        case OPC_CREATE_VIEW:
+            create_view(ctx, *((uintptr_t *)packet.v));
             break;
 
-        case OPC_SET_PARENT:
-            set_parent(ctx, *((uintptr_t *)packet.v));
+        case OPC_SET_BACKGROUND_COLOR:
+            set_background_color(ctx, *((uint32_t *)packet.v));
             break;
 
         case OPC_SET_SIZE: {

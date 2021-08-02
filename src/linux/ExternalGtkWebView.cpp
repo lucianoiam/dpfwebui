@@ -89,7 +89,7 @@ ExternalGtkWebView::ExternalGtkWebView(Widget *parentWidget)
     }
 
     int windowId = static_cast<int>(parentWidget->getWindow().getNativeWindowHandle());
-    ipcWrite(OPC_SET_PARENT, &windowId, sizeof(windowId));
+    ipcWrite(OPC_CREATE_VIEW, &windowId, sizeof(windowId));
 
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);

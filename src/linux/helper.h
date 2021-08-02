@@ -22,8 +22,8 @@
 #include <stdint.h>
 
 typedef enum {
+    OPC_CREATE_VIEW,
     OPC_SET_BACKGROUND_COLOR,
-    OPC_SET_PARENT,
     OPC_SET_SIZE,
     OPC_SET_POSITION,
     OPC_SET_KEYBOARD_FOCUS,

@@ -14,9 +14,7 @@ code can do the job.
 ### Web view implementation
 
 - On Linux a WebKitGTK web view instance runs in a separate process to keep the
-plugin free of references to libgtk. Note that this approach relies on XEmbed,
-which is not supported by Wayland. On such platform the plugin window will
-appear detached.
+plugin GTK-free.
 
 - On macOS WKWebView is used.
 
