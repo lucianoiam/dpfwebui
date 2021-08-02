@@ -27,6 +27,9 @@
 #include "macro.h"
 #include "extra/ipc.h"
 
+#define MAX_WEBVIEW_WIDTH  2000
+#define MAX_WEBVIEW_HEIGHT 2000
+
 typedef struct {
     ipc_t*         ipc;
     Display*       display;
@@ -92,20 +95,25 @@ int main(int argc, char* argv[])
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId)
 {
-    // Create a native child window of arbitrary initial size
-    Window child = XCreateWindow(ctx->display, (Window)parentId, 0, 0, 100, 100, 0,
-                                    CopyFromParent, CopyFromParent, CopyFromParent, 0, 0);
+    // Create a native child window of arbitrary maximum size
+    Window child = XCreateWindow(ctx->display, (Window)parentId, 0, 0,
+                                    MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0,
+                                    CopyFromParent, CopyFromParent, CopyFromParent,
+                                    0, 0);
     XFlush(ctx->display);
 
     // Wrap child in a GDK window
-    GdkDisplay* gdkDisplay = gdk_display_get_default();
-    GdkWindow* gdkChild = gdk_x11_window_foreign_new_for_display(gdkDisplay, child);
+    GdkWindow* gdkChild = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(), child);
     ctx->window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
     g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), ctx);
     g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkChild);
-    gtk_widget_set_has_window(GTK_WIDGET(ctx->window), TRUE);
-    //gtk_widget_realize(GTK_WIDGET(ctx->window));
-    gtk_window_resize(ctx->window, 2000, 2000); // arbitrary max size
+    // After the web view becomes visible, gtk_window_resize() will not cause
+    // its contents to resize anymore. The issue is probably related to the
+    // GdkWindow wrapping a X11 window and not emitting Glib events like
+    // configure-event. The workaround consists in creating the window with a
+    // predetermined max size and using JavaScript to resize the DOM instead of
+    // resizing the window natively. It is an ugly solution but it works.
+    gtk_window_resize(ctx->window, MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT);
 
     // Create the web view
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
@@ -132,7 +140,6 @@ static void set_background_color(const helper_context_t *ctx, uint32_t rgba)
 
 static void set_fake_size(const helper_context_t *ctx)
 {
-    // This is ugly but gets the work done
     char js[1024];
     sprintf(js, "document.body.style.width = '%dpx';"
                 "document.body.style.height = '%dpx';",
@@ -278,9 +285,6 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
 
         case OPC_SET_SIZE: {
             const helper_size_t *size = (const helper_size_t *)packet.v;
-            // gtk_window_resize() will not cause the webview content to resize,
-            // this issue is probably related to the wrapped native window which
-            // is not emitting Glib events like configure-event. Do it in JS.
             //gtk_window_resize(ctx->window, size->width, size->height);
             ctx->size = *size;
             set_fake_size(ctx);
