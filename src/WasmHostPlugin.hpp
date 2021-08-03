@@ -31,7 +31,7 @@ class WasmHostPlugin : public Plugin
 {
 public:
     WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount,
-                    std::shared_ptr<WasmEngine> engine = nullptr);
+                    std::shared_ptr<WasmEngine> engine = 0);
     ~WasmHostPlugin() {};
 
     const char* getLabel() const override;
@@ -68,10 +68,10 @@ public:
     void run(const float** inputs, float** outputs, uint32_t frames) override;
 #endif
 
+    WasmValueVector writeMidiEvent(WasmValueVector params);
+
 private:
     inline void throwIfEngineStopped() const;
-
-    WasmValueVector writeMidiEvent(WasmValueVector params);
 
     std::shared_ptr<WasmEngine> fEngine;
 

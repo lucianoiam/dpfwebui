@@ -31,13 +31,17 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
                                 std::shared_ptr<WasmEngine> engine)
     : Plugin(parameterCount, programCount, stateCount)
 {   
-    if (engine == nullptr) {
-        fEngine.reset(new WasmEngine());
-    } else {
+    if (engine != 0) {
+        // Hand over initialization to the caller
         fEngine = engine;
+        return;
     }
 
+    fEngine.reset(new WasmEngine());
+
     String path = platform::getLibraryPath() + "/dsp/plugin.wasm";
+    fEngine->load(path);
+
     WasmFunctionMap hostFunctions;
 
     hostFunctions["_get_samplerate"] = { {}, { WASM_F32 }, [this](WasmValueVector) -> WasmValueVector {
@@ -47,7 +51,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     hostFunctions["_write_midi_event"] = { {}, { WASM_I32  }, 
         std::bind(&WasmHostPlugin::writeMidiEvent, this, std::placeholders::_1) };
 
-    fEngine->start(path, hostFunctions);
+    fEngine->start(hostFunctions);
 
     fEngine->setGlobal("_rw_num_inputs", MakeI32(DISTRHO_PLUGIN_NUM_INPUTS));
     fEngine->setGlobal("_rw_num_outputs", MakeI32(DISTRHO_PLUGIN_NUM_OUTPUTS));
@@ -295,13 +299,6 @@ void WasmHostPlugin::deactivate()
     }
 }
 
-void WasmHostPlugin::throwIfEngineStopped() const
-{
-    if (!fEngine->isStarted()) {
-        throw std::runtime_error("Wasm engine is not running");
-    }
-}
-
 WasmValueVector WasmHostPlugin::writeMidiEvent(WasmValueVector params)
 {
     (void)params;
@@ -326,4 +323,11 @@ WasmValueVector WasmHostPlugin::writeMidiEvent(WasmValueVector params)
 #else
     return { MakeI32(false) };
 #endif // DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+}
+
+void WasmHostPlugin::throwIfEngineStopped() const
+{
+    if (!fEngine->isStarted()) {
+        throw std::runtime_error("Wasm engine is not running");
+    }
 }

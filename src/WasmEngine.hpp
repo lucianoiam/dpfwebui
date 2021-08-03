@@ -59,9 +59,11 @@ public:
     WasmEngine();
     ~WasmEngine();
 
-    bool isStarted() { return fStarted; }
+    void load(const char* modulePath);
+    void unload();
 
-    void start(const char* modulePath, WasmFunctionMap hostFunctions);
+    bool isStarted() { return fStarted; }
+    void start(WasmFunctionMap hostFunctions);
     void stop();
 
     byte_t* getMemory(const WasmValue& wPtr = MakeI32(0));
@@ -92,8 +94,8 @@ private:
     bool               fStarted;
     wasm_engine_t*     fEngine;
     wasm_store_t*      fStore;
-    wasm_instance_t*   fInstance;
     wasm_module_t*     fModule;
+    wasm_instance_t*   fInstance;
     wasm_extern_vec_t  fExportsVec;
 #ifdef HIPHOP_ENABLE_WASI
     wasi_env_t*        fWasiEnv;

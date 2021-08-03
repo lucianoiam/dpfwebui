@@ -29,8 +29,8 @@ WasmEngine::WasmEngine()
     : fStarted(false)
     , fEngine(0)
     , fStore(0)
-    , fInstance(0)
     , fModule(0)
+    , fInstance(0)
 #ifdef HIPHOP_ENABLE_WASI
     , fWasiEnv(0)
 #endif
@@ -41,13 +41,11 @@ WasmEngine::WasmEngine()
 WasmEngine::~WasmEngine()
 {
     stop();
+    unload();
 }
 
-void WasmEngine::start(const char* modulePath, WasmFunctionMap hostFunctions)
+void WasmEngine::load(const char* modulePath)
 {
-    // -------------------------------------------------------------------------
-    // Load and initialize binary module file
-
     FILE* file = fopen(modulePath, "rb");
 
     if (file == 0) {
@@ -90,7 +88,28 @@ void WasmEngine::start(const char* modulePath, WasmFunctionMap hostFunctions)
     if (fModule == 0) {
         throwWasmerLastError();
     }
+}
 
+void WasmEngine::unload()
+{
+    if (fModule != 0) {
+        wasm_module_delete(fModule);
+        fModule = 0;
+    }
+    
+    if (fStore != 0) {
+        wasm_store_delete(fStore);
+        fStore = 0;
+    }
+
+    if (fEngine != 0) {
+        wasm_engine_delete(fEngine);
+        fEngine = 0;
+    }
+}
+
+void WasmEngine::start(WasmFunctionMap hostFunctions)
+{
     char name[MAX_MODULE_NAME];
 
 #ifdef HIPHOP_ENABLE_WASI
@@ -253,24 +272,9 @@ void WasmEngine::stop()
         fExportsVec.size = 0;
     }
 
-    if (fModule != 0) {
-        wasm_module_delete(fModule);
-        fModule = 0;
-    }
-
     if (fInstance != 0) {
         wasm_instance_delete(fInstance);
         fInstance = 0;
-    }
-
-    if (fStore != 0) {
-        wasm_store_delete(fStore);
-        fStore = 0;
-    }
-
-    if (fEngine != 0) {
-        wasm_engine_delete(fEngine);
-        fEngine = 0;
     }
 
     fHostFunctions.clear();
