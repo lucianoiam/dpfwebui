@@ -39,9 +39,9 @@ declare function _write_midi_event(): bool
 
 // Re-export host functions including glue code to support distrho-plugin.ts
 
-export { _get_samplerate as plugin_get_samplerate }
+export { _get_samplerate as glue_get_samplerate }
 
-export function plugin_write_midi_event(midiEvent: DISTRHO.MidiEvent): bool {
+export function glue_write_midi_event(midiEvent: DISTRHO.MidiEvent): bool {
     let midiOffset: i32 = 0
     raw_midi_events.setUint32(midiOffset, midiEvent.frame, /* LE */ true)
     midiOffset += 4
