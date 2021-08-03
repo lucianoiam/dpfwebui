@@ -10,7 +10,7 @@ core remains isolated and implemented in C++ or [AssemblyScript](https://www.ass
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
 *WebGain example running on Bitwig. A real world plugin is under development
-[here](https://github.com/lucianoiam/castello-rev).*
+[here](https://github.com/lucianoiam/castello).*
 
 ****
 
