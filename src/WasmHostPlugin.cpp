@@ -291,7 +291,7 @@ void WasmHostPlugin::deactivate()
 void WasmHostPlugin::throwIfEngineStopped() const
 {
     if (!fEngine.isStarted()) {
-        throw new std::runtime_error("Wasm engine is not running");
+        throw std::runtime_error("Wasm engine is not running");
     }
 }
 

@@ -51,7 +51,7 @@ void WasmEngine::start(const char* modulePath, WasmFunctionMap hostFunctions)
     FILE* file = fopen(modulePath, "rb");
 
     if (file == 0) {
-        throw new std::runtime_error("Error opening Wasm module file");
+        throw std::runtime_error("Error opening Wasm module file");
     }
 
     fseek(file, 0L, SEEK_END);
@@ -64,7 +64,7 @@ void WasmEngine::start(const char* modulePath, WasmFunctionMap hostFunctions)
     if (fread(fileBytes.data, fileSize, 1, file) != 1) {
         wasm_byte_vec_delete(&fileBytes);
         fclose(file);
-        throw new std::runtime_error("Error reading Wasm module file");
+        throw std::runtime_error("Error reading Wasm module file");
     }
 
     fclose(file);
@@ -160,11 +160,11 @@ void WasmEngine::start(const char* modulePath, WasmFunctionMap hostFunctions)
 
 #ifdef HIPHOP_ENABLE_WASI
     if (!moduleNeedsWasi) {
-        throw new std::runtime_error("WASI is enabled but module is not WASI compliant");
+        throw std::runtime_error("WASI is enabled but module is not WASI compliant");
     }
 #else
     if (moduleNeedsWasi) {
-        throw new std::runtime_error("WASI is not enabled but module requires WASI");
+        throw std::runtime_error("WASI is not enabled but module requires WASI");
     }
 #endif
 
@@ -354,13 +354,13 @@ void WasmEngine::throwWasmerLastError()
     int len = wasmer_last_error_length();
     
     if (len == 0) {
-        throw new std::runtime_error("Wasmer unknown error");
+        throw std::runtime_error("Wasmer unknown error");
     }
 
     char msg[len];
     wasmer_last_error_message(msg, len);
 
-    throw new std::runtime_error(std::string("Wasmer error - ") + msg);
+    throw std::runtime_error(std::string("Wasmer error - ") + msg);
 }
 
 void WasmEngine::toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types)
@@ -379,7 +379,7 @@ void WasmEngine::toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_
 const char* WasmEngine::fromWTF16String(const WasmValue& wPtr)
 {
     if (fModuleExports.find("_from_wtf16_string") == fModuleExports.end()) {
-        throw new std::runtime_error("Wasm module does not export function _from_wtf16_string");
+        throw std::runtime_error("Wasm module does not export function _from_wtf16_string");
     }
 
     return callFunctionReturnCString("_from_wtf16_string", { wPtr });
@@ -389,7 +389,7 @@ const char* WasmEngine::fromWTF16String(const WasmValue& wPtr)
 WasmValue WasmEngine::toWTF16String(const char* s)
 {
     if (fModuleExports.find("_to_wtf16_string") == fModuleExports.end()) {
-        throw new std::runtime_error("Wasm module does not export function _to_wtf16_string");
+        throw std::runtime_error("Wasm module does not export function _to_wtf16_string");
     }
 
     WasmValue wPtr = getGlobal("_rw_string_1");
