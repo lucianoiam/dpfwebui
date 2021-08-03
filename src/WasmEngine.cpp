@@ -380,35 +380,35 @@ void WasmEngine::toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_
     wasm_valtype_vec_new(types, size, typesArray);
 }
 
-const char* WasmEngine::fromWTF16String(const WasmValue& wPtr)
+const char* WasmEngine::WTF16ToCString(const WasmValue& wPtr)
 {
-    if (fModuleExports.find("_from_wtf16_string") == fModuleExports.end()) {
-        throw std::runtime_error("Wasm module does not export function _from_wtf16_string");
+    if (fModuleExports.find("_wtf16_to_c_string") == fModuleExports.end()) {
+        throw std::runtime_error("Wasm module does not export function _wtf16_to_c_string");
     }
 
-    return callFunctionReturnCString("_from_wtf16_string", { wPtr });
+    return callFunctionReturnCString("_wtf16_to_c_string", { wPtr });
 
 }
 
-WasmValue WasmEngine::toWTF16String(const char* s)
+WasmValue WasmEngine::CToWTF16String(const char* s)
 {
-    if (fModuleExports.find("_to_wtf16_string") == fModuleExports.end()) {
-        throw std::runtime_error("Wasm module does not export function _to_wtf16_string");
+    if (fModuleExports.find("_c_to_wtf16_string") == fModuleExports.end()) {
+        throw std::runtime_error("Wasm module does not export function _c_to_wtf16_string");
     }
 
     WasmValue wPtr = getGlobal("_rw_string_1");
 
     copyCStringToMemory(wPtr, s);
 
-    return callFunctionReturnSingleValue("_to_wtf16_string", { wPtr });
+    return callFunctionReturnSingleValue("_c_to_wtf16_string", { wPtr });
 }
 
 #ifndef HIPHOP_ENABLE_WASI
 
 WasmValueVector WasmEngine::nonWasiAssemblyScriptAbort(WasmValueVector params)
 {
-    const char *msg = fromWTF16String(params[0]);
-    const char *filename = fromWTF16String(params[1]);
+    const char *msg = WTF16ToCString(params[0]);
+    const char *filename = WTF16ToCString(params[1]);
     int32_t lineNumber = params[2].of.i32;
     int32_t columnNumber = params[3].of.i32;
 

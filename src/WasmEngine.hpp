@@ -84,8 +84,8 @@ private:
 
     static void toCValueTypeVector(WasmValueKindVector kinds, wasm_valtype_vec_t* types);
        
-    const char* fromWTF16String(const WasmValue& wPtr);
-    WasmValue   toWTF16String(const char* s);
+    const char* WTF16ToCString(const WasmValue& wPtr);
+    WasmValue   CToWTF16String(const char* s);
 
 #ifndef HIPHOP_ENABLE_WASI
     WasmValueVector nonWasiAssemblyScriptAbort(WasmValueVector params);

@@ -62,15 +62,15 @@ export function glue_write_midi_event(midiEvent: DISTRHO.MidiEvent): bool {
 // guarantee that pluginInstance is already init'd at this point no longer holds.
 
 export function _get_label(): ArrayBuffer {
-    return _from_wtf16_string(pluginInstance.getLabel())
+    return _wtf16_to_c_string(pluginInstance.getLabel())
 }
 
 export function _get_maker(): ArrayBuffer {
-    return _from_wtf16_string(pluginInstance.getMaker())
+    return _wtf16_to_c_string(pluginInstance.getMaker())
 }
 
 export function _get_license(): ArrayBuffer {
-    return _from_wtf16_string(pluginInstance.getLicense())
+    return _wtf16_to_c_string(pluginInstance.getLicense())
 }
 
 export function _get_version(): u32 {
@@ -88,7 +88,7 @@ export function _init_parameter(index: u32): void {
     pluginInstance.initParameter(index, parameter)
 
     _rw_int_1 = parameter.hints
-    _ro_string_1 = _from_wtf16_string(parameter.name)
+    _ro_string_1 = _wtf16_to_c_string(parameter.name)
     _rw_float_1 = parameter.ranges.def
     _rw_float_2 = parameter.ranges.min
     _rw_float_3 = parameter.ranges.max
@@ -105,7 +105,7 @@ export function _set_parameter_value(index: u32, value: f32): void {
 export function _init_program_name(index: u32): ArrayBuffer {
     let programName = new DISTRHO.StringWrapper
     pluginInstance.initProgramName(index, programName)
-    return _from_wtf16_string(programName.string)
+    return _wtf16_to_c_string(programName.string)
 }
 
 export function _load_program(index: u32): void {
@@ -118,16 +118,16 @@ export function _init_state(index: u32): void {
 
     pluginInstance.initState(index, stateKey, defaultStateValue)
 
-    _ro_string_1 = _from_wtf16_string(stateKey.string)
-    _ro_string_2 = _from_wtf16_string(defaultStateValue.string)
+    _ro_string_1 = _wtf16_to_c_string(stateKey.string)
+    _ro_string_2 = _wtf16_to_c_string(defaultStateValue.string)
 }
 
 export function _set_state(key: ArrayBuffer, value: ArrayBuffer): void {
-    pluginInstance.setState(_to_wtf16_string(key), _to_wtf16_string(value))
+    pluginInstance.setState(_c_to_wtf16_string(key), _c_to_wtf16_string(value))
 }
 
 export function _get_state(key: ArrayBuffer): ArrayBuffer {
-    return _from_wtf16_string(pluginInstance.getState(_to_wtf16_string(key)))
+    return _wtf16_to_c_string(pluginInstance.getState(_c_to_wtf16_string(key)))
 }
 
 export function _activate(): void {
@@ -228,11 +228,11 @@ export let _rw_string_2 = new ArrayBuffer(MAX_STRING_BYTES)
 // exported to handle a few special cases like supporting non-WASI abort().
 // String conversions should be only performed by AssemblyScript code.
 
-export function _from_wtf16_string(s: string): ArrayBuffer {
+export function _wtf16_to_c_string(s: string): ArrayBuffer {
     return String.UTF8.encode(s, /* null terminated */ true)
 }
 
-export function _to_wtf16_string(s: ArrayBuffer): string {
+export function _c_to_wtf16_string(s: ArrayBuffer): string {
     const nullPos = Uint8Array.wrap(s).indexOf(0)
     return String.UTF8.decode(s.slice(0, nullPos))
 }
