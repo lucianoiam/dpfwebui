@@ -19,6 +19,8 @@
 #ifndef WASM_HOST_PLUGIN_HPP
 #define WASM_HOST_PLUGIN_HPP
 
+#include <memory>
+
 #include "DistrhoPlugin.hpp"
 
 #include "WasmEngine.hpp"
@@ -28,7 +30,8 @@ START_NAMESPACE_DISTRHO
 class WasmHostPlugin : public Plugin
 {
 public:
-    WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount);
+    WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount,
+                    std::shared_ptr<WasmEngine> engine = nullptr);
     ~WasmHostPlugin() {};
 
     const char* getLabel() const override;
@@ -70,7 +73,7 @@ private:
 
     WasmValueVector writeMidiEvent(WasmValueVector params);
 
-    mutable WasmEngine fEngine;
+    std::shared_ptr<WasmEngine> fEngine;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WasmHostPlugin)
 
