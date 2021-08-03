@@ -404,7 +404,7 @@ endif
 # Post build - Compile AssemblyScript project and copy Wasm binary
 
 ifneq ($(AS_DSP),)
-ifneq ($(HIPHOP_OMIT_FRAMEWORK_AS_FILES),true)
+ifneq ($(HIPHOP_AS_SKIP_FRAMEWORK_FILES),true)
 HIPHOP_TARGET += frameworkas
 
 AS_ASSEMBLY_PATH = $(HIPHOP_AS_DSP_PATH)/assembly
