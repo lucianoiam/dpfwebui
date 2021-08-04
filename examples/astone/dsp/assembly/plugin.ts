@@ -32,7 +32,7 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
     }
 
     getMaker(): string {
-        return 'George Stagas, Luciano Iam'
+        return 'Luciano Iam, George Stagas'
     }
 
     getLicense(): string {
