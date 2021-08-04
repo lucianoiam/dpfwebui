@@ -36,7 +36,7 @@ namespace platform {
     String getLibraryPath();
     String getTemporaryPath();
 
-    const String kDefaultLibrarySubdirectory = String(XSTR(BIN_BASENAME) "_lib");
+    const String kDefaultLibrarySubdirectory = String(XSTR(BIN_BASENAME) "-lib");
 
 }
 

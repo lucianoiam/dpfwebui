@@ -78,7 +78,7 @@ ExternalGtkWebView::ExternalGtkWebView(Widget *parentWidget)
     
     char binPath[PATH_MAX];
     strcpy(binPath, platform::getBinaryPath());
-    String helperPath = String(dirname(binPath)) + "/" XSTR(BIN_BASENAME) "_ui";
+    String helperPath = String(dirname(binPath)) + "/" XSTR(BIN_BASENAME) "-ui";
     const char *argv[] = {helperPath, rfd, wfd, 0};
 
     int status = posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);

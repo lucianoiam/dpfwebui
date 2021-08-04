@@ -25,6 +25,9 @@ ifneq ($(HIPHOP_WEB_UI_PATH),)
 WEB_UI = true
 endif
 
+TARGET_LIB_DIR = $(NAME)-lib
+NPM_ENV = true
+
 # ------------------------------------------------------------------------------
 # Determine build environment
 
@@ -43,6 +46,11 @@ ifneq (,$(findstring MINGW,$(MSYSTEM)))
 MSYS_MINGW = true
 endif
 
+# MACSIZEBUG
+ifeq ($(MACOS),true)
+FILES_UI += $(HIPHOP_SRC_PATH)/macos/PlatformMac.mm
+endif
+
 ifeq ($(MSYS_MINGW),true)
 ifeq ($(shell cmd /c "net.exe session 1>NUL 2>NUL || exit /b 1"; echo $$?),1)
 #$(info Run MSYS as administrator for real symlink support)
@@ -50,13 +58,6 @@ MSYS_MINGW_SYMLINKS = :
 else
 MSYS_MINGW_SYMLINKS = export MSYS=winsymlinks:nativestrict
 endif
-endif
-
-NPM_ENV = true
-
-# MACSIZEBUG
-ifeq ($(MACOS),true)
-FILES_UI += $(HIPHOP_SRC_PATH)/macos/PlatformMac.mm
 endif
 
 # ------------------------------------------------------------------------------
@@ -327,7 +328,7 @@ endif
 
 ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
-LXHELPER_BIN = $(BUILD_DIR)/$(NAME)_ui
+LXHELPER_BIN = $(BUILD_DIR)/$(NAME)-ui
 HIPHOP_TARGET += $(LXHELPER_BIN)
 
 $(LXHELPER_BIN): $(HIPHOP_SRC_PATH)/linux/helper.c $(HIPHOP_SRC_PATH)/linux/extra/ipc.c
@@ -429,16 +430,16 @@ libdsp:
 	@cd $(HIPHOP_AS_DSP_PATH) && $(NPM_ENV) && npm run asbuild
 	@echo "Copying WebAssembly DSP binary..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)_lib/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME)_lib/$(WASM_DST_PATH) \
+		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR)/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(TARGET_LIB_DIR)/$(WASM_DST_PATH) \
 		) || true
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_lib/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).lv2/$(NAME)_lib/$(WASM_DST_PATH) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/$(WASM_DST_PATH) \
 		) || true
 	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_lib/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_lib/$(WASM_DST_PATH) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR)/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR)/$(WASM_DST_PATH) \
 		) || true
 	@($(TEST_MAC_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
@@ -455,16 +456,16 @@ HIPHOP_TARGET += libui
 libui:
 	@echo "Copying web UI files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)_lib/ui \
-		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)_lib/ui \
+		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR)/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(TARGET_LIB_DIR)/ui \
 		) || true
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(NAME)_lib/ui \
-		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(NAME)_lib/ui \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/ui \
 		) || true
 	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_lib/ui \
-		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_lib/ui \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR)/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR)/ui \
 		) || true
 	@($(TEST_MAC_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
@@ -474,7 +475,7 @@ libui:
 clean: clean_lib
 
 clean_lib:
-	@rm -rf $(TARGET_DIR)/$(NAME)_lib
+	@rm -rf $(TARGET_DIR)/$(TARGET_LIB_DIR)
 endif
 
 # ------------------------------------------------------------------------------
