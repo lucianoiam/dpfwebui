@@ -33,10 +33,12 @@ C++|JS |Web view user interface, see example [webgain](https://github.com/lucian
 AS |C++|DPF Graphics Library (DGL), see example [astone](https://github.com/lucianoiam/hiphop/tree/master/examples/astone).
 C++|C++|Do not use this project, just use DPF instead.
 
+For behind-the-scenes information go [here](https://github.com/lucianoiam/hiphop/blob/master/doc/internals.md).
+
 ### Example JavaScript UI code
 
 ```JavaScript
-class MyPluginUI extends DISTRHO_UI {
+class ExampleUI extends DISTRHO_UI {
 
     constructor() {
         super();
@@ -63,27 +65,36 @@ class MyPluginUI extends DISTRHO_UI {
 }
 ```
 
-Usage of JS frameworks is up to the developer. The complete `DISTRHO_UI` interface
-is defined [here](https://github.com/lucianoiam/hiphop/blob/master/src/ui/distrho-ui.js).
-
-More information [here](https://github.com/lucianoiam/hiphop/blob/master/doc/internals.md).
+The complete UI interface is defined [here](https://github.com/lucianoiam/hiphop/blob/master/src/ui/distrho-ui.js).
 
 ### Example AssemblyScript DSP code
 
 ```TypeScript
-// Short example not yet available
+export default class ExamplePlugin extends DISTRHO.Plugin implements DISTRHO.PluginInterface {
+
+    private gain: f32
+
+    setParameterValue(index: u32, value: f32): void {
+        // Host informs a parameter change, update local value
+
+        switch (index) {
+            case 0:
+                this.gain = value
+        }
+    }
+
+    run(inputs: Float32Array[], outputs: Float32Array[], midiEvents: DISTRHO.MidiEvent[]): void {
+        // Process an audio channel, input and output buffers have equal size
+
+        for (let i = 0; i < inputs[0].length; ++i) {
+            outputs[0][i] = this.gain * inputs[0][i]
+        }
+    }
+
+}
 ```
 
-See example code [here](https://github.com/lucianoiam/hiphop/blob/master/examples/astone/dsp/assembly/plugin.ts)
-instead.
-
-The complete `DISTRHO.Plugin` interface is defined [here](https://github.com/lucianoiam/hiphop/blob/master/src/dsp/distrho-plugin.ts).
-
-AssemblyScript is a language similar to [TypeScript](https://www.typescriptlang.org)
-specifically designed for targeting [WebAssembly](https://webassembly.org)
-(Wasm). Plugins created with Hip-Hop optionally embed a Wasm
-[JIT engine](https://github.com/wasmerio/wasmer) for running precompiled
-AssemblyScript DSP code. Such engine is completely independent from the web view.
+The complete plugin interface is defined [here](https://github.com/lucianoiam/hiphop/blob/master/src/dsp/distrho-plugin.ts).
 
 ### About DISTRHO Plugin Framework (DPF)
 

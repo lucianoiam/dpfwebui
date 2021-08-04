@@ -1,4 +1,12 @@
-### Dependencies
+### AssemblyScript
+
+It is a language similar to [TypeScript](https://www.typescriptlang.org)
+specifically designed for targeting [WebAssembly](https://webassembly.org)
+(Wasm). Plugins created with Hip-Hop optionally embed a Wasm
+[JIT engine](https://github.com/wasmerio/wasmer) for running precompiled
+AssemblyScript DSP code. Such engine is completely independent from the web view.
+
+### UI dependencies
 
 Usage of JS frameworks is up to the developer. No web equivalent versions of the
 DPF/DGL widgets are provided. There are some options available:
@@ -23,7 +31,7 @@ runtime library https://developer.microsoft.com/microsoft-edge/webview2. It is
 an official library from MS and expected to become bundled into Windows at some
 point.
 
-### Integration with the underlying C++ framework (DPF)
+### UI integration with the underlying C++ framework (DPF)
 
 A small JS wrapper around the C++ `DISTRHO::UI` class is provided for convenience.
 New integrations between C++ and JS code can be easily built leveraging the
