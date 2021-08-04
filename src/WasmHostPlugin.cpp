@@ -32,29 +32,32 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     : Plugin(parameterCount, programCount, stateCount)
 {   
     if (engine != 0) {
-        // Hand over initialization to the caller
         fEngine = engine;
-        return;
+        return; // hand over initialization to the caller
     }
 
     fEngine.reset(new WasmEngine());
 
-    String path = platform::getLibraryPath() + "/dsp/plugin.wasm";
-    fEngine->load(path);
+    try {
+        String path = platform::getLibraryPath() + "/dsp/plugin.wasm";
+        fEngine->load(path);
 
-    WasmFunctionMap hostFunctions;
+        WasmFunctionMap hf; // host functions
 
-    hostFunctions["_get_samplerate"] = { {}, { WASM_F32 }, [this](WasmValueVector) -> WasmValueVector {
-        return { MakeF32(getSampleRate()) };
-    }};
+        hf["_get_samplerate"] = { {}, { WASM_F32 }, [this](WasmValueVector) -> WasmValueVector {
+            return { MakeF32(getSampleRate()) };
+        }};
 
-    hostFunctions["_write_midi_event"] = { {}, { WASM_I32  }, 
-        std::bind(&WasmHostPlugin::writeMidiEvent, this, std::placeholders::_1) };
+        hf["_write_midi_event"] = { {}, { WASM_I32  }, 
+            std::bind(&WasmHostPlugin::writeMidiEvent, this, std::placeholders::_1) };
 
-    fEngine->start(hostFunctions);
+        fEngine->start(hf);
 
-    fEngine->setGlobal("_rw_num_inputs", MakeI32(DISTRHO_PLUGIN_NUM_INPUTS));
-    fEngine->setGlobal("_rw_num_outputs", MakeI32(DISTRHO_PLUGIN_NUM_OUTPUTS));
+        fEngine->setGlobal("_rw_num_inputs", MakeI32(DISTRHO_PLUGIN_NUM_INPUTS));
+        fEngine->setGlobal("_rw_num_outputs", MakeI32(DISTRHO_PLUGIN_NUM_OUTPUTS));
+    } catch (const std::exception& ex) {
+        HIPHOP_LOG_STDERR_COLOR(ex.what());
+    }
 }
 
 const char* WasmHostPlugin::getLabel() const
