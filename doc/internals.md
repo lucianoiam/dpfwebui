@@ -1,42 +1,73 @@
-### AssemblyScript
+### AssemblyScript DSP
 
-It is a language similar to [TypeScript](https://www.typescriptlang.org)
-specifically designed for targeting [WebAssembly](https://webassembly.org)
-(Wasm). Plugins created with Hip-Hop optionally embed a Wasm
-[JIT engine](https://github.com/wasmerio/wasmer) for running precompiled
-AssemblyScript DSP code. Such engine is completely independent from the web view.
+As an optional feature built on top of DPF's C++ `Plugin` class, it is also
+possible to write plugins in the AssemblyScript language. While not strictly a
+subset it is highly similar in syntax to [TypeScript](https://www.typescriptlang.org)
+and specifically designed for targeting [WebAssembly](https://webassembly.org),
+roughly described as the "assembler of the web". Plugins leveraging this feature
+embed the [Wasmer](https://github.com/wasmerio/wasmer) JIT engine for running
+precompiled AssemblyScript code at a close-to-native performance.
 
-### UI dependencies
+It is worth noting that the Wasm VM and the web view are completely separated
+entities that only communicate through a minimal key/value pairs interface
+provided by DPF. Decoupled DSP and UI code is enforced by DPF as one of its
+design goals and this is preserved when opting for AS and/or the web view
+features. The Wasm VM runs in parallel to the web view, and the latter will be
+loaded or unloaded depending the UI visibility state. There is no continuously
+running hidden web view or similar hacks involved.
+
+Hip-Hop provides two AssemblyScript files that must be included in user projects:
+
+File              |Description
+------------------|-------------------------------------------------------------
+distrho-plugin.ts | Public plugin interface, use this for writing plugins.
+index.ts          | Private plugin interface, basically glue code between C++ and the public interface.
+
+User DSP code should follow the standard AssemblyScript project format described
+[here](https://www.assemblyscript.org/quick-start.html). AssemblyScript project
+scaffold is created by running:
+
+`npx asinit [DIRECTORY]`
+
+This scheme might be simplified in the future as the AS/Wasm/Wasmer stack is
+quite young and under continued development.
+
+### Web view UI
+
+- On Linux a WebKitGTK web view instance runs in a separate process to keep the
+plugin GTK-free. It is X11-based and runs well on XWayland too.
+
+- On macOS the built-in WKWebView is used.
+
+- On Windows Edge WebView2 is used. As of Aug '21 the end user needs to install
+a runtime library https://developer.microsoft.com/microsoft-edge/webview2. It is
+an official library from MS and expected to become bundled into Windows at some
+point.
 
 Usage of JS frameworks is up to the developer. No web equivalent versions of the
 DPF/DGL widgets are provided. There are some options available:
 
-- Rely on stock HTML elements plus styling. This is not recommended but possible.
+- Rely on stock HTML elements plus styling, it might be enough for some simple
+use cases.
 - Browse the web for available toolkits like this one [here](https://github.com/DeutscheSoft/toolkit)
-- Try my widgets library called [Guinda](https://github.com/lucianoiam/guinda). It
-is incomplete and under heavy development as of Jun '21.
+- Try my widgets library [here](https://github.com/lucianoiam/guinda). It
+is incomplete and still under development as of Aug '21.
 - Roll your own widgets. HTML5 offers plenty of tools, being SVG and canvas
 worth looking into. Even a quick combination of images, stylesheets and little
 code can do the job.
 
-### Web view implementation
+### Integration with the underlying C++ framework (DPF)
 
-- On Linux a WebKitGTK web view instance runs in a separate process to keep the
-plugin GTK-free.
+The project provides a basic C++ wrapper around the Wasm standardized C API,
+implemented in `WasmEngine.cpp`. It provides some methods to read and write
+global variables, and for enabling cross-language function calls. This can be
+useful for creating new hybrid features.
 
-- On macOS WKWebView is used.
-
-- On Windows Edge WebView2 is used. As of Jun '21 the end user needs to install a
-runtime library https://developer.microsoft.com/microsoft-edge/webview2. It is
-an official library from MS and expected to become bundled into Windows at some
-point.
-
-### UI integration with the underlying C++ framework (DPF)
-
-A small JS wrapper around the C++ `DISTRHO::UI` class is provided for convenience.
-New integrations between C++ and JS code can be easily built leveraging the
-standard `postMessage()` call. For Linux and Mac a message handler called `host`
-is installed, thus providing access to a native callback through the function:
+For the UI a small JS wrapper around the C++ `DISTRHO::UI` class is provided
+for convenience. New integrations between C++ and JS code can be easily built
+leveraging the standard `postMessage()` call. For Linux and Mac a message
+handler called `host` is installed, thus providing access to a native callback
+through the function:
 
 `window.webkit.messageHandlers.host.postMessage()`
 
