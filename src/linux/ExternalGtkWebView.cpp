@@ -282,7 +282,7 @@ void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payl
 }
 
 IpcReadThread::IpcReadThread(ExternalGtkWebView& view)
-    : Thread("ipc_read")
+    : Thread("ipc_read_" XSTR(HIPHOP_PROJECT_ID_HASH))
     , fView(view)
 {}
 
