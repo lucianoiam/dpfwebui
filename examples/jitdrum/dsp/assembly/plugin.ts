@@ -24,10 +24,10 @@ const DECAY: f32 = 1.0
 
 export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DISTRHO.PluginInterface {
 
-    private sr: f32
-    private t: f32
-    private f: f32
-    private a: f32
+    private sr: f32 // samplerate
+    private t: i32  // frames since note start
+    private f: f32  // note frequency
+    private a: f32  // amplitude
 
     getLabel(): string {
         return 'JITDrum'
@@ -96,11 +96,13 @@ export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DIST
             this.a = <f32>midiEvents[0].data[2] / 0xff
         }
 
+        let t: f32
+
         for (let i = 0; i < outputs[0].length; ++i) {
-            let k: f32 = this.a * Mathf.sin(this.f * Mathf.exp(PUNCH * -<f32>this.t))
-                            * Mathf.exp(DECAY * -<f32>this.t)
+            t = <f32>this.t / this.sr
+            let k: f32 = this.a * Mathf.sin(this.f * Mathf.exp(PUNCH * -t)) * Mathf.exp(DECAY * -t)
             outputs[0][i] = outputs[1][i] = k
-            this.t += 1.0 / this.sr
+            this.t += 1
         }
     }
 
