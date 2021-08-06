@@ -34,7 +34,7 @@ export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DIST
     }
 
     getMaker(): string {
-        return 'Luciano Iam'
+        return 'Luciano Iam, George Stagas'
     }
 
     getLicense(): string {
