@@ -35,6 +35,7 @@ const pluginInstance = new PluginImpl
 // functions show up in the module imports table.
 
 declare function _get_samplerate(): f32
+declare function _get_time_position(): void
 declare function _write_midi_event(): bool
 
 // Re-export host functions including glue code to support distrho-plugin.ts
@@ -52,6 +53,14 @@ export function glue_write_midi_event(midiEvent: DISTRHO.MidiEvent): bool {
         midiOffset++
     }
     return _write_midi_event()
+}
+
+export function glue_get_time_position(): DISTRHO.TimePosition {
+    _get_time_position()
+    let pos = new DISTRHO.TimePosition
+    pos.playing = <bool>_rw_int32_1
+    pos.frame = _rw_int64_1
+    return pos
 }
 
 // Keep _get_label(), _get_maker() and _get_license() as function exports. They
@@ -87,11 +96,11 @@ export function _init_parameter(index: u32): void {
     const parameter = new DISTRHO.Parameter
     pluginInstance.initParameter(index, parameter)
 
-    _rw_int_1 = parameter.hints
+    _rw_int32_1 = parameter.hints
     _ro_string_1 = _wtf16_to_c_string(parameter.name)
-    _rw_float_1 = parameter.ranges.def
-    _rw_float_2 = parameter.ranges.min
-    _rw_float_3 = parameter.ranges.max
+    _rw_float32_1 = parameter.ranges.def
+    _rw_float32_2 = parameter.ranges.min
+    _rw_float32_3 = parameter.ranges.max
 }
 
 export function _get_parameter_value(index: u32): f32 {
@@ -190,7 +199,7 @@ export let _rw_num_outputs: i32
 // Using exported globals instead of passing buffer arguments to run() allows
 // for a simpler implementation by avoiding Wasm memory alloc on the host side.
 // Audio block size should not exceed 64Kb, or 16384 frames of 32-bit float
-// samples. Midi should not exceed 1.5Kb, or 128 events of 12 bytes (def. size)
+// samples. Midi should not exceed 6Kb, or 512 events of 12 bytes (def. size)
 
 const MAX_AUDIO_BLOCK_BYTES = 65536
 
@@ -206,14 +215,22 @@ let raw_midi_events = new DataView(_rw_midi_block, 0, MAX_MIDI_EVENT_BYTES)
 // AssemblyScript does not support multi-values yet. Export a couple of generic
 // variables for returning complex data types like initParameter() requires.
 
-export let _rw_int_1: i32
-export let _rw_int_2: i32
-export let _rw_int_3: i32
-export let _rw_int_4: i32
-export let _rw_float_1: f32
-export let _rw_float_2: f32
-export let _rw_float_3: f32
-export let _rw_float_4: f32
+export let _rw_int32_1: i32
+export let _rw_int32_2: i32
+export let _rw_int32_3: i32
+export let _rw_int32_4: i32
+export let _rw_int64_1: i64
+export let _rw_int64_2: i64
+export let _rw_int64_3: i64
+export let _rw_int64_4: i64
+export let _rw_float32_1: f32
+export let _rw_float32_2: f32
+export let _rw_float32_3: f32
+export let _rw_float32_4: f32
+export let _rw_float64_1: f64
+export let _rw_float64_2: f64
+export let _rw_float64_3: f64
+export let _rw_float64_4: f64
 export let _ro_string_1: ArrayBuffer
 export let _ro_string_2: ArrayBuffer
 

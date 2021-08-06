@@ -68,6 +68,7 @@ public:
     void run(const float** inputs, float** outputs, uint32_t frames) override;
 #endif
 
+    WasmValueVector getTimePosition(WasmValueVector params);
     WasmValueVector writeMidiEvent(WasmValueVector params);
 
 private:

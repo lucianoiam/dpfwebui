@@ -32,7 +32,9 @@
 #include "extra/LeakDetector.hpp"
 
 #define MakeI32(x) WASM_I32_VAL(static_cast<int32_t>(x))
+#define MakeI64(x) WASM_I64_VAL(static_cast<int64_t>(x))
 #define MakeF32(x) WASM_F32_VAL(static_cast<float32_t>(x))
+#define MakeF64(x) WASM_F64_VAL(static_cast<float64_t>(x))
 
 START_NAMESPACE_DISTRHO
 

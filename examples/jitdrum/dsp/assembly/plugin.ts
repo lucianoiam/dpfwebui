@@ -21,7 +21,8 @@ import DISTRHO from './distrho-plugin'
 
 export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DISTRHO.PluginInterface {
 
-    private samplerate: f32
+    private t0: u32
+    private velocity: u8
 
     getLabel(): string {
         return 'JITDrum'
@@ -76,7 +77,7 @@ export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DIST
     }
 
     activate(): void {
-        this.samplerate = this.getSampleRate()
+        // empty implementation
     }
 
     deactivate(): void {
@@ -84,9 +85,17 @@ export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DIST
     }
 
     run(inputs: Float32Array[], outputs: Float32Array[], midiEvents: DISTRHO.MidiEvent[]): void {
+        const pos = this.getTimePosition()
 
-        // TODO
+        if ((midiEvents.length > 0) &&   (midiEvents[0].data[0] & 0xf0) == 0x90) {
+            this.t0 = midiEvents[0].frame
+            this.velocity = midiEvents[0].data[2]
 
+            console.log(`t0 = ${this.t0}, v = ${this.velocity}`)
+        }
+
+        // t=(currentTime-noteOnTime) 
+        // sin( hz + exp(-t * punch) ) * exp(-t * decay)
     }
 
 }

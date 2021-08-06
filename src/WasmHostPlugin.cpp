@@ -48,7 +48,10 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
             return { MakeF32(getSampleRate()) };
         }};
 
-        hf["_write_midi_event"] = { {}, { WASM_I32  }, 
+        hf["_get_time_position"] = { {}, {}, 
+            std::bind(&WasmHostPlugin::getTimePosition, this, std::placeholders::_1) };
+
+        hf["_write_midi_event"] = { {}, { WASM_I32 }, 
             std::bind(&WasmHostPlugin::writeMidiEvent, this, std::placeholders::_1) };
 
         fEngine->start(hf);
@@ -125,11 +128,11 @@ void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
     try {
         throwIfEngineStopped();
         fEngine->callFunction("_init_parameter", { MakeI32(index) });
-        parameter.hints      = fEngine->getGlobal("_rw_int_1").of.i32;
+        parameter.hints      = fEngine->getGlobal("_rw_int32_1").of.i32;
         parameter.name       = fEngine->getGlobalAsCString("_ro_string_1");
-        parameter.ranges.def = fEngine->getGlobal("_rw_float_1").of.f32;
-        parameter.ranges.min = fEngine->getGlobal("_rw_float_2").of.f32;
-        parameter.ranges.max = fEngine->getGlobal("_rw_float_3").of.f32;
+        parameter.ranges.def = fEngine->getGlobal("_rw_float32_1").of.f32;
+        parameter.ranges.min = fEngine->getGlobal("_rw_float32_2").of.f32;
+        parameter.ranges.max = fEngine->getGlobal("_rw_float32_3").of.f32;
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }
@@ -301,6 +304,19 @@ void WasmHostPlugin::deactivate()
     }
 }
 
+WasmValueVector WasmHostPlugin::getTimePosition(WasmValueVector params)
+{
+    (void)params;
+#if DISTRHO_PLUGIN_WANT_TIMEPOS
+    const TimePosition& pos = Plugin::getTimePosition();
+    fEngine->setGlobal("_rw_int32_1", MakeI32(pos.playing));
+    fEngine->setGlobal("_rw_int64_1", MakeI64(pos.frame));
+    return {};
+#else
+    throw std::runtime_error("Called getTimePosition() without DISTRHO_PLUGIN_WANT_TIMEPOS");
+#endif // DISTRHO_PLUGIN_WANT_TIMEPOS
+}
+
 WasmValueVector WasmHostPlugin::writeMidiEvent(WasmValueVector params)
 {
     (void)params;
@@ -323,7 +339,7 @@ WasmValueVector WasmHostPlugin::writeMidiEvent(WasmValueVector params)
 
     return { MakeI32(writeMidiEvent(event)) };
 #else
-    return { MakeI32(false) };
+    throw std::runtime_error("Called writeMidiEvent() without DISTRHO_PLUGIN_WANT_MIDI_OUTPUT");
 #endif // DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 }
 
