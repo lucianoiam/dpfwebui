@@ -211,7 +211,7 @@ void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
         );
 #endif
 
-#ifdef DISTRHO_PLUGIN_WANT_MIDI_INPUT
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     } else if ((method == "sendNote") && (argc == 3)) {
         sendNote(
             static_cast<uint8_t>(args[kArg0].getDouble()),  // channel
