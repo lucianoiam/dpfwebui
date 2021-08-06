@@ -16,30 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
-#define WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
+#ifndef JITDRUM_EXAMPLE_PLUGIN_HPP
+#define JITDRUM_EXAMPLE_PLUGIN_HPP
 
-#define UNICODE
-#define CINTERFACE
+#include "WasmHostPlugin.hpp"
 
-#include "WebView2.h"
+#define PARAMETER_COUNT 0
+#define PROGRAM_COUNT   0
+#define STATE_COUNT     0
 
-#define VALUE_MAX 1024
+START_NAMESPACE_DISTRHO
 
-namespace edge {
-
-class WebView2EnvironmentOptions : public ICoreWebView2EnvironmentOptions
+class JitDrumExamplePlugin : public WasmHostPlugin
 {
 public:
-    WebView2EnvironmentOptions();
-    ~WebView2EnvironmentOptions() {}
+    JitDrumExamplePlugin() : WasmHostPlugin(PARAMETER_COUNT, PROGRAM_COUNT, STATE_COUNT) {}
+    ~JitDrumExamplePlugin() {}
 
-    WCHAR fAdditionalBrowserArguments[VALUE_MAX];
-    WCHAR fLanguage[VALUE_MAX];
-    WCHAR fTargetCompatibleBrowserVersion[VALUE_MAX];
-    BOOL  fAllowSingleSignOnUsingOSPrimaryAccount; 
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JitDrumExamplePlugin)
+
 };
 
-} // namespace edge
+END_NAMESPACE_DISTRHO
 
-#endif // WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
+#endif  // JITDRUM_EXAMPLE_PLUGIN_HPP

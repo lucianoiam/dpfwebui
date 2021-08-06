@@ -16,30 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
-#define WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
+#ifndef JITDRUM_EXAMPLE_UI_HPP
+#define JITDRUM_EXAMPLE_UI_HPP
 
-#define UNICODE
-#define CINTERFACE
+#include "WebHostUI.hpp"
 
-#include "WebView2.h"
+#define BASE_WIDTH_PX  600
+#define BASE_HEIGHT_PX 300
+#define INIT_BACKGROUND_RGBA 0x202020FF
 
-#define VALUE_MAX 1024
+START_NAMESPACE_DISTRHO
 
-namespace edge {
-
-class WebView2EnvironmentOptions : public ICoreWebView2EnvironmentOptions
+class JitDrumExampleUI : public WebHostUI
 {
 public:
-    WebView2EnvironmentOptions();
-    ~WebView2EnvironmentOptions() {}
+    JitDrumExampleUI() : WebHostUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA) {}
+    ~JitDrumExampleUI() {}
 
-    WCHAR fAdditionalBrowserArguments[VALUE_MAX];
-    WCHAR fLanguage[VALUE_MAX];
-    WCHAR fTargetCompatibleBrowserVersion[VALUE_MAX];
-    BOOL  fAllowSingleSignOnUsingOSPrimaryAccount; 
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(JitDrumExampleUI)
+
 };
 
-} // namespace edge
+END_NAMESPACE_DISTRHO
 
-#endif // WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
+#endif  // JITDRUM_EXAMPLE_UI_HPP

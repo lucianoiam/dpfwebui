@@ -46,7 +46,7 @@ class AbstractWebView : public SubWidget
 public:
     AbstractWebView(Widget *parentWidget) : SubWidget(parentWidget),
         fKeyboardFocus(false), fPrintTraffic(false) {}
-    virtual ~AbstractWebView() {};
+    virtual ~AbstractWebView() {}
 
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void navigate(String& url) = 0;

@@ -16,30 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
-#define WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
+#include "JitDrumExampleUI.hpp"
 
-#define UNICODE
-#define CINTERFACE
+USE_NAMESPACE_DISTRHO
 
-#include "WebView2.h"
-
-#define VALUE_MAX 1024
-
-namespace edge {
-
-class WebView2EnvironmentOptions : public ICoreWebView2EnvironmentOptions
+UI* DISTRHO::createUI()
 {
-public:
-    WebView2EnvironmentOptions();
-    ~WebView2EnvironmentOptions() {}
-
-    WCHAR fAdditionalBrowserArguments[VALUE_MAX];
-    WCHAR fLanguage[VALUE_MAX];
-    WCHAR fTargetCompatibleBrowserVersion[VALUE_MAX];
-    BOOL  fAllowSingleSignOnUsingOSPrimaryAccount; 
-};
-
-} // namespace edge
-
-#endif // WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
+    return new JitDrumExampleUI;
+}

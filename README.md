@@ -28,8 +28,8 @@ The following DSP / UI language combinations are possible:
 
 DSP|UI |Comments
 ---|---|---------------------------------------------------------------------------
-AS |JS |Web view user interface, no example available yet.
 C++|JS |Web view user interface, see example [webgain](https://github.com/lucianoiam/hiphop/tree/master/examples/webgain).
+AS |JS |Web view user interface, see example [jitdrum](https://github.com/lucianoiam/hiphop/tree/master/examples/jitdrum) [WIP].
 AS |C++|DPF Graphics Library (DGL), see example [astone](https://github.com/lucianoiam/hiphop/tree/master/examples/astone).
 C++|C++|Do not use this project, just use DPF instead.
 

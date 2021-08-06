@@ -25,7 +25,7 @@ class WebGainExamplePlugin : public Plugin
 {
 public:
     WebGainExamplePlugin();
-    ~WebGainExamplePlugin() {};
+    ~WebGainExamplePlugin() {}
 
     const char* getLabel() const override
     {

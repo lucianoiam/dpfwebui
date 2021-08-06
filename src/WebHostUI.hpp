@@ -30,7 +30,7 @@ class WebHostUI : public UI, private WebViewEventHandler
 {
 public:
     WebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
-    virtual ~WebHostUI() {};
+    virtual ~WebHostUI() {}
 
 protected:
     void onDisplay() override;
@@ -54,8 +54,8 @@ protected:
     void flushInitMessageQueue();
     void setKeyboardFocus(bool focus);
 
-    virtual void webContentReady() {};
-    virtual void webMessageReceived(const JsValueVector& args) { (void)args; };
+    virtual void webContentReady() {}
+    virtual void webMessageReceived(const JsValueVector& args) { (void)args; }
 
 private:
     // WebViewEventHandler

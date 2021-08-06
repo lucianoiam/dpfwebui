@@ -33,7 +33,7 @@ class WebView2EventHandler : public ICoreWebView2CreateCoreWebView2EnvironmentCo
 {
 public:
     WebView2EventHandler();
-    virtual ~WebView2EventHandler() {};
+    virtual ~WebView2EventHandler() {}
 
     virtual HRESULT handleWebView2EnvironmentCompleted(HRESULT result,
                                                        ICoreWebView2Environment* environment)

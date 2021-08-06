@@ -27,7 +27,7 @@ class WebGainExampleUI : public WebHostUI
 {
 public:
     WebGainExampleUI();
-    ~WebGainExampleUI() {};
+    ~WebGainExampleUI() {}
 
 protected:
     void webContentReady() override;

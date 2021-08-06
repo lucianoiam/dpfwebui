@@ -16,30 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
-#define WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
+class JitDrumExampleUI extends DISTRHO_UI {
 
-#define UNICODE
-#define CINTERFACE
+    constructor() {
+        super();
 
-#include "WebView2.h"
+        const elem = (id) => document.getElementById(id);
 
-#define VALUE_MAX 1024
+        this.flushInitMessageQueue();
 
-namespace edge {
+        document.body.style.visibility = 'visible';
+    }
 
-class WebView2EnvironmentOptions : public ICoreWebView2EnvironmentOptions
-{
-public:
-    WebView2EnvironmentOptions();
-    ~WebView2EnvironmentOptions() {}
-
-    WCHAR fAdditionalBrowserArguments[VALUE_MAX];
-    WCHAR fLanguage[VALUE_MAX];
-    WCHAR fTargetCompatibleBrowserVersion[VALUE_MAX];
-    BOOL  fAllowSingleSignOnUsingOSPrimaryAccount; 
-};
-
-} // namespace edge
-
-#endif // WEBVIEW2_ENVIRONMENT_OPTIONS_HPP
+}

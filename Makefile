@@ -2,6 +2,7 @@
 # Author:   oss@lucianoiam.com
 
 examples:
+	@make -C examples/jitdrum
 	@make -C examples/webgain
 	@make -C examples/astone
 

@@ -32,7 +32,7 @@ class WasmHostPlugin : public Plugin
 public:
     WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount,
                     std::shared_ptr<WasmEngine> engine = 0);
-    ~WasmHostPlugin() {};
+    ~WasmHostPlugin() {}
 
     const char* getLabel() const override;
     const char* getMaker() const override;
