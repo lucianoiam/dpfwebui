@@ -69,6 +69,11 @@ class DISTRHO_UI {
         this._call('setSize', width, height);
     }
 
+    // void UI::sendNote(uint8_t channel, uint8_t note, uint8_t velocity)
+    sendNote(channel, note, velocity) {
+        this._call('sendNote', channel, note, velocity);
+    }
+
     // void UI::editParameter(uint32_t index, bool started)
     editParameter(index, started) {
         this._call('editParameter', index, started);

@@ -155,6 +155,7 @@ void WebHostUI::handleWebViewContentLoadFinished()
 
 #define kArg0 2
 #define kArg1 3
+#define kArg2 4
 
 void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
 {
@@ -207,6 +208,15 @@ void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
         setSize(
             static_cast<uint>(args[kArg0].getDouble()), // width
             static_cast<uint>(args[kArg1].getDouble())  // height
+        );
+#endif
+
+#ifdef DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    } else if ((method == "sendNote") && (argc == 3)) {
+        sendNote(
+            static_cast<uint8_t>(args[kArg0].getDouble()),  // channel
+            static_cast<uint8_t>(args[kArg1].getDouble()),  // note
+            static_cast<uint8_t>(args[kArg2].getDouble())   // velocity
         );
 #endif
 
