@@ -8,11 +8,28 @@ html {
 
 body {
     height: 100%;
-    padding: 20px;
     margin: 0;
     background-color: #202020;
+    color: #fff;
+    font-family: Helvetica, Arial, sans-serif;
+    text-align: center;
 }
 
 #title {
-    color: #FFF;
+    margin: 10px;
+    font-size: 1em;
+}
+
+#notes {
+    position: relative;
+    display: inline-block;
+    margin: 10px;
+    width: 206px;
+    height: 180px;
+}
+
+#notes > svg {
+    position: absolute;
+    width: 100px;
+    height: 100px;
 }

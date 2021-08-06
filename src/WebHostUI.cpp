@@ -170,7 +170,7 @@ void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
 
     String method = args[1].getString();
     int argc = args.size() - kArg0;
-    
+
     if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();
 

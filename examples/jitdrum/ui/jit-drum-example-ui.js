@@ -23,9 +23,19 @@ class JitDrumExampleUI extends DISTRHO_UI {
 
         const elem = (id) => document.getElementById(id);
 
-        this.flushInitMessageQueue();
+        elem('note-1').addEventListener('click', (ev) => {
+            this.sendNote(1, 48, 127);
+        });
 
-        document.body.style.visibility = 'visible';
+        elem('note-2').addEventListener('click', (ev) => {
+            this.sendNote(1, 60, 127);
+        });
+
+        elem('note-3').addEventListener('click', (ev) => {
+            this.sendNote(1, 72, 127);
+        });
+
+        this.flushInitMessageQueue();
     }
 
 }

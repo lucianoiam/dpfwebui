@@ -90,6 +90,8 @@ export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DIST
     }
 
     run(inputs: Float32Array[], outputs: Float32Array[], midiEvents: DISTRHO.MidiEvent[]): void {
+        // TODO: avoid clicks
+        
         if ((midiEvents.length > 0) && (midiEvents[0].data[0] & 0xf0) == 0x90) {
             this.t = 0
             this.f = 440 * Mathf.pow(2, (<f32>midiEvents[0].data[1] - 69) / 12)

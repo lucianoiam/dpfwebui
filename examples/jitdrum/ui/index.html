@@ -6,9 +6,19 @@
     <title>JITDrum - Title ignored by the plugin</title>
     <link rel="stylesheet" href="style.css">
   </head>
-  <body style="visibility: hidden;" onload="new JitDrumExampleUI">
-    <div id="title">Just In Time Drum</div>
-
+  <body onload="new JitDrumExampleUI">
+    <div id="title">Just In Time Drum - MIDI enabled</div>
+    <div id="notes">
+        <svg id="note-1" viewBox="0 0 100 100" style="top: 78; left: 52;">
+            <polygon points="50 0,100 25,100 75 50 100,0 75,0 25" fill="#ae81ff" />
+        </svg>
+        <svg id="note-2" viewBox="0 0 100 100" style="top: 0; left: 0;">
+            <polygon points="50 0,100 25,100 75 50 100,0 75,0 25" fill="#fd971f" />
+        </svg>
+        <svg id="note-3" viewBox="0 0 100 100" style="top: 0; left: 105;">
+            <polygon points="50 0,100 25,100 75 50 100,0 75,0 25" fill="#a6e22e" />
+        </svg>
+    </div>
     <script src="jit-drum-example-ui.js"></script>
   </body>
 </html>
