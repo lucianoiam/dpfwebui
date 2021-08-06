@@ -19,10 +19,15 @@
 import 'wasi'
 import DISTRHO from './distrho-plugin'
 
+const PUNCH: f32 = 4.0
+const DECAY: f32 = 1.0
+
 export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DISTRHO.PluginInterface {
 
-    private t0: u32
-    private velocity: u8
+    private sr: f32
+    private t: f32
+    private f: f32
+    private a: f32
 
     getLabel(): string {
         return 'JITDrum'
@@ -77,7 +82,7 @@ export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DIST
     }
 
     activate(): void {
-        // empty implementation
+        this.sr = this.getSampleRate()
     }
 
     deactivate(): void {
@@ -85,17 +90,18 @@ export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DIST
     }
 
     run(inputs: Float32Array[], outputs: Float32Array[], midiEvents: DISTRHO.MidiEvent[]): void {
-        const pos = this.getTimePosition()
-
-        if ((midiEvents.length > 0) &&   (midiEvents[0].data[0] & 0xf0) == 0x90) {
-            this.t0 = midiEvents[0].frame
-            this.velocity = midiEvents[0].data[2]
-
-            console.log(`t0 = ${this.t0}, v = ${this.velocity}`)
+        if ((midiEvents.length > 0) && (midiEvents[0].data[0] & 0xf0) == 0x90) {
+            this.t = 0
+            this.f = 440 * Mathf.pow(2, (<f32>midiEvents[0].data[1] - 69) / 12)
+            this.a = <f32>midiEvents[0].data[2] / 0xff
         }
 
-        // t=(currentTime-noteOnTime) 
-        // sin( hz + exp(-t * punch) ) * exp(-t * decay)
+        for (let i = 0; i < outputs[0].length; ++i) {
+            let k: f32 = this.a * Mathf.sin(this.f * Mathf.exp(PUNCH * -<f32>this.t))
+                            * Mathf.exp(DECAY * -<f32>this.t)
+            outputs[0][i] = outputs[1][i] = k
+            this.t += 1.0 / this.sr
+        }
     }
 
 }
