@@ -125,12 +125,11 @@ void WasmHostPlugin::initParameter(uint32_t index, Parameter& parameter)
     try {
         throwIfEngineStopped();
         fEngine->callFunction("_init_parameter", { MakeI32(index) });
-        WasmValue res;
-        res = fEngine->getGlobal("_rw_int_1");    parameter.hints = res.of.i32;
-        res = fEngine->getGlobal("_ro_string_1"); parameter.name = fEngine->getMemoryAsCString(res);
-        res = fEngine->getGlobal("_rw_float_1");  parameter.ranges.def = res.of.f32;
-        res = fEngine->getGlobal("_rw_float_2");  parameter.ranges.min = res.of.f32;
-        res = fEngine->getGlobal("_rw_float_3");  parameter.ranges.max = res.of.f32;
+        parameter.hints      = fEngine->getGlobal("_rw_int_1").of.i32;
+        parameter.name       = fEngine->getGlobalAsCString("_ro_string_1");
+        parameter.ranges.def = fEngine->getGlobal("_rw_float_1").of.f32;
+        parameter.ranges.min = fEngine->getGlobal("_rw_float_2").of.f32;
+        parameter.ranges.max = fEngine->getGlobal("_rw_float_3").of.f32;
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }
@@ -190,8 +189,8 @@ void WasmHostPlugin::initState(uint32_t index, String& stateKey, String& default
     try {
         throwIfEngineStopped();
         fEngine->callFunction("_init_state", { MakeI32(index) });
-        stateKey = fEngine->getMemoryAsCString(fEngine->getGlobal("_ro_string_1"));
-        defaultStateValue = fEngine->getMemoryAsCString(fEngine->getGlobal("_ro_string_2"));
+        stateKey = fEngine->getGlobalAsCString("_ro_string_1");
+        defaultStateValue = fEngine->getGlobalAsCString("_ro_string_2");
     } catch (const std::exception& ex) {
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }

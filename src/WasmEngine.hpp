@@ -70,8 +70,9 @@ public:
     char*   getMemoryAsCString(const WasmValue& wPtr);
     void    copyCStringToMemory(const WasmValue& wPtr, const char* s);
 
-    WasmValue   getGlobal(const char* name);
-    void        setGlobal(const char* name, const WasmValue& value);
+    WasmValue getGlobal(const char* name);
+    void      setGlobal(const char* name, const WasmValue& value);
+    char*     getGlobalAsCString(const char* name);
 
     WasmValueVector callFunction(const char* name, WasmValueVector params = {});
     WasmValue       callFunctionReturnSingleValue(const char* name, WasmValueVector params = {});

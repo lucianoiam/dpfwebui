@@ -310,6 +310,11 @@ void WasmEngine::setGlobal(const char* name, const WasmValue& value)
     wasm_global_set(wasm_extern_as_global(fModuleExports[name]), &value);
 }
 
+char* WasmEngine::getGlobalAsCString(const char* name)
+{
+    return getMemoryAsCString(getGlobal(name));
+}
+
 WasmValueVector WasmEngine::callFunction(const char* name, WasmValueVector params)
 {
     wasm_func_t* func = wasm_extern_as_func(fModuleExports[name]);
