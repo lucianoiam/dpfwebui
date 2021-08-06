@@ -18,8 +18,6 @@
 #import <AppKit/AppKit.h>
 #import <WebKit/WebKit.h>
 
-#include "dgl/Application.hpp" // MACJACKBUG
-
 #include "CocoaWebView.hpp"
 
 // Avoid symbol name collisions
@@ -69,12 +67,6 @@ CocoaWebView::CocoaWebView(Widget *parentWidget)
 
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
-
-    // MACJACKBUG: Allow standalone application window to gain keyboard focus
-    if (getWindow().getApp().isStandalone()) {
-        [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-        [NSApp activateIgnoringOtherApps:YES]; // focus window
-    }
 }
 
 CocoaWebView::~CocoaWebView()

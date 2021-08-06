@@ -15,7 +15,6 @@ MACOS
 -----
 
 - Workaround with tag MACSIZEBUG https://github.com/DISTRHO/DPF/issues/291
-- Workaround with tag MACJACKBUG https://github.com/DISTRHO/DPF/issues/298
 - generate-vst-bundles.sh expects hardcoded directory bin/
 - generate-vst-bundles.sh deletes all existing .vst folders, it is not safe to
   run it on a plugin basis. DPF only calls it from the main Makefile after all
