@@ -81,6 +81,10 @@ class StubUI {
         return document.body.clientHeight;
     }
 
+    async isStandalone() {
+        return true;
+    }
+
     postMessage(...args) {
         console.log(`postMessage(${args})`);
     }
