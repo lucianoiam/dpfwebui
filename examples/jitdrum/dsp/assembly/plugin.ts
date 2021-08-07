@@ -99,10 +99,11 @@ export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DIST
         }
 
         let t: f32
+        let k: f32
 
         for (let i = 0; i < outputs[0].length; ++i) {
             t = <f32>this.t / this.sr
-            let k: f32 = this.a * Mathf.sin(this.f * Mathf.exp(PUNCH * -t)) * Mathf.exp(DECAY * -t)
+            k = this.a * Mathf.sin(this.f * Mathf.exp(PUNCH * -t)) * Mathf.exp(DECAY * -t)
             outputs[0][i] = outputs[1][i] = k
             this.t += 1
         }
