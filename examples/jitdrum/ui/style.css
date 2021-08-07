@@ -10,22 +10,23 @@ body {
     height: 100%;
     margin: 0;
     background-color: #202020;
-    color: #fff;
     font-family: Helvetica, Arial, sans-serif;
     text-align: center;
 }
 
 #title {
     margin: 10px;
-    font-size: 1em;
+    font-size: 0.75em;
+    text-transform: uppercase;
+    color: #888;
 }
 
 #notes {
     position: relative;
     display: inline-block;
-    margin: 10px;
-    width: 206px;
+    width: 202px;
     height: 180px;
+    margin-top: 5px;
 }
 
 #notes > svg {

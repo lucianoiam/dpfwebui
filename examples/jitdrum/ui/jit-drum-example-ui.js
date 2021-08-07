@@ -21,21 +21,25 @@ class JitDrumExampleUI extends DISTRHO_UI {
     constructor() {
         super();
 
-        const elem = (id) => document.getElementById(id);
-
-        elem('note-1').addEventListener('click', (ev) => {
-            this.sendNote(1, 48, 127);
-        });
-
-        elem('note-2').addEventListener('click', (ev) => {
-            this.sendNote(1, 60, 127);
-        });
-
-        elem('note-3').addEventListener('click', (ev) => {
-            this.sendNote(1, 72, 127);
-        });
+        this.addTapListener('note-1', () => this.sendNote(1, 48, 127));
+        this.addTapListener('note-2', () => this.sendNote(1, 60, 127));
+        this.addTapListener('note-3', () => this.sendNote(1, 72, 127));
 
         this.flushInitMessageQueue();
+
+        document.body.style.visibility = 'visible';
+    }
+
+    addTapListener(id, listener) {
+        ['touchstart', 'click'].forEach((evName) => {
+            document.getElementById(id).addEventListener(evName, (ev) => {
+                listener();
+
+                if (ev.cancelable) {
+                    ev.preventDefault();
+                }
+            });
+        });
     }
 
 }
