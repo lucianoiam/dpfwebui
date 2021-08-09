@@ -112,7 +112,8 @@ static void create_view(helper_context_t *ctx, uintptr_t parentId)
     // GdkWindow wrapping a X11 window and not emitting Glib events like
     // configure-event. The workaround consists in creating the window with a
     // predetermined max size and using JavaScript to resize the DOM instead of
-    // resizing the window natively. It is an ugly solution but it works.
+    // resizing the window natively. It is an ugly solution but works well. Note
+    // this workaround renders viewport based units useless (vw/vh/vmin/vmax).
     gtk_window_resize(ctx->window, MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT);
 
     // Create the web view
