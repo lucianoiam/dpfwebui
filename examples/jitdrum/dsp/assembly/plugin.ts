@@ -49,6 +49,34 @@ export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DIST
         return DISTRHO.d_sconst('HHjd')
     }
 
+    activate(): void {
+        this.sr = this.getSampleRate()
+    }
+
+    run(inputs: Float32Array[], outputs: Float32Array[], midiEvents: DISTRHO.MidiEvent[]): void {
+        // TODO: avoid clicks
+        
+        if ((midiEvents.length > 0) && (midiEvents[0].data[0] & 0xf0) == 0x90) {
+            this.t = 0
+            this.f = 440 * Mathf.pow(2, (<f32>midiEvents[0].data[1] - 69) / 12)
+            this.a = <f32>midiEvents[0].data[2] / 0xff
+        }
+
+        let t: f32
+        let k: f32
+
+        for (let i = 0; i < outputs[0].length; ++i) {
+            t = <f32>this.t / this.sr
+            k = this.a * Mathf.sin(this.f * Mathf.exp(PUNCH * -t)) * Mathf.exp(DECAY * -t)
+            outputs[0][i] = outputs[1][i] = k
+            this.t += 1
+        }
+    }
+
+    /**
+     * All interface methods must be implemented
+     */
+
     initParameter(index: u32, parameter: DISTRHO.Parameter): void {
         // empty implementation
     }
@@ -81,32 +109,8 @@ export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DIST
         return '' // empty implementation
     }
 
-    activate(): void {
-        this.sr = this.getSampleRate()
-    }
-
     deactivate(): void {
         // empty implementation
-    }
-
-    run(inputs: Float32Array[], outputs: Float32Array[], midiEvents: DISTRHO.MidiEvent[]): void {
-        // TODO: avoid clicks
-        
-        if ((midiEvents.length > 0) && (midiEvents[0].data[0] & 0xf0) == 0x90) {
-            this.t = 0
-            this.f = 440 * Mathf.pow(2, (<f32>midiEvents[0].data[1] - 69) / 12)
-            this.a = <f32>midiEvents[0].data[2] / 0xff
-        }
-
-        let t: f32
-        let k: f32
-
-        for (let i = 0; i < outputs[0].length; ++i) {
-            t = <f32>this.t / this.sr
-            k = this.a * Mathf.sin(this.f * Mathf.exp(PUNCH * -t)) * Mathf.exp(DECAY * -t)
-            outputs[0][i] = outputs[1][i] = k
-            this.t += 1
-        }
     }
 
 }
