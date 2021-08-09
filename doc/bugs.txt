@@ -9,6 +9,7 @@ LINUX
 
 - Mouse wheel events never fire
 - DSSI plugin builds but UI does not open
+- Workaround with tag LXRESIZEBUG
 
 
 MACOS
