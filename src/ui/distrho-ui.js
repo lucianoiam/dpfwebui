@@ -89,6 +89,11 @@ class DISTRHO_UI {
         this._call('setState', key, value);
     }
 
+    // void UI::uiReshape(uint width, uint height)
+    uiReshape(width, height) {
+        // default empty implementation
+    }
+
     // void UI::parameterChanged(uint32_t index, float value)
     parameterChanged(index, value) {
         // default empty implementation

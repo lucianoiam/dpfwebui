@@ -84,6 +84,7 @@ void WebHostUI::onDisplay()
 void WebHostUI::uiReshape(uint width, uint height)
 {
     fWebView.setSize(width, height);
+    webPostMessage({"UI", "uiReshape", width, height});
 }
 
 void WebHostUI::parameterChanged(uint32_t index, float value)
