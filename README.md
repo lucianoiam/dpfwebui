@@ -1,11 +1,11 @@
 Hip-Hop / HIgh Performance Hybrid audiO Plugins
 -----------------------------------------------
 
-This project provides [DPF](http://github.com/DISTRHO/DPF)-compatible classes
-and a handy Makefile to create audio plugins that run their UI in a web view.
-Goal is to help creating audio plugins with potentially complex user interfaces
-in JavaScript/HTML/CSS. The DSP core remains isolated and implemented in C++ or
-optionally [AssemblyScript](https://www.assemblyscript.org).
+This project provides [DPF](http://github.com/DISTRHO/DPF) compatible classes
+and a handy Makefile for creating audio plugins that run their UI in a web view.
+Main goal is to facilitate the creation of complex user interfaces leveraging
+JavaScript, HTML and related technologies. The web UI runs completely decoupled
+from the DSP core. The latter can be implemented in C++ or optionally [AssemblyScript](https://www.assemblyscript.org).
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
