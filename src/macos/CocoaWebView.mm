@@ -204,14 +204,12 @@ void CocoaWebView::injectScript(String& source)
 
 void CocoaWebView::updateWebViewFrame()
 {
-    // MACSIZEBUG: There is a mismatch between DGL and AppKit coordinates
-    CGFloat k = [NSScreen mainScreen].backingScaleFactor;
     CGRect frame;
-    frame.origin.x = (CGFloat)getAbsoluteX() / k;
-    frame.origin.y = (CGFloat)getAbsoluteY() / k;
-    frame.size.width = (CGFloat)getWidth() / k;
-    frame.size.height = (CGFloat)getHeight() / k;
-    fWebView.frame = frame;
+    frame.origin.x = (CGFloat)getAbsoluteX();
+    frame.origin.y = (CGFloat)getAbsoluteY();
+    frame.size.width = (CGFloat)getWidth();
+    frame.size.height = (CGFloat)getHeight();
+    fWebView.frame = [fWebView.window convertRectFromBacking:frame];
 }
 
 @implementation DistrhoWebView

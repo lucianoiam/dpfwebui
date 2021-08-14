@@ -26,7 +26,7 @@ UI* DISTRHO::createUI()
 }
 
 AsToneExampleUI::AsToneExampleUI()
-    : UI(400, 200)
+    : UI(400, 300)
     , fBlendish(this)
     , fKnob(&fBlendish)
 {
@@ -36,7 +36,7 @@ AsToneExampleUI::AsToneExampleUI()
     fBlendish.setSize(getSize());
 
     fKnob.setAbsoluteX((getWidth() - fKnob.getWidth()) / 2);
-    fKnob.setAbsoluteY((getHeight() - fKnob.getHeight()) / 2);
+    fKnob.setAbsoluteY((getHeight() - fKnob.getHeight()) / 3);
     fKnob.setRange(220.f, 880.f);
     fKnob.setValue(440.f);
     fKnob.setUnit("Hz");

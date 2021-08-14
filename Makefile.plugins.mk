@@ -46,11 +46,6 @@ ifneq (,$(findstring MINGW,$(MSYSTEM)))
 MSYS_MINGW = true
 endif
 
-# MACSIZEBUG
-ifeq ($(MACOS),true)
-FILES_UI += $(HIPHOP_SRC_PATH)/macos/PlatformMac.mm
-endif
-
 ifeq ($(MSYS_MINGW),true)
 ifeq ($(shell cmd /c "net.exe session 1>NUL 2>NUL || exit /b 1"; echo $$?),1)
 #$(info Run MSYS as administrator for real symlink support)
@@ -207,16 +202,6 @@ TARGETS += $(DPF_PATH)/build/libdgl.a
 
 $(DPF_PATH)/build/libdgl.a:
 	make -C $(DPF_PATH) dgl
-
-TARGETS += MACSIZEBUG
-
-MACSIZEBUG:
-ifeq ($(MACOS),true)
-ifeq ($(shell grep -c FIXME_MacScaleFactor $(DPF_PATH)/distrho/src/DistrhoUI.cpp),0)
-	@echo Patching DistrhoUI.cpp to workaround window size bug on macOS...
-	@cd $(HIPHOP_ROOT_PATH) && patch -u dpf/distrho/src/DistrhoUI.cpp -i DistrhoUI.cpp.patch
-endif
-endif
 
 # ------------------------------------------------------------------------------
 # Dependency - Download Wasmer
