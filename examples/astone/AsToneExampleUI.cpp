@@ -18,6 +18,9 @@
 
 #include "AsToneExampleUI.hpp"
 
+#define INITIAL_WIDTH  240
+#define INITIAL_HEIGHT 160
+
 USE_NAMESPACE_DISTRHO
 
 UI* DISTRHO::createUI()
@@ -26,17 +29,20 @@ UI* DISTRHO::createUI()
 }
 
 AsToneExampleUI::AsToneExampleUI()
-    : UI(400, 300)
+    : UI(INITIAL_WIDTH, INITIAL_HEIGHT)
     , fBlendish(this)
     , fKnob(&fBlendish)
 {
+    double k = getScaleFactor();
+    setSize(k * INITIAL_WIDTH, k * INITIAL_HEIGHT);
+
     glClearColor(0.9f, 0.9f, 0.9f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    fBlendish.setSize(getSize());
+    fBlendish.setSize(k * getWidth(), k * getHeight());
 
-    fKnob.setAbsoluteX((getWidth() - fKnob.getWidth()) / 2);
-    fKnob.setAbsoluteY((getHeight() - fKnob.getHeight()) / 3);
+    fKnob.setAbsoluteX((k * getWidth() - fKnob.getWidth()) / 2);
+    fKnob.setAbsoluteY((k * getHeight() - fKnob.getHeight()) / 3);
     fKnob.setRange(220.f, 880.f);
     fKnob.setValue(440.f);
     fKnob.setUnit("Hz");

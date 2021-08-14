@@ -37,11 +37,12 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     // is not a singleton and there is a special case in PlatformLinux.cpp that
     // makes it necessary to distinguish standalone vs. plugin during runtime.
     // Note that the web widget is already initialized at this point so this
-    // function always returns false when called from web widget constructors. 
+    // function always returns false when called from web widget constructors.
     platform::setRunningStandalone(win.getApp().isStandalone());
 
     // Automatically scale up the plugin UI so its contents do not look small
     // on high pixel density displays, known as HiDPI or Retina.
+    // TODO: consider replacing this call with getScaleFactor()
     float k = platform::getSystemDisplayScaleFactor(win.getNativeWindowHandle());
     fInitWidth = k * baseWidth;
     fInitHeight = k * baseHeight;
