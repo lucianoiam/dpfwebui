@@ -30,7 +30,7 @@ namespace platform {
     bool   isRunningStandalone();
     void   setRunningStandalone(bool standalone);
 
-    float  getSystemDisplayScaleFactor();
+    float  getSystemDisplayScaleFactor(uintptr_t window);
 
     String getBinaryPath();
     String getLibraryPath();

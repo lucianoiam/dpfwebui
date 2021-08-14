@@ -33,7 +33,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 USE_NAMESPACE_DISTRHO
 
-float platform::getSystemDisplayScaleFactor()
+float platform::getSystemDisplayScaleFactor(uintptr_t)
 {
     float k = 1.f;
     PROCESS_DPI_AWARENESS dpiAware;

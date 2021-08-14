@@ -31,16 +31,18 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
 {
+    const Window& win = getWindow();
+
     // Platform functions can be called from anywhere. However DGL app object
     // is not a singleton and there is a special case in PlatformLinux.cpp that
     // makes it necessary to distinguish standalone vs. plugin during runtime.
     // Note that the web widget is already initialized at this point so this
     // function always returns false when called from web widget constructors. 
-    platform::setRunningStandalone(getWindow().getApp().isStandalone());
+    platform::setRunningStandalone(win.getApp().isStandalone());
 
     // Automatically scale up the plugin UI so its contents do not look small
     // on high pixel density displays, known as HiDPI or Retina.
-    float k = platform::getSystemDisplayScaleFactor();
+    float k = platform::getSystemDisplayScaleFactor(win.getNativeWindowHandle());
     fInitWidth = k * baseWidth;
     fInitHeight = k * baseHeight;
     setSize(fInitWidth, fInitHeight);

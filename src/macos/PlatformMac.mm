@@ -27,20 +27,32 @@
 
 USE_NAMESPACE_DISTRHO
 
-float platform::getSystemDisplayScaleFactor()
+float platform::getSystemDisplayScaleFactor(uintptr_t window)
 {
-    return [NSScreen mainScreen].backingScaleFactor;
+    NSWindow *w;
+
+    // DGL::Window::getNativeWindowHandle() returns NSView* instead of NSWindow*
+
+    if ([(id)window isKindOfClass:[NSView class]]) {
+        w = [(NSView *)window window];
+    } else {
+        w = (NSWindow *)window;
+    }
+
+    return (w.screen ? w.screen : [NSScreen mainScreen]).backingScaleFactor;
 }
 
 String platform::getBinaryPath()
 {
     Dl_info dl_info;
+
     if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) != 0) {
         return String(dl_info.dli_fname);
-    } else {
-        HIPHOP_LOG_STDERR(dlerror());
-        return String();
     }
+
+    HIPHOP_LOG_STDERR(dlerror());
+
+    return String();
 }
 
 String platform::getLibraryPath()
