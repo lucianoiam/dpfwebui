@@ -19,8 +19,6 @@ MACOS
 - generate-vst-bundles.sh deletes all existing .vst folders, it is not safe to
   run it on a plugin basis. DPF only calls it from the main Makefile after all
   examples have been built.
-- Live 10 sporadically refuses to quit from the Mac menu or by pressing Cmd+Q
-  when a plugin window is open. Behavior not reproducible on REAPER.
 
 
 WINDOWS
