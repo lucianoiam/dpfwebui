@@ -29,7 +29,7 @@
 
 USE_NAMESPACE_DISTRHO
 
-float platform::getSystemDisplayScaleFactor(uintptr_t)
+float platform::getDisplayScaleFactor(uintptr_t)
 {
     const char *dpi = getenv("GDK_DPI_SCALE");
 

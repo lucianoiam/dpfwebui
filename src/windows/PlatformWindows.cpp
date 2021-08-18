@@ -33,14 +33,14 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 USE_NAMESPACE_DISTRHO
 
-float platform::getSystemDisplayScaleFactor(uintptr_t)
+float platform::getDisplayScaleFactor(uintptr_t window)
 {
     float k = 1.f;
     PROCESS_DPI_AWARENESS dpiAware;
 
     if (SUCCEEDED(stub::GetProcessDpiAwareness(0, &dpiAware))) {
         if (dpiAware != PROCESS_DPI_UNAWARE) {
-            HMONITOR hMon = MonitorFromWindow(GetConsoleWindow(), MONITOR_DEFAULTTOPRIMARY);
+            HMONITOR hMon = MonitorFromWindow((HWND)window, MONITOR_DEFAULTTOPRIMARY);
             DEVICE_SCALE_FACTOR scaleFactor = DEVICE_SCALE_FACTOR_INVALID;
 
             if (SUCCEEDED(stub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {

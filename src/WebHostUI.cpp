@@ -43,7 +43,7 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     // Automatically scale up the plugin UI so its contents do not look small
     // on high pixel density displays, known as HiDPI or Retina.
     // TODO: consider replacing this call with getScaleFactor()
-    float k = platform::getSystemDisplayScaleFactor(win.getNativeWindowHandle());
+    float k = platform::getDisplayScaleFactor(win.getNativeWindowHandle());
     fInitWidth = k * baseWidth;
     fInitHeight = k * baseHeight;
     setSize(fInitWidth, fInitHeight);

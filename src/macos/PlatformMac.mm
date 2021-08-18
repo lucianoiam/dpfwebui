@@ -27,7 +27,7 @@
 
 USE_NAMESPACE_DISTRHO
 
-float platform::getSystemDisplayScaleFactor(uintptr_t window)
+float platform::getDisplayScaleFactor(uintptr_t window)
 {
     NSWindow *w;
 
