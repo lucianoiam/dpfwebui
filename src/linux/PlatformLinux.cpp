@@ -23,6 +23,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <linux/limits.h>
+#include <X11/Xlib.h>
+#include <X11/Xresource.h>
 
 #include "Platform.hpp"
 #include "macro.h"
@@ -31,13 +33,55 @@ USE_NAMESPACE_DISTRHO
 
 float platform::getDisplayScaleFactor(uintptr_t)
 {
-    const char *dpi = getenv("GDK_DPI_SCALE");
+    const char *dpi;
+    float k;
 
-    if (dpi != 0) {
-        float k;
-        if (sscanf(dpi, "%f", &k) == 1) {
+    // Try reading a GTK environment variable
+
+    dpi = getenv("GDK_DPI_SCALE");
+
+    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
+        return k;
+    }
+
+    // Try reading a Qt environment variable
+
+    dpi = getenv("QT_AUTO_SCREEN_SCALE_FACTOR");
+
+    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1) && (k == 0)) {
+        dpi = getenv("QT_SCALE_FACTOR");
+
+        if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
             return k;
         }
+    }
+
+    // Try reading Xft.dpi from .Xresources
+
+    Display* display = XOpenDisplay(0);
+
+    if (display != 0) {
+        XrmInitialize();
+        char *res = XResourceManagerString(display);
+
+        if (res != 0) {
+            XrmDatabase db = XrmGetStringDatabase(res);
+
+            if (db != 0) {
+                char* type;
+                XrmValue ret;
+
+                XrmGetResource(db, "Xft.dpi", "String", &type, &ret); 
+
+                if ((ret.addr != 0) && (strncmp("String", type, 64) == 0)) {
+                    if (sscanf(ret.addr, "%f", &k) == 1) {
+                        return k / 96.f;
+                    }
+                }
+            }
+        }
+
+        XCloseDisplay(display);
     }
 
     return 1.f;
@@ -50,9 +94,9 @@ static String getSharedLibraryPath()
     if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
         HIPHOP_LOG_STDERR(dlerror());
         return String();
-    } else {
-        return String(dl_info.dli_fname);
     }
+    
+    return String(dl_info.dli_fname);
 }
 
 static String getExecutablePath()
@@ -63,9 +107,9 @@ static String getExecutablePath()
     if (len == -1) {
         HIPHOP_LOG_STDERR_ERRNO("Could not determine executable path");
         return String();
-    } else {
-        return String(path);
     }
+
+    return String(path);
 }
 
 String platform::getBinaryPath()
