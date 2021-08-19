@@ -75,6 +75,29 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
                 this.frequency = value
         }
     }
+    
+    activate(): void {
+        this.samplerate = this.getSampleRate()
+    }
+
+    run(inputs: Float32Array[], outputs: Float32Array[], midiEvents: DISTRHO.MidiEvent[]): void {
+        const output_l = outputs[0]
+        const output_r = outputs[1]
+        const radiansPerSample = PI_2 * this.frequency / this.samplerate
+
+        let sample: f32
+        let phase: f32 = this.phase
+
+        for (let i = 0; i < output_l.length; ++i) {
+            sample = Mathf.sin(phase)
+            phase += radiansPerSample
+            output_l[i] = output_r[i] = sample
+        }
+
+        while (phase > PI_2) phase -= PI_2
+
+        this.phase = phase
+    }
 
     initProgramName(index: u32, programName: DISTRHO.StringWrapper): void {
         // empty implementation
@@ -96,31 +119,8 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
         return '' // empty implementation
     }
 
-    activate(): void {
-        this.samplerate = this.getSampleRate()
-    }
-
     deactivate(): void {
         // empty implementation
-    }
-
-    run(inputs: Float32Array[], outputs: Float32Array[], midiEvents: DISTRHO.MidiEvent[]): void {
-        const output_l = outputs[0]
-        const output_r = outputs[1]
-        const radiansPerSample = PI_2 * this.frequency / this.samplerate
-
-        let sample: f32
-        let phase: f32 = this.phase
-
-        for (let i = 0; i < output_l.length; ++i) {
-            sample = Mathf.sin(phase)
-            phase += radiansPerSample
-            output_l[i] = output_r[i] = sample
-        }
-
-        while (phase > PI_2) phase -= PI_2
-
-        this.phase = phase
     }
 
 }
