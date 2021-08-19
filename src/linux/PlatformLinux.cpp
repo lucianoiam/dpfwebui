@@ -23,8 +23,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <linux/limits.h>
-#include <X11/Xlib.h>
-#include <X11/Xresource.h>
 
 #include "Platform.hpp"
 #include "macro.h"

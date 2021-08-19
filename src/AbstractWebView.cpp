@@ -77,9 +77,11 @@ void AbstractWebView::postMessage(const JsValueVector& args)
     // This method implements something like a "reverse postMessage()" aiming to keep the bridge
     // symmetrical. Global window.webviewHost is an EventTarget that can be listened for messages.
     String payload = serializeJsValues(args);
+
     if (fPrintTraffic) {
         std::cerr << "cpp -> js : " << payload.buffer() << std::endl << std::flush;
     }
+    
     String js = "window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:" + payload + "}));";
     runScript(js);
 }
@@ -93,6 +95,7 @@ void AbstractWebView::handleScriptMessage(const JsValueVector& args)
             std::cerr << "cpp <- js : " << serializeJsValues(args).buffer()
                 << std::endl << std::flush;
         }
+        
         if (fHandler != 0) {
             fHandler->handleWebViewScriptMessageReceived(args);
         }
