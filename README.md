@@ -9,8 +9,7 @@ from the DSP core. The latter can be implemented in C++ or optionally [AssemblyS
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
-*WebGain example running on Bitwig. A real world plugin is under development
-[here](https://github.com/lucianoiam/castello).*
+*WebGain example running on Bitwig*
 
 ****
 
@@ -95,6 +94,10 @@ export default class ExamplePlugin extends DISTRHO.Plugin implements DISTRHO.Plu
 ```
 
 The complete plugin interface is defined [here](https://github.com/lucianoiam/hiphop/blob/master/src/dsp/distrho-plugin.ts).
+
+### Plugin implementations
+
+[Castello Reverb](https://github.com/lucianoiam/castello)
 
 ### About DISTRHO Plugin Framework (DPF)
 
