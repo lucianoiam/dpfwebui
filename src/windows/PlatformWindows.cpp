@@ -69,6 +69,11 @@ float platform::getDisplayScaleFactor(uintptr_t window)
     return k;
 }
 
+void platform::openSystemWebBrowser(String& url)
+{
+    ShellExecute(NULL, "open", url.buffer(), NULL, NULL, SW_SHOWNORMAL);
+}
+
 String platform::getBinaryPath()
 {
     char path[MAX_PATH];

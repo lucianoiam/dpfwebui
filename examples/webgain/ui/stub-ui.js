@@ -69,12 +69,16 @@ class StubUI {
         console.log(`setState(${key}, ${value})`);
     }
 
-    flushInitMessageQueue() {
-        console.log('flushInitMessageQueue()');
+    async isStandalone() {
+        return true;
     }
 
     setKeyboardFocus(focus) {
         console.log(`setKeyboardFocus(${focus}`);
+    }
+
+    openSystemWebBrowser(url) {
+        window.open(url);
     }
 
     async getInitWidth() {
@@ -85,8 +89,8 @@ class StubUI {
         return document.body.clientHeight;
     }
 
-    async isStandalone() {
-        return true;
+    flushInitMessageQueue() {
+        console.log('flushInitMessageQueue()');
     }
 
     postMessage(...args) {

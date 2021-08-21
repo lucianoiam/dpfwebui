@@ -174,19 +174,7 @@ void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
     String method = args[1].getString();
     int argc = args.size() - kArg0;
 
-    if (method == "flushInitMessageQueue") {
-        flushInitMessageQueue();
-
-    } else if ((method == "setKeyboardFocus") && (argc == 1)) {
-        setKeyboardFocus(static_cast<bool>(args[kArg0].getBool()));
-
-    } else if (method == "getInitWidth") {
-        webPostMessage({"UI", "getInitWidth", static_cast<double>(getInitWidth())});
-
-    } else if (method == "getInitHeight") {
-        webPostMessage({"UI", "getInitHeight", static_cast<double>(getInitHeight())});
-
-    } else if (method == "getWidth") {
+    if (method == "getWidth") {
         webPostMessage({"UI", "getWidth", static_cast<double>(getWidth())});
 
     } else if (method == "getHeight") {
@@ -243,8 +231,26 @@ void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
         );
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
+    // Hip-Hop specific methods
+
     } else if (method == "isStandalone") {
         webPostMessage({"UI", "isStandalone", getWindow().getApp().isStandalone()});
+
+    } else if ((method == "setKeyboardFocus") && (argc == 1)) {
+        setKeyboardFocus(static_cast<bool>(args[kArg0].getBool()));
+
+    } else if ((method == "openSystemWebBrowser") && (argc == 1)) {
+        String url = args[kArg0].getString();
+        platform::openSystemWebBrowser(url);
+
+    } else if (method == "getInitWidth") {
+        webPostMessage({"UI", "getInitWidth", static_cast<double>(getInitWidth())});
+
+    } else if (method == "getInitHeight") {
+        webPostMessage({"UI", "getInitHeight", static_cast<double>(getInitHeight())});
+
+    } else if (method == "flushInitMessageQueue") {
+        flushInitMessageQueue();
 
     } else {
         HIPHOP_LOG_STDERR_COLOR("Invalid call to WebHostUI method");

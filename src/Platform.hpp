@@ -27,10 +27,12 @@ START_NAMESPACE_DISTRHO
 
 namespace platform {
 
-    bool   isRunningStandalone();
-    void   setRunningStandalone(bool standalone);
+    bool isRunningStandalone();
+    void setRunningStandalone(bool standalone);
 
-    float  getDisplayScaleFactor(uintptr_t window);
+    float getDisplayScaleFactor(uintptr_t window);
+
+    void openSystemWebBrowser(String& url);
 
     String getBinaryPath();
     String getLibraryPath();

@@ -4,7 +4,6 @@ GENERAL
 - Wasm: profile plugin for memory leaks
 - Allow calling Window::openFileBrowser() from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs
-- Launch system browser for HTTP links
 
 
 WINDOWS

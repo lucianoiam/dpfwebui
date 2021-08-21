@@ -108,15 +108,20 @@ class DISTRHO_UI {
     stateChanged(key, value) {
         // default empty implementation
     }
-
-    // void WebHostUI::flushInitMessageQueue()
-    flushInitMessageQueue() {
-        this._call('flushInitMessageQueue');
+   
+    // bool Application::isStandalone()
+    async isStandalone() {
+        return this._callAndExpectReply('isStandalone');
     }
 
     // void WebHostUI::setKeyboardFocus()
     setKeyboardFocus(focus) {
         this._call('setKeyboardFocus', focus);
+    }
+
+    // void platform::openSystemWebBrowser(String& url)
+    openSystemWebBrowser(url) {
+        this._call('openSystemWebBrowser', url);
     }
 
     // uint WebHostUI::getInitWidth()
@@ -129,9 +134,9 @@ class DISTRHO_UI {
         return this._callAndExpectReply('getInitHeight');
     }
 
-    // bool Application::isStandalone()
-    async isStandalone() {
-        return this._callAndExpectReply('isStandalone');
+    // void WebHostUI::flushInitMessageQueue()
+    flushInitMessageQueue() {
+        this._call('flushInitMessageQueue');
     }
 
     // void WebHostUI::webPostMessage(const JsValueVector& args)
