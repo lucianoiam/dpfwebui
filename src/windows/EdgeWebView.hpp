@@ -28,7 +28,7 @@
 #include "WebView2.h"
 
 #include "AbstractWebView.hpp"
-#include "extra/WebView2EventHandler.hpp"
+#include "WebView2EventHandler.hpp"
 
 /*
   The easy way to work with Edge WebView2 requires WIL. According to MS:

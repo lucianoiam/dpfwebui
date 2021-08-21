@@ -83,8 +83,7 @@ ifeq ($(MACOS),true)
 HIPHOP_FILES_DSP += macos/PlatformMac.mm
 endif
 ifeq ($(WINDOWS),true)
-HIPHOP_FILES_DSP += windows/PlatformWindows.cpp \
-                    windows/extra/WinApiStub.cpp 
+HIPHOP_FILES_DSP += windows/PlatformWindows.cpp
 endif
 
 FILES_DSP += $(HIPHOP_FILES_DSP:%=$(HIPHOP_SRC_PATH)/%)
@@ -101,7 +100,7 @@ HIPHOP_FILES_UI  = WebHostUI.cpp \
 ifeq ($(LINUX),true)
 HIPHOP_FILES_UI += linux/ExternalGtkWebView.cpp \
                    linux/PlatformLinux.cpp \
-                   linux/extra/ipc.c
+                   linux/ipc.c
 endif
 ifeq ($(MACOS),true)
 HIPHOP_FILES_UI += macos/CocoaWebView.mm \
@@ -111,9 +110,8 @@ ifeq ($(WINDOWS),true)
 HIPHOP_FILES_UI += windows/EdgeWebView.cpp \
                    windows/KeyboardRouter.cpp \
                    windows/PlatformWindows.cpp \
-                   windows/extra/WebView2EventHandler.cpp \
-                   windows/extra/WinApiStub.cpp \
-                   windows/extra/cJSON.c \
+                   windows/WebView2EventHandler.cpp \
+                   windows/cJSON.c \
                    windows/resources/plugin.rc
 endif
 
@@ -316,7 +314,7 @@ ifeq ($(LINUX),true)
 LXHELPER_BIN = $(BUILD_DIR)/$(NAME)-ui
 HIPHOP_TARGET += $(LXHELPER_BIN)
 
-$(LXHELPER_BIN): $(HIPHOP_SRC_PATH)/linux/helper.c $(HIPHOP_SRC_PATH)/linux/extra/ipc.c
+$(LXHELPER_BIN): $(HIPHOP_SRC_PATH)/linux/helper.c $(HIPHOP_SRC_PATH)/linux/ipc.c
 	@echo "Building helper..."
 	$(SILENT)$(CC) $^ -I$(HIPHOP_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \

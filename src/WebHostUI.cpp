@@ -32,7 +32,7 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     , fBackgroundColor(backgroundColor)
 {
     const Window& win = getWindow();
-
+    
     // Platform functions are static, however the DGL application object is not
     // a singleton and there is a special case in PlatformLinux.cpp that makes
     // it necessary to check if the plugin is running standalone during runtime.

@@ -2,8 +2,6 @@ GENERAL
 -------
 
 - Wasm: profile plugin for memory leaks
-- Write a new example that includes both AS DSP and web UI, probably instrument
-- Update internals.md to include information regarding AssemblyScript DSP
 - Allow calling Window::openFileBrowser() from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs
 - Launch system browser for HTTP links
@@ -17,6 +15,3 @@ WINDOWS
   version the plugin is linking against, for the cases where the host or other
   plugins try to load different versions of WebView2Loader.dll (not yet tested)
   https://stackoverflow.com/questions/4396754/can-different-versions-of-dll-be-loaded-in-same-application
-- As of Jun '21 Windows does not ship with the Edge runtime pre-installed. The
-  plugin detects this and pops a message box, most users will figure out what
-  to do but still it would be nice to present a link to the installer page.

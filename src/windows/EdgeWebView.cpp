@@ -28,7 +28,7 @@
 
 #include "Platform.hpp"
 #include "macro.h"
-#include "extra/cJSON.h"
+#include "cJSON.h"
 
 #include "KeyboardRouter.hpp"
 #include "DistrhoPluginInfo.h"

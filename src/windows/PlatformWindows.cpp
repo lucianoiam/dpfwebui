@@ -27,31 +27,44 @@
 #include "Platform.hpp"
 #include "macro.h"
 
-#include "extra/WinApiStub.hpp"
-
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 USE_NAMESPACE_DISTRHO
 
+// Explanation for the GCC warnings https://github.com/chriskohlhoff/asio/issues/631
+typedef HRESULT (WINAPI* PFN_GetProcessDpiAwareness)(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
+typedef HRESULT (WINAPI* PFN_GetScaleFactorForMonitor)(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
+
 float platform::getDisplayScaleFactor(uintptr_t window)
 {
     float k = 1.f;
+    const HMODULE hm = LoadLibrary("Shcore.dll");
+
+    if (hm == 0) {
+        return k;
+    }
+
+    const PFN_GetProcessDpiAwareness GetProcessDpiAwareness
+        = (PFN_GetProcessDpiAwareness)GetProcAddress(hm, "GetProcessDpiAwareness");
+    const PFN_GetScaleFactorForMonitor GetScaleFactorForMonitor
+        = (PFN_GetScaleFactorForMonitor)GetProcAddress(hm, "GetScaleFactorForMonitor");
+
     PROCESS_DPI_AWARENESS dpiAware;
 
-    if (SUCCEEDED(stub::GetProcessDpiAwareness(0, &dpiAware))) {
-        if (dpiAware != PROCESS_DPI_UNAWARE) {
-            HMONITOR hMon = MonitorFromWindow((HWND)window, MONITOR_DEFAULTTOPRIMARY);
-            DEVICE_SCALE_FACTOR scaleFactor = DEVICE_SCALE_FACTOR_INVALID;
+    if ((GetProcessDpiAwareness != 0) && (GetScaleFactorForMonitor != 0)
+            && (SUCCEEDED(GetProcessDpiAwareness(0, &dpiAware)))
+            && (dpiAware != PROCESS_DPI_UNAWARE)) {
 
-            if (SUCCEEDED(stub::GetScaleFactorForMonitor(hMon, &scaleFactor))) {
-                if (scaleFactor != DEVICE_SCALE_FACTOR_INVALID) {
-                    k = static_cast<float>(scaleFactor) / 100.f;
-                }
-            }
-        } else {
-            // Process is not DPI-aware, do not scale
+        const HMONITOR hMon = MonitorFromWindow((HWND)window, MONITOR_DEFAULTTOPRIMARY);
+
+        DEVICE_SCALE_FACTOR scaleFactor;
+
+        if (SUCCEEDED(GetScaleFactorForMonitor(hMon, &scaleFactor))) {
+            k = static_cast<float>(scaleFactor) / 100.f;
         }
     }
+
+    FreeLibrary(hm);
 
     return k;
 }
