@@ -42,6 +42,15 @@ float platform::getDisplayScaleFactor(uintptr_t window)
     return (w.screen ? w.screen : [NSScreen mainScreen]).backingScaleFactor;
 }
 
+void platform::openSystemWebBrowser(String& url)
+{
+    NSString *s = [[NSString alloc] initWithCString:url.buffer()];
+    NSURL *nsUrl = [[NSURL alloc] initWithString:s];
+    [[NSWorkspace sharedWorkspace] openURL:nsUrl];
+    [nsUrl release];
+    [s release];
+}
+
 String platform::getBinaryPath()
 {
     Dl_info dl_info;
