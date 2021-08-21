@@ -26,7 +26,7 @@
 
 #include "AbstractWebView.hpp"
 
-#include "extra/ipc.h"
+#include "ipc.h"
 #include "helper.h"
 
 START_NAMESPACE_DGL

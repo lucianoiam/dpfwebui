@@ -24,8 +24,8 @@
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
+#include "ipc.h"
 #include "macro.h"
-#include "extra/ipc.h"
 
 #define MAX_WEBVIEW_WIDTH  2000
 #define MAX_WEBVIEW_HEIGHT 2000

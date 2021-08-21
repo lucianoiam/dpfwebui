@@ -52,6 +52,16 @@ float platform::getDisplayScaleFactor(uintptr_t)
     return 1.f;
 }
 
+void platform::openSystemWebBrowser(String& url)
+{
+    char buf[256];
+    snprintf(buf, sizeof(buf), "xdg-open %s", url.buffer());
+
+    if (system(buf) != 0) {
+        HIPHOP_LOG_STDERR_ERRNO("Could not open system web browser");
+    }
+}
+
 static String getSharedLibraryPath()
 {
     Dl_info dl_info;
