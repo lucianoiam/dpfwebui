@@ -37,7 +37,9 @@
 #define TO_LPCWSTR(s)  WSTR_CONVERTER.from_bytes(s).c_str()
 #define TO_LPCSTR(s)   WSTR_CONVERTER.to_bytes(s).c_str()
 
-#define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.chrome.webview.postMessage(args);"
+#define JS_POST_MESSAGE_SHIM  "window.webviewHost.postMessage = (args) => window.chrome.webview.postMessage(args);"
+
+#define WEBVIEW2_DOWNLOAD_URL "https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"
 
 USE_NAMESPACE_DGL
 
@@ -327,14 +329,20 @@ HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
 
 void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
 {
-    // TODO: Add clickable link to installer. It would be also better to display
-    //       a message and button in the native window using DGL widgets.
     std::wstringstream wss;
-    wss << "Make sure you have installed the Microsoft Edge WebView2 Runtime. "
-        << "Error 0x" << std::hex << result;
-    std::wstring ws = wss.str();
-    
-    HIPHOP_LOG_STDERR_COLOR(TO_LPCSTR(ws));
+    wss << "The Microsoft Edge WebView2 Runtime could not be initialized.\n"
+        << "Code 0x" << std::hex << result
+        << "\n\n"
+        << "Make sure it is installed on your system. Clicking OK will open its"
+        << " download page. Once installed close and reopen the plugin window."
+        << "\n\n";
 
-    MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONSTOP);
+    std::wstring ws = wss.str();
+
+    int id = MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OKCANCEL | MB_ICONEXCLAMATION);
+
+    if (id == IDOK) {
+        String url = String(WEBVIEW2_DOWNLOAD_URL);
+        platform::openSystemWebBrowser(url);
+    }
 }
