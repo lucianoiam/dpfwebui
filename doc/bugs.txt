@@ -7,7 +7,7 @@ GENERAL
 LINUX
 -----
 
-- Mouse wheel events never fire
+- Size and resize bug in one tested Xorg system (not present on XWayland)
 - DSSI plugin builds but UI does not open
 - Workaround with tag LXRESIZEBUG https://bugs.webkit.org/show_bug.cgi?id=229227
 
