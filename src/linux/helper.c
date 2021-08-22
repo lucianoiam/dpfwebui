@@ -142,9 +142,8 @@ static void set_background_color(const helper_context_t *ctx, uint32_t rgba)
 static void set_fake_size(const helper_context_t *ctx)
 {
     char js[1024];
-    sprintf(js, "const k = 1.0 / window.devicePixelRatio;"
-                "document.body.style.width  = `${k * %d}px`;"
-                "document.body.style.height = `${k * %d}px`;",
+    sprintf(js, "document.body.style.width  = '%dpx';"
+                "document.body.style.height = '%dpx';",
                 ctx->size.width, ctx->size.height);
     webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
 }
