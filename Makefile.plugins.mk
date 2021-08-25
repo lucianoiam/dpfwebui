@@ -298,9 +298,9 @@ endif
 ifeq ($(WEB_UI),true)
 UI_JS_INCLUDE_PATH = $(HIPHOP_SRC_PATH)/ui/distrho-ui.js.include
 
-TARGETS += $(UI_JS_INCLUDE_PATH)
+TARGETS += jsinclude
 
-$(UI_JS_INCLUDE_PATH):
+jsinclude:
 	@echo 'R"UI_JS(' > $(UI_JS_INCLUDE_PATH)
 	@cat $(HIPHOP_SRC_PATH)/ui/distrho-ui.js >> $(UI_JS_INCLUDE_PATH)
 	@echo ')UI_JS"' >> $(UI_JS_INCLUDE_PATH)
