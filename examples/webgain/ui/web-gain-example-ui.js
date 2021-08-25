@@ -21,7 +21,7 @@
 // namespace and guaranteed to be available after the document load event fires
 // and before any referenced script starts running.
 
-class WebGainExampleUI extends DISTRHO_UI {
+class WebGainExampleUI extends DISTRHO.UI {
 
     constructor() {
         super(); // mandatory

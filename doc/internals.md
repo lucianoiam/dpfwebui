@@ -88,7 +88,7 @@ following JS code:
 
 `window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:args}))`
 
-The `DISTRHO::WebHostUI` and JS `DISTRHO_UI` classes use the above mechanism
+The `DISTRHO::WebHostUI` and JS `DISTRHO.UI` classes use the above mechanism
 to map some useful plugin methods, like the ones shown in the first code example
 of the main README.
 

@@ -37,7 +37,7 @@ For behind-the-scenes information go [here](https://github.com/lucianoiam/hiphop
 ### Example JavaScript UI code
 
 ```JavaScript
-class ExampleUI extends DISTRHO_UI {
+class ExampleUI extends DISTRHO.UI {
 
     constructor() {
         super();

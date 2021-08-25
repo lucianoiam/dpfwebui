@@ -62,6 +62,7 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     String js = String(
 #include "ui/distrho-ui.js.include"
     );
+    js += "const DISTRHO = Object.freeze({ UI: UI });";
     fWebView.injectScript(js);
 
     String url = "file://" + platform::getLibraryPath() + "/ui/index.html";

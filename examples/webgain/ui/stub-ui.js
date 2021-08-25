@@ -19,9 +19,9 @@
 class StubUI {
 
     static installIfNeeded() {
-        if (typeof(DISTRHO_UI) == 'undefined') {
-            console.log('DISTRHO_UI is not defined, installing stub')
-            window.DISTRHO_UI = StubUI;
+        if (typeof(DISTRHO) == 'undefined') {
+            console.log('DISTRHO is not defined, installing stub')
+            window.DISTRHO = Object.freeze({ UI: StubUI });
         }
     }
 
