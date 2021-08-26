@@ -31,7 +31,7 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
 {
-    platform::setRunningStandalone(!isEmbed());
+    platform::setRunningStandalone(false /* FIXME */);
 
     // Web views adjust their contents following the system display scale factor,
     // adjust window size so it correctly wraps content on high density displays.
@@ -62,31 +62,11 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     fWebView.navigate(url);
 }
 
-/*void WebHostUI::onDisplay()
-{
-#ifdef DGL_OPENGL
-    // Clear background for OpenGL
-    glClearColor(DISTRHO_UNPACK_RGBA_NORM(fBackgroundColor, GLfloat));
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#endif
-#ifdef DGL_CAIRO
-    // Clear background for Cairo
-    cairo_t* cr = ((CairoGraphicsContext&)getWindow().getGraphicsContext()).handle;
-    cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(fBackgroundColor, double));
-    cairo_paint(cr);
-#endif
-}
-
-bool WebHostUI::onKeyboard(const KeyboardEvent& ev)
-{
-    return fWebView.onKeyboard(ev.mod, ev.flags, ev.time, ev.press, ev.key, ev.keycode);
-}
-
-void WebHostUI::uiReshape(uint width, uint height)
+void WebHostUI::onResize(uint width, uint height)
 {
     fWebView.setSize(width, height);
-    webPostMessage({"UI", "uiReshape", width, height});
-}*/
+    webPostMessage({"UI", "onResize", width, height});
+}
 
 void WebHostUI::parameterChanged(uint32_t index, float value)
 {
