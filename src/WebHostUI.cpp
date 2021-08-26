@@ -31,7 +31,7 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
 {
-    platform::setRunningStandalone(false /* FIXME */);
+    platform::setRunningStandalone(isStandalone());
 
     // Web views adjust their contents following the system display scale factor,
     // adjust window size so it correctly wraps content on high density displays.
@@ -210,10 +210,8 @@ void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
         );
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
-    // Hip-Hop specific methods
-
     } else if (method == "isStandalone") {
-        //webPostMessage({"UI", "isStandalone", getWindow().getApp().isStandalone()});
+        webPostMessage({"UI", "isStandalone", isStandalone()});
 
     } else if ((method == "setKeyboardFocus") && (argc == 1)) {
         setKeyboardFocus(static_cast<bool>(args[kArg0].getBool()));
