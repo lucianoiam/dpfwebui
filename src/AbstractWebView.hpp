@@ -29,7 +29,7 @@
 
 #include "JsValue.hpp"
 
-START_NAMESPACE_DGL
+START_NAMESPACE_DISTRHO
 
 typedef std::vector<JsValue> JsValueVector;
 
@@ -41,18 +41,22 @@ public:
 
 };
 
-class AbstractWebView : public SubWidget
+class AbstractWebView
 {
 public:
-    AbstractWebView(Widget *parentWidget) : SubWidget(parentWidget),
-        fKeyboardFocus(false), fPrintTraffic(false) {}
+    AbstractWebView(uintptr_t parentWindowHandle)
+        : fParentWindowHandle(parentWindowHandle)
+        , fKeyboardFocus(false)
+        , fPrintTraffic(false) {}
     virtual ~AbstractWebView() {}
 
     virtual void setBackgroundColor(uint32_t rgba) = 0;
+    virtual void setSize(uint width, uint height) = 0;
     virtual void navigate(String& url) = 0;
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
-
+    
+    //virtual bool onKeyboard(uint mod, uint flags, uint time, bool press, uint key, uint keycode) = 0;
     virtual void setKeyboardFocus(bool focus) { fKeyboardFocus = focus; }
     bool         isKeyboardFocus() { return fKeyboardFocus; }
 
@@ -61,26 +65,26 @@ public:
     void postMessage(const JsValueVector& args);
 
 protected:
-    void onDisplay() override { /* no-op */ }
-    
+    uintptr_t getParentWindowHandle() { return fParentWindowHandle; }
+
     void injectDefaultScripts(String& platformSpecificScript);
     
     void handleLoadFinished();
     void handleScriptMessage(const JsValueVector& args);
-
-    bool fKeyboardFocus;
 
 private:
     String serializeJsValues(const JsValueVector& args);
 
     void addStylesheet(String& source);
 
-    bool fPrintTraffic;
+    uintptr_t fParentWindowHandle;
+    bool      fKeyboardFocus;
+    bool      fPrintTraffic;
 
     WebViewEventHandler* fHandler;
 
 };
 
-END_NAMESPACE_DGL
+END_NAMESPACE_DISTRHO
 
 #endif // ABSTRACT_WEBVIEW_HPP

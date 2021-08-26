@@ -131,6 +131,8 @@ _ := $(shell git -C $(DPF_PATH) checkout $(DPF_GIT_BRANCH))
 endif
 endif
 
+UI_TYPE = external
+
 include $(DPF_PATH)/Makefile.plugins.mk
 
 # ------------------------------------------------------------------------------
@@ -192,14 +194,6 @@ info:
 	@echo "DPF     : $(DPF_PATH) @ $(DPF_GIT_BRANCH)"
 	@echo "Build   : $(DPF_BUILD_DIR)"
 	@echo "Target  : $(DPF_TARGET_DIR)"
-
-# ------------------------------------------------------------------------------
-# Dependency - Build DPF Graphics Library
-
-TARGETS += $(DPF_PATH)/build/libdgl.a
-
-$(DPF_PATH)/build/libdgl.a:
-	make -C $(DPF_PATH) dgl
 
 # ------------------------------------------------------------------------------
 # Dependency - Download Wasmer

@@ -35,7 +35,7 @@
 
 // Do not assume an autorelease pool exists or ARC is enabled.
 
-USE_NAMESPACE_DGL
+USE_NAMESPACE_DISTRHO
 
 @interface DistrhoWebView: WKWebView
 @property (readonly, nonatomic) CocoaWebView* cppWidget;
@@ -46,9 +46,9 @@ USE_NAMESPACE_DGL
 @property (assign, nonatomic) CocoaWebView *cppWidget;
 @end
 
-CocoaWebView::CocoaWebView(Widget *parentWidget)
-    : AbstractWebView(parentWidget)
-    , fLastKeyboardEventTime(0)
+CocoaWebView::CocoaWebView(uintptr_t parentWindowHandle)
+    : AbstractWebView(parentWindowHandle)
+    //, fLastKeyboardEventTime(0)
 {
     // Create the web view
     fView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];
@@ -62,7 +62,7 @@ CocoaWebView::CocoaWebView(Widget *parentWidget)
 
     // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
     // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
-    NSView *parentView = (NSView *)parentWidget->getWindow().getNativeWindowHandle();
+    NSView *parentView = (NSView *)parentWindowHandle;
     [parentView addSubview:fWebView];
 
     String js = String(JS_POST_MESSAGE_SHIM);
@@ -74,88 +74,6 @@ CocoaWebView::~CocoaWebView()
     [fWebView removeFromSuperview];
     [fWebView release];
     [fWebViewDelegate release];
-}
-
-void CocoaWebView::onResize(const ResizeEvent& ev)
-{
-    (void)ev;
-    updateWebViewFrame();
-}
-
-void CocoaWebView::onPositionChanged(const PositionChangedEvent& ev)
-{
-    (void)ev;
-    updateWebViewFrame();
-}
-
-bool CocoaWebView::onKeyboard(const KeyboardEvent& ev)
-{
-    // Some hosts like REAPER prevent the web view from gaining keyboard focus.
-    // In such cases the web view can still get touch/mouse input, so assuming
-    // the user wants to type into a <input> element, such element can be
-    // focused by clicking on it, and all subsequent key events received by the
-    // root plugin window here by this method will be conveniently injected into
-    // the web view, effectively reaching the <input> element.
-
-    if (!isKeyboardFocus()) {
-        return false;
-    }
-
-    if ((ev.time != 0) && (fLastKeyboardEventTime == ev.time)) {
-        //NSLog(@"Break onKeyboard() loop");
-        return true;
-    }
-
-    // Make a distinction between DPF delivered key events (ev.time always 0)
-    // and synthesized key events below by setting their timestamps to now. This
-    // is needed to break potential onKeyboard() loops while allowing key repeat
-
-    uint now = (uint)CFAbsoluteTimeGetCurrent();
-
-    fLastKeyboardEventTime = ev.time == 0 ? now : ev.time;
-
-    // TODO: conversion method does not work for anything non-ASCII
-
-    uint32_t key = OSSwapHostToLittleInt32(ev.key);
-    NSString *ch = [[NSString alloc] initWithBytes:&key length:4 encoding:NSUTF32LittleEndianStringEncoding];
-
-    NSEventModifierFlags flags =  ((ev.mod & kModifierShift  ) ? NSEventModifierFlagShift   : 0)
-                                | ((ev.mod & kModifierControl) ? NSEventModifierFlagControl : 0)
-                                | ((ev.mod & kModifierAlt    ) ? NSEventModifierFlagOption  : 0)
-                                | ((ev.mod & kModifierSuper  ) ? NSEventModifierFlagCommand : 0);
-    if (ev.press) {
-        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
-            location: NSZeroPoint
-            modifierFlags: flags
-            timestamp: (NSTimeInterval)now
-            windowNumber: 0
-            context: nil
-            characters: ch
-            charactersIgnoringModifiers: ch
-            isARepeat: NO
-            keyCode: ev.keycode
-        ];
-
-        [fWebView keyDown:event];
-    } else {
-        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyUp
-            location: NSZeroPoint
-            modifierFlags: flags
-            timestamp: (NSTimeInterval)now
-            windowNumber: 0
-            context: nil
-            characters: ch
-            charactersIgnoringModifiers: ch
-            isARepeat: NO
-            keyCode: ev.keycode
-        ];
-
-        [fWebView keyUp:event];
-    }
-
-    [ch release];
-
-    return true; // stop propagation
 }
 
 void CocoaWebView::setBackgroundColor(uint32_t rgba)
@@ -174,6 +92,16 @@ void CocoaWebView::setBackgroundColor(uint32_t rgba)
             NSLog(@"Could not set transparent color for WKWebView");
         }
     }
+}
+
+void CocoaWebView::setSize(uint width, uint height)
+{
+    CGRect frame;
+    frame.origin.x = 0;
+    frame.origin.y = 0;
+    frame.size.width = (CGFloat)width;
+    frame.size.height = (CGFloat)height;
+    fWebView.frame = [fWebView.window convertRectFromBacking:frame];
 }
 
 void CocoaWebView::navigate(String& url)
@@ -202,15 +130,77 @@ void CocoaWebView::injectScript(String& source)
     [js release];
 }
 
-void CocoaWebView::updateWebViewFrame()
+/*bool CocoaWebView::onKeyboard(uint mod, uint flags, uint time, bool press, uint key, uint keycode)
 {
-    CGRect frame;
-    frame.origin.x = (CGFloat)getAbsoluteX();
-    frame.origin.y = (CGFloat)getAbsoluteY();
-    frame.size.width = (CGFloat)getWidth();
-    frame.size.height = (CGFloat)getHeight();
-    fWebView.frame = [fWebView.window convertRectFromBacking:frame];
-}
+    (void)flags;
+    
+    // Some hosts like REAPER prevent the web view from gaining keyboard focus.
+    // In such cases the web view can still get touch/mouse input, so assuming
+    // the user wants to type into a <input> element, such element can be
+    // focused by clicking on it, and all subsequent key events received by the
+    // root plugin window here by this method will be conveniently injected into
+    // the web view, effectively reaching the <input> element.
+
+    if (!isKeyboardFocus()) {
+        return false;
+    }
+
+    if ((time != 0) && (fLastKeyboardEventTime == time)) {
+        //NSLog(@"Break onKeyboard() loop");
+        return true;
+    }
+
+    // Make a distinction between DPF delivered key events (time always 0)
+    // and synthesized key events below by setting their timestamps to now. This
+    // is needed to break potential onKeyboard() loops while allowing key repeat
+
+    uint now = (uint)CFAbsoluteTimeGetCurrent();
+
+    fLastKeyboardEventTime = time == 0 ? now : time;
+
+    // TODO: conversion method does not work for anything non-ASCII
+
+    uint32_t tempKey = OSSwapHostToLittleInt32(key);
+    NSString *ch = [[NSString alloc] initWithBytes:&tempKey length:4 encoding:NSUTF32LittleEndianStringEncoding];
+
+    NSEventModifierFlags nsFlags =  ((mod & kModifierShift  ) ? NSEventModifierFlagShift   : 0)
+                                  | ((mod & kModifierControl) ? NSEventModifierFlagControl : 0)
+                                  | ((mod & kModifierAlt    ) ? NSEventModifierFlagOption  : 0)
+                                  | ((mod & kModifierSuper  ) ? NSEventModifierFlagCommand : 0);
+    if (press) {
+        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
+            location: NSZeroPoint
+            modifierFlags: nsFlags
+            timestamp: (NSTimeInterval)now
+            windowNumber: 0
+            context: nil
+            characters: ch
+            charactersIgnoringModifiers: ch
+            isARepeat: NO
+            keyCode: keycode
+        ];
+
+        [fWebView keyDown:event];
+    } else {
+        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyUp
+            location: NSZeroPoint
+            modifierFlags: nsFlags
+            timestamp: (NSTimeInterval)now
+            windowNumber: 0
+            context: nil
+            characters: ch
+            charactersIgnoringModifiers: ch
+            isARepeat: NO
+            keyCode: keycode
+        ];
+
+        [fWebView keyUp:event];
+    }
+
+    [ch release];
+
+    return true; // stop propagation
+}*/
 
 @implementation DistrhoWebView
 

@@ -27,22 +27,15 @@ USE_NAMESPACE_DISTRHO
 
 WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(baseWidth, baseHeight)
-    , fWebView(this)
+    , fWebView(getParentWindowHandle())
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
 {
-    const Window& win = getWindow();
-    
-    // Platform functions are static, however the DGL application object is not
-    // a singleton and there is a special case in PlatformLinux.cpp that makes
-    // it necessary to check if the plugin is running standalone during runtime.
-    // Note that the web widget is already initialized at this point so this
-    // function always returns false when called from web widget constructors.
-    platform::setRunningStandalone(win.getApp().isStandalone());
+    platform::setRunningStandalone(!isEmbed());
 
     // Web views adjust their contents following the system display scale factor,
     // adjust window size so it correctly wraps content on high density displays.
-    float k = platform::getDisplayScaleFactor(win.getNativeWindowHandle());
+    float k = platform::getDisplayScaleFactor(getParentWindowHandle());
     fInitWidth = k * baseWidth;
     fInitHeight = k * baseHeight;
     setSize(fInitWidth, fInitHeight);
@@ -69,7 +62,7 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     fWebView.navigate(url);
 }
 
-void WebHostUI::onDisplay()
+/*void WebHostUI::onDisplay()
 {
 #ifdef DGL_OPENGL
     // Clear background for OpenGL
@@ -84,11 +77,16 @@ void WebHostUI::onDisplay()
 #endif
 }
 
+bool WebHostUI::onKeyboard(const KeyboardEvent& ev)
+{
+    return fWebView.onKeyboard(ev.mod, ev.flags, ev.time, ev.press, ev.key, ev.keycode);
+}
+
 void WebHostUI::uiReshape(uint width, uint height)
 {
     fWebView.setSize(width, height);
     webPostMessage({"UI", "uiReshape", width, height});
-}
+}*/
 
 void WebHostUI::parameterChanged(uint32_t index, float value)
 {
@@ -235,7 +233,7 @@ void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
     // Hip-Hop specific methods
 
     } else if (method == "isStandalone") {
-        webPostMessage({"UI", "isStandalone", getWindow().getApp().isStandalone()});
+        //webPostMessage({"UI", "isStandalone", getWindow().getApp().isStandalone()});
 
     } else if ((method == "setKeyboardFocus") && (argc == 1)) {
         setKeyboardFocus(static_cast<bool>(args[kArg0].getBool()));

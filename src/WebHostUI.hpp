@@ -33,8 +33,9 @@ public:
     virtual ~WebHostUI() {}
 
 protected:
-    void onDisplay() override;
-    void uiReshape(uint width, uint height) override;
+    //void onDisplay() override;
+    //bool onKeyboard(const KeyboardEvent& ev) override;
+    //void uiReshape(uint width, uint height) override;
 
     void parameterChanged(uint32_t index, float value) override;
 #if DISTRHO_PLUGIN_WANT_PROGRAMS

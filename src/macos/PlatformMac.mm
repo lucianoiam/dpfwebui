@@ -44,7 +44,7 @@ float platform::getDisplayScaleFactor(uintptr_t window)
 
 void platform::openSystemWebBrowser(String& url)
 {
-    NSString *s = [[NSString alloc] initWithCString:url.buffer()];
+    NSString *s = [[NSString alloc] initWithCString:url.buffer() encoding:NSUTF8StringEncoding];
     NSURL *nsUrl = [[NSURL alloc] initWithString:s];
     [[NSWorkspace sharedWorkspace] openURL:nsUrl];
     [nsUrl release];
