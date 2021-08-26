@@ -38,7 +38,6 @@ public:
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;
-    //bool onKeyboard(uint mod, uint flags, uint time, bool press, uint key, uint keycode) override;
 
     // Allow calling some protected methods from Objective-C instances
     

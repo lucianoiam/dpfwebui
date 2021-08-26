@@ -42,10 +42,10 @@
 
 extern char **environ;
 
-USE_NAMESPACE_DGL
+USE_NAMESPACE_DISTRHO
 
-ExternalGtkWebView::ExternalGtkWebView(Widget *parentWidget)
-    : AbstractWebView(parentWidget)
+ExternalGtkWebView::ExternalGtkWebView(uintptr_t parentWindowHandle)
+    : AbstractWebView(parentWindowHandle)
     , fPid(-1)
     , fIpc(nullptr)
     , fIpcThread(nullptr)
@@ -88,7 +88,7 @@ ExternalGtkWebView::ExternalGtkWebView(Widget *parentWidget)
         return;
     }
 
-    int windowId = static_cast<int>(parentWidget->getWindow().getNativeWindowHandle());
+    int windowId = static_cast<int>(parentWindowHandle);
     ipcWrite(OPC_CREATE_VIEW, &windowId, sizeof(windowId));
 
     String js = String(JS_POST_MESSAGE_SHIM);
@@ -129,45 +129,15 @@ ExternalGtkWebView::~ExternalGtkWebView()
     }
 }
 
-void ExternalGtkWebView::onResize(const ResizeEvent& ev)
-{
-    helper_size_t sizePkt = {ev.size.getWidth(), ev.size.getHeight()};
-    ipcWrite(OPC_SET_SIZE, &sizePkt, sizeof(sizePkt));
-}
-
-void ExternalGtkWebView::onPositionChanged(const PositionChangedEvent& ev)
-{
-    helper_pos_t posPkt = {ev.pos.getX(), ev.pos.getY()};
-    ipcWrite(OPC_SET_POSITION, &posPkt, sizeof(posPkt));
-}
-
-bool ExternalGtkWebView::onKeyboard(const KeyboardEvent& ev)
-{
-    // Some hosts like Bitwig prevent the web view from gaining keyboard focus.
-    // In such cases the web view can still get touch/mouse input, so assuming
-    // the user wants to type into a <input> element, such element can be
-    // focused by clicking on it, and all subsequent key events received by the
-    // root plugin window here by this method will be conveniently injected into
-    // the helper window, effectively reaching the web view <input>.
-
-    if (!isKeyboardFocus()) {
-        return false;
-    }
-
-    helper_key_t key;
-    key.press = ev.press;
-    key.code = ev.key;
-    key.hw_code = ev.keycode;
-    key.mod = ev.mod;
-
-    ipcWrite(OPC_KEY_EVENT, &key, sizeof(key));
-    
-    return true; // stop propagation
-}
-
 void ExternalGtkWebView::setBackgroundColor(uint32_t rgba)
 {
     ipcWrite(OPC_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
+}
+
+void ExternalGtkWebView::setSize(uint width, uint height)
+{
+    helper_size_t sizePkt = {width, height};
+    ipcWrite(OPC_SET_SIZE, &sizePkt, sizeof(sizePkt));
 }
 
 void ExternalGtkWebView::navigate(String& url)
@@ -191,13 +161,6 @@ void ExternalGtkWebView::setKeyboardFocus(bool focus)
     
     char val = focus ? 1 : 0;
     ipcWrite(OPC_SET_KEYBOARD_FOCUS, &val, sizeof(val));
-
-    // REAPER steals focus after plugin initialization, reset keyboard focus
-    // because clicking on the web view is not enough for regaining it.
-
-    if (focus) {
-        getWindow().focus();
-    }
 }
 
 int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str) const

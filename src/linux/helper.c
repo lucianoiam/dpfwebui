@@ -33,6 +33,7 @@
 typedef struct {
     ipc_t*         ipc;
     Display*       display;
+    Window         parent;
     GtkWindow*     window;
     WebKitWebView* webView;
     gboolean       focus;
@@ -42,6 +43,7 @@ typedef struct {
 static void create_view(helper_context_t *ctx, uintptr_t parentId);
 static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t);
 static void set_fake_size(const helper_context_t *ctx);
+static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
 static void inject_keystroke(const helper_context_t *ctx, const helper_key_t *key);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
@@ -95,8 +97,10 @@ int main(int argc, char* argv[])
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId)
 {
+    ctx->parent = (Window)parentId;
+
     // Create a native child window of arbitrary maximum size
-    Window child = XCreateWindow(ctx->display, (Window)parentId, 0, 0,
+    Window child = XCreateWindow(ctx->display, ctx->parent, 0, 0,
                                     MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0,
                                     CopyFromParent, CopyFromParent, CopyFromParent,
                                     0, 0);
@@ -146,6 +150,25 @@ static void set_fake_size(const helper_context_t *ctx)
                 "document.body.style.height = '%dpx';",
                 ctx->size.width, ctx->size.height);
     webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
+}
+
+static void set_keyboard_focus(helper_context_t *ctx, gboolean focus)
+{
+    ctx->focus = focus;
+
+    if (ctx->focus) {
+        // Copied from puglX11GrabFocus()
+
+        XWindowAttributes wa;
+        memset(&wa, 0, sizeof(wa));
+
+        if ((XGetWindowAttributes(ctx->display, ctx->parent, &wa) != 0)
+                && (wa.map_state == IsViewable)) {
+            XRaiseWindow(ctx->display, ctx->parent);
+            XSetInputFocus(ctx->display, ctx->parent, RevertToPointerRoot, CurrentTime);
+            XSync(ctx->display, False);
+        }
+    }
 }
 
 static void inject_script(const helper_context_t *ctx, const char* js)
@@ -298,9 +321,11 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             break;
         }
 
-        case OPC_SET_KEYBOARD_FOCUS:
-            ctx->focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
+        case OPC_SET_KEYBOARD_FOCUS: {
+            gboolean focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
+            set_keyboard_focus(ctx, focus);
             break;
+        }
 
         case OPC_NAVIGATE:
             webkit_web_view_load_uri(ctx->webView, packet.v);
