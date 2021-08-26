@@ -33,7 +33,7 @@ public:
     virtual ~WebHostUI() {}
 
 protected:
-    void onResize(uint width, uint height) override;
+    void sizeChanged(uint width, uint height) override;
 
     void parameterChanged(uint32_t index, float value) override;
 #if DISTRHO_PLUGIN_WANT_PROGRAMS

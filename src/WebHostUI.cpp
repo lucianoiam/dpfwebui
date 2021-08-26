@@ -62,10 +62,10 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     fWebView.navigate(url);
 }
 
-void WebHostUI::onResize(uint width, uint height)
+void WebHostUI::sizeChanged(uint width, uint height)
 {
     fWebView.setSize(width, height);
-    webPostMessage({"UI", "onResize", width, height});
+    webPostMessage({"UI", "sizeChanged", width, height});
 }
 
 void WebHostUI::parameterChanged(uint32_t index, float value)
