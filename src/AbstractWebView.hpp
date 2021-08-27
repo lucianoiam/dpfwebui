@@ -55,8 +55,7 @@ public:
     virtual void navigate(String& url) = 0;
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
-    
-    //virtual bool onKeyboard(uint mod, uint flags, uint time, bool press, uint key, uint keycode) = 0;
+
     virtual void setKeyboardFocus(bool focus) { fKeyboardFocus = focus; }
     bool         isKeyboardFocus() { return fKeyboardFocus; }
 

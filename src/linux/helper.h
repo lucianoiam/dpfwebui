@@ -30,7 +30,6 @@ typedef enum {
     OPC_NAVIGATE,
     OPC_RUN_SCRIPT,
     OPC_INJECT_SCRIPT,
-    OPC_KEY_EVENT,
     OPC_HANDLE_SCRIPT_MESSAGE,
     OPC_HANDLE_LOAD_FINISHED
 } helper_opcode_t;
@@ -52,19 +51,5 @@ typedef struct {
     int x;
     int y;
 } helper_pos_t;
-
-typedef enum {
-    MOD_SHIFT   = 1 << 0,
-    MOD_CONTROL = 1 << 1,
-    MOD_ALT     = 1 << 2,
-    MOD_SUPER   = 1 << 3
-} helper_key_mod_t;
-
-typedef struct {
-    char     press;
-    unsigned code;
-    unsigned hw_code;
-    unsigned mod;
-} helper_key_t;
 
 #endif  // HELPER_H

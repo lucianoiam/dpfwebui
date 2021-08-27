@@ -45,7 +45,6 @@ static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t)
 static void set_fake_size(const helper_context_t *ctx);
 static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
-static void inject_keystroke(const helper_context_t *ctx, const helper_key_t *key);
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
@@ -168,6 +167,8 @@ static void set_keyboard_focus(helper_context_t *ctx, gboolean focus)
             XSetInputFocus(ctx->display, ctx->parent, RevertToPointerRoot, CurrentTime);
             XSync(ctx->display, False);
         }
+    } else {
+        XSetInputFocus(ctx->display, PointerRoot, RevertToNone, CurrentTime);
     }
 }
 
@@ -178,23 +179,6 @@ static void inject_script(const helper_context_t *ctx, const char* js)
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
     webkit_user_content_manager_add_script(manager, script);
     webkit_user_script_unref(script);
-}
-
-static void inject_keystroke(const helper_context_t *ctx, const helper_key_t *key)
-{
-    GdkEvent event;
-    memset(&event, 0, sizeof(event));
-    event.key.type = key->press ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
-    event.key.window = gtk_widget_get_window(GTK_WIDGET(ctx->window));
-    event.key.time = GDK_CURRENT_TIME;
-    event.key.state =   ((key->mod & MOD_SHIFT)   ? GDK_SHIFT_MASK   : 0)
-                      | ((key->mod & MOD_CONTROL) ? GDK_CONTROL_MASK : 0)
-                      | ((key->mod & MOD_ALT)     ? GDK_MOD1_MASK    : 0)
-                      | ((key->mod & MOD_SUPER)   ? GDK_SUPER_MASK   : 0); // Cmd, Win...
-    event.key.keyval = key->code;
-    event.key.hardware_keycode = key->hw_code;
-    event.key.is_modifier = (guint)(key->mod != 0);
-    gdk_event_put(&event); // prints a lot of warnings to stderr...
 }
 
 static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)
@@ -337,10 +321,6 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
 
         case OPC_INJECT_SCRIPT:
             inject_script(ctx, packet.v);
-            break;
-
-        case OPC_KEY_EVENT:
-            inject_keystroke(ctx, (const helper_key_t *)packet.v);
             break;
 
         default:
