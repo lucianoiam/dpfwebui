@@ -48,7 +48,6 @@ USE_NAMESPACE_DISTRHO
 
 CocoaWebView::CocoaWebView(uintptr_t parentWindowHandle)
     : AbstractWebView(parentWindowHandle)
-    //, fLastKeyboardEventTime(0)
 {
     // Create the web view
     fView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];

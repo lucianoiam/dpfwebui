@@ -35,8 +35,10 @@ typedef struct {
     Display*       display;
     GtkWindow*     window;
     WebKitWebView* webView;
+    Window         focusXWin;
     gboolean       focus;
     helper_size_t  size;
+    gboolean       quit;
 } helper_context_t;
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId);
@@ -44,6 +46,8 @@ static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t)
 static void set_fake_size(const helper_context_t *ctx);
 static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
+static void *focus_watchdog(void *arg);
+static gboolean release_focus(gpointer data);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
 static gboolean web_view_keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data);
@@ -56,6 +60,7 @@ int main(int argc, char* argv[])
     helper_context_t ctx;
     ipc_conf_t conf;
     GIOChannel* channel;
+    pthread_t thread;
 
     memset(&ctx, 0, sizeof(ctx));
 
@@ -71,6 +76,8 @@ int main(int argc, char* argv[])
 
     ctx.ipc = ipc_init(&conf);
 
+    XInitThreads();
+
     gdk_set_allowed_backends("x11");
     gtk_init(0, NULL);
 
@@ -83,7 +90,16 @@ int main(int argc, char* argv[])
     channel = g_io_channel_unix_new(conf.fd_r);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
 
+    // Use a thread to poll focus status because wrapped X11 windows do not seem
+    // to emit focus events like a regular Gdk/Gtk window.
+    if (pthread_create(&thread, NULL, focus_watchdog, &ctx) != 0) {
+        return -1;
+    }
+
     gtk_main();
+
+    ctx.quit = TRUE;
+    pthread_join(thread, NULL); 
 
     set_keyboard_focus(&ctx, FALSE);
     g_io_channel_shutdown(channel, TRUE, NULL);
@@ -91,8 +107,6 @@ int main(int argc, char* argv[])
 
     return 0;
 }
-
-GdkWindow* gdkChild;
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId)
 {
@@ -104,7 +118,7 @@ static void create_view(helper_context_t *ctx, uintptr_t parentId)
     XFlush(ctx->display);
 
     // Wrap child in a GDK window
-    gdkChild = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(), child);
+    GdkWindow* gdkChild = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(), child);
     ctx->window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
     g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkChild);
     // After the web view becomes visible, gtk_window_resize() will not cause
@@ -150,6 +164,11 @@ static void set_fake_size(const helper_context_t *ctx)
 
 static void set_keyboard_focus(helper_context_t *ctx, gboolean focus)
 {
+    if (ctx->focus == focus) {
+        return;
+    }
+
+    ctx->focusXWin = 0;
     ctx->focus = focus;
 
     // Some hosts grab focus back from the plugin, avoid that
@@ -171,6 +190,36 @@ static void inject_script(const helper_context_t *ctx, const char* js)
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
     webkit_user_content_manager_add_script(manager, script);
     webkit_user_script_unref(script);
+}
+
+static void *focus_watchdog(void *arg)
+{
+    helper_context_t *ctx = (helper_context_t *)arg;
+
+    while (!ctx->quit) {
+        if (!ctx->focus || (ctx->focusXWin == 0)) {
+            continue;
+        }
+
+        Window focus;
+        int revert;
+
+        XLockDisplay(ctx->display);
+        XGetInputFocus(ctx->display, &focus, &revert);
+        XUnlockDisplay(ctx->display);
+
+        if (ctx->focusXWin != focus) {
+            g_idle_add(release_focus, ctx);
+        }
+
+        usleep(100000L); // 100ms
+    }
+}
+
+static gboolean release_focus(gpointer data)
+{
+    set_keyboard_focus((helper_context_t *)data, FALSE);
+    return FALSE;
 }
 
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
@@ -252,6 +301,10 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
 static gboolean web_view_keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     helper_context_t *ctx = (helper_context_t *)data;
+
+    int revert;
+    XGetInputFocus(ctx->display, &ctx->focusXWin, &revert);
+
     return !ctx->focus;
 }
 
@@ -308,6 +361,10 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
 
         case OPC_INJECT_SCRIPT:
             inject_script(ctx, packet.v);
+            break;
+
+        case OPC_QUIT:
+            gtk_main_quit();
             break;
 
         default:

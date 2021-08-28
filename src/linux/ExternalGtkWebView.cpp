@@ -98,12 +98,17 @@ ExternalGtkWebView::ExternalGtkWebView(uintptr_t parentWindowHandle)
 ExternalGtkWebView::~ExternalGtkWebView()
 {
     if (fPid != -1) {
-        if (kill(fPid, SIGTERM) == 0) {
+        ipcWrite(OPC_QUIT, 0, 0);
+
+        int stat;
+        waitpid(fPid, &stat, 0);
+
+        /*if (kill(fPid, SIGTERM) == 0) {
             int stat;
             waitpid(fPid, &stat, 0);
         } else {
             HIPHOP_LOG_STDERR_ERRNO("Could not terminate helper subprocess");
-        }
+        }*/
 
         fPid = -1;
     }

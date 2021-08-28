@@ -31,7 +31,8 @@ typedef enum {
     OPC_RUN_SCRIPT,
     OPC_INJECT_SCRIPT,
     OPC_HANDLE_SCRIPT_MESSAGE,
-    OPC_HANDLE_LOAD_FINISHED
+    OPC_HANDLE_LOAD_FINISHED,
+    OPC_QUIT
 } helper_opcode_t;
 
 typedef enum {
