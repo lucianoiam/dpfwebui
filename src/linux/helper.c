@@ -33,7 +33,6 @@
 typedef struct {
     ipc_t*         ipc;
     Display*       display;
-    Window         parent;
     GtkWindow*     window;
     WebKitWebView* webView;
     gboolean       focus;
@@ -45,7 +44,6 @@ static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t)
 static void set_fake_size(const helper_context_t *ctx);
 static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
-static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
 static gboolean web_view_keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data);
@@ -87,28 +85,27 @@ int main(int argc, char* argv[])
 
     gtk_main();
 
+    set_keyboard_focus(&ctx, FALSE);
     g_io_channel_shutdown(channel, TRUE, NULL);
-
     ipc_destroy(ctx.ipc);
 
     return 0;
 }
 
+GdkWindow* gdkChild;
+
 static void create_view(helper_context_t *ctx, uintptr_t parentId)
 {
-    ctx->parent = (Window)parentId;
-
     // Create a native child window of arbitrary maximum size
-    Window child = XCreateWindow(ctx->display, ctx->parent, 0, 0,
+    Window child = XCreateWindow(ctx->display, (Window)parentId, 0, 0,
                                     MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0,
                                     CopyFromParent, CopyFromParent, CopyFromParent,
                                     0, 0);
     XFlush(ctx->display);
 
     // Wrap child in a GDK window
-    GdkWindow* gdkChild = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(), child);
+    gdkChild = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(), child);
     ctx->window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
-    g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), ctx);
     g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkChild);
     // After the web view becomes visible, gtk_window_resize() will not cause
     // its contents to resize anymore. The issue is probably related to the
@@ -155,20 +152,15 @@ static void set_keyboard_focus(helper_context_t *ctx, gboolean focus)
 {
     ctx->focus = focus;
 
+    // Some hosts grab focus back from the plugin, avoid that
+
+    GdkWindow *window = gtk_widget_get_window(GTK_WIDGET(ctx->webView));
+    GdkSeat *seat = gdk_display_get_default_seat(gdk_display_get_default());
+
     if (ctx->focus) {
-        // Copied from puglX11GrabFocus()
-
-        XWindowAttributes wa;
-        memset(&wa, 0, sizeof(wa));
-
-        if ((XGetWindowAttributes(ctx->display, ctx->parent, &wa) != 0)
-                && (wa.map_state == IsViewable)) {
-            XRaiseWindow(ctx->display, ctx->parent);
-            XSetInputFocus(ctx->display, ctx->parent, RevertToPointerRoot, CurrentTime);
-            XSync(ctx->display, False);
-        }
+        gdk_seat_grab(seat, window, GDK_SEAT_CAPABILITY_KEYBOARD, FALSE, NULL, NULL, NULL, NULL);
     } else {
-        XSetInputFocus(ctx->display, PointerRoot, RevertToNone, CurrentTime);
+        gdk_seat_ungrab(seat);
     }
 }
 
@@ -179,11 +171,6 @@ static void inject_script(const helper_context_t *ctx, const char* js)
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
     webkit_user_content_manager_add_script(manager, script);
     webkit_user_script_unref(script);
-}
-
-static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)
-{
-    gtk_main_quit();
 }
 
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
