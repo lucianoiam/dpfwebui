@@ -62,6 +62,14 @@ WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     fWebView.navigate(url);
 }
 
+void WebHostUI::uiIdle()
+{
+    // FIXME - isStandalone() returns 0 on Mac when running standalone
+    if (getParentWindowHandle() == 0) {
+        fWebView.processEvents();
+    }
+}
+
 void WebHostUI::sizeChanged(uint width, uint height)
 {
     fWebView.setSize(width, height);

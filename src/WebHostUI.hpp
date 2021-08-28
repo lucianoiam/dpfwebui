@@ -33,6 +33,8 @@ public:
     virtual ~WebHostUI() {}
 
 protected:
+    void uiIdle() override;
+
     void sizeChanged(uint width, uint height) override;
 
     void parameterChanged(uint32_t index, float value) override;
