@@ -33,7 +33,6 @@ public:
     CocoaWebView(uintptr_t parentWindowHandle);
     ~CocoaWebView();
 
-    void processEvents() override;
     void setBackgroundColor(uint32_t rgba) override;
     void setSize(uint width, uint height) override;
     void navigate(String& url) override;

@@ -16,67 +16,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEB_HOST_UI_HPP
-#define WEB_HOST_UI_HPP
+#ifndef WEBHOST_UI_HPP
+#define WEBHOST_UI_HPP
 
-#include <vector>
+#include "src/DistrhoDefines.h"
 
-#include "DistrhoUI.hpp"
-#include "PlatformWebView.hpp"
+#ifdef DISTRHO_OS_LINUX
+#include "linux/LinuxWebHostUI.hpp"
 
-START_NAMESPACE_DISTRHO
+typedef LinuxWebHostUI WebHostUI;
 
-class WebHostUI : public UI, private WebViewEventHandler
-{
-public:
-    WebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
-    virtual ~WebHostUI() {}
-
-protected:
-    void uiIdle() override;
-
-    void sizeChanged(uint width, uint height) override;
-
-    void parameterChanged(uint32_t index, float value) override;
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-    void programLoaded(uint32_t index) override;
 #endif
-#if DISTRHO_PLUGIN_WANT_STATE
-    void stateChanged(const char* key, const char* value) override;
+
+#ifdef DISTRHO_OS_MAC
+#include "macos/MacWebHostUI.hpp"
+
+ typedef MacWebHostUI WebHostUI;
+
 #endif
-    
-    uint getInitWidth() const;
-    uint getInitHeight() const;
 
-    platform::WebView& webView() { return fWebView; }
+#ifdef DISTRHO_OS_WINDOWS
+#include "windows/WindowsWebHostUI.hpp"
 
-    void webPostMessage(const JsValueVector& args);
+typedef WindowsWebHostUI WebHostUI;
 
-    void flushInitMessageQueue();
-    void setKeyboardFocus(bool focus);
+#endif
 
-    virtual void webContentReady() {}
-    virtual void webMessageReceived(const JsValueVector& args) { (void)args; }
-
-private:
-    // WebViewEventHandler
-
-    virtual void handleWebViewContentLoadFinished() override;
-    virtual void handleWebViewScriptMessageReceived(const JsValueVector& args) override;
-
-    typedef std::vector<JsValueVector> InitMessageQueue;
-    
-    platform::WebView fWebView;
-    InitMessageQueue  fInitMsgQueue;
-    bool              fFlushedInitMsgQueue;
-    uint32_t          fBackgroundColor;
-    uint              fInitWidth;
-    uint              fInitHeight;
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WebHostUI)
-
-};
-
-END_NAMESPACE_DISTRHO
-
-#endif  // WEB_HOST_UI_HPP
+#endif  // WEBHOST_UI_HPP

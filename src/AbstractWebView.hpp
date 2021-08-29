@@ -48,7 +48,6 @@ public:
         , fPrintTraffic(false) {}
     virtual ~AbstractWebView() {}
 
-    virtual void processEvents() = 0;
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void setSize(uint width, uint height) = 0;
     virtual void navigate(String& url) = 0;

@@ -49,23 +49,6 @@ USE_NAMESPACE_DISTRHO
 CocoaWebView::CocoaWebView(uintptr_t parentWindowHandle)
     : AbstractWebView(parentWindowHandle)
 {
-    // Create a standalone window if needed
-    if (parentWindowHandle == 0) {
-        [NSApplication sharedApplication];
-        [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-        [NSApp activateIgnoringOtherApps:YES];
-
-        CGRect contentRect = NSMakeRect(0,0,200,200);
-        NSWindowStyleMask styleMask = NSWindowStyleMaskClosable | NSWindowStyleMaskResizable | NSWindowStyleMaskTitled;
-        NSWindow* window = [[NSWindow alloc] initWithContentRect:contentRect
-                                                       styleMask:styleMask
-                                                         backing:NSBackingStoreBuffered
-                                                           defer:NO];
-        [window makeKeyAndOrderFront:window];
-        [window release];
-        parentWindowHandle = (uintptr_t)window.contentView;
-    }
-
     // Create the web view
     fView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];
     fWebView.hidden = YES;
@@ -90,26 +73,6 @@ CocoaWebView::~CocoaWebView()
     [fWebView removeFromSuperview];
     [fWebView release];
     [fWebViewDelegate release];
-}
-
-void CocoaWebView::processEvents()
-{
-    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-    NSDate* date = [NSDate distantPast];
-
-    for (NSEvent* event ;;) {
-        event = [NSApp nextEventMatchingMask:NSEventMaskAny
-                                   untilDate:date
-                                      inMode:NSDefaultRunLoopMode
-                                     dequeue:YES];
-        if (event == nil) {
-            break;
-        }
-
-        [NSApp sendEvent:event];
-    }
-
-    [pool release];
 }
 
 void CocoaWebView::setBackgroundColor(uint32_t rgba)

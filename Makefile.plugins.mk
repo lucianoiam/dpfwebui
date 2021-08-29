@@ -73,17 +73,17 @@ TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
 # Add optional support for AssemblyScript DSP
 
 ifeq ($(AS_DSP),true)
-HIPHOP_FILES_DSP  = WasmHostPlugin.cpp \
-                    WasmEngine.cpp \
-                    Platform.cpp
+HIPHOP_FILES_DSP  = Platform.cpp \
+                    WasmHostPlugin.cpp \
+                    WasmEngine.cpp
 ifeq ($(LINUX),true)
-HIPHOP_FILES_DSP += linux/PlatformLinux.cpp
+HIPHOP_FILES_DSP += linux/LinuxPlatform.cpp
 endif
 ifeq ($(MACOS),true)
-HIPHOP_FILES_DSP += macos/PlatformMac.mm
+HIPHOP_FILES_DSP += macos/MacPlatform.mm
 endif
 ifeq ($(WINDOWS),true)
-HIPHOP_FILES_DSP += windows/PlatformWindows.cpp
+HIPHOP_FILES_DSP += windows/WindowsPlatform.cpp
 endif
 
 FILES_DSP += $(HIPHOP_FILES_DSP:%=$(HIPHOP_SRC_PATH)/%)
@@ -93,24 +93,27 @@ endif
 # Add optional support for web UI
 
 ifeq ($(WEB_UI),true)
-HIPHOP_FILES_UI  = WebHostUI.cpp \
+HIPHOP_FILES_UI  = Platform.cpp \
+                   AbstractWebHostUI.cpp \
                    AbstractWebView.cpp \
-                   JsValue.cpp \
-                   Platform.cpp
+                   JsValue.cpp
 ifeq ($(LINUX),true)
-HIPHOP_FILES_UI += linux/ExternalGtkWebView.cpp \
-                   linux/PlatformLinux.cpp \
+HIPHOP_FILES_UI += linux/LinuxPlatform.cpp \
+                   linux/LinuxWebHostUI.cpp \
+                   linux/ExternalGtkWebView.cpp \
                    linux/ipc.c
 endif
 ifeq ($(MACOS),true)
-HIPHOP_FILES_UI += macos/CocoaWebView.mm \
-                   macos/PlatformMac.mm
+HIPHOP_FILES_UI += macos/MacPlatform.mm \
+                   macos/MacWebHostUI.mm \
+                   macos/CocoaWebView.mm
 endif
 ifeq ($(WINDOWS),true)
-HIPHOP_FILES_UI += windows/EdgeWebView.cpp \
-                   windows/KeyboardRouter.cpp \
-                   windows/PlatformWindows.cpp \
+HIPHOP_FILES_UI += windows/WindowsPlatform.cpp \
+                   windows/WindowsWebHostUI.cpp \
+                   windows/EdgeWebView.cpp \
                    windows/WebView2EventHandler.cpp \
+                   windows/KeyboardRouter.cpp \
                    windows/cJSON.c \
                    windows/resources/plugin.rc
 endif

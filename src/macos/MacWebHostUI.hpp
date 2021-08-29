@@ -16,37 +16,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PLATFORM_WEB_VIEW_HPP
-#define PLATFORM_WEB_VIEW_HPP
+#ifndef MAC_WEB_HOST_UI_HPP
+#define MAC_WEB_HOST_UI_HPP
 
-// Web view headers are included in this separate file outside Platform.hpp
-// to avoid bringing UI dependencies into the Plugin.
+#include "AbstractWebHostUI.hpp"
+#include "CocoaWebView.hpp"
 
-#ifdef DISTRHO_OS_LINUX
-#include "linux/ExternalGtkWebView.hpp"
+START_NAMESPACE_DISTRHO
 
-namespace platform {
-    typedef ExternalGtkWebView WebView;
-}
+class MacWebHostUI : public AbstractWebHostUI
+{
+public:
+    MacWebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    virtual ~MacWebHostUI();
 
-#endif
+protected:
+    uintptr_t createStandaloneWindow() override;
+    void      processStandaloneEvents() override;
 
-#ifdef DISTRHO_OS_MAC
-#include "macos/CocoaWebView.hpp"
+    AbstractWebView& getWebView() override { return fWebView; }
 
-namespace platform {
-    typedef CocoaWebView WebView;
-}
+private:
+    uintptr_t    fWindow;
+    CocoaWebView fWebView;
 
-#endif
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MacWebHostUI)
 
-#ifdef DISTRHO_OS_WINDOWS
-#include "windows/EdgeWebView.hpp"
+};
 
-namespace platform {
-    typedef EdgeWebView WebView;
-}
+END_NAMESPACE_DISTRHO
 
-#endif
-
-#endif  // PLATFORM_WEB_VIEW_HPP
+#endif  // MAC_WEB_HOST_UI_HPP
