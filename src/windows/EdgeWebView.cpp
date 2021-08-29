@@ -24,8 +24,6 @@
 #include <sstream>
 #include <winuser.h>
 
-#include "dgl/Application.hpp"
-
 #include "Platform.hpp"
 #include "macro.h"
 #include "cJSON.h"

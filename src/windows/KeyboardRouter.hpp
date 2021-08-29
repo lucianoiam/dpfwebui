@@ -22,8 +22,6 @@
 #include <WinDef.h>
 #include <winuser.h>
 
-#include "dgl/Base.hpp"
-
 START_NAMESPACE_DGL
 
 class KeyboardRouter

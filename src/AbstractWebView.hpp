@@ -22,8 +22,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "dgl/SubWidget.hpp"
-#include "dgl/Geometry.hpp"
 #include "extra/String.hpp"
 #include "Window.hpp"
 

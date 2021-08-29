@@ -18,8 +18,6 @@
 
 #include "WebHostUI.hpp"
 
-#include "dgl/Application.hpp"
-
 #include "Platform.hpp"
 #include "macro.h"
 
