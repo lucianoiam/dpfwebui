@@ -16,41 +16,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HELPER_H
-#define HELPER_H
+#include "LinuxWebHostUI.hpp"
 
-#include <stdint.h>
+USE_NAMESPACE_DISTRHO
 
-typedef enum {
-    OP_CREATE_VIEW,
-    OP_SET_BACKGROUND_COLOR,
-    OP_SET_SIZE,
-    OP_SET_POSITION,
-    OP_SET_KEYBOARD_FOCUS,
-    OP_NAVIGATE,
-    OP_RUN_SCRIPT,
-    OP_INJECT_SCRIPT,
-    OP_HANDLE_SCRIPT_MESSAGE,
-    OP_HANDLE_LOAD_FINISHED,
-    OP_QUIT
-} helper_opcode_t;
+LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
+    : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
+{
+    initWebView(fWebView);
+}
 
-typedef enum {
-    ARG_TYPE_NULL,
-    ARG_TYPE_FALSE,
-    ARG_TYPE_TRUE,
-    ARG_TYPE_DOUBLE,
-    ARG_TYPE_STRING
-} helper_msg_arg_type_t;
+LinuxWebHostUI::~LinuxWebHostUI()
+{
+    // TODO
+}
 
-typedef struct {
-    unsigned width;
-    unsigned height;
-} helper_size_t;
+uintptr_t LinuxWebHostUI::createStandaloneWindow()
+{
+    // TODO
+    return 0;
+}
 
-typedef struct {
-    int x;
-    int y;
-} helper_pos_t;
-
-#endif  // HELPER_H
+void LinuxWebHostUI::processStandaloneEvents()
+{
+    // TODO
+}

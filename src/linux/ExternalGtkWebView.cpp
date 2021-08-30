@@ -44,9 +44,8 @@ extern char **environ;
 
 USE_NAMESPACE_DISTRHO
 
-ExternalGtkWebView::ExternalGtkWebView(uintptr_t parentWindowHandle)
-    : AbstractWebView(parentWindowHandle)
-    , fPid(-1)
+ExternalGtkWebView::ExternalGtkWebView()
+    : fPid(-1)
     , fIpc(nullptr)
     , fIpcThread(nullptr)
 {
@@ -85,30 +84,16 @@ ExternalGtkWebView::ExternalGtkWebView(uintptr_t parentWindowHandle)
 
     if (status != 0) {
         HIPHOP_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
-        return;
     }
-
-    int windowId = static_cast<int>(parentWindowHandle);
-    ipcWrite(OPC_CREATE_VIEW, &windowId, sizeof(windowId));
-
-    String js = String(JS_POST_MESSAGE_SHIM);
-    injectDefaultScripts(js);
 }
 
 ExternalGtkWebView::~ExternalGtkWebView()
 {
     if (fPid != -1) {
-        ipcWrite(OPC_QUIT, 0, 0);
+        ipcWrite(OP_QUIT, 0, 0);
 
         int stat;
         waitpid(fPid, &stat, 0);
-
-        /*if (kill(fPid, SIGTERM) == 0) {
-            int stat;
-            waitpid(fPid, &stat, 0);
-        } else {
-            HIPHOP_LOG_STDERR_ERRNO("Could not terminate helper subprocess");
-        }*/
 
         fPid = -1;
     }
@@ -134,30 +119,39 @@ ExternalGtkWebView::~ExternalGtkWebView()
     }
 }
 
+void ExternalGtkWebView::setParent(uintptr_t parent)
+{
+    int windowId = static_cast<int>(parent);
+    ipcWrite(OP_CREATE_VIEW, &windowId, sizeof(windowId));
+
+    String js = String(JS_POST_MESSAGE_SHIM);
+    injectDefaultScripts(js);
+}
+
 void ExternalGtkWebView::setBackgroundColor(uint32_t rgba)
 {
-    ipcWrite(OPC_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
+    ipcWrite(OP_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
 }
 
 void ExternalGtkWebView::setSize(uint width, uint height)
 {
     helper_size_t sizePkt = {width, height};
-    ipcWrite(OPC_SET_SIZE, &sizePkt, sizeof(sizePkt));
+    ipcWrite(OP_SET_SIZE, &sizePkt, sizeof(sizePkt));
 }
 
 void ExternalGtkWebView::navigate(String& url)
 {
-    ipcWriteString(OPC_NAVIGATE, url);
+    ipcWriteString(OP_NAVIGATE, url);
 }
 
 void ExternalGtkWebView::runScript(String& source)
 {
-    ipcWriteString(OPC_RUN_SCRIPT, source);
+    ipcWriteString(OP_RUN_SCRIPT, source);
 }
 
 void ExternalGtkWebView::injectScript(String& source)
 {
-    ipcWriteString(OPC_INJECT_SCRIPT, source);
+    ipcWriteString(OP_INJECT_SCRIPT, source);
 }
 
 void ExternalGtkWebView::setKeyboardFocus(bool focus)
@@ -165,7 +159,7 @@ void ExternalGtkWebView::setKeyboardFocus(bool focus)
     AbstractWebView::setKeyboardFocus(focus);
     
     char val = focus ? 1 : 0;
-    ipcWrite(OPC_SET_KEYBOARD_FOCUS, &val, sizeof(val));
+    ipcWrite(OP_SET_KEYBOARD_FOCUS, &val, sizeof(val));
 }
 
 int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str) const
@@ -193,13 +187,13 @@ int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, in
 void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
 {
     switch (static_cast<helper_opcode_t>(packet.t)) {
-        case OPC_HANDLE_LOAD_FINISHED: {
+        case OP_HANDLE_LOAD_FINISHED: {
             String js = String(JS_DISABLE_PINCH_ZOOM_WORKAROUND);
             runScript(js);
             handleLoadFinished();
             break;
         }
-        case OPC_HANDLE_SCRIPT_MESSAGE:
+        case OP_HANDLE_SCRIPT_MESSAGE:
             handleHelperScriptMessage(static_cast<const char*>(packet.v), packet.l);
             break;
 

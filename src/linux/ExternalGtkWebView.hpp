@@ -36,9 +36,10 @@ class ExternalGtkWebView : public AbstractWebView
 friend class IpcReadThread;
 
 public:
-    ExternalGtkWebView(uintptr_t parentWindowHandle);
-    ~ExternalGtkWebView();
+    ExternalGtkWebView();
+    virtual ~ExternalGtkWebView();
 
+    void setParent(uintptr_t parent) override;
     void setBackgroundColor(uint32_t rgba) override;
     void setSize(uint width, uint height) override;
     void navigate(String& url) override;

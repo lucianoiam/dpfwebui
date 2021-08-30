@@ -16,41 +16,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HELPER_H
-#define HELPER_H
+#ifndef LINUX_WEB_HOST_UI_HPP
+#define LINUX_WEB_HOST_UI_HPP
 
-#include <stdint.h>
+#include "AbstractWebHostUI.hpp"
+#include "ExternalGtkWebView.hpp"
 
-typedef enum {
-    OP_CREATE_VIEW,
-    OP_SET_BACKGROUND_COLOR,
-    OP_SET_SIZE,
-    OP_SET_POSITION,
-    OP_SET_KEYBOARD_FOCUS,
-    OP_NAVIGATE,
-    OP_RUN_SCRIPT,
-    OP_INJECT_SCRIPT,
-    OP_HANDLE_SCRIPT_MESSAGE,
-    OP_HANDLE_LOAD_FINISHED,
-    OP_QUIT
-} helper_opcode_t;
+START_NAMESPACE_DISTRHO
 
-typedef enum {
-    ARG_TYPE_NULL,
-    ARG_TYPE_FALSE,
-    ARG_TYPE_TRUE,
-    ARG_TYPE_DOUBLE,
-    ARG_TYPE_STRING
-} helper_msg_arg_type_t;
+class LinuxWebHostUI : public AbstractWebHostUI
+{
+public:
+    LinuxWebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    virtual ~LinuxWebHostUI();
 
-typedef struct {
-    unsigned width;
-    unsigned height;
-} helper_size_t;
+protected:
+    uintptr_t createStandaloneWindow() override;
+    void      processStandaloneEvents() override;
 
-typedef struct {
-    int x;
-    int y;
-} helper_pos_t;
+    AbstractWebView& getWebView() override { return fWebView; }
 
-#endif  // HELPER_H
+private:
+    ExternalGtkWebView fWebView;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LinuxWebHostUI)
+
+};
+
+END_NAMESPACE_DISTRHO
+
+#endif  // LINUX_WEB_HOST_UI_HPP

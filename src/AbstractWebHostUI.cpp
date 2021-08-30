@@ -48,6 +48,9 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
     fInitWidth = k * getWidth();
     fInitHeight = k * getHeight();
     setSize(fInitWidth, fInitHeight);
+#ifdef DISTRHO_OS_LINUX // bug?
+    getWebView().setSize(fInitWidth, fInitHeight);
+#endif
 
     String js = String(
 #include "ui/distrho-ui.js.include"
@@ -61,6 +64,7 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 
 void AbstractWebHostUI::sizeChanged(uint width, uint height)
 {
+    fprintf(stderr, "sizeChanged\n");
     getWebView().setSize(width, height);
     webPostMessage({"UI", "sizeChanged", width, height});
 }

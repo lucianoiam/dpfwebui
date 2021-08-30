@@ -232,7 +232,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
             set_fake_size(ctx);
             gtk_widget_show(GTK_WIDGET(ctx->window));
             usleep(50000L); // prevent flicker and occasional blank view
-            ipc_write_simple(ctx, OPC_HANDLE_LOAD_FINISHED, NULL, 0);
+            ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
             break;
 
         default:
@@ -291,7 +291,7 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
 
     webkit_javascript_result_unref(res);
 
-    ipc_write_simple((helper_context_t *)data, OPC_HANDLE_SCRIPT_MESSAGE, payload, offset);
+    ipc_write_simple((helper_context_t *)data, OP_HANDLE_SCRIPT_MESSAGE, payload, offset);
 
     if (payload) {
         free(payload);
@@ -323,15 +323,15 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     }
 
     switch (packet.t) {
-        case OPC_CREATE_VIEW:
+        case OP_CREATE_VIEW:
             create_view(ctx, *((uintptr_t *)packet.v));
             break;
 
-        case OPC_SET_BACKGROUND_COLOR:
+        case OP_SET_BACKGROUND_COLOR:
             set_background_color(ctx, *((uint32_t *)packet.v));
             break;
 
-        case OPC_SET_SIZE: {
+        case OP_SET_SIZE: {
             const helper_size_t *size = (const helper_size_t *)packet.v;
             //gtk_window_resize(ctx->window, size->width, size->height);
             ctx->size = *size;
@@ -339,31 +339,31 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             break;
         }
 
-        case OPC_SET_POSITION: {
+        case OP_SET_POSITION: {
             const helper_pos_t *pos = (const helper_pos_t *)packet.v;
             gtk_window_move(ctx->window, pos->x, pos->y);
             break;
         }
 
-        case OPC_SET_KEYBOARD_FOCUS: {
+        case OP_SET_KEYBOARD_FOCUS: {
             gboolean focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
             set_keyboard_focus(ctx, focus);
             break;
         }
 
-        case OPC_NAVIGATE:
+        case OP_NAVIGATE:
             webkit_web_view_load_uri(ctx->webView, packet.v);
             break;
 
-        case OPC_RUN_SCRIPT:
+        case OP_RUN_SCRIPT:
             webkit_web_view_run_javascript(ctx->webView, packet.v, NULL, NULL, NULL);
             break;
 
-        case OPC_INJECT_SCRIPT:
+        case OP_INJECT_SCRIPT:
             inject_script(ctx, packet.v);
             break;
 
-        case OPC_QUIT:
+        case OP_QUIT:
             gtk_main_quit();
             break;
 
