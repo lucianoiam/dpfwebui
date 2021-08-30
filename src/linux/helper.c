@@ -197,19 +197,17 @@ static void *focus_watchdog(void *arg)
     helper_context_t *ctx = (helper_context_t *)arg;
 
     while (!ctx->quit) {
-        if (!ctx->focus || (ctx->focusXWin == 0)) {
-            continue;
-        }
+        if (ctx->focus && (ctx->focusXWin != 0)) {
+            Window focus;
+            int revert;
 
-        Window focus;
-        int revert;
+            XLockDisplay(ctx->display);
+            XGetInputFocus(ctx->display, &focus, &revert);
+            XUnlockDisplay(ctx->display);
 
-        XLockDisplay(ctx->display);
-        XGetInputFocus(ctx->display, &focus, &revert);
-        XUnlockDisplay(ctx->display);
-
-        if (ctx->focusXWin != focus) {
-            g_idle_add(release_focus, ctx);
+            if (ctx->focusXWin != focus) {
+                g_idle_add(release_focus, ctx);
+            }
         }
 
         usleep(100000L); // 100ms
