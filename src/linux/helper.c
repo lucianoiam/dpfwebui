@@ -35,10 +35,10 @@ typedef struct {
     Display*       display;
     GtkWindow*     window;
     WebKitWebView* webView;
+    helper_size_t  size;
     Window         focusXWin;
     gboolean       focus;
-    helper_size_t  size;
-    gboolean       quit;
+    pthread_t      watchdog;
 } helper_context_t;
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId);
@@ -46,7 +46,7 @@ static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t)
 static void set_fake_size(const helper_context_t *ctx);
 static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
-static void *focus_watchdog(void *arg);
+static void *focus_watchdog_worker(void *arg);
 static gboolean release_focus(gpointer data);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
@@ -60,7 +60,6 @@ int main(int argc, char* argv[])
     helper_context_t ctx;
     ipc_conf_t conf;
     GIOChannel* channel;
-    pthread_t thread;
 
     memset(&ctx, 0, sizeof(ctx));
 
@@ -90,16 +89,7 @@ int main(int argc, char* argv[])
     channel = g_io_channel_unix_new(conf.fd_r);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
 
-    // Use a thread to poll focus status because wrapped X11 windows do not seem
-    // to emit focus events like a regular Gdk/Gtk window.
-    if (pthread_create(&thread, NULL, focus_watchdog, &ctx) != 0) {
-        return -1;
-    }
-
     gtk_main();
-
-    ctx.quit = TRUE;
-    pthread_join(thread, NULL); 
 
     set_keyboard_focus(&ctx, FALSE);
     g_io_channel_shutdown(channel, TRUE, NULL);
@@ -178,8 +168,14 @@ static void set_keyboard_focus(helper_context_t *ctx, gboolean focus)
 
     if (ctx->focus) {
         gdk_seat_grab(seat, window, GDK_SEAT_CAPABILITY_KEYBOARD, FALSE, NULL, NULL, NULL, NULL);
+        pthread_create(&ctx->watchdog, NULL, focus_watchdog_worker, ctx);
     } else {
         gdk_seat_ungrab(seat);
+
+        if (ctx->watchdog != 0) {
+            pthread_join(ctx->watchdog, NULL);
+            ctx->watchdog = 0;
+        }
     }
 }
 
@@ -192,11 +188,14 @@ static void inject_script(const helper_context_t *ctx, const char* js)
     webkit_user_script_unref(script);
 }
 
-static void *focus_watchdog(void *arg)
-{
+static void *focus_watchdog_worker(void *arg)
+{        
+    // Use a thread to poll plugin keyboard focus status because Gdk wrapped X11
+    // windows do not seem to emit focus events like a regular GdkWindow
+
     helper_context_t *ctx = (helper_context_t *)arg;
 
-    while (!ctx->quit) {
+    while (ctx->focus) {
         if (ctx->focus && (ctx->focusXWin != 0)) {
             Window focus;
             int revert;
