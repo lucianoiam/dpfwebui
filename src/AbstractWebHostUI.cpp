@@ -95,16 +95,6 @@ void AbstractWebHostUI::uiIdle()
     }
 }
 
-uint AbstractWebHostUI::getInitWidth() const
-{
-    return fInitWidth;
-}
-
-uint AbstractWebHostUI::getInitHeight() const
-{
-    return fInitHeight;
-}
-
 void AbstractWebHostUI::webPostMessage(const JsValueVector& args) {
     if (fFlushedInitMsgQueue) {
         getWebView().postMessage(args);

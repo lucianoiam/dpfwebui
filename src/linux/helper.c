@@ -146,7 +146,7 @@ static void create_view(helper_context_t *ctx, uintptr_t parentId)
 static void set_background_color(const helper_context_t *ctx, uint32_t rgba)
 {
     // TODO: gtk_widget_override_background_color() is deprecated
-    GdkRGBA color = {DISTRHO_UNPACK_RGBA_NORM(rgba, gdouble)};
+    GdkRGBA color = { DISTRHO_UNPACK_RGBA_NORM(rgba, gdouble) };
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);

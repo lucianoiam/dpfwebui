@@ -17,6 +17,7 @@
 #import <AppKit/Appkit.h>
 
 #include "MacWebHostUI.hpp"
+#include "macro.h"
 
 #define fNsWindow ((NSWindow*)fWindow)
 
@@ -31,15 +32,14 @@ MacWebHostUI::MacWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundC
 
 MacWebHostUI::~MacWebHostUI()
 {
-    // TODO
-    NSLog(@"~MacWebHostUI()");
-
-    [fNsWindow orderOut: nil];
+    [fNsWindow orderOut:nil];
     [fNsWindow release];
 }
 
 uintptr_t MacWebHostUI::createStandaloneWindow()
 {
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
     [NSApplication sharedApplication];
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     [NSApp activateIgnoringOtherApps:YES];
@@ -50,8 +50,14 @@ uintptr_t MacWebHostUI::createStandaloneWindow()
                                                    styleMask:styleMask
                                                      backing:NSBackingStoreBuffered
                                                        defer:NO];
+    
+    CGFloat c[] = { DISTRHO_UNPACK_RGBA_NORM(getBackgroundColor(), CGFloat) };
+    window.backgroundColor =  [NSColor colorWithRed:c[0] green:c[1] blue:c[2] alpha:1.f];
+
     [window makeKeyAndOrderFront:window];
     fWindow = (uintptr_t)window;
+
+    [pool release];
 
     return (uintptr_t)window.contentView;
 }

@@ -32,6 +32,11 @@ class AbstractWebHostUI : public UI, private WebViewEventHandler
 public:
     AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor);
     virtual ~AbstractWebHostUI() {}
+    
+    uint getInitWidth() const { return fInitWidth; }
+    uint getInitHeight() const { return fInitHeight; }
+
+    uint32_t getBackgroundColor() const { return fBackgroundColor; }
 
 protected:
     void sizeChanged(uint width, uint height) override;
@@ -45,9 +50,6 @@ protected:
 #endif
 
     void uiIdle() override;
-    
-    uint getInitWidth() const;
-    uint getInitHeight() const;
 
     void flushInitMessageQueue();
     void setKeyboardFocus(bool focus);
