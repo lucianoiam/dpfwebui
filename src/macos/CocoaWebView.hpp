@@ -30,9 +30,10 @@ START_NAMESPACE_DISTRHO
 class CocoaWebView : public AbstractWebView
 {
 public:
-    CocoaWebView(uintptr_t parentWindowHandle);
-    ~CocoaWebView();
+    CocoaWebView();
+    virtual ~CocoaWebView();
 
+    void setParent(uintptr_t parent) override;
     void setBackgroundColor(uint32_t rgba) override;
     void setSize(uint width, uint height) override;
     void navigate(String& url) override;

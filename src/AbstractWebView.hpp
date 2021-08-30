@@ -42,12 +42,13 @@ public:
 class AbstractWebView
 {
 public:
-    AbstractWebView(uintptr_t parentWindowHandle)
-        : fParentWindowHandle(parentWindowHandle)
-        , fKeyboardFocus(false)
-        , fPrintTraffic(false) {}
+    AbstractWebView()
+        : fKeyboardFocus(false)
+        , fPrintTraffic(false)
+        , fHandler(0) {}
     virtual ~AbstractWebView() {}
 
+    virtual void setParent(uintptr_t parent) = 0;
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void setSize(uint width, uint height) = 0;
     virtual void navigate(String& url) = 0;
@@ -62,8 +63,6 @@ public:
     void postMessage(const JsValueVector& args);
 
 protected:
-    uintptr_t getParentWindowHandle() { return fParentWindowHandle; }
-
     void injectDefaultScripts(String& platformSpecificScript);
     
     void handleLoadFinished();
@@ -74,9 +73,8 @@ private:
 
     void addStylesheet(String& source);
 
-    uintptr_t fParentWindowHandle;
-    bool      fKeyboardFocus;
-    bool      fPrintTraffic;
+    bool fKeyboardFocus;
+    bool fPrintTraffic;
 
     WebViewEventHandler* fHandler;
 

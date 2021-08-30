@@ -38,16 +38,15 @@
 USE_NAMESPACE_DISTRHO
 
 @interface DistrhoWebView: WKWebView
-@property (readonly, nonatomic) CocoaWebView* cppWidget;
+@property (readonly, nonatomic) CocoaWebView* cppView;
 @property (readonly, nonatomic) NSView* pluginRootView;
 @end
 
 @interface DistrhoWebViewDelegate: NSObject<WKNavigationDelegate, WKScriptMessageHandler>
-@property (assign, nonatomic) CocoaWebView *cppWidget;
+@property (assign, nonatomic) CocoaWebView *cppView;
 @end
 
-CocoaWebView::CocoaWebView(uintptr_t parentWindowHandle)
-    : AbstractWebView(parentWindowHandle)
+CocoaWebView::CocoaWebView()
 {
     // Create the web view
     fView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];
@@ -55,14 +54,9 @@ CocoaWebView::CocoaWebView(uintptr_t parentWindowHandle)
 
     // Create a ObjC object that responds to some web view callbacks
     fDelegate = [[DistrhoWebViewDelegate alloc] init];
-    fWebViewDelegate.cppWidget = this;
+    fWebViewDelegate.cppView = this;
     fWebView.navigationDelegate = fWebViewDelegate;
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
-
-    // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
-    // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
-    NSView *parentView = (NSView *)parentWindowHandle;
-    [parentView addSubview:fWebView];
 
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
@@ -73,6 +67,11 @@ CocoaWebView::~CocoaWebView()
     [fWebView removeFromSuperview];
     [fWebView release];
     [fWebViewDelegate release];
+}
+
+void CocoaWebView::setParent(uintptr_t parent)
+{
+    [(NSView *)parent addSubview:fWebView];
 }
 
 void CocoaWebView::setBackgroundColor(uint32_t rgba)
@@ -131,9 +130,9 @@ void CocoaWebView::injectScript(String& source)
 
 @implementation DistrhoWebView
 
-- (CocoaWebView *)cppWidget
+- (CocoaWebView *)cppView
 {
-    return ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget;
+    return ((DistrhoWebViewDelegate *)self.navigationDelegate).cppView;
 }
 
 - (NSView *)pluginRootView
@@ -162,7 +161,7 @@ void CocoaWebView::injectScript(String& source)
 
 - (void)keyDown:(NSEvent *)event
 {
-    if (self.cppWidget->isKeyboardFocus()) {
+    if (self.cppView->isKeyboardFocus()) {
         [super keyDown:event];
     } else {
         [self.pluginRootView keyDown:event];
@@ -171,7 +170,7 @@ void CocoaWebView::injectScript(String& source)
 
 - (void)keyUp:(NSEvent *)event
 {
-    if (self.cppWidget->isKeyboardFocus()) {
+    if (self.cppView->isKeyboardFocus()) {
         [super keyUp:event];
     } else {
         [self.pluginRootView keyUp:event];
@@ -180,7 +179,7 @@ void CocoaWebView::injectScript(String& source)
 
 - (void)flagsChanged:(NSEvent *)event
 {
-    if (self.cppWidget->isKeyboardFocus()) {
+    if (self.cppView->isKeyboardFocus()) {
         [super flagsChanged:event];
     } else {
         [self.pluginRootView flagsChanged:event];
@@ -193,7 +192,7 @@ void CocoaWebView::injectScript(String& source)
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
-    self.cppWidget->didFinishNavigation();
+    self.cppView->didFinishNavigation();
     webView.hidden = NO;
 }
 
@@ -217,7 +216,7 @@ void CocoaWebView::injectScript(String& source)
         }
     }
 
-    self.cppWidget->didReceiveScriptMessage(args);
+    self.cppView->didReceiveScriptMessage(args);
 }
 
 @end

@@ -25,7 +25,6 @@ USE_NAMESPACE_DISTRHO
 MacWebHostUI::MacWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
     , fWindow(0)
-    , fWebView(getPluginOrStandaloneWindowHandle())
 {
     initWebView(fWebView);
 }

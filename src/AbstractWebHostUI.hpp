@@ -30,10 +30,8 @@ START_NAMESPACE_DISTRHO
 class AbstractWebHostUI : public UI, private WebViewEventHandler
 {
 public:
-    AbstractWebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor);
     virtual ~AbstractWebHostUI() {}
-
-    uintptr_t getPluginOrStandaloneWindowHandle();
 
 protected:
     void sizeChanged(uint width, uint height) override;
@@ -74,12 +72,11 @@ private:
 
     typedef std::vector<JsValueVector> InitMessageQueue;
 
-    InitMessageQueue  fInitMsgQueue;
-    bool              fFlushedInitMsgQueue;
-    uint32_t          fBackgroundColor;
-    uint              fInitWidth;
-    uint              fInitHeight;
-    uintptr_t         fStandaloneWindow;
+    InitMessageQueue fInitMsgQueue;
+    bool             fFlushedInitMsgQueue;
+    uint32_t         fBackgroundColor;
+    uint             fInitWidth;
+    uint             fInitHeight;
     
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AbstractWebHostUI)
 

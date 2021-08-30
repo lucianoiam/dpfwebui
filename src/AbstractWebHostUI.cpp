@@ -27,32 +27,27 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     : UI(baseWidth, baseHeight)
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
-    , fStandaloneWindow(0)
 {
     platform::setRunningStandalone(isStandalone());
-
-    // Web views adjust their contents following the system display scale factor,
-    // adjust window size so it correctly wraps content on high density displays.
-    float k = platform::getDisplayScaleFactor(getParentWindowHandle());
-    fInitWidth = k * getWidth();
-    fInitHeight = k * getHeight();
 }
 
 void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 {
-    setSize(fInitWidth, fInitHeight);
-//#ifdef DISTRHO_OS_WINDOWS
-    // WINSIZEBUG: Why setSize() call needs to be repeated 2x?
-//    setSize(fInitWidth, fInitHeight);
-//#endif
-
-    // FIXME
-    //webView.setSize(fInitWidth, fInitHeight);
+    uintptr_t parent = isEmbed() ? getParentWindowHandle() : createStandaloneWindow();
+    
+    webView.setParent(parent);
     webView.setBackgroundColor(fBackgroundColor);
     webView.setEventHandler(this);
 #ifdef HIPHOP_PRINT_TRAFFIC
     webView.setPrintTraffic(true);
 #endif
+
+    // Web views adjust their contents following the system display scale factor,
+    // adjust window size so it correctly wraps content on high density displays.
+    float k = platform::getDisplayScaleFactor(parent);
+    fInitWidth = k * getWidth();
+    fInitHeight = k * getHeight();
+    setSize(fInitWidth, fInitHeight);
 
     String js = String(
 #include "ui/distrho-ui.js.include"
@@ -62,19 +57,6 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 
     String url = "file://" + platform::getLibraryPath() + "/ui/index.html";
     webView.navigate(url);
-}
-
-uintptr_t AbstractWebHostUI::getPluginOrStandaloneWindowHandle()
-{
-    if (isEmbed()) {
-        return getParentWindowHandle();
-    }
-
-    if (fStandaloneWindow == 0) {
-        fStandaloneWindow = createStandaloneWindow();
-    }
-
-    return fStandaloneWindow;
 }
 
 void AbstractWebHostUI::sizeChanged(uint width, uint height)
