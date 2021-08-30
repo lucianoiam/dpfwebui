@@ -33,6 +33,7 @@
 typedef struct {
     ipc_t*         ipc;
     Display*       display;
+    Window         parent;
     GtkWindow*     window;
     WebKitWebView* webView;
     helper_size_t  size;
@@ -100,8 +101,10 @@ int main(int argc, char* argv[])
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId)
 {
+    ctx->parent = (Window)parentId;
+
     // Create a native child window of arbitrary maximum size
-    Window child = XCreateWindow(ctx->display, (Window)parentId, 0, 0,
+    Window child = XCreateWindow(ctx->display, ctx->parent, 0, 0,
                                     MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0,
                                     CopyFromParent, CopyFromParent, CopyFromParent,
                                     0, 0);

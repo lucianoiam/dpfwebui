@@ -39,13 +39,13 @@ public:
     ExternalGtkWebView();
     virtual ~ExternalGtkWebView();
 
-    void setParent(uintptr_t parent) override;
     void setBackgroundColor(uint32_t rgba) override;
     void setSize(uint width, uint height) override;
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;
     void setKeyboardFocus(bool focus) override;
+    void setParent(uintptr_t parent) override;
 
 private:
     ipc_t* ipc() const { return fIpc; }
@@ -55,10 +55,10 @@ private:
 
     void   handleHelperScriptMessage(const char *payload, int payloadSize);
 
-    int     fPipeFd[2][2];
-    pid_t   fPid;
-    ipc_t*  fIpc;
-    Thread* fIpcThread;
+    int       fPipeFd[2][2];
+    pid_t     fPid;
+    ipc_t*    fIpc;
+    Thread*   fIpcThread;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ExternalGtkWebView)
 

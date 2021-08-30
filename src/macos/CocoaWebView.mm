@@ -71,6 +71,7 @@ CocoaWebView::~CocoaWebView()
 
 void CocoaWebView::setParent(uintptr_t parent)
 {
+    AbstractWebView::setParent(parent);
     [(NSView *)parent addSubview:fWebView];
 }
 

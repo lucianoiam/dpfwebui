@@ -48,15 +48,17 @@ public:
         , fHandler(0) {}
     virtual ~AbstractWebView() {}
 
-    virtual void setParent(uintptr_t parent) = 0;
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void setSize(uint width, uint height) = 0;
     virtual void navigate(String& url) = 0;
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
 
+    bool         isKeyboardFocus() { return fKeyboardFocus; }    
     virtual void setKeyboardFocus(bool focus) { fKeyboardFocus = focus; }
-    bool         isKeyboardFocus() { return fKeyboardFocus; }
+
+    uintptr_t    getParent() { return fParent; }
+    virtual void setParent(uintptr_t parent) { fParent = parent; }
 
     void setPrintTraffic(bool printTraffic) { fPrintTraffic = printTraffic; }
     void setEventHandler(WebViewEventHandler* handler) { fHandler = handler; }
@@ -73,8 +75,9 @@ private:
 
     void addStylesheet(String& source);
 
-    bool fKeyboardFocus;
-    bool fPrintTraffic;
+    bool      fKeyboardFocus;
+    bool      fPrintTraffic;
+    uintptr_t fParent;
 
     WebViewEventHandler* fHandler;
 

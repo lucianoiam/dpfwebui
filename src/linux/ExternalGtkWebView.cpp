@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <X11/Xlib.h>
+
 #include "ExternalGtkWebView.hpp"
 
 #include <cstdio>
@@ -46,8 +48,8 @@ USE_NAMESPACE_DISTRHO
 
 ExternalGtkWebView::ExternalGtkWebView()
     : fPid(-1)
-    , fIpc(nullptr)
-    , fIpcThread(nullptr)
+    , fIpc(0)
+    , fIpcThread(0)
 {
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
 
@@ -98,14 +100,14 @@ ExternalGtkWebView::~ExternalGtkWebView()
         fPid = -1;
     }
 
-    if (fIpcThread != nullptr) {
+    if (fIpcThread != 0) {
         fIpcThread->stopThread(-1);
-        fIpcThread = nullptr;
+        fIpcThread = 0;
     }
 
-    if (fIpc != nullptr) {
+    if (fIpc != 0) {
         ipc_destroy(fIpc);
-        fIpc = nullptr;
+        fIpc = 0;
     }
 
     for (int i = 0; i < 2; i++) {
@@ -119,17 +121,15 @@ ExternalGtkWebView::~ExternalGtkWebView()
     }
 }
 
-void ExternalGtkWebView::setParent(uintptr_t parent)
-{
-    int windowId = static_cast<int>(parent);
-    ipcWrite(OP_CREATE_VIEW, &windowId, sizeof(windowId));
-
-    String js = String(JS_POST_MESSAGE_SHIM);
-    injectDefaultScripts(js);
-}
-
 void ExternalGtkWebView::setBackgroundColor(uint32_t rgba)
 {
+    if (Display* display = XOpenDisplay(0)) {
+        ::Window parent = static_cast<::Window>(getParent());
+        XSetWindowBackground(display, parent, rgba >> 8);
+        XClearWindow(display, parent);
+        XFlush(display); // FIXME - makes Bitwig crash
+    }
+
     ipcWrite(OP_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
 }
 
@@ -160,6 +160,17 @@ void ExternalGtkWebView::setKeyboardFocus(bool focus)
     
     char val = focus ? 1 : 0;
     ipcWrite(OP_SET_KEYBOARD_FOCUS, &val, sizeof(val));
+}
+
+void ExternalGtkWebView::setParent(uintptr_t parent)
+{
+    AbstractWebView::setParent(parent);
+
+    int windowId = static_cast<int>(parent);
+    ipcWrite(OP_CREATE_VIEW, &windowId, sizeof(windowId));
+
+    String js = String(JS_POST_MESSAGE_SHIM);
+    injectDefaultScripts(js);
 }
 
 int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str) const
