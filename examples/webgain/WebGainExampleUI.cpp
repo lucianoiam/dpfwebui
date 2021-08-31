@@ -44,13 +44,13 @@ WebGainExampleUI::WebGainExampleUI()
     // after web content finishes loading and before any referenced <script> runs.
 }
 
-void WebGainExampleUI::webContentReady()
+void WebGainExampleUI::onWebContentReady()
 {
     // Called when the main document finished loading and DOM is ready. It is
     // now safe to call getWebView().runScript() and mapped DPF methods.
 }
 
-void WebGainExampleUI::webMessageReceived(const JsValueVector& args)
+void WebGainExampleUI::onWebMessageReceived(const JsValueVector& args)
 {
     // Web view and DOM are guaranteed to be ready here.
     (void)args;

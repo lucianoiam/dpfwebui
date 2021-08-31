@@ -55,10 +55,10 @@ private:
 
     void   handleHelperScriptMessage(const char *payload, int payloadSize);
 
-    int       fPipeFd[2][2];
-    pid_t     fPid;
-    ipc_t*    fIpc;
-    Thread*   fIpcThread;
+    int     fPipeFd[2][2];
+    pid_t   fPid;
+    ipc_t*  fIpc;
+    Thread* fIpcThread;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ExternalGtkWebView)
 

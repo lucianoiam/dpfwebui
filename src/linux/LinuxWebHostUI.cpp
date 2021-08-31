@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <X11/Xlib.h>
+
 #include "LinuxWebHostUI.hpp"
 
 USE_NAMESPACE_DISTRHO
@@ -23,6 +25,25 @@ USE_NAMESPACE_DISTRHO
 LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
 {
+    if (isEmbed()) {
+        ::Window parent = getParentWindowHandle();
+
+        if (parent != 0) {
+            Display* display = XOpenDisplay(0);
+
+            if (display != 0) {
+                XSetWindowBackground(display, parent, backgroundColor >> 8);
+                XClearWindow(display, parent);
+                XCloseDisplay(display);
+            }
+        }
+    }
+
+    // Special case for Linux: set background color before setting parent window
+    // handle to prevent further flicker on startup, see helper.c create_view()
+
+    fWebView.setBackgroundColor(getBackgroundColor());
+
     initWebView(fWebView);
 }
 

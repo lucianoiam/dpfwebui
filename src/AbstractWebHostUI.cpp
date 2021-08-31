@@ -64,7 +64,6 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 
 void AbstractWebHostUI::sizeChanged(uint width, uint height)
 {
-    fprintf(stderr, "sizeChanged\n");
     getWebView().setSize(width, height);
     webPostMessage({"UI", "sizeChanged", width, height});
 }
@@ -129,8 +128,7 @@ void AbstractWebHostUI::setKeyboardFocus(bool focus)
 
 void AbstractWebHostUI::handleWebViewContentLoadFinished()
 {
-    // no-op, just let derived classes now
-    webContentReady();
+    onWebContentReady();
 }
 
 #define kArg0 2
@@ -140,7 +138,7 @@ void AbstractWebHostUI::handleWebViewContentLoadFinished()
 void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
 {
     if (args[0].getString() != "UI") {
-        webMessageReceived(args); // passthrough
+        onWebMessageReceived(args); // passthrough
         return;
     }
 

@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <X11/Xlib.h>
-
 #include "ExternalGtkWebView.hpp"
 
 #include <cstdio>
@@ -80,7 +78,7 @@ ExternalGtkWebView::ExternalGtkWebView()
     char binPath[PATH_MAX];
     strcpy(binPath, platform::getBinaryPath());
     String helperPath = String(dirname(binPath)) + "/" XSTR(BIN_BASENAME) "-ui";
-    const char *argv[] = {helperPath, rfd, wfd, 0};
+    const char *argv[] = { helperPath, rfd, wfd, 0 };
 
     int status = posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
 
@@ -123,21 +121,12 @@ ExternalGtkWebView::~ExternalGtkWebView()
 
 void ExternalGtkWebView::setBackgroundColor(uint32_t rgba)
 {
-    if (Display* display = XOpenDisplay(0)) {
-        ::Window parent = static_cast<::Window>(getParent());
-        if (parent != 0) {
-            XSetWindowBackground(display, parent, rgba >> 8);
-            XClearWindow(display, parent);
-            XFlush(display);
-        }
-    }
-
     ipcWrite(OP_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
 }
 
 void ExternalGtkWebView::setSize(uint width, uint height)
 {
-    helper_size_t sizePkt = {width, height};
+    helper_size_t sizePkt = { width, height };
     ipcWrite(OP_SET_SIZE, &sizePkt, sizeof(sizePkt));
 }
 

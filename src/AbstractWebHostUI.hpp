@@ -56,8 +56,8 @@ protected:
 
     void webPostMessage(const JsValueVector& args);
 
-    virtual void webContentReady() {}
-    virtual void webMessageReceived(const JsValueVector& args) { (void)args; }
+    virtual void onWebContentReady() {}
+    virtual void onWebMessageReceived(const JsValueVector& args) { (void)args; }
 
     virtual uintptr_t createStandaloneWindow() = 0;
     virtual void      processStandaloneEvents() = 0;
@@ -79,7 +79,7 @@ private:
     uint32_t         fBackgroundColor;
     uint             fInitWidth;
     uint             fInitHeight;
-    
+
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AbstractWebHostUI)
 
 };

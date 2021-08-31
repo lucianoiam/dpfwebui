@@ -27,23 +27,25 @@
 #include "ipc.h"
 #include "macro.h"
 
-#define MAX_WEBVIEW_WIDTH  2000
-#define MAX_WEBVIEW_HEIGHT 2000
+#define MAX_WEBVIEW_WIDTH  1536
+#define MAX_WEBVIEW_HEIGHT 1536
 
 typedef struct {
     ipc_t*         ipc;
     Display*       display;
     Window         parent;
+    Window         child;
     GtkWindow*     window;
     WebKitWebView* webView;
     helper_size_t  size;
+    uint32_t       color;
     Window         focusXWin;
     gboolean       focus;
     pthread_t      watchdog;
 } helper_context_t;
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId);
-static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t);
+static void set_background_color(helper_context_t *ctx, uint32_t uint32_t);
 static void set_fake_size(const helper_context_t *ctx);
 static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
@@ -95,6 +97,7 @@ int main(int argc, char* argv[])
     set_keyboard_focus(&ctx, FALSE);
     g_io_channel_shutdown(channel, TRUE, NULL);
     ipc_destroy(ctx.ipc);
+    XCloseDisplay(ctx.display);
 
     return 0;
 }
@@ -104,14 +107,19 @@ static void create_view(helper_context_t *ctx, uintptr_t parentId)
     ctx->parent = (Window)parentId;
 
     // Create a native child window of arbitrary maximum size
-    Window child = XCreateWindow(ctx->display, ctx->parent, 0, 0,
-                                    MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0,
-                                    CopyFromParent, CopyFromParent, CopyFromParent,
-                                    0, 0);
-    XFlush(ctx->display);
+    ctx->child = XCreateWindow(ctx->display, ctx->parent, 0, 0,
+                                MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0,
+                                CopyFromParent, CopyFromParent, CopyFromParent,
+                                0, 0);
+    // TODO - check if WebKitGTK resize issue can be fixed with XSelectInput()
+    // Text input focus color shows correctly when not embedding the window
+    XSelectInput(ctx->display, ctx->child, ExposureMask);
+    XSetWindowBackground(ctx->display, ctx->child, ctx->color >> 8);
+    XClearWindow(ctx->display, ctx->child);
+    XSync(ctx->display, False);
 
     // Wrap child in a GDK window
-    GdkWindow* gdkChild = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(), child);
+    GdkWindow* gdkChild = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(), ctx->child);
     ctx->window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
     g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkChild);
     // After the web view becomes visible, gtk_window_resize() will not cause
@@ -136,14 +144,18 @@ static void create_view(helper_context_t *ctx, uintptr_t parentId)
     webkit_user_content_manager_register_script_message_handler(manager, "host");
 }
 
-static void set_background_color(const helper_context_t *ctx, uint32_t rgba)
+static void set_background_color(helper_context_t *ctx, uint32_t rgba)
 {
-    // TODO: gtk_widget_override_background_color() is deprecated
-    GdkRGBA color = { DISTRHO_UNPACK_RGBA_NORM(rgba, gdouble) };
+    ctx->color = rgba;
+
+    if (ctx->window != 0) {
+        // TODO: gtk_widget_override_background_color() is deprecated
+        GdkRGBA color = { DISTRHO_UNPACK_RGBA_NORM(rgba, gdouble) };
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
+        gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
 #pragma GCC diagnostic pop
+    }
 }
 
 static void set_fake_size(const helper_context_t *ctx)
@@ -231,7 +243,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
             // Load completed. All resources are done loading or there was an error during the load operation. 
             set_fake_size(ctx);
             gtk_widget_show(GTK_WIDGET(ctx->window));
-            usleep(50000L); // prevent flicker and occasional blank view
+            usleep(50000L); // 50ms -- prevent flicker and occasional blank view
             ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
             break;
 
