@@ -16,16 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "Platform.hpp"
+#ifndef PATH_HPP
+#define PATH_HPP
 
-static bool sStandalone;
+#include "extra/String.hpp"
 
-bool platform::isRunningStandalone()
-{
-    return sStandalone;
+#include "macro.h"
+
+START_NAMESPACE_DISTRHO
+
+namespace path {
+
+    String getBinaryPath();
+    String getLibraryPath();
+    String getTemporaryPath();
+
+    const String kDefaultLibrarySubdirectory = String(XSTR(BIN_BASENAME) "-lib");
+
 }
 
-void platform::setRunningStandalone(bool standalone)
-{
-    sStandalone = standalone;
-}
+END_NAMESPACE_DISTRHO
+
+#endif  // PATH_HPP

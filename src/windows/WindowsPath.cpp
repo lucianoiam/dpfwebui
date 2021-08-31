@@ -24,57 +24,14 @@
 #include <shlwapi.h>
 #include <shtypes.h>
 
-#include "Platform.hpp"
+#include "Path.hpp"
 #include "macro.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 USE_NAMESPACE_DISTRHO
 
-// Explanation for the GCC warnings https://github.com/chriskohlhoff/asio/issues/631
-typedef HRESULT (WINAPI* PFN_GetProcessDpiAwareness)(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
-typedef HRESULT (WINAPI* PFN_GetScaleFactorForMonitor)(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
-
-float platform::getDisplayScaleFactor(uintptr_t window)
-{
-    float k = 1.f;
-    const HMODULE hm = LoadLibrary("Shcore.dll");
-
-    if (hm == 0) {
-        return k;
-    }
-
-    const PFN_GetProcessDpiAwareness GetProcessDpiAwareness
-        = (PFN_GetProcessDpiAwareness)GetProcAddress(hm, "GetProcessDpiAwareness");
-    const PFN_GetScaleFactorForMonitor GetScaleFactorForMonitor
-        = (PFN_GetScaleFactorForMonitor)GetProcAddress(hm, "GetScaleFactorForMonitor");
-
-    PROCESS_DPI_AWARENESS dpiAware;
-
-    if ((GetProcessDpiAwareness != 0) && (GetScaleFactorForMonitor != 0)
-            && (SUCCEEDED(GetProcessDpiAwareness(0, &dpiAware)))
-            && (dpiAware != PROCESS_DPI_UNAWARE)) {
-
-        const HMONITOR hMon = MonitorFromWindow((HWND)window, MONITOR_DEFAULTTOPRIMARY);
-
-        DEVICE_SCALE_FACTOR scaleFactor;
-
-        if (SUCCEEDED(GetScaleFactorForMonitor(hMon, &scaleFactor))) {
-            k = static_cast<float>(scaleFactor) / 100.f;
-        }
-    }
-
-    FreeLibrary(hm);
-
-    return k;
-}
-
-void platform::openSystemWebBrowser(String& url)
-{
-    ShellExecute(NULL, "open", url.buffer(), NULL, NULL, SW_SHOWNORMAL);
-}
-
-String platform::getBinaryPath()
+String path::getBinaryPath()
 {
     char path[MAX_PATH];
     
@@ -86,7 +43,7 @@ String platform::getBinaryPath()
     return String(path);
 }
 
-String platform::getLibraryPath()
+String path::getLibraryPath()
 {
     char path[MAX_PATH];
     strcpy(path, getBinaryPath());
@@ -96,7 +53,7 @@ String platform::getLibraryPath()
     return String(path) + "\\" + kDefaultLibrarySubdirectory;
 }
 
-String platform::getTemporaryPath()
+String path::getTemporaryPath()
 {
     // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPF_Temp
     char tempPath[MAX_PATH];

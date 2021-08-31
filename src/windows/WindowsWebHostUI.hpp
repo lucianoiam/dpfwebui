@@ -16,32 +16,36 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PLATFORM_HPP
-#define PLATFORM_HPP
+#ifndef WINDOWS_WEB_HOST_UI_HPP
+#define WINDOWS_WEB_HOST_UI_HPP
 
-#include "extra/String.hpp"
-
-#include "macro.h"
+#include "AbstractWebHostUI.hpp"
+#include "EdgeWebView.hpp"
 
 START_NAMESPACE_DISTRHO
 
-namespace platform {
+class WindowsWebHostUI : public AbstractWebHostUI
+{
+public:
+    WindowsWebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    virtual ~WindowsWebHostUI();
 
-    bool isRunningStandalone();
-    void setRunningStandalone(bool standalone);
+    float getDisplayScaleFactor(uintptr_t window) override;
+    void  openSystemWebBrowser(String& url) override;
 
-    float getDisplayScaleFactor(uintptr_t window);
+protected:
+    uintptr_t createStandaloneWindow() override;
+    void      processStandaloneEvents() override;
 
-    void openSystemWebBrowser(String& url);
+    AbstractWebView& getWebView() override { return fWebView; }
 
-    String getBinaryPath();
-    String getLibraryPath();
-    String getTemporaryPath();
+private:
+    EdgeWebView fWebView;
 
-    const String kDefaultLibrarySubdirectory = String(XSTR(BIN_BASENAME) "-lib");
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WindowsWebHostUI)
 
-}
+};
 
 END_NAMESPACE_DISTRHO
 
-#endif  // PLATFORM_HPP
+#endif  // WINDOWS_WEB_HOST_UI_HPP

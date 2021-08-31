@@ -52,6 +52,39 @@ LinuxWebHostUI::~LinuxWebHostUI()
     // TODO
 }
 
+float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
+{
+    // In the lack of a standard Linux interface for getting the display scale
+    // factor, read GTK environment variables since the web view is GTK-based.
+
+    const char* dpi;
+    float k;
+
+    dpi = getenv("GDK_SCALE");
+
+    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
+        return k;
+    }
+
+    dpi = getenv("GDK_DPI_SCALE");
+
+    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
+        return k;
+    }
+
+    return 1.f;
+}
+
+void LinuxWebHostUI::openSystemWebBrowser(String& url)
+{
+    char buf[256];
+    snprintf(buf, sizeof(buf), "xdg-open %s", url.buffer());
+
+    if (system(buf) != 0) {
+        HIPHOP_LOG_STDERR_ERRNO("Could not open system web browser");
+    }
+}
+
 uintptr_t LinuxWebHostUI::createStandaloneWindow()
 {
     // TODO

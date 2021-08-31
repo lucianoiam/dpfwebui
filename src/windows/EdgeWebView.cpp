@@ -24,7 +24,7 @@
 #include <sstream>
 #include <winuser.h>
 
-#include "Platform.hpp"
+#include "Path.hpp"
 #include "macro.h"
 #include "cJSON.h"
 
@@ -82,7 +82,7 @@ EdgeWebView::EdgeWebView(Widget *parentWidget)
     CoInitializeEx(0, COINIT_APARTMENTTHREADED);
 
     HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0,
-                        TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
+                        TO_LPCWSTR(path::getTemporaryPath()), 0, fHandler);
     if (FAILED(result)) {
         webViewLoaderErrorMessageBox(result);
         return;
@@ -341,6 +341,6 @@ void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
 
     if (id == IDOK) {
         String url = String(WEBVIEW2_DOWNLOAD_URL);
-        platform::openSystemWebBrowser(url);
+        path::openSystemWebBrowser(url);
     }
 }

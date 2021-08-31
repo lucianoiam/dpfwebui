@@ -18,7 +18,7 @@
 
 #include "AbstractWebHostUI.hpp"
 
-#include "Platform.hpp"
+#include "Path.hpp"
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
@@ -27,9 +27,7 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     : UI(baseWidth, baseHeight)
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
-{
-    platform::setRunningStandalone(isStandalone());
-}
+{}
 
 void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 {
@@ -44,7 +42,7 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 
     // Web views adjust their contents following the system display scale factor,
     // adjust window size so it correctly wraps content on high density displays.
-    float k = platform::getDisplayScaleFactor(parent);
+    float k = getDisplayScaleFactor(parent);
     fInitWidth = k * getWidth();
     fInitHeight = k * getHeight();
     setSize(fInitWidth, fInitHeight);
@@ -58,7 +56,7 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
     js += "const DISTRHO = Object.freeze({ UI: UI });";
     webView.injectScript(js);
 
-    String url = "file://" + platform::getLibraryPath() + "/ui/index.html";
+    String url = "file://" + path::getLibraryPath() + "/ui/index.html";
     webView.navigate(url);
 }
 
@@ -214,7 +212,7 @@ void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& 
 
     } else if ((method == "openSystemWebBrowser") && (argc == 1)) {
         String url = args[kArg0].getString();
-        platform::openSystemWebBrowser(url);
+        openSystemWebBrowser(url);
 
     } else if (method == "getInitWidth") {
         webPostMessage({"UI", "getInitWidth", static_cast<double>(getInitWidth())});

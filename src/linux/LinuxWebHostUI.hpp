@@ -30,6 +30,9 @@ public:
     LinuxWebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
     virtual ~LinuxWebHostUI();
 
+    float getDisplayScaleFactor(uintptr_t window) override;
+    void  openSystemWebBrowser(String& url) override;
+
 protected:
     uintptr_t createStandaloneWindow() override;
     void      processStandaloneEvents() override;

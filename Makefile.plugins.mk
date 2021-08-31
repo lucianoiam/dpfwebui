@@ -73,17 +73,16 @@ TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
 # Add optional support for AssemblyScript DSP
 
 ifeq ($(AS_DSP),true)
-HIPHOP_FILES_DSP  = Platform.cpp \
-                    WasmHostPlugin.cpp \
+HIPHOP_FILES_DSP  = WasmHostPlugin.cpp \
                     WasmEngine.cpp
 ifeq ($(LINUX),true)
-HIPHOP_FILES_DSP += linux/LinuxPlatform.cpp
+HIPHOP_FILES_DSP += linux/LinuxPath.cpp
 endif
 ifeq ($(MACOS),true)
-HIPHOP_FILES_DSP += macos/MacPlatform.mm
+HIPHOP_FILES_DSP += macos/MacPath.mm
 endif
 ifeq ($(WINDOWS),true)
-HIPHOP_FILES_DSP += windows/WindowsPlatform.cpp
+HIPHOP_FILES_DSP += windows/WindowsPath.cpp
 endif
 
 FILES_DSP += $(HIPHOP_FILES_DSP:%=$(HIPHOP_SRC_PATH)/%)
@@ -93,23 +92,22 @@ endif
 # Add optional support for web UI
 
 ifeq ($(WEB_UI),true)
-HIPHOP_FILES_UI  = Platform.cpp \
-                   AbstractWebHostUI.cpp \
+HIPHOP_FILES_UI  = AbstractWebHostUI.cpp \
                    AbstractWebView.cpp \
                    JsValue.cpp
 ifeq ($(LINUX),true)
-HIPHOP_FILES_UI += linux/LinuxPlatform.cpp \
+HIPHOP_FILES_UI += linux/LinuxPath.cpp \
                    linux/LinuxWebHostUI.cpp \
                    linux/ExternalGtkWebView.cpp \
                    linux/ipc.c
 endif
 ifeq ($(MACOS),true)
-HIPHOP_FILES_UI += macos/MacPlatform.mm \
+HIPHOP_FILES_UI += macos/MacPath.mm \
                    macos/MacWebHostUI.mm \
                    macos/CocoaWebView.mm
 endif
 ifeq ($(WINDOWS),true)
-HIPHOP_FILES_UI += windows/WindowsPlatform.cpp \
+HIPHOP_FILES_UI += windows/WindowsPath.cpp \
                    windows/WindowsWebHostUI.cpp \
                    windows/EdgeWebView.cpp \
                    windows/WebView2EventHandler.cpp \

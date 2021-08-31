@@ -27,7 +27,7 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 
-#include "Platform.hpp"
+#include "Path.hpp"
 #include "macro.h"
 
 /*
@@ -76,7 +76,7 @@ ExternalGtkWebView::ExternalGtkWebView()
     sprintf(wfd, "%d", fPipeFd[1][1]);
     
     char binPath[PATH_MAX];
-    strcpy(binPath, platform::getBinaryPath());
+    strcpy(binPath, path::getBinaryPath());
     String helperPath = String(dirname(binPath)) + "/" XSTR(BIN_BASENAME) "-ui";
     const char *argv[] = { helperPath, rfd, wfd, 0 };
 

@@ -20,7 +20,7 @@
 
 #include "WasmHostPlugin.hpp"
 
-#include "Platform.hpp"
+#include "Path.hpp"
 #include "macro.h"
 
 #define ERROR_STR "Error"
@@ -39,7 +39,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
     fEngine.reset(new WasmEngine());
 
     try {
-        String path = platform::getLibraryPath() + "/dsp/plugin.wasm";
+        String path = path::getLibraryPath() + "/dsp/plugin.wasm";
         fEngine->load(path);
 
         WasmFunctionMap hf; // host functions

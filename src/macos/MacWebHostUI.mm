@@ -36,6 +36,30 @@ MacWebHostUI::~MacWebHostUI()
     [fNsWindow release];
 }
 
+float MacWebHostUI::getDisplayScaleFactor(uintptr_t window)
+{
+    NSWindow *w;
+
+    // DGL::Window::getNativeWindowHandle() returns NSView* instead of NSWindow*
+
+    if ([(id)window isKindOfClass:[NSView class]]) {
+        w = [(NSView *)window window];
+    } else {
+        w = (NSWindow *)window;
+    }
+
+    return (w.screen ? w.screen : [NSScreen mainScreen]).backingScaleFactor;
+}
+
+void MacWebHostUI::openSystemWebBrowser(String& url)
+{
+    NSString *s = [[NSString alloc] initWithCString:url.buffer() encoding:NSUTF8StringEncoding];
+    NSURL *nsUrl = [[NSURL alloc] initWithString:s];
+    [[NSWorkspace sharedWorkspace] openURL:nsUrl];
+    [nsUrl release];
+    [s release];
+}
+
 uintptr_t MacWebHostUI::createStandaloneWindow()
 {
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];

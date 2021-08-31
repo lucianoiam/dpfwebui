@@ -119,7 +119,7 @@ class UI {
         this._call('setKeyboardFocus', focus);
     }
 
-    // void platform::openSystemWebBrowser(String& url)
+    // void WebHostUI::openSystemWebBrowser(String& url)
     openSystemWebBrowser(url) {
         this._call('openSystemWebBrowser', url);
     }

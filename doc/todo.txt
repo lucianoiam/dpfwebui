@@ -1,7 +1,6 @@
 GENERAL
 -------
 
-- Integrate Platform functions into WebHostUI
 - Wasm: profile plugin for memory leaks
 - Allow calling Window::openFileBrowser() from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs

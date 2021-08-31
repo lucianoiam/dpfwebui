@@ -38,6 +38,9 @@ public:
 
     uint32_t getBackgroundColor() const { return fBackgroundColor; }
 
+    virtual float getDisplayScaleFactor(uintptr_t window) = 0;
+    virtual void  openSystemWebBrowser(String& url) = 0;
+
 protected:
     void sizeChanged(uint width, uint height) override;
 
