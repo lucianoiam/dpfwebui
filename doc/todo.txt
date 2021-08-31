@@ -14,9 +14,3 @@ WINDOWS
   version the plugin is linking against, for the cases where the host or other
   plugins try to load different versions of WebView2Loader.dll (not yet tested)
   https://stackoverflow.com/questions/4396754/can-different-versions-of-dll-be-loaded-in-same-application
-
-
-LINUX
------
-
-- Unresolved WebKitGTK resize issue, see comment in helper.c create_view()

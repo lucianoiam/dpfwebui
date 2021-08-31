@@ -46,8 +46,8 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
     fInitWidth = k * getWidth();
     fInitHeight = k * getHeight();
     setSize(fInitWidth, fInitHeight);
-#ifdef DISTRHO_OS_LINUX // bug?
-    getWebView().setSize(fInitWidth, fInitHeight);
+#ifdef DISTRHO_OS_LINUX // LXINITBUG
+    sizeChanged(fInitWidth, fInitHeight);
 #endif
 
     String js = String(
@@ -167,13 +167,6 @@ void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& 
             static_cast<uint>(args[kArg0].getDouble()), // width
             static_cast<uint>(args[kArg1].getDouble())  // height
         );
-#ifdef DISTRHO_OS_WINDOWS
-        // WINSIZEBUG: need to repeat setSize() call 2x
-        setSize(
-            static_cast<uint>(args[kArg0].getDouble()), // width
-            static_cast<uint>(args[kArg1].getDouble())  // height
-        );
-#endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     } else if ((method == "sendNote") && (argc == 3)) {
