@@ -24,10 +24,18 @@
 #include <cstdlib>
 #include <linux/limits.h>
 
+#include "LinuxPath.hpp"
 #include "Path.hpp"
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
+
+static bool sRunningStandalone;
+
+void path::setRunningStandalone(bool runningStandalone)
+{
+    sRunningStandalone = runningStandalone;
+}
 
 static String getSharedLibraryPath()
 {
@@ -56,7 +64,7 @@ static String getExecutablePath()
 
 String path::getBinaryPath()
 {
-    if (isRunningStandalone()) {
+    if (sRunningStandalone) {
         return getExecutablePath();
     } else {
         return getSharedLibraryPath();
