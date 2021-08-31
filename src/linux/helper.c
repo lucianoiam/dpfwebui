@@ -111,8 +111,7 @@ static void create_view(helper_context_t *ctx, uintptr_t parentId)
                                 MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0,
                                 CopyFromParent, CopyFromParent, CopyFromParent,
                                 0, 0);
-    // TODO - check if WebKitGTK resize issue can be fixed with XSelectInput()
-    // Text input focus color shows correctly when not embedding the window
+    // Web text inputs focus color shows correctly when not embedding the window
     XSelectInput(ctx->display, ctx->child, ExposureMask);
     XSetWindowBackground(ctx->display, ctx->child, ctx->color >> 8);
     XClearWindow(ctx->display, ctx->child);
