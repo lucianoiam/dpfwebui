@@ -125,9 +125,11 @@ void ExternalGtkWebView::setBackgroundColor(uint32_t rgba)
 {
     if (Display* display = XOpenDisplay(0)) {
         ::Window parent = static_cast<::Window>(getParent());
-        XSetWindowBackground(display, parent, rgba >> 8);
-        XClearWindow(display, parent);
-        XFlush(display); // FIXME - makes Bitwig crash
+        if (parent != 0) {
+            XSetWindowBackground(display, parent, rgba >> 8);
+            XClearWindow(display, parent);
+            XFlush(display);
+        }
     }
 
     ipcWrite(OP_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
