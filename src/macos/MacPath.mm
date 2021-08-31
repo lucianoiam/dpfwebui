@@ -42,8 +42,6 @@ String path::getBinaryPath()
 
 String path::getLibraryPath()
 {
-    // There is no DPF method for querying plugin format during runtime
-    // Mac VST is the only special case though
     char path[PATH_MAX];
     strcpy(path, getBinaryPath());
     void *handle = dlopen(path, RTLD_NOLOAD);
