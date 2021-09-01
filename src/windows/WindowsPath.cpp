@@ -17,15 +17,11 @@
  */
 
 #include <cstring>
-
-// FIXME
 #include <errhandlingapi.h>
 #include <libloaderapi.h>
-#include <shellscalingapi.h>
 #include <shlobj.h>
 #include <shlwapi.h>
 #include <shtypes.h>
-// FIXME
 
 #include "Path.hpp"
 #include "macro.h"

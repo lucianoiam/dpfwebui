@@ -18,15 +18,7 @@
 
 #include "WindowsWebHostUI.hpp"
 
-#include <shellapi.h>
-// FIXME
-#include <errhandlingapi.h>
-#include <libloaderapi.h>
 #include <shellscalingapi.h>
-#include <shlobj.h>
-#include <shlwapi.h>
-#include <shtypes.h>
-// FIXME
 
 USE_NAMESPACE_DISTRHO
 
