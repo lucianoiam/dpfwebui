@@ -77,6 +77,9 @@ private:
 
     WNDCLASSEX          fHelperClass;
     HWND                fHelperHwnd;
+    HWND                fParent;
+    uint                fWidth;
+    uint                fHeight;
     uint32_t            fBackgroundColor;
     std::vector<String> fInjectedScripts;
     String              fUrl;

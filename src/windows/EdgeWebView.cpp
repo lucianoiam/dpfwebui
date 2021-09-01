@@ -44,6 +44,9 @@ USE_NAMESPACE_DISTRHO
 
 EdgeWebView::EdgeWebView()
     : fHelperHwnd(0)
+    , fParent(0)
+    , fWidth(0)
+    , fHeight(0)
     , fBackgroundColor(0)
     , fHandler(0)
     , fController(0)
@@ -51,7 +54,7 @@ EdgeWebView::EdgeWebView()
 {
     // Use a hidden orphan window for initializing Edge WebView2. Helps reducing
     // flicker and it is also required by the keyboard router for reading state.
-    /*WCHAR className[256];
+    WCHAR className[256];
     swprintf(className, sizeof(className), L"EdgeWebView_%s_%d", XSTR(HIPHOP_PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
     fHelperClass.cbSize = sizeof(WNDCLASSEX);
@@ -85,31 +88,7 @@ EdgeWebView::EdgeWebView()
                         TO_LPCWSTR(path::getTemporaryPath()), 0, fHandler);
     if (FAILED(result)) {
         webViewLoaderErrorMessageBox(result);
-        return;
     }
-
-    if (getWindow().getApp().isStandalone()) {
-        // handleWebView2ControllerCompleted() never gets called when running
-        // standalone unless pumping thread message queue. Possibly related to
-        // https://github.com/MicrosoftEdge/WebView2Feedback/issues/920
-
-        MSG msg;
-        
-        while ((fController == 0) && GetMessage(&msg, 0, 0, 0)) {
-            TranslateMessage(&msg); 
-            DispatchMessage(&msg); 
-        }
-
-        // WINJACKBUG - handleWebView2NavigationCompleted() never gets called
-        // when running standalone unless an "open window menu" event is
-        // simulated. Otherwise the user needs to click the window border to
-        // allow web content to load, providing DISTRHO_UI_USER_RESIZABLE=1.
-        // Worth noting all DPF standalone examples on Windows appear off-screen
-        // with the NC area hidden. Not sure it's a DPF or WebView2 issue though.
-
-        HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
-        PostMessage(hWnd, WM_SYSCOMMAND, SC_KEYMENU, 0);
-    }*/
 }
 
 EdgeWebView::~EdgeWebView()
@@ -131,7 +110,9 @@ EdgeWebView::~EdgeWebView()
 void EdgeWebView::setSize(uint width, uint height)
 {
     if (fController == 0) {
-        return; // discard
+        fWidth = width;
+        fHeight = height;
+        return; // queue
     }
 
     RECT bounds;
@@ -139,6 +120,7 @@ void EdgeWebView::setSize(uint width, uint height)
     bounds.top = 0;
     bounds.right = static_cast<LONG>(width);
     bounds.bottom = static_cast<LONG>(height);
+
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
@@ -150,11 +132,13 @@ void EdgeWebView::setBackgroundColor(uint32_t rgba)
     }
 
     // Edge WebView2 currently only supports alpha=0 or alpha=1
+
     COREWEBVIEW2_COLOR color;
     color.A = static_cast<BYTE>(rgba & 0x000000ff);
     color.R = static_cast<BYTE>(rgba >> 24);
     color.G = static_cast<BYTE>((rgba & 0x00ff0000) >> 16);
     color.B = static_cast<BYTE>((rgba & 0x0000ff00) >> 8 );
+
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 }
@@ -196,7 +180,7 @@ void EdgeWebView::setKeyboardFocus(bool focus)
 
 void EdgeWebView::setParent(uintptr_t parent)
 {
-    // FIXME
+    fParent = (HWND)parent;
 }
 
 HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
@@ -228,10 +212,9 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     ICoreWebView2_add_WebMessageReceived(fView, fHandler, 0);
 
     // Run pending requests
-
+    
     setBackgroundColor(fBackgroundColor);
-    // FIXME
-    //updateWebViewBounds();
+    setSize(fWidth, fHeight);
 
     for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
         injectScript(*it);
@@ -239,6 +222,8 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
 
     navigate(fUrl);
 
+    fWidth = 0;
+    fHeight = 0;
     fBackgroundColor = 0;
     fInjectedScripts.clear();
     fUrl.clear();
@@ -255,14 +240,12 @@ HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
     if (fController != 0) {
         // Reparent here instead of handleWebView2ControllerCompleted() to avoid
         // flicker as much as possible. At this point the web contents are ready.
-        // FIXME
-        /*HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
-        SetParent(fHelperHwnd, hWnd); // Allow EnumChildProc() to find the helper window
+        SetParent(fHelperHwnd, fParent); // Allow EnumChildProc() to find the helper window
         ShowWindow(fHelperHwnd, SW_HIDE);
 
-        ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
+        ICoreWebView2Controller2_put_ParentWindow(fController, fParent);
 
-        handleLoadFinished();*/
+        handleLoadFinished();
     }
     
     return S_OK;
