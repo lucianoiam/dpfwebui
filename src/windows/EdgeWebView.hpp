@@ -43,22 +43,23 @@
   https://www.codeproject.com/Articles/13601/COM-in-plain-C
 */
 
-START_NAMESPACE_DGL
+START_NAMESPACE_DISTRHO
 
 class InternalWebView2EventHandler;
 
 class EdgeWebView : public AbstractWebView, edge::WebView2EventHandler
 {
 public:
-    EdgeWebView(Widget *parentWidget);
-    ~EdgeWebView();
+    EdgeWebView();
+    virtual ~EdgeWebView();
 
     void setBackgroundColor(uint32_t rgba) override;
+    void setSize(uint width, uint height) override;
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;
-
     void setKeyboardFocus(bool focus) override;
+    void setParent(uintptr_t parent) override;
 
     // WebView2EventHandler
 
@@ -71,14 +72,7 @@ public:
     HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
-protected:
-    void onResize(const ResizeEvent& ev) override;
-    void onPositionChanged(const PositionChangedEvent& ev) override;
-    bool onKeyboard(const KeyboardEvent& ev) override;
-
 private:
-    void updateWebViewBounds();
-    
     void webViewLoaderErrorMessageBox(HRESULT result);
 
     WNDCLASSEX          fHelperClass;
@@ -170,6 +164,6 @@ private:
 
 };
 
-END_NAMESPACE_DGL
+END_NAMESPACE_DISTRHO
 
 #endif  // EDGE_WEBVIEW_HPP

@@ -24,7 +24,7 @@
 
 // This class is part of EdgeWebView
 
-USE_NAMESPACE_DGL
+USE_NAMESPACE_DISTRHO
 
 KeyboardRouter::KeyboardRouter()
     : fRefCount(0)

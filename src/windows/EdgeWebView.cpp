@@ -39,11 +39,10 @@
 
 #define WEBVIEW2_DOWNLOAD_URL "https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"
 
-USE_NAMESPACE_DGL
+USE_NAMESPACE_DISTRHO
 
-EdgeWebView::EdgeWebView(Widget *parentWidget)
-    : AbstractWebView(parentWidget)
-    , fHelperHwnd(0)
+EdgeWebView::EdgeWebView()
+    : fHelperHwnd(0)
     , fBackgroundColor(0)
     , fHandler(0)
     , fController(0)
@@ -51,7 +50,7 @@ EdgeWebView::EdgeWebView(Widget *parentWidget)
 {
     // Use a hidden orphan window for initializing Edge WebView2. Helps reducing
     // flicker and it is also required by the keyboard router for reading state.
-    WCHAR className[256];
+    /*WCHAR className[256];
     swprintf(className, sizeof(className), L"EdgeWebView_%s_%d", XSTR(HIPHOP_PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
     fHelperClass.cbSize = sizeof(WNDCLASSEX);
@@ -109,7 +108,7 @@ EdgeWebView::EdgeWebView(Widget *parentWidget)
 
         HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
         PostMessage(hWnd, WM_SYSCOMMAND, SC_KEYMENU, 0);
-    }
+    }*/
 }
 
 EdgeWebView::~EdgeWebView()
@@ -128,30 +127,18 @@ EdgeWebView::~EdgeWebView()
     free((void*)fHelperClass.lpszClassName);
 }
 
-void EdgeWebView::onResize(const ResizeEvent& ev)
+void EdgeWebView::setSize(uint width, uint height)
 {
-    (void)ev;
     if (fController == 0) {
         return; // discard
     }
 
-    updateWebViewBounds();
-}
-
-void EdgeWebView::onPositionChanged(const PositionChangedEvent& ev)
-{
-    (void)ev;
-    if (fController == 0) {
-        return; // discard
-    }
-
-    updateWebViewBounds();
-}
-
-bool EdgeWebView::onKeyboard(const KeyboardEvent& ev)
-{
-    (void)ev;
-    return false; // KeyboardRouter already takes care of this
+    RECT bounds;
+    bounds.left = 0;
+    bounds.top = 0;
+    bounds.right = static_cast<LONG>(width);
+    bounds.bottom = static_cast<LONG>(height);
+    ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
 void EdgeWebView::setBackgroundColor(uint32_t rgba)
@@ -206,14 +193,9 @@ void EdgeWebView::setKeyboardFocus(bool focus)
     SetClassLongPtr(fHelperHwnd, 0, (LONG_PTR)focus); // allow KeyboardRouter to read it
 }
 
-void EdgeWebView::updateWebViewBounds()
+void EdgeWebView::setParent(uintptr_t parent)
 {
-    RECT bounds;
-    bounds.left = (LONG)getAbsoluteX();
-    bounds.top = (LONG)getAbsoluteY();
-    bounds.right = bounds.left + (LONG)getWidth();
-    bounds.bottom = bounds.top + (LONG)getHeight();
-    ICoreWebView2Controller2_put_Bounds(fController, bounds);
+    // FIXME
 }
 
 HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
@@ -247,7 +229,8 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     // Run pending requests
 
     setBackgroundColor(fBackgroundColor);
-    updateWebViewBounds();
+    // FIXME
+    //updateWebViewBounds();
 
     for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
         injectScript(*it);
@@ -271,13 +254,14 @@ HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
     if (fController != 0) {
         // Reparent here instead of handleWebView2ControllerCompleted() to avoid
         // flicker as much as possible. At this point the web contents are ready.
-        HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
+        // FIXME
+        /*HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
         SetParent(fHelperHwnd, hWnd); // Allow EnumChildProc() to find the helper window
         ShowWindow(fHelperHwnd, SW_HIDE);
 
         ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
 
-        handleLoadFinished();
+        handleLoadFinished();*/
     }
     
     return S_OK;
@@ -341,6 +325,7 @@ void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
 
     if (id == IDOK) {
         String url = String(WEBVIEW2_DOWNLOAD_URL);
-        path::openSystemWebBrowser(url);
+        // FIXME
+        //path::openSystemWebBrowser(url);
     }
 }

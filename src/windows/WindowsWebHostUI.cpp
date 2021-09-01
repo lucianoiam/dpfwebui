@@ -18,6 +18,16 @@
 
 #include "WindowsWebHostUI.hpp"
 
+#include <shellapi.h>
+// FIXME
+#include <errhandlingapi.h>
+#include <libloaderapi.h>
+#include <shellscalingapi.h>
+#include <shlobj.h>
+#include <shlwapi.h>
+#include <shtypes.h>
+// FIXME
+
 USE_NAMESPACE_DISTRHO
 
 WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
@@ -35,10 +45,10 @@ WindowsWebHostUI::~WindowsWebHostUI()
 typedef HRESULT (WINAPI* PFN_GetProcessDpiAwareness)(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
 typedef HRESULT (WINAPI* PFN_GetScaleFactorForMonitor)(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
 
-float path::getDisplayScaleFactor(uintptr_t window)
+float WindowsWebHostUI::getDisplayScaleFactor(uintptr_t window)
 {
     float k = 1.f;
-    const HMODULE hm = LoadLibrary("Shcore.dll");
+    const HMODULE hm = LoadLibrary(L"Shcore.dll");
 
     if (hm == 0) {
         return k;
@@ -69,9 +79,10 @@ float path::getDisplayScaleFactor(uintptr_t window)
     return k;
 }
 
-void path::openSystemWebBrowser(String& url)
+void WindowsWebHostUI::openSystemWebBrowser(String& url)
 {
-    ShellExecute(NULL, "open", url.buffer(), NULL, NULL, SW_SHOWNORMAL);
+    // FIXME
+    //ShellExecute(NULL, L"open", url.buffer(), NULL, NULL, SW_SHOWNORMAL);
 }
 
 uintptr_t WindowsWebHostUI::createStandaloneWindow()
