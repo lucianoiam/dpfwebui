@@ -16,9 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "WindowsWebHostUI.hpp"
-
 #include <shellscalingapi.h>
+
+#include "WindowsWebHostUI.hpp"
 
 USE_NAMESPACE_DISTRHO
 
@@ -40,7 +40,7 @@ typedef HRESULT (WINAPI* PFN_GetScaleFactorForMonitor)(HMONITOR hMon, DEVICE_SCA
 float WindowsWebHostUI::getDisplayScaleFactor(uintptr_t window)
 {
     float k = 1.f;
-    const HMODULE hm = LoadLibrary(L"Shcore.dll");
+    const HMODULE hm = LoadLibrary("Shcore.dll");
 
     if (hm == 0) {
         return k;
@@ -73,8 +73,7 @@ float WindowsWebHostUI::getDisplayScaleFactor(uintptr_t window)
 
 void WindowsWebHostUI::openSystemWebBrowser(String& url)
 {
-    // FIXME
-    //ShellExecute(NULL, L"open", url.buffer(), NULL, NULL, SW_SHOWNORMAL);
+    ShellExecute(0, "open", url.buffer(), 0, 0, SW_SHOWNORMAL);
 }
 
 uintptr_t WindowsWebHostUI::createStandaloneWindow()

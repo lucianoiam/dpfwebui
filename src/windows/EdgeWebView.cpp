@@ -22,6 +22,7 @@
 #include <codecvt>
 #include <locale>
 #include <sstream>
+#include <shellapi.h>
 #include <winuser.h>
 
 #include "Path.hpp"
@@ -324,8 +325,6 @@ void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
     int id = MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OKCANCEL | MB_ICONEXCLAMATION);
 
     if (id == IDOK) {
-        String url = String(WEBVIEW2_DOWNLOAD_URL);
-        // FIXME
-        //path::openSystemWebBrowser(url);
+        ShellExecute(0, L"open", L"" WEBVIEW2_DOWNLOAD_URL, 0, 0, SW_SHOWNORMAL);
     }
 }
