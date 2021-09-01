@@ -77,7 +77,6 @@ private:
 
     WNDCLASSEX          fHelperClass;
     HWND                fHelperHwnd;
-    HWND                fParent;
     uint                fWidth;
     uint                fHeight;
     uint32_t            fBackgroundColor;

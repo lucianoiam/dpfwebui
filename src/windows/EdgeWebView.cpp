@@ -40,11 +40,30 @@
 
 #define WEBVIEW2_DOWNLOAD_URL "https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"
 
+LRESULT CALLBACK HelperWindowProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
+{
+    if (umsg == WM_ERASEBKGND) {
+        uint32_t rgba = (uint32_t)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
+        if (rgba != 0x000000ff) {
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            COLORREF bgr = ((rgba & 0xff000000) >> 24) | ((rgba & 0x00ff0000) >> 8)
+                            | ((rgba & 0x0000ff00) << 8);
+            SetBkColor((HDC)wParam, bgr);
+            ExtTextOut((HDC)wParam, 0, 0, ETO_OPAQUE, &rc, 0, 0, 0);
+        }
+
+        return 1;
+    }
+
+    return DefWindowProc(hwnd, umsg, wParam, lParam);
+}
+
 USE_NAMESPACE_DISTRHO
 
 EdgeWebView::EdgeWebView()
     : fHelperHwnd(0)
-    , fParent(0)
     , fWidth(0)
     , fHeight(0)
     , fBackgroundColor(0)
@@ -52,25 +71,24 @@ EdgeWebView::EdgeWebView()
     , fController(0)
     , fView(0)
 {
-    // Use a hidden orphan window for initializing Edge WebView2. Helps reducing
-    // flicker and it is also required by the keyboard router for reading state.
     WCHAR className[256];
     swprintf(className, sizeof(className), L"EdgeWebView_%s_%d", XSTR(HIPHOP_PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
     fHelperClass.cbSize = sizeof(WNDCLASSEX);
-    fHelperClass.cbClsExtra = sizeof(LONG_PTR);
+    fHelperClass.cbWndExtra = 2 * sizeof(LONG_PTR);
     fHelperClass.lpszClassName = wcsdup(className);
-    fHelperClass.lpfnWndProc = DefWindowProc;
+    fHelperClass.lpfnWndProc = HelperWindowProc;
     RegisterClassEx(&fHelperClass);
     fHelperHwnd = CreateWindowEx(
-        WS_EX_TOOLWINDOW,
+        0,
         fHelperClass.lpszClassName,
         L"EdgeWebView Helper",
-        WS_POPUPWINDOW | WS_CAPTION,
+        WS_CHILD,
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-        0, 0, 0, 0
+        HWND_MESSAGE, 0, 0, 0
     );
-    ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
+    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA, 0x000000ff);
+    ShowWindow(fHelperHwnd, SW_SHOW);
 
     setKeyboardFocus(false);
     KeyboardRouter::getInstance().incRefCount();
@@ -109,9 +127,12 @@ EdgeWebView::~EdgeWebView()
 
 void EdgeWebView::setSize(uint width, uint height)
 {
+    fWidth = width;
+    fHeight = height;
+
+    MoveWindow(fHelperHwnd, 0, 0, width, height, true);
+
     if (fController == 0) {
-        fWidth = width;
-        fHeight = height;
         return; // queue
     }
 
@@ -126,8 +147,12 @@ void EdgeWebView::setSize(uint width, uint height)
 
 void EdgeWebView::setBackgroundColor(uint32_t rgba)
 {
+    fBackgroundColor = rgba;
+
+    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA, (LONG_PTR)rgba);
+    RedrawWindow(fHelperHwnd, 0, 0, RDW_ERASE);
+
     if (fController == 0) {
-        fBackgroundColor = rgba;
         return; // queue
     }
 
@@ -145,8 +170,9 @@ void EdgeWebView::setBackgroundColor(uint32_t rgba)
 
 void EdgeWebView::navigate(String& url)
 {
+    fUrl = url;
+
     if (fView == 0) {
-        fUrl = url;
         return; // queue
     }
 
@@ -175,12 +201,12 @@ void EdgeWebView::injectScript(String& source)
 void EdgeWebView::setKeyboardFocus(bool focus)
 {
     AbstractWebView::setKeyboardFocus(focus);
-    SetClassLongPtr(fHelperHwnd, 0, (LONG_PTR)focus); // allow KeyboardRouter to read it
+    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA + 1, (LONG_PTR)focus); // allow KeyboardRouter to read focus state
 }
 
 void EdgeWebView::setParent(uintptr_t parent)
 {
-    fParent = (HWND)parent;
+    SetParent(fHelperHwnd, (HWND)parent);
 }
 
 HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
@@ -212,9 +238,8 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     ICoreWebView2_add_WebMessageReceived(fView, fHandler, 0);
 
     // Run pending requests
-    
+
     setBackgroundColor(fBackgroundColor);
-    setSize(fWidth, fHeight);
 
     for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
         injectScript(*it);
@@ -222,11 +247,7 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
 
     navigate(fUrl);
 
-    fWidth = 0;
-    fHeight = 0;
-    fBackgroundColor = 0;
     fInjectedScripts.clear();
-    fUrl.clear();
 
     return S_OK;
 }
@@ -238,13 +259,7 @@ HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
     (void)eventArgs;
 
     if (fController != 0) {
-        // Reparent here instead of handleWebView2ControllerCompleted() to avoid
-        // flicker as much as possible. At this point the web contents are ready.
-        SetParent(fHelperHwnd, fParent); // Allow EnumChildProc() to find the helper window
-        ShowWindow(fHelperHwnd, SW_HIDE);
-
-        ICoreWebView2Controller2_put_ParentWindow(fController, fParent);
-
+        setSize(fWidth, fHeight);
         handleLoadFinished();
     }
     

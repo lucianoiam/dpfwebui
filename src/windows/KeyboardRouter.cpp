@@ -100,7 +100,7 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
         if (hFocusedPluginHelperWnd != 0) {
             // Read plugin configuration
 
-            bool keyboardFocus = (bool)GetClassLongPtr(hFocusedPluginHelperWnd, 0);
+            bool keyboardFocus = (bool)GetWindowLongPtr(hFocusedPluginHelperWnd, GWLP_USERDATA + 1);
 
             if (keyboardFocus) {
                 // Let keystroke reach web view
