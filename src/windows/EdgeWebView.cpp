@@ -57,7 +57,7 @@ EdgeWebView::EdgeWebView(Widget *parentWidget)
     swprintf(className, sizeof(className), L"EdgeWebView_%s_%d", XSTR(HIPHOP_PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
     fHelperClass.cbSize = sizeof(WNDCLASSEX);
-    fHelperClass.cbClsExtra = sizeof(LONG_PTR);
+    fHelperClass.cbWndExtra = sizeof(LONG_PTR);
     fHelperClass.lpszClassName = wcsdup(className);
     fHelperClass.lpfnWndProc = DefWindowProc;
     RegisterClassEx(&fHelperClass);
@@ -205,7 +205,7 @@ void EdgeWebView::injectScript(String& source)
 void EdgeWebView::setKeyboardFocus(bool focus)
 {
     AbstractWebView::setKeyboardFocus(focus);
-    SetClassLongPtr(fHelperHwnd, 0, (LONG_PTR)focus); // allow KeyboardRouter to read it
+    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA + 1, (LONG_PTR)focus); // allow KeyboardRouter to read it
 }
 
 void EdgeWebView::updateWebViewBounds()
