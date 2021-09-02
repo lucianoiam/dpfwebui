@@ -7,7 +7,6 @@ GENERAL
 LINUX
 -----
 
-- Workaround with tag LXINITBUG
 - Workaround with tag LXRESIZEBUG https://bugs.webkit.org/show_bug.cgi?id=229227
 - DSSI plugin builds but UI does not open
 

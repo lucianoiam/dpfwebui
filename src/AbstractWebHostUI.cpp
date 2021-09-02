@@ -46,8 +46,6 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
     fInitWidth = k * getWidth();
     fInitHeight = k * getHeight();
     setSize(fInitWidth, fInitHeight);
-
-     // FIXME - sizeChanged() is never called by setSize() above
     getWebView().setSize(fInitWidth, fInitHeight);
 
     String js = String(
@@ -126,6 +124,8 @@ void AbstractWebHostUI::setKeyboardFocus(bool focus)
 
 void AbstractWebHostUI::handleWebViewContentLoadFinished()
 {
+    // Trigger the JavaScript sizeChanged() callback, useful for LXRESIZEBUG.
+    sizeChanged(fInitWidth, fInitHeight);
     onWebContentReady();
 }
 
