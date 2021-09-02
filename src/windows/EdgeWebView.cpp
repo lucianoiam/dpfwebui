@@ -130,7 +130,7 @@ void EdgeWebView::setSize(uint width, uint height)
     fWidth = width;
     fHeight = height;
 
-    MoveWindow(fHelperHwnd, 0, 0, width, height, true);
+    SetWindowPos(fHelperHwnd, 0, 0, 0, width, height, SWP_NOOWNERZORDER | SWP_NOMOVE);
 
     if (fController == 0) {
         return; // queue
