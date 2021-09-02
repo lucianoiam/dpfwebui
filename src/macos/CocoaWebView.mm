@@ -100,7 +100,9 @@ void CocoaWebView::setSize(uint width, uint height)
     frame.origin.y = 0;
     frame.size.width = (CGFloat)width;
     frame.size.height = (CGFloat)height;
-    fWebView.frame = [fWebView.window convertRectFromBacking:frame];
+    frame = [fWebView.window convertRectFromBacking:frame];
+    frame.origin.y = fWebView.superview.frame.origin.y;
+    fWebView.frame = frame;
 }
 
 void CocoaWebView::navigate(String& url)
