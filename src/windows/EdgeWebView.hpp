@@ -53,6 +53,8 @@ public:
     EdgeWebView();
     virtual ~EdgeWebView();
 
+    uintptr_t getNativeHandle() const noexcept override { return (uintptr_t)fHelperHwnd; }
+
     void setBackgroundColor(uint32_t rgba) override;
     void setSize(uint width, uint height) override;
     void navigate(String& url) override;
