@@ -27,12 +27,15 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     : UI(baseWidth, baseHeight)
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
+    , fWebViewHandle(0)
 {}
 
 void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 {
     uintptr_t parent = isEmbed() ? getParentWindowHandle() : createStandaloneWindow();
     
+    fWebViewHandle = webView.getNativeHandle();
+
     webView.setParent(parent);
     webView.setBackgroundColor(fBackgroundColor);
     webView.setEventHandler(this);
@@ -46,7 +49,7 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
     fInitWidth = k * getWidth();
     fInitHeight = k * getHeight();
     setSize(fInitWidth, fInitHeight);
-    getWebView().setSize(fInitWidth, fInitHeight);
+    webView.setSize(fInitWidth, fInitHeight);
 
     String js = String(
 #include "ui/distrho-ui.js.include"
@@ -60,6 +63,7 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 
 void AbstractWebHostUI::sizeChanged(uint width, uint height)
 {
+    UI::sizeChanged(width, height);
     getWebView().setSize(width, height);
     webPostMessage({"UI", "sizeChanged", width, height});
 }

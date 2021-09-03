@@ -48,6 +48,8 @@ public:
         , fHandler(0) {}
     virtual ~AbstractWebView() {}
 
+    virtual uintptr_t getNativeHandle() const noexcept = 0;
+
     virtual void setBackgroundColor(uint32_t rgba) = 0;
     virtual void setSize(uint width, uint height) = 0;
     virtual void navigate(String& url) = 0;
