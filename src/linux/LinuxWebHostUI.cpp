@@ -29,7 +29,7 @@ LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgro
 {
     path::setRunningStandalone(isStandalone());
 
-    if (isEmbed()) {
+    if (!isStandalone()) {
         ::Window parent = getParentWindowHandle();
 
         if (parent != 0) {

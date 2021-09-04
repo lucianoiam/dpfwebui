@@ -31,7 +31,7 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
 
 void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 {
-    uintptr_t parent = isEmbed() ? getParentWindowHandle() : createStandaloneWindow();
+    uintptr_t parent = isStandalone() ? createStandaloneWindow() : getParentWindowHandle();
 
     webView.setParent(parent);
     webView.setBackgroundColor(fBackgroundColor);
@@ -90,7 +90,7 @@ void AbstractWebHostUI::stateChanged(const char* key, const char* value)
 
 void AbstractWebHostUI::uiIdle()
 {
-    if (!isEmbed()) {
+    if (isStandalone()) {
         processStandaloneEvents();
     }
 }
