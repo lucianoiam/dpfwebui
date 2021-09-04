@@ -68,7 +68,12 @@ uintptr_t AbstractWebView::getParent()
 
 void AbstractWebView::setParent(uintptr_t parent)
 {
+    if (parent == 0) {
+        return;
+    }
+
     fParent = parent;
+    
     onParent(parent);
 }
 
