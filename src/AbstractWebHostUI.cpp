@@ -46,7 +46,6 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
     fInitWidth = k * getWidth();
     fInitHeight = k * getHeight();
     setSize(fInitWidth, fInitHeight);
-    webView.setSize(fInitWidth, fInitHeight);
 
     String js = String(
 #include "ui/distrho-ui.js.include"
