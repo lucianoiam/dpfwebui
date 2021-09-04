@@ -33,17 +33,19 @@ public:
     CocoaWebView();
     virtual ~CocoaWebView();
 
-    void setBackgroundColor(uint32_t rgba) override;
     void setSize(uint width, uint height) override;
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;
-    void setParent(uintptr_t parent) override;
 
     // Allow calling some protected methods from Objective-C instances
     
     void didFinishNavigation() { handleLoadFinished(); }
     void didReceiveScriptMessage(const JsValueVector& args) { handleScriptMessage(args); }
+
+protected:
+    void onBackgroundColor(uint32_t rgba) override;
+    void onParent(uintptr_t parent) override;
 
 private:
     void *fViewBg;

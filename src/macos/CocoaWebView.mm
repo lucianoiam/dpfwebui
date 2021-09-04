@@ -78,32 +78,6 @@ CocoaWebView::~CocoaWebView()
     [fTopView release];
 }
 
-void CocoaWebView::setParent(uintptr_t parent)
-{
-    AbstractWebView::setParent(parent);
-    [(NSView *)parent addSubview:fTopView];
-}
-
-void CocoaWebView::setBackgroundColor(uint32_t rgba)
-{
-    @try {
-        if ([fTopView respondsToSelector:@selector(setBackgroundColor:)]) {
-            CGFloat c[] = { DISTRHO_UNPACK_RGBA_NORM(rgba, CGFloat) };
-            NSColor* color = [NSColor colorWithRed:c[0] green:c[1] blue:c[2] alpha:c[3]];
-            [fTopView setValue:color forKey:@"backgroundColor"];
-            [color release];
-        }
-
-        if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
-            NSNumber *no = [[NSNumber alloc] initWithBool:NO];
-            [fWebView setValue:no forKey:@"drawsBackground"];
-            [no release];
-        }
-    } @catch (NSException *e) {
-        NSLog(@"Could not set background color");
-    }
-}
-
 void CocoaWebView::setSize(uint width, uint height)
 {
     CGRect frame;
@@ -142,6 +116,31 @@ void CocoaWebView::injectScript(String& source)
     [js release];
 }
 
+void CocoaWebView::onBackgroundColor(uint32_t rgba)
+{
+    @try {
+        if ([fTopView respondsToSelector:@selector(setBackgroundColor:)]) {
+            CGFloat c[] = { DISTRHO_UNPACK_RGBA_NORM(rgba, CGFloat) };
+            NSColor* color = [NSColor colorWithRed:c[0] green:c[1] blue:c[2] alpha:c[3]];
+            [fTopView setValue:color forKey:@"backgroundColor"];
+            [color release];
+        }
+
+        if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
+            NSNumber *no = [[NSNumber alloc] initWithBool:NO];
+            [fWebView setValue:no forKey:@"drawsBackground"];
+            [no release];
+        }
+    } @catch (NSException *e) {
+        NSLog(@"Could not set background color");
+    }
+}
+
+void CocoaWebView::onParent(uintptr_t parent)
+{
+    [(NSView *)parent addSubview:fTopView];
+}
+
 @implementation DistrhoWebView
 
 - (CocoaWebView *)cppView
@@ -175,7 +174,7 @@ void CocoaWebView::injectScript(String& source)
 
 - (void)keyDown:(NSEvent *)event
 {
-    if (self.cppView->isKeyboardFocus()) {
+    if (self.cppView->getKeyboardFocus()) {
         [super keyDown:event];
     } else {
         [self.pluginRootView keyDown:event];
@@ -184,7 +183,7 @@ void CocoaWebView::injectScript(String& source)
 
 - (void)keyUp:(NSEvent *)event
 {
-    if (self.cppView->isKeyboardFocus()) {
+    if (self.cppView->getKeyboardFocus()) {
         [super keyUp:event];
     } else {
         [self.pluginRootView keyUp:event];
@@ -193,7 +192,7 @@ void CocoaWebView::injectScript(String& source)
 
 - (void)flagsChanged:(NSEvent *)event
 {
-    if (self.cppView->isKeyboardFocus()) {
+    if (self.cppView->getKeyboardFocus()) {
         [super flagsChanged:event];
     } else {
         [self.pluginRootView flagsChanged:event];

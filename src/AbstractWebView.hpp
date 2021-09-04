@@ -67,9 +67,9 @@ public:
     virtual void injectScript(String& source) = 0;
 
 protected:
-    virtual void onKeyboardFocus(bool focus) = 0;
-    virtual void onBackgroundColor(uint32_t rgba) = 0;
-    virtual void onParent(uintptr_t parent) = 0;
+    virtual void onKeyboardFocus(bool focus) { (void)focus; };
+    virtual void onBackgroundColor(uint32_t rgba) { (void)rgba; };
+    virtual void onParent(uintptr_t parent) { (void)parent; };
 
     void injectDefaultScripts(String& platformSpecificScript);
     

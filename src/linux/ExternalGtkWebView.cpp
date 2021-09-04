@@ -142,11 +142,6 @@ void ExternalGtkWebView::injectScript(String& source)
     ipcWriteString(OP_INJECT_SCRIPT, source);
 }
 
-void ExternalGtkWebView::onBackgroundColor(uint32_t rgba)
-{
-    // no-op
-}
-
 void ExternalGtkWebView::onParent(uintptr_t parent)
 {
     ::Display* display = XOpenDisplay(0);
