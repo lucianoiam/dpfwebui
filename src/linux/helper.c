@@ -19,10 +19,10 @@
 #include "helper.h"
 
 #include <stdint.h>
-#include <X11/Xlib.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
+#include <X11/Xlib.h>
 
 #include "ipc.h"
 #include "macro.h"
@@ -37,15 +37,13 @@ typedef struct {
     GtkWindow*     window;
     WebKitWebView* webView;
     helper_size_t  size;
-    uint32_t       color;
     Window         focusXWin;
     gboolean       focus;
     pthread_t      watchdog;
 } helper_context_t;
 
-static void create_view(helper_context_t *ctx, uintptr_t parentId);
-static void set_background_color(helper_context_t *ctx, uint32_t uint32_t);
-static void set_view_size(const helper_context_t *ctx);
+static void set_parent(helper_context_t *ctx, uintptr_t parentId);
+static void set_size(const helper_context_t *ctx);
 static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
 static void *focus_watchdog_worker(void *arg);
@@ -77,10 +75,10 @@ int main(int argc, char* argv[])
 
     ctx.ipc = ipc_init(&conf);
 
-    XInitThreads();
-
     gdk_set_allowed_backends("x11");
     gtk_init(0, NULL);
+
+    XInitThreads();
 
     if ((ctx.display = XOpenDisplay(NULL)) == NULL) {
         HIPHOP_LOG_STDERR("Cannot open display");
@@ -89,6 +87,40 @@ int main(int argc, char* argv[])
 
     channel = g_io_channel_unix_new(conf.fd_r);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
+
+    // Create a native container window of arbitrary maximum size
+    Window root = RootWindow(ctx.display, DefaultScreen(ctx.display));
+    ctx.container = XCreateWindow(ctx.display, root, 0, 0, MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT,
+                                    0, CopyFromParent, CopyFromParent, CopyFromParent, 0, 0);
+    XSync(ctx.display, False);
+
+    // Wrap container in a GDK window. Web view text input colored focus boxes
+    // do not show in wrapped windows but show correctly in regular windows.
+    GdkWindow* gdkWindow = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(),
+        ctx.container);
+    ctx.window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
+    g_signal_connect(ctx.window, "realize", G_CALLBACK(gtk_widget_set_window), gdkWindow);
+    
+    // After the web view becomes visible, gtk_window_resize() will not cause
+    // its contents to resize anymore. The issue is probably related to the
+    // GdkWindow wrapping a X11 window and not emitting Glib events like
+    // configure-event. The workaround consists in creating the window with a
+    // predetermined max size and using JavaScript to resize the DOM instead of
+    // resizing the window natively. It is an ugly solution but works well. Note
+    // this renders viewport based units useless (vw/vh/vmin/vmax). LXRESIZEBUG
+    gtk_window_resize(ctx.window, MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT);
+
+    // Create the web view
+    ctx.webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
+    gtk_container_add(GTK_CONTAINER(ctx.window), GTK_WIDGET(ctx.webView));
+    gtk_widget_show(GTK_WIDGET(ctx.webView));
+    g_signal_connect(ctx.webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), &ctx);
+    g_signal_connect(ctx.webView, "key_press_event", G_CALLBACK(web_view_keypress_cb), &ctx);
+
+    // Listen to script messages
+    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx.webView);
+    g_signal_connect(manager, "script-message-received::host", G_CALLBACK(web_view_script_message_cb), &ctx);
+    webkit_user_content_manager_register_script_message_handler(manager, "host");
 
     gtk_main();
 
@@ -105,62 +137,13 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-static void create_view(helper_context_t *ctx, uintptr_t parentId)
+static void set_parent(helper_context_t *ctx, uintptr_t parentId)
 {
-    // Create a native container window of arbitrary maximum size
-    ctx->container = XCreateWindow(ctx->display, (Window)parentId, 0, 0,
-                                MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0,
-                                CopyFromParent, CopyFromParent, CopyFromParent,
-                                0, 0);
-    // Web text inputs focus color shows correctly when not embedding the window
-    XSelectInput(ctx->display, ctx->container, ExposureMask);
-    XSetWindowBackground(ctx->display, ctx->container, ctx->color >> 8);
-    XClearWindow(ctx->display, ctx->container);
+    XReparentWindow(ctx->display, ctx->container, (Window)parentId, 0, 0);
     XSync(ctx->display, False);
-
-    // Wrap container in a GDK window
-    GdkWindow* gdkWindow = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(),
-        ctx->container);
-    ctx->window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
-    g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkWindow);
-    
-    // After the web view becomes visible, gtk_window_resize() will not cause
-    // its contents to resize anymore. The issue is probably related to the
-    // GdkWindow wrapping a X11 window and not emitting Glib events like
-    // configure-event. The workaround consists in creating the window with a
-    // predetermined max size and using JavaScript to resize the DOM instead of
-    // resizing the window natively. It is an ugly solution but works well. Note
-    // this renders viewport based units useless (vw/vh/vmin/vmax). LXRESIZEBUG
-    gtk_window_resize(ctx->window, MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT);
-
-    // Create the web view
-    ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
-    gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
-    gtk_widget_show(GTK_WIDGET(ctx->webView));
-    g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
-    g_signal_connect(ctx->webView, "key_press_event", G_CALLBACK(web_view_keypress_cb), ctx);
-
-    // Listen to script messages
-    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
-    g_signal_connect(manager, "script-message-received::host", G_CALLBACK(web_view_script_message_cb), ctx);
-    webkit_user_content_manager_register_script_message_handler(manager, "host");
 }
 
-static void set_background_color(helper_context_t *ctx, uint32_t rgba)
-{
-    ctx->color = rgba;
-
-    if (ctx->window != 0) {
-        // TODO: gtk_widget_override_background_color() is deprecated
-        GdkRGBA color = { DISTRHO_UNPACK_RGBA_NORM(rgba, gdouble) };
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-        gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
-#pragma GCC diagnostic pop
-    }
-}
-
-static void set_view_size(const helper_context_t *ctx)
+static void set_size(const helper_context_t *ctx)
 {
     unsigned width = ctx->size.width;
     unsigned height = ctx->size.height;
@@ -253,7 +236,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
-            set_view_size(ctx);
+            set_size(ctx);
             gtk_widget_show(GTK_WIDGET(ctx->window));
             usleep(50000L); // 50ms -- prevent flicker and occasional blank view
             ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
@@ -347,24 +330,21 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     }
 
     switch (packet.t) {
-        case OP_CREATE_VIEW:
-            create_view(ctx, *((uintptr_t *)packet.v));
+
+        case OP_SET_PARENT:
+            set_parent(ctx, *((uintptr_t *)packet.v));
             break;
 
-        case OP_SET_BACKGROUND_COLOR:
-            set_background_color(ctx, *((uint32_t *)packet.v));
+        case OP_SET_KEYBOARD_FOCUS: {
+            gboolean focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
+            set_keyboard_focus(ctx, focus);
             break;
+        }
 
         case OP_SET_SIZE: {
             const helper_size_t *size = (const helper_size_t *)packet.v;
             ctx->size = *size;
-            set_view_size(ctx);
-            break;
-        }
-        
-        case OP_SET_KEYBOARD_FOCUS: {
-            gboolean focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
-            set_keyboard_focus(ctx, focus);
+            set_size(ctx);
             break;
         }
 

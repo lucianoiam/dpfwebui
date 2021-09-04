@@ -22,10 +22,9 @@
 #include <stdint.h>
 
 typedef enum {
-    OP_CREATE_VIEW,
-    OP_SET_BACKGROUND_COLOR,
-    OP_SET_SIZE,
+    OP_SET_PARENT,
     OP_SET_KEYBOARD_FOCUS,
+    OP_SET_SIZE,
     OP_NAVIGATE,
     OP_RUN_SCRIPT,
     OP_INJECT_SCRIPT,

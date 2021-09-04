@@ -144,7 +144,7 @@ void ExternalGtkWebView::injectScript(String& source)
 
 void ExternalGtkWebView::onBackgroundColor(uint32_t rgba)
 {
-    ipcWrite(OP_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
+    // no-op
 }
 
 void ExternalGtkWebView::onParent(uintptr_t parent)
@@ -155,7 +155,7 @@ void ExternalGtkWebView::onParent(uintptr_t parent)
     XCloseDisplay(display);
 
     int windowId = static_cast<int>(parent);
-    ipcWrite(OP_CREATE_VIEW, &windowId, sizeof(windowId));
+    ipcWrite(OP_SET_PARENT, &windowId, sizeof(windowId));
 
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
