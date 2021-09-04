@@ -45,7 +45,6 @@ public:
     void injectScript(String& source) override;
 
 protected:
-    void onBackgroundColor(uint32_t rgba) override;
     void onParent(uintptr_t parent) override;
     void onKeyboardFocus(bool focus) override;
 
