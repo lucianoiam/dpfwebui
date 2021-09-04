@@ -66,7 +66,6 @@ EdgeWebView::EdgeWebView()
     : fHelperHwnd(0)
     , fWidth(0)
     , fHeight(0)
-    , fBackgroundColor(0)
     , fHandler(0)
     , fController(0)
     , fView(0)
@@ -145,29 +144,6 @@ void EdgeWebView::setSize(uint width, uint height)
     ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
-void EdgeWebView::setBackgroundColor(uint32_t rgba)
-{
-    fBackgroundColor = rgba;
-
-    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA, (LONG_PTR)rgba);
-    RedrawWindow(fHelperHwnd, 0, 0, RDW_ERASE);
-
-    if (fController == 0) {
-        return; // queue
-    }
-
-    // Edge WebView2 currently only supports alpha=0 or alpha=1
-
-    COREWEBVIEW2_COLOR color;
-    color.A = static_cast<BYTE>(rgba & 0x000000ff);
-    color.R = static_cast<BYTE>(rgba >> 24);
-    color.G = static_cast<BYTE>((rgba & 0x00ff0000) >> 16);
-    color.B = static_cast<BYTE>((rgba & 0x0000ff00) >> 8 );
-
-    ICoreWebView2Controller2_put_DefaultBackgroundColor(
-        reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
-}
-
 void EdgeWebView::navigate(String& url)
 {
     fUrl = url;
@@ -198,13 +174,19 @@ void EdgeWebView::injectScript(String& source)
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
 }
 
-void EdgeWebView::setKeyboardFocus(bool focus)
+void EdgeWebView::onKeyboardFocus(bool focus)
 {
-    AbstractWebView::setKeyboardFocus(focus);
-    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA + 1, (LONG_PTR)focus); // allow KeyboardRouter to read focus state
+    // Allow KeyboardRouter to read focus state
+    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA + 1, (LONG_PTR)focus);
 }
 
-void EdgeWebView::setParent(uintptr_t parent)
+void EdgeWebView::onBackgroundColor(uint32_t rgba)
+{
+    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA, (LONG_PTR)rgba);
+    RedrawWindow(fHelperHwnd, 0, 0, RDW_ERASE);
+}
+
+void EdgeWebView::onParent(uintptr_t parent)
 {
     SetParent(fHelperHwnd, (HWND)parent);
 }
@@ -237,9 +219,18 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     ICoreWebView2_add_NavigationCompleted(fView, fHandler, 0);
     ICoreWebView2_add_WebMessageReceived(fView, fHandler, 0);
 
-    // Run pending requests
+    // Run pending requests. Edge WebView2 currently only supports alpha=0 or alpha=1.
 
-    setBackgroundColor(fBackgroundColor);
+    uint32_t rgba = getBackgroundColor();
+    COREWEBVIEW2_COLOR color;
+    
+    color.A = static_cast<BYTE>(rgba & 0x000000ff);
+    color.R = static_cast<BYTE>(rgba >> 24);
+    color.G = static_cast<BYTE>((rgba & 0x00ff0000) >> 16);
+    color.B = static_cast<BYTE>((rgba & 0x0000ff00) >> 8 );
+
+    ICoreWebView2Controller2_put_DefaultBackgroundColor(
+        reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 
     for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
         injectScript(*it);

@@ -53,13 +53,10 @@ public:
     EdgeWebView();
     virtual ~EdgeWebView();
 
-    void setBackgroundColor(uint32_t rgba) override;
     void setSize(uint width, uint height) override;
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;
-    void setKeyboardFocus(bool focus) override;
-    void setParent(uintptr_t parent) override;
 
     // WebView2EventHandler
 
@@ -72,6 +69,11 @@ public:
     HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
+protected:
+    void onKeyboardFocus(bool focus) override;
+    void onBackgroundColor(uint32_t) override;
+    void onParent(uintptr_t parent) override;
+
 private:
     void webViewLoaderErrorMessageBox(HRESULT result);
 
@@ -79,7 +81,6 @@ private:
     HWND                fHelperHwnd;
     uint                fWidth;
     uint                fHeight;
-    uint32_t            fBackgroundColor;
     std::vector<String> fInjectedScripts;
     String              fUrl;
     

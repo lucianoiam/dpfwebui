@@ -33,19 +33,20 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 {
     uintptr_t parent = isStandalone() ? createStandaloneWindow() : getParentWindowHandle();
 
-    webView.setBackgroundColor(fBackgroundColor);
-    webView.setParent(parent);
-    webView.setEventHandler(this);
-#ifdef HIPHOP_PRINT_TRAFFIC
-    webView.setPrintTraffic(true);
-#endif
-
     // Web views adjust their contents following the system display scale factor,
     // adjust window size so it correctly wraps content on high density displays.
     float k = getDisplayScaleFactor(parent);
     fInitWidth = k * getWidth();
     fInitHeight = k * getHeight();
     setSize(fInitWidth, fInitHeight);
+
+    webView.setSize(fInitWidth, fInitHeight);
+    webView.setBackgroundColor(fBackgroundColor);
+    webView.setParent(parent);
+    webView.setEventHandler(this);
+#ifdef HIPHOP_PRINT_TRAFFIC
+    webView.setPrintTraffic(true);
+#endif
 
     String js = String(
 #include "ui/distrho-ui.js.include"
