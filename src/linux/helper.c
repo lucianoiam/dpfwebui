@@ -33,8 +33,7 @@
 typedef struct {
     ipc_t*         ipc;
     Display*       display;
-    Window         parent;
-    Window         child;
+    Window         container;
     GtkWindow*     window;
     WebKitWebView* webView;
     helper_size_t  size;
@@ -46,7 +45,7 @@ typedef struct {
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId);
 static void set_background_color(helper_context_t *ctx, uint32_t uint32_t);
-static void set_fake_size(const helper_context_t *ctx);
+static void set_view_size(const helper_context_t *ctx);
 static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
 static void *focus_watchdog_worker(void *arg);
@@ -104,23 +103,22 @@ int main(int argc, char* argv[])
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId)
 {
-    ctx->parent = (Window)parentId;
-
-    // Create a native child window of arbitrary maximum size
-    ctx->child = XCreateWindow(ctx->display, ctx->parent, 0, 0,
+    // Create a native container window of arbitrary maximum size
+    ctx->container = XCreateWindow(ctx->display, (Window)parentId, 0, 0,
                                 MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0,
                                 CopyFromParent, CopyFromParent, CopyFromParent,
                                 0, 0);
     // Web text inputs focus color shows correctly when not embedding the window
-    XSelectInput(ctx->display, ctx->child, ExposureMask);
-    XSetWindowBackground(ctx->display, ctx->child, ctx->color >> 8);
-    XClearWindow(ctx->display, ctx->child);
+    XSelectInput(ctx->display, ctx->container, ExposureMask);
+    XSetWindowBackground(ctx->display, ctx->container, ctx->color >> 8);
+    XClearWindow(ctx->display, ctx->container);
     XSync(ctx->display, False);
 
-    // Wrap child in a GDK window
-    GdkWindow* gdkChild = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(), ctx->child);
+    // Wrap container in a GDK window
+    GdkWindow* gdkWindow = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(),
+        ctx->container);
     ctx->window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
-    g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkChild);
+    g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkWindow);
     // After the web view becomes visible, gtk_window_resize() will not cause
     // its contents to resize anymore. The issue is probably related to the
     // GdkWindow wrapping a X11 window and not emitting Glib events like
@@ -157,12 +155,22 @@ static void set_background_color(helper_context_t *ctx, uint32_t rgba)
     }
 }
 
-static void set_fake_size(const helper_context_t *ctx)
+static void set_view_size(const helper_context_t *ctx)
 {
     char js[1024];
+
+    unsigned width = ctx->size.width;
+    unsigned height = ctx->size.height;
+
+    // Does not result in webview contents size update LXRESIZEBUG
+    //gtk_window_resize(ctx->window, width, height);
+
+    // Set container size in case host reads it
+    XResizeWindow(ctx->display, ctx->container, width, height);
+
     sprintf(js, "document.body.style.width  = '%dpx';"
                 "document.body.style.height = '%dpx';",
-                ctx->size.width, ctx->size.height);
+                width, height);
     webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
 }
 
@@ -240,7 +248,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
-            set_fake_size(ctx);
+            set_view_size(ctx);
             gtk_widget_show(GTK_WIDGET(ctx->window));
             usleep(50000L); // 50ms -- prevent flicker and occasional blank view
             ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
@@ -344,9 +352,8 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
 
         case OP_SET_SIZE: {
             const helper_size_t *size = (const helper_size_t *)packet.v;
-            //gtk_window_resize(ctx->window, size->width, size->height);
             ctx->size = *size;
-            set_fake_size(ctx);
+            set_view_size(ctx);
             break;
         }
 
