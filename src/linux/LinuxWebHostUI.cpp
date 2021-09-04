@@ -27,9 +27,11 @@ USE_NAMESPACE_DISTRHO
 LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
 {
-    path::setRunningStandalone(isStandalone());
+    const bool standalone = isStandalone();
 
-    if (!isStandalone()) {
+    path::setRunningStandalone(standalone);
+
+    if (!standalone) {
         ::Window parent = getParentWindowHandle();
 
         if (parent != 0) {
