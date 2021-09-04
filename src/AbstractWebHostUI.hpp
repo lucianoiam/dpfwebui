@@ -33,8 +33,6 @@ public:
     AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor);
     virtual ~AbstractWebHostUI() {}
     
-    uintptr_t getNativeWindowHandle() const noexcept override { return fWebViewHandle; }
-
     uint getInitWidth() const { return fInitWidth; }
     uint getInitHeight() const { return fInitHeight; }
 
@@ -84,7 +82,6 @@ private:
     uint32_t         fBackgroundColor;
     uint             fInitWidth;
     uint             fInitHeight;
-    uintptr_t        fWebViewHandle;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AbstractWebHostUI)
 

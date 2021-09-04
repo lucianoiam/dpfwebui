@@ -27,14 +27,11 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     : UI(baseWidth, baseHeight)
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
-    , fWebViewHandle(0)
 {}
 
 void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 {
     uintptr_t parent = isEmbed() ? getParentWindowHandle() : createStandaloneWindow();
-    
-    fWebViewHandle = webView.getNativeHandle();
 
     webView.setParent(parent);
     webView.setBackgroundColor(fBackgroundColor);
