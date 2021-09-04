@@ -82,8 +82,7 @@ int main(int argc, char* argv[])
     gdk_set_allowed_backends("x11");
     gtk_init(0, NULL);
 
-    if (GDK_IS_X11_DISPLAY(gdk_display_get_default())
-            && ((ctx.display = XOpenDisplay(NULL)) == NULL)) {
+    if ((ctx.display = XOpenDisplay(NULL)) == NULL) {
         HIPHOP_LOG_STDERR("Cannot open display");
         return -1;
     }
@@ -96,6 +95,11 @@ int main(int argc, char* argv[])
     set_keyboard_focus(&ctx, FALSE);
     g_io_channel_shutdown(channel, TRUE, NULL);
     ipc_destroy(ctx.ipc);
+
+    if (ctx.container != 0) {
+        XDestroyWindow(ctx.display, ctx.container);
+    }
+
     XCloseDisplay(ctx.display);
 
     return 0;
