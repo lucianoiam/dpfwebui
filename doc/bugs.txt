@@ -7,8 +7,10 @@ GENERAL
 LINUX
 -----
 
-- DSSI plugin builds but UI does not open
+- REAPER does not tightly wrap plugin view after resize until manually resizing
+  host container view
 - Workaround with tag LXRESIZEBUG https://bugs.webkit.org/show_bug.cgi?id=229227
+- DSSI plugin builds but UI does not open
 
 
 MACOS
@@ -24,8 +26,3 @@ WINDOWS
 -------
 
 - WasmHostPlugin crashes Carla on Windows 7, works fine on Windows 10.
-- Workaround with tag WINSIZEBUG need to call UI::setSize() twice
-- Workaround with tag WINJACKBUG to avoid empty window on startup
-- Unresolved issue when running standalone: js->cpp messages get stuck unless
-  window is resized. There is something definitely wrong with the event loop
-  when running as a standalone application, probably related to WINJACKBUG.

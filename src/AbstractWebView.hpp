@@ -22,14 +22,12 @@
 #include <cstdint>
 #include <vector>
 
-#include "dgl/SubWidget.hpp"
-#include "dgl/Geometry.hpp"
 #include "extra/String.hpp"
 #include "Window.hpp"
 
 #include "JsValue.hpp"
 
-START_NAMESPACE_DGL
+START_NAMESPACE_DISTRHO
 
 typedef std::vector<JsValue> JsValueVector;
 
@@ -41,46 +39,50 @@ public:
 
 };
 
-class AbstractWebView : public SubWidget
+class AbstractWebView
 {
 public:
-    AbstractWebView(Widget *parentWidget) : SubWidget(parentWidget),
-        fKeyboardFocus(false), fPrintTraffic(false) {}
+    AbstractWebView()
+        : fKeyboardFocus(false)
+        , fPrintTraffic(false)
+        , fHandler(0) {}
     virtual ~AbstractWebView() {}
-
+    
     virtual void setBackgroundColor(uint32_t rgba) = 0;
+    virtual void setSize(uint width, uint height) = 0;
     virtual void navigate(String& url) = 0;
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
 
+    bool         isKeyboardFocus() { return fKeyboardFocus; }    
     virtual void setKeyboardFocus(bool focus) { fKeyboardFocus = focus; }
-    bool         isKeyboardFocus() { return fKeyboardFocus; }
+
+    uintptr_t    getParent() { return fParent; }
+    virtual void setParent(uintptr_t parent) { fParent = parent; }
 
     void setPrintTraffic(bool printTraffic) { fPrintTraffic = printTraffic; }
     void setEventHandler(WebViewEventHandler* handler) { fHandler = handler; }
     void postMessage(const JsValueVector& args);
 
 protected:
-    void onDisplay() override { /* no-op */ }
-    
     void injectDefaultScripts(String& platformSpecificScript);
     
     void handleLoadFinished();
     void handleScriptMessage(const JsValueVector& args);
-
-    bool fKeyboardFocus;
 
 private:
     String serializeJsValues(const JsValueVector& args);
 
     void addStylesheet(String& source);
 
-    bool fPrintTraffic;
+    bool      fKeyboardFocus;
+    bool      fPrintTraffic;
+    uintptr_t fParent;
 
     WebViewEventHandler* fHandler;
 
 };
 
-END_NAMESPACE_DGL
+END_NAMESPACE_DISTRHO
 
 #endif // ABSTRACT_WEBVIEW_HPP

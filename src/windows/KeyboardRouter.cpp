@@ -24,7 +24,7 @@
 
 // This class is part of EdgeWebView
 
-USE_NAMESPACE_DGL
+USE_NAMESPACE_DISTRHO
 
 KeyboardRouter::KeyboardRouter()
     : fRefCount(0)
@@ -58,7 +58,7 @@ void KeyboardRouter::incRefCount()
 {
     if (fRefCount++ == 0) {
         // Passing GetCurrentThreadId() to dwThreadId results in the hook never being called
-        fKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboardProc, GetModuleHandle(NULL), 0);
+        fKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboardProc, GetModuleHandle(0), 0);
     }
 }
 
@@ -124,7 +124,7 @@ LRESULT CALLBACK KeyboardRouter::keyboardProc(int nCode, WPARAM wParam, LPARAM l
         }
     }
 
-    return CallNextHookEx(NULL, nCode, wParam, lParam);
+    return CallNextHookEx(0, nCode, wParam, lParam);
 }
 
 BOOL CALLBACK KeyboardRouter::enumChildProc(HWND hWnd, LPARAM lParam)

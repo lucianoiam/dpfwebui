@@ -22,36 +22,12 @@
 #include <unistd.h>
 #include <sys/syslimits.h>
 
-#include "Platform.hpp"
+#include "Path.hpp"
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
-float platform::getDisplayScaleFactor(uintptr_t window)
-{
-    NSWindow *w;
-
-    // DGL::Window::getNativeWindowHandle() returns NSView* instead of NSWindow*
-
-    if ([(id)window isKindOfClass:[NSView class]]) {
-        w = [(NSView *)window window];
-    } else {
-        w = (NSWindow *)window;
-    }
-
-    return (w.screen ? w.screen : [NSScreen mainScreen]).backingScaleFactor;
-}
-
-void platform::openSystemWebBrowser(String& url)
-{
-    NSString *s = [[NSString alloc] initWithCString:url.buffer()];
-    NSURL *nsUrl = [[NSURL alloc] initWithString:s];
-    [[NSWorkspace sharedWorkspace] openURL:nsUrl];
-    [nsUrl release];
-    [s release];
-}
-
-String platform::getBinaryPath()
+String path::getBinaryPath()
 {
     Dl_info dl_info;
 
@@ -64,10 +40,8 @@ String platform::getBinaryPath()
     return String();
 }
 
-String platform::getLibraryPath()
+String path::getLibraryPath()
 {
-    // There is no DPF method for querying plugin format during runtime
-    // Mac VST is the only special case though
     char path[PATH_MAX];
     strcpy(path, getBinaryPath());
     void *handle = dlopen(path, RTLD_NOLOAD);
@@ -85,7 +59,7 @@ String platform::getLibraryPath()
     return String(dirname(path)) + "/" + kDefaultLibrarySubdirectory;
 }
 
-String platform::getTemporaryPath()
+String path::getTemporaryPath()
 {
     return String(); // not implemented
 }

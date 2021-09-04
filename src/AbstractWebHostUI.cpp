@@ -16,88 +16,63 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "WebHostUI.hpp"
+#include "AbstractWebHostUI.hpp"
 
-#include "dgl/Application.hpp"
-
-#include "Platform.hpp"
+#include "Path.hpp"
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
-WebHostUI::WebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
+AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(baseWidth, baseHeight)
-    , fWebView(this)
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
+{}
+
+void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 {
-    const Window& win = getWindow();
-    
-    // Platform functions are static, however the DGL application object is not
-    // a singleton and there is a special case in PlatformLinux.cpp that makes
-    // it necessary to check if the plugin is running standalone during runtime.
-    // Note that the web widget is already initialized at this point so this
-    // function always returns false when called from web widget constructors.
-    platform::setRunningStandalone(win.getApp().isStandalone());
+    uintptr_t parent = isEmbed() ? getParentWindowHandle() : createStandaloneWindow();
+
+    webView.setParent(parent);
+    webView.setBackgroundColor(fBackgroundColor);
+    webView.setEventHandler(this);
+#ifdef HIPHOP_PRINT_TRAFFIC
+    webView.setPrintTraffic(true);
+#endif
 
     // Web views adjust their contents following the system display scale factor,
     // adjust window size so it correctly wraps content on high density displays.
-    float k = platform::getDisplayScaleFactor(win.getNativeWindowHandle());
-    fInitWidth = k * baseWidth;
-    fInitHeight = k * baseHeight;
+    float k = getDisplayScaleFactor(parent);
+    fInitWidth = k * getWidth();
+    fInitHeight = k * getHeight();
     setSize(fInitWidth, fInitHeight);
-
-#ifdef DISTRHO_OS_WINDOWS
-    // WINSIZEBUG: Why setSize() call needs to be repeated 2x?
-    setSize(fInitWidth, fInitHeight);
-#endif
-
-    fWebView.setSize(fInitWidth, fInitHeight);
-    fWebView.setBackgroundColor(fBackgroundColor);
-    fWebView.setEventHandler(this);
-#ifdef HIPHOP_PRINT_TRAFFIC
-    fWebView.setPrintTraffic(true);
-#endif
+    webView.setSize(fInitWidth, fInitHeight);
 
     String js = String(
 #include "ui/distrho-ui.js.include"
     );
     js += "const DISTRHO = Object.freeze({ UI: UI });";
-    fWebView.injectScript(js);
+    webView.injectScript(js);
 
-    String url = "file://" + platform::getLibraryPath() + "/ui/index.html";
-    fWebView.navigate(url);
+    String url = "file://" + path::getLibraryPath() + "/ui/index.html";
+    webView.navigate(url);
 }
 
-void WebHostUI::onDisplay()
+void AbstractWebHostUI::sizeChanged(uint width, uint height)
 {
-#ifdef DGL_OPENGL
-    // Clear background for OpenGL
-    glClearColor(DISTRHO_UNPACK_RGBA_NORM(fBackgroundColor, GLfloat));
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#endif
-#ifdef DGL_CAIRO
-    // Clear background for Cairo
-    cairo_t* cr = ((CairoGraphicsContext&)getWindow().getGraphicsContext()).handle;
-    cairo_set_source_rgba(cr, DISTRHO_UNPACK_RGBA_NORM(fBackgroundColor, double));
-    cairo_paint(cr);
-#endif
+    UI::sizeChanged(width, height);
+    getWebView().setSize(width, height);
+    webPostMessage({"UI", "sizeChanged", width, height});
 }
 
-void WebHostUI::uiReshape(uint width, uint height)
-{
-    fWebView.setSize(width, height);
-    webPostMessage({"UI", "uiReshape", width, height});
-}
-
-void WebHostUI::parameterChanged(uint32_t index, float value)
+void AbstractWebHostUI::parameterChanged(uint32_t index, float value)
 {
     webPostMessage({"UI", "parameterChanged", index, value});
 }
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
 
-void WebHostUI::programLoaded(uint32_t index)
+void AbstractWebHostUI::programLoaded(uint32_t index)
 {
     webPostMessage({"UI", "programLoaded", index});
 }
@@ -106,32 +81,29 @@ void WebHostUI::programLoaded(uint32_t index)
 
 #if DISTRHO_PLUGIN_WANT_STATE
 
-void WebHostUI::stateChanged(const char* key, const char* value)
+void AbstractWebHostUI::stateChanged(const char* key, const char* value)
 {
     webPostMessage({"UI", "stateChanged", key, value});
 }
 
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
-uint WebHostUI::getInitWidth() const
+void AbstractWebHostUI::uiIdle()
 {
-    return fInitWidth;
+    if (!isEmbed()) {
+        processStandaloneEvents();
+    }
 }
 
-uint WebHostUI::getInitHeight() const
-{
-    return fInitHeight;
-}
-
-void WebHostUI::webPostMessage(const JsValueVector& args) {
+void AbstractWebHostUI::webPostMessage(const JsValueVector& args) {
     if (fFlushedInitMsgQueue) {
-        fWebView.postMessage(args);
+        getWebView().postMessage(args);
     } else {
         fInitMsgQueue.push_back(args);
     }
 }
 
-void WebHostUI::flushInitMessageQueue()
+void AbstractWebHostUI::flushInitMessageQueue()
 {
     if (fFlushedInitMsgQueue) {
         return;
@@ -140,31 +112,32 @@ void WebHostUI::flushInitMessageQueue()
     fFlushedInitMsgQueue = true;
 
     for (InitMessageQueue::iterator it = fInitMsgQueue.begin(); it != fInitMsgQueue.end(); ++it) {
-        fWebView.postMessage(*it);
+        getWebView().postMessage(*it);
     }
     
     fInitMsgQueue.clear();
 }
 
-void WebHostUI::setKeyboardFocus(bool focus)
+void AbstractWebHostUI::setKeyboardFocus(bool focus)
 {
-    fWebView.setKeyboardFocus(focus);
+    getWebView().setKeyboardFocus(focus);
 }
 
-void WebHostUI::handleWebViewContentLoadFinished()
+void AbstractWebHostUI::handleWebViewContentLoadFinished()
 {
-    // no-op, just let derived classes now
-    webContentReady();
+    // Trigger the JavaScript sizeChanged() callback, useful for LXRESIZEBUG.
+    sizeChanged(fInitWidth, fInitHeight);
+    onWebContentReady();
 }
 
 #define kArg0 2
 #define kArg1 3
 #define kArg2 4
 
-void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
+void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
 {
     if (args[0].getString() != "UI") {
-        webMessageReceived(args); // passthrough
+        onWebMessageReceived(args); // passthrough
         return;
     }
 
@@ -195,13 +168,6 @@ void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
             static_cast<uint>(args[kArg0].getDouble()), // width
             static_cast<uint>(args[kArg1].getDouble())  // height
         );
-#ifdef DISTRHO_OS_WINDOWS
-        // WINSIZEBUG: need to repeat setSize() call 2x
-        setSize(
-            static_cast<uint>(args[kArg0].getDouble()), // width
-            static_cast<uint>(args[kArg1].getDouble())  // height
-        );
-#endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     } else if ((method == "sendNote") && (argc == 3)) {
@@ -232,17 +198,15 @@ void WebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
         );
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
-    // Hip-Hop specific methods
-
     } else if (method == "isStandalone") {
-        webPostMessage({"UI", "isStandalone", getWindow().getApp().isStandalone()});
+        webPostMessage({"UI", "isStandalone", isStandalone()});
 
     } else if ((method == "setKeyboardFocus") && (argc == 1)) {
         setKeyboardFocus(static_cast<bool>(args[kArg0].getBool()));
 
     } else if ((method == "openSystemWebBrowser") && (argc == 1)) {
         String url = args[kArg0].getString();
-        platform::openSystemWebBrowser(url);
+        openSystemWebBrowser(url);
 
     } else if (method == "getInitWidth") {
         webPostMessage({"UI", "getInitWidth", static_cast<double>(getInitWidth())});

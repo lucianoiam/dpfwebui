@@ -16,27 +16,36 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBGAIN_EXAMPLE_UI_HPP
-#define WEBGAIN_EXAMPLE_UI_HPP
+#ifndef WINDOWS_WEB_HOST_UI_HPP
+#define WINDOWS_WEB_HOST_UI_HPP
 
-#include "WebHostUI.hpp"
+#include "AbstractWebHostUI.hpp"
+#include "EdgeWebView.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class WebGainExampleUI : public WebHostUI
+class WindowsWebHostUI : public AbstractWebHostUI
 {
 public:
-    WebGainExampleUI();
-    ~WebGainExampleUI() {}
+    WindowsWebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    virtual ~WindowsWebHostUI();
+
+    float getDisplayScaleFactor(uintptr_t window) override;
+    void  openSystemWebBrowser(String& url) override;
 
 protected:
-    void onWebContentReady() override;
-    void onWebMessageReceived(const JsValueVector& args) override;
+    uintptr_t createStandaloneWindow() override;
+    void      processStandaloneEvents() override;
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WebGainExampleUI)
+    AbstractWebView& getWebView() override { return fWebView; }
+
+private:
+    EdgeWebView fWebView;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WindowsWebHostUI)
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBGAIN_EXAMPLE_UI_HPP
+#endif  // WINDOWS_WEB_HOST_UI_HPP

@@ -24,42 +24,17 @@
 #include <cstdlib>
 #include <linux/limits.h>
 
-#include "Platform.hpp"
+#include "LinuxPath.hpp"
+#include "Path.hpp"
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
-float platform::getDisplayScaleFactor(uintptr_t)
+static bool sRunningStandalone;
+
+void path::setRunningStandalone(bool runningStandalone)
 {
-    // In the lack of a standard Linux interface for getting the display scale
-    // factor, read GTK environment variables since the web view is GTK-based.
-
-    const char* dpi;
-    float k;
-
-    dpi = getenv("GDK_SCALE");
-
-    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
-        return k;
-    }
-
-    dpi = getenv("GDK_DPI_SCALE");
-
-    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
-        return k;
-    }
-
-    return 1.f;
-}
-
-void platform::openSystemWebBrowser(String& url)
-{
-    char buf[256];
-    snprintf(buf, sizeof(buf), "xdg-open %s", url.buffer());
-
-    if (system(buf) != 0) {
-        HIPHOP_LOG_STDERR_ERRNO("Could not open system web browser");
-    }
+    sRunningStandalone = runningStandalone;
 }
 
 static String getSharedLibraryPath()
@@ -87,23 +62,23 @@ static String getExecutablePath()
     return String(path);
 }
 
-String platform::getBinaryPath()
+String path::getBinaryPath()
 {
-    if (isRunningStandalone()) {
+    if (sRunningStandalone) {
         return getExecutablePath();
     } else {
         return getSharedLibraryPath();
     }
 }
 
-String platform::getLibraryPath()
+String path::getLibraryPath()
 {
     char path[PATH_MAX];
     strcpy(path, getBinaryPath());
     return String(dirname(path)) + "/" + kDefaultLibrarySubdirectory;
 }
 
-String platform::getTemporaryPath()
+String path::getTemporaryPath()
 {
     return String(); // not implemented
 }

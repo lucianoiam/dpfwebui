@@ -29,27 +29,23 @@
 #include "ipc.h"
 #include "helper.h"
 
-START_NAMESPACE_DGL
+START_NAMESPACE_DISTRHO
 
 class ExternalGtkWebView : public AbstractWebView
 {
 friend class IpcReadThread;
 
 public:
-    ExternalGtkWebView(Widget *parentWidget);
-    ~ExternalGtkWebView();
+    ExternalGtkWebView();
+    virtual ~ExternalGtkWebView();
 
     void setBackgroundColor(uint32_t rgba) override;
+    void setSize(uint width, uint height) override;
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;
-
     void setKeyboardFocus(bool focus) override;
-
-protected:
-    void onResize(const ResizeEvent& ev) override;
-    void onPositionChanged(const PositionChangedEvent& ev) override;
-    bool onKeyboard(const KeyboardEvent& ev) override;
+    void setParent(uintptr_t parent) override;
 
 private:
     ipc_t* ipc() const { return fIpc; }
@@ -80,6 +76,6 @@ private:
 
 };
 
-END_NAMESPACE_DGL
+END_NAMESPACE_DISTRHO
 
 #endif  // EXTERNAL_GTK_WEBVIEW_HPP

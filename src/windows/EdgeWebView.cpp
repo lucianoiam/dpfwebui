@@ -22,11 +22,10 @@
 #include <codecvt>
 #include <locale>
 #include <sstream>
+#include <shellapi.h>
 #include <winuser.h>
 
-#include "dgl/Application.hpp"
-
-#include "Platform.hpp"
+#include "Path.hpp"
 #include "macro.h"
 #include "cJSON.h"
 
@@ -41,35 +40,55 @@
 
 #define WEBVIEW2_DOWNLOAD_URL "https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"
 
-USE_NAMESPACE_DGL
+LRESULT CALLBACK HelperWindowProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
+{
+    if (umsg == WM_ERASEBKGND) {
+        uint32_t rgba = (uint32_t)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-EdgeWebView::EdgeWebView(Widget *parentWidget)
-    : AbstractWebView(parentWidget)
-    , fHelperHwnd(0)
+        if (rgba != 0x000000ff) {
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            COLORREF bgr = ((rgba & 0xff000000) >> 24) | ((rgba & 0x00ff0000) >> 8)
+                            | ((rgba & 0x0000ff00) << 8);
+            SetBkColor((HDC)wParam, bgr);
+            ExtTextOut((HDC)wParam, 0, 0, ETO_OPAQUE, &rc, 0, 0, 0);
+        }
+
+        return 1;
+    }
+
+    return DefWindowProc(hwnd, umsg, wParam, lParam);
+}
+
+USE_NAMESPACE_DISTRHO
+
+EdgeWebView::EdgeWebView()
+    : fHelperHwnd(0)
+    , fWidth(0)
+    , fHeight(0)
     , fBackgroundColor(0)
     , fHandler(0)
     , fController(0)
     , fView(0)
 {
-    // Use a hidden orphan window for initializing Edge WebView2. Helps reducing
-    // flicker and it is also required by the keyboard router for reading state.
     WCHAR className[256];
     swprintf(className, sizeof(className), L"EdgeWebView_%s_%d", XSTR(HIPHOP_PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
     fHelperClass.cbSize = sizeof(WNDCLASSEX);
-    fHelperClass.cbWndExtra = sizeof(LONG_PTR);
+    fHelperClass.cbWndExtra = 2 * sizeof(LONG_PTR);
     fHelperClass.lpszClassName = wcsdup(className);
-    fHelperClass.lpfnWndProc = DefWindowProc;
+    fHelperClass.lpfnWndProc = HelperWindowProc;
     RegisterClassEx(&fHelperClass);
     fHelperHwnd = CreateWindowEx(
-        WS_EX_TOOLWINDOW,
+        0,
         fHelperClass.lpszClassName,
         L"EdgeWebView Helper",
-        WS_POPUPWINDOW | WS_CAPTION,
+        WS_CHILD,
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-        0, 0, 0, 0
+        HWND_MESSAGE, 0, 0, 0
     );
-    ShowWindow(fHelperHwnd, SW_SHOWNOACTIVATE);
+    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA, 0x000000ff);
+    ShowWindow(fHelperHwnd, SW_SHOW);
 
     setKeyboardFocus(false);
     KeyboardRouter::getInstance().incRefCount();
@@ -84,33 +103,9 @@ EdgeWebView::EdgeWebView(Widget *parentWidget)
     CoInitializeEx(0, COINIT_APARTMENTTHREADED);
 
     HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0,
-                        TO_LPCWSTR(platform::getTemporaryPath()), 0, fHandler);
+                        TO_LPCWSTR(path::getTemporaryPath()), 0, fHandler);
     if (FAILED(result)) {
         webViewLoaderErrorMessageBox(result);
-        return;
-    }
-
-    if (getWindow().getApp().isStandalone()) {
-        // handleWebView2ControllerCompleted() never gets called when running
-        // standalone unless pumping thread message queue. Possibly related to
-        // https://github.com/MicrosoftEdge/WebView2Feedback/issues/920
-
-        MSG msg;
-        
-        while ((fController == 0) && GetMessage(&msg, 0, 0, 0)) {
-            TranslateMessage(&msg); 
-            DispatchMessage(&msg); 
-        }
-
-        // WINJACKBUG - handleWebView2NavigationCompleted() never gets called
-        // when running standalone unless an "open window menu" event is
-        // simulated. Otherwise the user needs to click the window border to
-        // allow web content to load, providing DISTRHO_UI_USER_RESIZABLE=1.
-        // Worth noting all DPF standalone examples on Windows appear off-screen
-        // with the NC area hidden. Not sure it's a DPF or WebView2 issue though.
-
-        HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
-        PostMessage(hWnd, WM_SYSCOMMAND, SC_KEYMENU, 0);
     }
 }
 
@@ -130,53 +125,54 @@ EdgeWebView::~EdgeWebView()
     free((void*)fHelperClass.lpszClassName);
 }
 
-void EdgeWebView::onResize(const ResizeEvent& ev)
+void EdgeWebView::setSize(uint width, uint height)
 {
-    (void)ev;
+    fWidth = width;
+    fHeight = height;
+
+    SetWindowPos(fHelperHwnd, 0, 0, 0, width, height, SWP_NOOWNERZORDER | SWP_NOMOVE);
+
     if (fController == 0) {
-        return; // discard
+        return; // queue
     }
 
-    updateWebViewBounds();
-}
+    RECT bounds;
+    bounds.left = 0;
+    bounds.top = 0;
+    bounds.right = static_cast<LONG>(width);
+    bounds.bottom = static_cast<LONG>(height);
 
-void EdgeWebView::onPositionChanged(const PositionChangedEvent& ev)
-{
-    (void)ev;
-    if (fController == 0) {
-        return; // discard
-    }
-
-    updateWebViewBounds();
-}
-
-bool EdgeWebView::onKeyboard(const KeyboardEvent& ev)
-{
-    (void)ev;
-    return false; // KeyboardRouter already takes care of this
+    ICoreWebView2Controller2_put_Bounds(fController, bounds);
 }
 
 void EdgeWebView::setBackgroundColor(uint32_t rgba)
 {
+    fBackgroundColor = rgba;
+
+    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA, (LONG_PTR)rgba);
+    RedrawWindow(fHelperHwnd, 0, 0, RDW_ERASE);
+
     if (fController == 0) {
-        fBackgroundColor = rgba;
         return; // queue
     }
 
     // Edge WebView2 currently only supports alpha=0 or alpha=1
+
     COREWEBVIEW2_COLOR color;
     color.A = static_cast<BYTE>(rgba & 0x000000ff);
     color.R = static_cast<BYTE>(rgba >> 24);
     color.G = static_cast<BYTE>((rgba & 0x00ff0000) >> 16);
     color.B = static_cast<BYTE>((rgba & 0x0000ff00) >> 8 );
+
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 }
 
 void EdgeWebView::navigate(String& url)
 {
+    fUrl = url;
+
     if (fView == 0) {
-        fUrl = url;
         return; // queue
     }
 
@@ -205,17 +201,12 @@ void EdgeWebView::injectScript(String& source)
 void EdgeWebView::setKeyboardFocus(bool focus)
 {
     AbstractWebView::setKeyboardFocus(focus);
-    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA + 1, (LONG_PTR)focus); // allow KeyboardRouter to read it
+    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA + 1, (LONG_PTR)focus); // allow KeyboardRouter to read focus state
 }
 
-void EdgeWebView::updateWebViewBounds()
+void EdgeWebView::setParent(uintptr_t parent)
 {
-    RECT bounds;
-    bounds.left = (LONG)getAbsoluteX();
-    bounds.top = (LONG)getAbsoluteY();
-    bounds.right = bounds.left + (LONG)getWidth();
-    bounds.bottom = bounds.top + (LONG)getHeight();
-    ICoreWebView2Controller2_put_Bounds(fController, bounds);
+    SetParent(fHelperHwnd, (HWND)parent);
 }
 
 HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
@@ -249,7 +240,6 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     // Run pending requests
 
     setBackgroundColor(fBackgroundColor);
-    updateWebViewBounds();
 
     for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
         injectScript(*it);
@@ -257,9 +247,7 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
 
     navigate(fUrl);
 
-    fBackgroundColor = 0;
     fInjectedScripts.clear();
-    fUrl.clear();
 
     return S_OK;
 }
@@ -271,14 +259,7 @@ HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
     (void)eventArgs;
 
     if (fController != 0) {
-        // Reparent here instead of handleWebView2ControllerCompleted() to avoid
-        // flicker as much as possible. At this point the web contents are ready.
-        HWND hWnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
-        SetParent(fHelperHwnd, hWnd); // Allow EnumChildProc() to find the helper window
-        ShowWindow(fHelperHwnd, SW_HIDE);
-
-        ICoreWebView2Controller2_put_ParentWindow(fController, hWnd);
-
+        setSize(fWidth, fHeight);
         handleLoadFinished();
     }
     
@@ -342,7 +323,6 @@ void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
     int id = MessageBox(0, ws.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OKCANCEL | MB_ICONEXCLAMATION);
 
     if (id == IDOK) {
-        String url = String(WEBVIEW2_DOWNLOAD_URL);
-        platform::openSystemWebBrowser(url);
+        ShellExecute(0, L"open", L"" WEBVIEW2_DOWNLOAD_URL, 0, 0, SW_SHOWNORMAL);
     }
 }

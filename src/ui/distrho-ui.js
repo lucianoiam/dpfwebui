@@ -89,8 +89,8 @@ class UI {
         this._call('setState', key, value);
     }
 
-    // void UI::uiReshape(uint width, uint height)
-    uiReshape(width, height) {
+    // void UI::sizeChanged(uint width, uint height)
+    sizeChanged(width, height) {
         // default empty implementation
     }
 
@@ -119,7 +119,7 @@ class UI {
         this._call('setKeyboardFocus', focus);
     }
 
-    // void platform::openSystemWebBrowser(String& url)
+    // void WebHostUI::openSystemWebBrowser(String& url)
     openSystemWebBrowser(url) {
         this._call('openSystemWebBrowser', url);
     }

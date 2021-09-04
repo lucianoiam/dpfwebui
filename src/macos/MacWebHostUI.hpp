@@ -16,27 +16,37 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef WEBGAIN_EXAMPLE_UI_HPP
-#define WEBGAIN_EXAMPLE_UI_HPP
+#ifndef MAC_WEB_HOST_UI_HPP
+#define MAC_WEB_HOST_UI_HPP
 
-#include "WebHostUI.hpp"
+#include "AbstractWebHostUI.hpp"
+#include "CocoaWebView.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class WebGainExampleUI : public WebHostUI
+class MacWebHostUI : public AbstractWebHostUI
 {
 public:
-    WebGainExampleUI();
-    ~WebGainExampleUI() {}
+    MacWebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    virtual ~MacWebHostUI();
+
+    float getDisplayScaleFactor(uintptr_t window) override;
+    void  openSystemWebBrowser(String& url) override;
 
 protected:
-    void onWebContentReady() override;
-    void onWebMessageReceived(const JsValueVector& args) override;
+    uintptr_t createStandaloneWindow() override;
+    void      processStandaloneEvents() override;
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WebGainExampleUI)
+    AbstractWebView& getWebView() override { return fWebView; }
+
+private:
+    uintptr_t    fWindow;
+    CocoaWebView fWebView;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MacWebHostUI)
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // WEBGAIN_EXAMPLE_UI_HPP
+#endif  // MAC_WEB_HOST_UI_HPP

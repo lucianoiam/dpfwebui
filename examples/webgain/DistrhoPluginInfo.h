@@ -44,7 +44,9 @@
    @see DISTRHO_UI_USE_NANOVG
    @see UI
  */
-#define DISTRHO_PLUGIN_HAS_UI 1
+#define DISTRHO_PLUGIN_HAS_UI          1
+#define DISTRHO_PLUGIN_HAS_EMBED_UI    1
+#define DISTRHO_PLUGIN_HAS_EXTERNAL_UI 1
 
 /**
    Wherever the plugin processing is realtime-safe.@n

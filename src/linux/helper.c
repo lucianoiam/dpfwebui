@@ -27,24 +27,29 @@
 #include "ipc.h"
 #include "macro.h"
 
-#define MAX_WEBVIEW_WIDTH  2000
-#define MAX_WEBVIEW_HEIGHT 2000
+#define MAX_WEBVIEW_WIDTH  1536
+#define MAX_WEBVIEW_HEIGHT 1536
 
 typedef struct {
     ipc_t*         ipc;
     Display*       display;
+    Window         container;
     GtkWindow*     window;
     WebKitWebView* webView;
-    gboolean       focus;
     helper_size_t  size;
+    uint32_t       color;
+    Window         focusXWin;
+    gboolean       focus;
+    pthread_t      watchdog;
 } helper_context_t;
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId);
-static void set_background_color(const helper_context_t *ctx, uint32_t uint32_t);
-static void set_fake_size(const helper_context_t *ctx);
+static void set_background_color(helper_context_t *ctx, uint32_t uint32_t);
+static void set_view_size(const helper_context_t *ctx);
+static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
-static void inject_keystroke(const helper_context_t *ctx, const helper_key_t *key);
-static void window_destroy_cb(GtkWidget* widget, GtkWidget* window);
+static void *focus_watchdog_worker(void *arg);
+static gboolean release_focus(gpointer data);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
 static gboolean web_view_keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data);
@@ -72,6 +77,8 @@ int main(int argc, char* argv[])
 
     ctx.ipc = ipc_init(&conf);
 
+    XInitThreads();
+
     gdk_set_allowed_backends("x11");
     gtk_init(0, NULL);
 
@@ -86,27 +93,32 @@ int main(int argc, char* argv[])
 
     gtk_main();
 
+    set_keyboard_focus(&ctx, FALSE);
     g_io_channel_shutdown(channel, TRUE, NULL);
-
     ipc_destroy(ctx.ipc);
+    XCloseDisplay(ctx.display);
 
     return 0;
 }
 
 static void create_view(helper_context_t *ctx, uintptr_t parentId)
 {
-    // Create a native child window of arbitrary maximum size
-    Window child = XCreateWindow(ctx->display, (Window)parentId, 0, 0,
-                                    MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0,
-                                    CopyFromParent, CopyFromParent, CopyFromParent,
-                                    0, 0);
-    XFlush(ctx->display);
+    // Create a native container window of arbitrary maximum size
+    ctx->container = XCreateWindow(ctx->display, (Window)parentId, 0, 0,
+                                MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0,
+                                CopyFromParent, CopyFromParent, CopyFromParent,
+                                0, 0);
+    // Web text inputs focus color shows correctly when not embedding the window
+    XSelectInput(ctx->display, ctx->container, ExposureMask);
+    XSetWindowBackground(ctx->display, ctx->container, ctx->color >> 8);
+    XClearWindow(ctx->display, ctx->container);
+    XSync(ctx->display, False);
 
-    // Wrap child in a GDK window
-    GdkWindow* gdkChild = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(), child);
+    // Wrap container in a GDK window
+    GdkWindow* gdkWindow = gdk_x11_window_foreign_new_for_display(gdk_display_get_default(),
+        ctx->container);
     ctx->window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
-    g_signal_connect(ctx->window, "destroy", G_CALLBACK(window_destroy_cb), ctx);
-    g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkChild);
+    g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkWindow);
     // After the web view becomes visible, gtk_window_resize() will not cause
     // its contents to resize anymore. The issue is probably related to the
     // GdkWindow wrapping a X11 window and not emitting Glib events like
@@ -129,23 +141,64 @@ static void create_view(helper_context_t *ctx, uintptr_t parentId)
     webkit_user_content_manager_register_script_message_handler(manager, "host");
 }
 
-static void set_background_color(const helper_context_t *ctx, uint32_t rgba)
+static void set_background_color(helper_context_t *ctx, uint32_t rgba)
 {
-    // TODO: gtk_widget_override_background_color() is deprecated
-    GdkRGBA color = {DISTRHO_UNPACK_RGBA_NORM(rgba, gdouble)};
+    ctx->color = rgba;
+
+    if (ctx->window != 0) {
+        // TODO: gtk_widget_override_background_color() is deprecated
+        GdkRGBA color = { DISTRHO_UNPACK_RGBA_NORM(rgba, gdouble) };
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
+        gtk_widget_override_background_color(GTK_WIDGET(ctx->window), GTK_STATE_NORMAL, &color);
 #pragma GCC diagnostic pop
+    }
 }
 
-static void set_fake_size(const helper_context_t *ctx)
+static void set_view_size(const helper_context_t *ctx)
 {
     char js[1024];
+
+    unsigned width = ctx->size.width;
+    unsigned height = ctx->size.height;
+
+    // Does not result in webview contents size update LXRESIZEBUG
+    //gtk_window_resize(ctx->window, width, height);
+
+    // Set container size in case host reads it
+    XResizeWindow(ctx->display, ctx->container, width, height);
+
     sprintf(js, "document.body.style.width  = '%dpx';"
                 "document.body.style.height = '%dpx';",
-                ctx->size.width, ctx->size.height);
+                width, height);
     webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
+}
+
+static void set_keyboard_focus(helper_context_t *ctx, gboolean focus)
+{
+    if (ctx->focus == focus) {
+        return;
+    }
+
+    ctx->focusXWin = 0;
+    ctx->focus = focus;
+
+    // Some hosts grab focus back from the plugin, avoid that
+
+    GdkWindow *window = gtk_widget_get_window(GTK_WIDGET(ctx->webView));
+    GdkSeat *seat = gdk_display_get_default_seat(gdk_display_get_default());
+
+    if (ctx->focus) {
+        gdk_seat_grab(seat, window, GDK_SEAT_CAPABILITY_KEYBOARD, FALSE, NULL, NULL, NULL, NULL);
+        pthread_create(&ctx->watchdog, NULL, focus_watchdog_worker, ctx);
+    } else {
+        gdk_seat_ungrab(seat);
+
+        if (ctx->watchdog != 0) {
+            pthread_join(ctx->watchdog, NULL);
+            ctx->watchdog = 0;
+        }
+    }
 }
 
 static void inject_script(const helper_context_t *ctx, const char* js)
@@ -157,26 +210,35 @@ static void inject_script(const helper_context_t *ctx, const char* js)
     webkit_user_script_unref(script);
 }
 
-static void inject_keystroke(const helper_context_t *ctx, const helper_key_t *key)
-{
-    GdkEvent event;
-    memset(&event, 0, sizeof(event));
-    event.key.type = key->press ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
-    event.key.window = gtk_widget_get_window(GTK_WIDGET(ctx->window));
-    event.key.time = GDK_CURRENT_TIME;
-    event.key.state =   ((key->mod & MOD_SHIFT)   ? GDK_SHIFT_MASK   : 0)
-                      | ((key->mod & MOD_CONTROL) ? GDK_CONTROL_MASK : 0)
-                      | ((key->mod & MOD_ALT)     ? GDK_MOD1_MASK    : 0)
-                      | ((key->mod & MOD_SUPER)   ? GDK_SUPER_MASK   : 0); // Cmd, Win...
-    event.key.keyval = key->code;
-    event.key.hardware_keycode = key->hw_code;
-    event.key.is_modifier = (guint)(key->mod != 0);
-    gdk_event_put(&event); // prints a lot of warnings to stderr...
+static void *focus_watchdog_worker(void *arg)
+{        
+    // Use a thread to poll plugin keyboard focus status because Gdk wrapped X11
+    // windows do not seem to emit focus events like a regular GdkWindow
+
+    helper_context_t *ctx = (helper_context_t *)arg;
+
+    while (ctx->focus) {
+        if (ctx->focus && (ctx->focusXWin != 0)) {
+            Window focus;
+            int revert;
+
+            XLockDisplay(ctx->display);
+            XGetInputFocus(ctx->display, &focus, &revert);
+            XUnlockDisplay(ctx->display);
+
+            if (ctx->focusXWin != focus) {
+                g_idle_add(release_focus, ctx);
+            }
+        }
+
+        usleep(100000L); // 100ms
+    }
 }
 
-static void window_destroy_cb(GtkWidget* widget, GtkWidget* window)
+static gboolean release_focus(gpointer data)
 {
-    gtk_main_quit();
+    set_keyboard_focus((helper_context_t *)data, FALSE);
+    return FALSE;
 }
 
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
@@ -186,10 +248,10 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
-            set_fake_size(ctx);
+            set_view_size(ctx);
             gtk_widget_show(GTK_WIDGET(ctx->window));
-            usleep(50000L); // prevent flicker and occasional blank view
-            ipc_write_simple(ctx, OPC_HANDLE_LOAD_FINISHED, NULL, 0);
+            usleep(50000L); // 50ms -- prevent flicker and occasional blank view
+            ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
             break;
 
         default:
@@ -248,7 +310,7 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
 
     webkit_javascript_result_unref(res);
 
-    ipc_write_simple((helper_context_t *)data, OPC_HANDLE_SCRIPT_MESSAGE, payload, offset);
+    ipc_write_simple((helper_context_t *)data, OP_HANDLE_SCRIPT_MESSAGE, payload, offset);
 
     if (payload) {
         free(payload);
@@ -258,6 +320,10 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
 static gboolean web_view_keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     helper_context_t *ctx = (helper_context_t *)data;
+
+    int revert;
+    XGetInputFocus(ctx->display, &ctx->focusXWin, &revert);
+
     return !ctx->focus;
 }
 
@@ -276,46 +342,47 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     }
 
     switch (packet.t) {
-        case OPC_CREATE_VIEW:
+        case OP_CREATE_VIEW:
             create_view(ctx, *((uintptr_t *)packet.v));
             break;
 
-        case OPC_SET_BACKGROUND_COLOR:
+        case OP_SET_BACKGROUND_COLOR:
             set_background_color(ctx, *((uint32_t *)packet.v));
             break;
 
-        case OPC_SET_SIZE: {
+        case OP_SET_SIZE: {
             const helper_size_t *size = (const helper_size_t *)packet.v;
-            //gtk_window_resize(ctx->window, size->width, size->height);
             ctx->size = *size;
-            set_fake_size(ctx);
+            set_view_size(ctx);
             break;
         }
 
-        case OPC_SET_POSITION: {
+        case OP_SET_POSITION: {
             const helper_pos_t *pos = (const helper_pos_t *)packet.v;
             gtk_window_move(ctx->window, pos->x, pos->y);
             break;
         }
 
-        case OPC_SET_KEYBOARD_FOCUS:
-            ctx->focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
+        case OP_SET_KEYBOARD_FOCUS: {
+            gboolean focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
+            set_keyboard_focus(ctx, focus);
             break;
+        }
 
-        case OPC_NAVIGATE:
+        case OP_NAVIGATE:
             webkit_web_view_load_uri(ctx->webView, packet.v);
             break;
 
-        case OPC_RUN_SCRIPT:
+        case OP_RUN_SCRIPT:
             webkit_web_view_run_javascript(ctx->webView, packet.v, NULL, NULL, NULL);
             break;
 
-        case OPC_INJECT_SCRIPT:
+        case OP_INJECT_SCRIPT:
             inject_script(ctx, packet.v);
             break;
 
-        case OPC_KEY_EVENT:
-            inject_keystroke(ctx, (const helper_key_t *)packet.v);
+        case OP_QUIT:
+            gtk_main_quit();
             break;
 
         default:

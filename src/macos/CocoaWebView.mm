@@ -35,20 +35,18 @@
 
 // Do not assume an autorelease pool exists or ARC is enabled.
 
-USE_NAMESPACE_DGL
+USE_NAMESPACE_DISTRHO
 
 @interface DistrhoWebView: WKWebView
-@property (readonly, nonatomic) CocoaWebView* cppWidget;
+@property (readonly, nonatomic) CocoaWebView* cppView;
 @property (readonly, nonatomic) NSView* pluginRootView;
 @end
 
 @interface DistrhoWebViewDelegate: NSObject<WKNavigationDelegate, WKScriptMessageHandler>
-@property (assign, nonatomic) CocoaWebView *cppWidget;
+@property (assign, nonatomic) CocoaWebView *cppView;
 @end
 
-CocoaWebView::CocoaWebView(Widget *parentWidget)
-    : AbstractWebView(parentWidget)
-    , fLastKeyboardEventTime(0)
+CocoaWebView::CocoaWebView()
 {
     // Create the web view
     fView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];
@@ -56,14 +54,9 @@ CocoaWebView::CocoaWebView(Widget *parentWidget)
 
     // Create a ObjC object that responds to some web view callbacks
     fDelegate = [[DistrhoWebViewDelegate alloc] init];
-    fWebViewDelegate.cppWidget = this;
+    fWebViewDelegate.cppView = this;
     fWebView.navigationDelegate = fWebViewDelegate;
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
-
-    // windowId is either a PuglCairoView* or PuglOpenGLViewDGL* depending
-    // on the value of UI_TYPE in the Makefile. Both are NSView subclasses.
-    NSView *parentView = (NSView *)parentWidget->getWindow().getNativeWindowHandle();
-    [parentView addSubview:fWebView];
 
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
@@ -76,86 +69,10 @@ CocoaWebView::~CocoaWebView()
     [fWebViewDelegate release];
 }
 
-void CocoaWebView::onResize(const ResizeEvent& ev)
+void CocoaWebView::setParent(uintptr_t parent)
 {
-    (void)ev;
-    updateWebViewFrame();
-}
-
-void CocoaWebView::onPositionChanged(const PositionChangedEvent& ev)
-{
-    (void)ev;
-    updateWebViewFrame();
-}
-
-bool CocoaWebView::onKeyboard(const KeyboardEvent& ev)
-{
-    // Some hosts like REAPER prevent the web view from gaining keyboard focus.
-    // In such cases the web view can still get touch/mouse input, so assuming
-    // the user wants to type into a <input> element, such element can be
-    // focused by clicking on it, and all subsequent key events received by the
-    // root plugin window here by this method will be conveniently injected into
-    // the web view, effectively reaching the <input> element.
-
-    if (!isKeyboardFocus()) {
-        return false;
-    }
-
-    if ((ev.time != 0) && (fLastKeyboardEventTime == ev.time)) {
-        //NSLog(@"Break onKeyboard() loop");
-        return true;
-    }
-
-    // Make a distinction between DPF delivered key events (ev.time always 0)
-    // and synthesized key events below by setting their timestamps to now. This
-    // is needed to break potential onKeyboard() loops while allowing key repeat
-
-    uint now = (uint)CFAbsoluteTimeGetCurrent();
-
-    fLastKeyboardEventTime = ev.time == 0 ? now : ev.time;
-
-    // TODO: conversion method does not work for anything non-ASCII
-
-    uint32_t key = OSSwapHostToLittleInt32(ev.key);
-    NSString *ch = [[NSString alloc] initWithBytes:&key length:4 encoding:NSUTF32LittleEndianStringEncoding];
-
-    NSEventModifierFlags flags =  ((ev.mod & kModifierShift  ) ? NSEventModifierFlagShift   : 0)
-                                | ((ev.mod & kModifierControl) ? NSEventModifierFlagControl : 0)
-                                | ((ev.mod & kModifierAlt    ) ? NSEventModifierFlagOption  : 0)
-                                | ((ev.mod & kModifierSuper  ) ? NSEventModifierFlagCommand : 0);
-    if (ev.press) {
-        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyDown
-            location: NSZeroPoint
-            modifierFlags: flags
-            timestamp: (NSTimeInterval)now
-            windowNumber: 0
-            context: nil
-            characters: ch
-            charactersIgnoringModifiers: ch
-            isARepeat: NO
-            keyCode: ev.keycode
-        ];
-
-        [fWebView keyDown:event];
-    } else {
-        NSEvent *event = [NSEvent keyEventWithType: NSEventTypeKeyUp
-            location: NSZeroPoint
-            modifierFlags: flags
-            timestamp: (NSTimeInterval)now
-            windowNumber: 0
-            context: nil
-            characters: ch
-            charactersIgnoringModifiers: ch
-            isARepeat: NO
-            keyCode: ev.keycode
-        ];
-
-        [fWebView keyUp:event];
-    }
-
-    [ch release];
-
-    return true; // stop propagation
+    AbstractWebView::setParent(parent);
+    [(NSView *)parent addSubview:fWebView];
 }
 
 void CocoaWebView::setBackgroundColor(uint32_t rgba)
@@ -174,6 +91,18 @@ void CocoaWebView::setBackgroundColor(uint32_t rgba)
             NSLog(@"Could not set transparent color for WKWebView");
         }
     }
+}
+
+void CocoaWebView::setSize(uint width, uint height)
+{
+    CGRect frame;
+    frame.origin.x = 0;
+    frame.origin.y = 0;
+    frame.size.width = (CGFloat)width;
+    frame.size.height = (CGFloat)height;
+    frame = [fWebView.window convertRectFromBacking:frame];
+    frame.origin.y = fWebView.superview.frame.origin.y;
+    fWebView.frame = frame;
 }
 
 void CocoaWebView::navigate(String& url)
@@ -202,21 +131,11 @@ void CocoaWebView::injectScript(String& source)
     [js release];
 }
 
-void CocoaWebView::updateWebViewFrame()
-{
-    CGRect frame;
-    frame.origin.x = (CGFloat)getAbsoluteX();
-    frame.origin.y = (CGFloat)getAbsoluteY();
-    frame.size.width = (CGFloat)getWidth();
-    frame.size.height = (CGFloat)getHeight();
-    fWebView.frame = [fWebView.window convertRectFromBacking:frame];
-}
-
 @implementation DistrhoWebView
 
-- (CocoaWebView *)cppWidget
+- (CocoaWebView *)cppView
 {
-    return ((DistrhoWebViewDelegate *)self.navigationDelegate).cppWidget;
+    return ((DistrhoWebViewDelegate *)self.navigationDelegate).cppView;
 }
 
 - (NSView *)pluginRootView
@@ -245,7 +164,7 @@ void CocoaWebView::updateWebViewFrame()
 
 - (void)keyDown:(NSEvent *)event
 {
-    if (self.cppWidget->isKeyboardFocus()) {
+    if (self.cppView->isKeyboardFocus()) {
         [super keyDown:event];
     } else {
         [self.pluginRootView keyDown:event];
@@ -254,7 +173,7 @@ void CocoaWebView::updateWebViewFrame()
 
 - (void)keyUp:(NSEvent *)event
 {
-    if (self.cppWidget->isKeyboardFocus()) {
+    if (self.cppView->isKeyboardFocus()) {
         [super keyUp:event];
     } else {
         [self.pluginRootView keyUp:event];
@@ -263,7 +182,7 @@ void CocoaWebView::updateWebViewFrame()
 
 - (void)flagsChanged:(NSEvent *)event
 {
-    if (self.cppWidget->isKeyboardFocus()) {
+    if (self.cppView->isKeyboardFocus()) {
         [super flagsChanged:event];
     } else {
         [self.pluginRootView flagsChanged:event];
@@ -276,7 +195,7 @@ void CocoaWebView::updateWebViewFrame()
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
-    self.cppWidget->didFinishNavigation();
+    self.cppView->didFinishNavigation();
     webView.hidden = NO;
 }
 
@@ -300,7 +219,7 @@ void CocoaWebView::updateWebViewFrame()
         }
     }
 
-    self.cppWidget->didReceiveScriptMessage(args);
+    self.cppView->didReceiveScriptMessage(args);
 }
 
 @end

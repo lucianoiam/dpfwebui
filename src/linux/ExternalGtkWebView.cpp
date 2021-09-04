@@ -27,7 +27,7 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 
-#include "Platform.hpp"
+#include "Path.hpp"
 #include "macro.h"
 
 /*
@@ -42,13 +42,12 @@
 
 extern char **environ;
 
-USE_NAMESPACE_DGL
+USE_NAMESPACE_DISTRHO
 
-ExternalGtkWebView::ExternalGtkWebView(Widget *parentWidget)
-    : AbstractWebView(parentWidget)
-    , fPid(-1)
-    , fIpc(nullptr)
-    , fIpcThread(nullptr)
+ExternalGtkWebView::ExternalGtkWebView()
+    : fPid(-1)
+    , fIpc(0)
+    , fIpcThread(0)
 {
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
 
@@ -77,45 +76,36 @@ ExternalGtkWebView::ExternalGtkWebView(Widget *parentWidget)
     sprintf(wfd, "%d", fPipeFd[1][1]);
     
     char binPath[PATH_MAX];
-    strcpy(binPath, platform::getBinaryPath());
+    strcpy(binPath, path::getBinaryPath());
     String helperPath = String(dirname(binPath)) + "/" XSTR(BIN_BASENAME) "-ui";
-    const char *argv[] = {helperPath, rfd, wfd, 0};
+    const char *argv[] = { helperPath, rfd, wfd, 0 };
 
     int status = posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
 
     if (status != 0) {
         HIPHOP_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
-        return;
     }
-
-    int windowId = static_cast<int>(parentWidget->getWindow().getNativeWindowHandle());
-    ipcWrite(OPC_CREATE_VIEW, &windowId, sizeof(windowId));
-
-    String js = String(JS_POST_MESSAGE_SHIM);
-    injectDefaultScripts(js);
 }
 
 ExternalGtkWebView::~ExternalGtkWebView()
 {
     if (fPid != -1) {
-        if (kill(fPid, SIGTERM) == 0) {
-            int stat;
-            waitpid(fPid, &stat, 0);
-        } else {
-            HIPHOP_LOG_STDERR_ERRNO("Could not terminate helper subprocess");
-        }
+        ipcWrite(OP_QUIT, 0, 0);
+
+        int stat;
+        waitpid(fPid, &stat, 0);
 
         fPid = -1;
     }
 
-    if (fIpcThread != nullptr) {
+    if (fIpcThread != 0) {
         fIpcThread->stopThread(-1);
-        fIpcThread = nullptr;
+        fIpcThread = 0;
     }
 
-    if (fIpc != nullptr) {
+    if (fIpc != 0) {
         ipc_destroy(fIpc);
-        fIpc = nullptr;
+        fIpc = 0;
     }
 
     for (int i = 0; i < 2; i++) {
@@ -129,60 +119,30 @@ ExternalGtkWebView::~ExternalGtkWebView()
     }
 }
 
-void ExternalGtkWebView::onResize(const ResizeEvent& ev)
-{
-    helper_size_t sizePkt = {ev.size.getWidth(), ev.size.getHeight()};
-    ipcWrite(OPC_SET_SIZE, &sizePkt, sizeof(sizePkt));
-}
-
-void ExternalGtkWebView::onPositionChanged(const PositionChangedEvent& ev)
-{
-    helper_pos_t posPkt = {ev.pos.getX(), ev.pos.getY()};
-    ipcWrite(OPC_SET_POSITION, &posPkt, sizeof(posPkt));
-}
-
-bool ExternalGtkWebView::onKeyboard(const KeyboardEvent& ev)
-{
-    // Some hosts like Bitwig prevent the web view from gaining keyboard focus.
-    // In such cases the web view can still get touch/mouse input, so assuming
-    // the user wants to type into a <input> element, such element can be
-    // focused by clicking on it, and all subsequent key events received by the
-    // root plugin window here by this method will be conveniently injected into
-    // the helper window, effectively reaching the web view <input>.
-
-    if (!isKeyboardFocus()) {
-        return false;
-    }
-
-    helper_key_t key;
-    key.press = ev.press;
-    key.code = ev.key;
-    key.hw_code = ev.keycode;
-    key.mod = ev.mod;
-
-    ipcWrite(OPC_KEY_EVENT, &key, sizeof(key));
-    
-    return true; // stop propagation
-}
-
 void ExternalGtkWebView::setBackgroundColor(uint32_t rgba)
 {
-    ipcWrite(OPC_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
+    ipcWrite(OP_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
+}
+
+void ExternalGtkWebView::setSize(uint width, uint height)
+{
+    helper_size_t sizePkt = { width, height };
+    ipcWrite(OP_SET_SIZE, &sizePkt, sizeof(sizePkt));
 }
 
 void ExternalGtkWebView::navigate(String& url)
 {
-    ipcWriteString(OPC_NAVIGATE, url);
+    ipcWriteString(OP_NAVIGATE, url);
 }
 
 void ExternalGtkWebView::runScript(String& source)
 {
-    ipcWriteString(OPC_RUN_SCRIPT, source);
+    ipcWriteString(OP_RUN_SCRIPT, source);
 }
 
 void ExternalGtkWebView::injectScript(String& source)
 {
-    ipcWriteString(OPC_INJECT_SCRIPT, source);
+    ipcWriteString(OP_INJECT_SCRIPT, source);
 }
 
 void ExternalGtkWebView::setKeyboardFocus(bool focus)
@@ -190,14 +150,18 @@ void ExternalGtkWebView::setKeyboardFocus(bool focus)
     AbstractWebView::setKeyboardFocus(focus);
     
     char val = focus ? 1 : 0;
-    ipcWrite(OPC_SET_KEYBOARD_FOCUS, &val, sizeof(val));
+    ipcWrite(OP_SET_KEYBOARD_FOCUS, &val, sizeof(val));
+}
 
-    // REAPER steals focus after plugin initialization, reset keyboard focus
-    // because clicking on the web view is not enough for regaining it.
+void ExternalGtkWebView::setParent(uintptr_t parent)
+{
+    AbstractWebView::setParent(parent);
 
-    if (focus) {
-        getWindow().focus();
-    }
+    int windowId = static_cast<int>(parent);
+    ipcWrite(OP_CREATE_VIEW, &windowId, sizeof(windowId));
+
+    String js = String(JS_POST_MESSAGE_SHIM);
+    injectDefaultScripts(js);
 }
 
 int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str) const
@@ -225,13 +189,13 @@ int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, in
 void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
 {
     switch (static_cast<helper_opcode_t>(packet.t)) {
-        case OPC_HANDLE_LOAD_FINISHED: {
+        case OP_HANDLE_LOAD_FINISHED: {
             String js = String(JS_DISABLE_PINCH_ZOOM_WORKAROUND);
             runScript(js);
             handleLoadFinished();
             break;
         }
-        case OPC_HANDLE_SCRIPT_MESSAGE:
+        case OP_HANDLE_SCRIPT_MESSAGE:
             handleHelperScriptMessage(static_cast<const char*>(packet.v), packet.l);
             break;
 

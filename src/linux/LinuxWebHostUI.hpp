@@ -16,32 +16,36 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PLATFORM_HPP
-#define PLATFORM_HPP
+#ifndef LINUX_WEB_HOST_UI_HPP
+#define LINUX_WEB_HOST_UI_HPP
 
-#include "extra/String.hpp"
-
-#include "macro.h"
+#include "AbstractWebHostUI.hpp"
+#include "ExternalGtkWebView.hpp"
 
 START_NAMESPACE_DISTRHO
 
-namespace platform {
+class LinuxWebHostUI : public AbstractWebHostUI
+{
+public:
+    LinuxWebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    virtual ~LinuxWebHostUI();
 
-    bool isRunningStandalone();
-    void setRunningStandalone(bool standalone);
+    float getDisplayScaleFactor(uintptr_t window) override;
+    void  openSystemWebBrowser(String& url) override;
 
-    float getDisplayScaleFactor(uintptr_t window);
+protected:
+    uintptr_t createStandaloneWindow() override;
+    void      processStandaloneEvents() override;
 
-    void openSystemWebBrowser(String& url);
+    AbstractWebView& getWebView() override { return fWebView; }
 
-    String getBinaryPath();
-    String getLibraryPath();
-    String getTemporaryPath();
+private:
+    ExternalGtkWebView fWebView;
 
-    const String kDefaultLibrarySubdirectory = String(XSTR(BIN_BASENAME) "-lib");
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LinuxWebHostUI)
 
-}
+};
 
 END_NAMESPACE_DISTRHO
 
-#endif  // PLATFORM_HPP
+#endif  // LINUX_WEB_HOST_UI_HPP

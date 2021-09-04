@@ -22,9 +22,9 @@
 #include <WinDef.h>
 #include <winuser.h>
 
-#include "dgl/Base.hpp"
+#include "src/DistrhoDefines.h"
 
-START_NAMESPACE_DGL
+START_NAMESPACE_DISTRHO
 
 class KeyboardRouter
 {
@@ -58,6 +58,6 @@ private:
 
 };
 
-END_NAMESPACE_DGL
+END_NAMESPACE_DISTRHO
 
 #endif  // KEYBOARD_ROUTER_HPP

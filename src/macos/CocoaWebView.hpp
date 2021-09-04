@@ -25,41 +25,34 @@
 // source files importing CocoaWebView.hpp to do so before any other project
 // headers to avoid symbol name collisions. Do not make any assumption.
 
-START_NAMESPACE_DGL
+START_NAMESPACE_DISTRHO
 
 class CocoaWebView : public AbstractWebView
 {
 public:
-    CocoaWebView(Widget *parentWidget);
-    ~CocoaWebView();
+    CocoaWebView();
+    virtual ~CocoaWebView();
 
     void setBackgroundColor(uint32_t rgba) override;
+    void setSize(uint width, uint height) override;
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;
-    
+    void setParent(uintptr_t parent) override;
+
     // Allow calling some protected methods from Objective-C instances
     
     void didFinishNavigation() { handleLoadFinished(); }
     void didReceiveScriptMessage(const JsValueVector& args) { handleScriptMessage(args); }
 
-protected:
-    void onResize(const ResizeEvent& ev) override;
-    void onPositionChanged(const PositionChangedEvent& ev) override;
-    bool onKeyboard(const KeyboardEvent& ev) override;
-
 private:
-    void updateWebViewFrame();
-
     void *fView;
     void *fDelegate;
-
-    uint fLastKeyboardEventTime;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CocoaWebView)
 
 };
 
-END_NAMESPACE_DGL
+END_NAMESPACE_DISTRHO
 
 #endif  // COCOA_WEBVIEW_HPP

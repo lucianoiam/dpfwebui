@@ -74,16 +74,15 @@ TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
 
 ifeq ($(AS_DSP),true)
 HIPHOP_FILES_DSP  = WasmHostPlugin.cpp \
-                    WasmEngine.cpp \
-                    Platform.cpp
+                    WasmEngine.cpp
 ifeq ($(LINUX),true)
-HIPHOP_FILES_DSP += linux/PlatformLinux.cpp
+HIPHOP_FILES_DSP += linux/LinuxPath.cpp
 endif
 ifeq ($(MACOS),true)
-HIPHOP_FILES_DSP += macos/PlatformMac.mm
+HIPHOP_FILES_DSP += macos/MacPath.mm
 endif
 ifeq ($(WINDOWS),true)
-HIPHOP_FILES_DSP += windows/PlatformWindows.cpp
+HIPHOP_FILES_DSP += windows/WindowsPath.cpp
 endif
 
 FILES_DSP += $(HIPHOP_FILES_DSP:%=$(HIPHOP_SRC_PATH)/%)
@@ -93,24 +92,26 @@ endif
 # Add optional support for web UI
 
 ifeq ($(WEB_UI),true)
-HIPHOP_FILES_UI  = WebHostUI.cpp \
+HIPHOP_FILES_UI  = AbstractWebHostUI.cpp \
                    AbstractWebView.cpp \
-                   JsValue.cpp \
-                   Platform.cpp
+                   JsValue.cpp
 ifeq ($(LINUX),true)
-HIPHOP_FILES_UI += linux/ExternalGtkWebView.cpp \
-                   linux/PlatformLinux.cpp \
+HIPHOP_FILES_UI += linux/LinuxPath.cpp \
+                   linux/LinuxWebHostUI.cpp \
+                   linux/ExternalGtkWebView.cpp \
                    linux/ipc.c
 endif
 ifeq ($(MACOS),true)
-HIPHOP_FILES_UI += macos/CocoaWebView.mm \
-                   macos/PlatformMac.mm
+HIPHOP_FILES_UI += macos/MacPath.mm \
+                   macos/MacWebHostUI.mm \
+                   macos/CocoaWebView.mm
 endif
 ifeq ($(WINDOWS),true)
-HIPHOP_FILES_UI += windows/EdgeWebView.cpp \
-                   windows/KeyboardRouter.cpp \
-                   windows/PlatformWindows.cpp \
+HIPHOP_FILES_UI += windows/WindowsPath.cpp \
+                   windows/WindowsWebHostUI.cpp \
+                   windows/EdgeWebView.cpp \
                    windows/WebView2EventHandler.cpp \
+                   windows/KeyboardRouter.cpp \
                    windows/cJSON.c \
                    windows/resources/plugin.rc
 endif
@@ -129,6 +130,10 @@ ifneq (,$(DPF_GIT_BRANCH))
 ifeq (,$(findstring $(DPF_GIT_BRANCH),$(shell git -C $(DPF_PATH) branch --show-current)))
 _ := $(shell git -C $(DPF_PATH) checkout $(DPF_GIT_BRANCH))
 endif
+endif
+
+ifeq ($(WEB_UI),true)
+UI_TYPE = external
 endif
 
 include $(DPF_PATH)/Makefile.plugins.mk
@@ -196,10 +201,12 @@ info:
 # ------------------------------------------------------------------------------
 # Dependency - Build DPF Graphics Library
 
+ifneq ($(WEB_UI),true)
 TARGETS += $(DPF_PATH)/build/libdgl.a
 
 $(DPF_PATH)/build/libdgl.a:
 	make -C $(DPF_PATH) dgl
+endif
 
 # ------------------------------------------------------------------------------
 # Dependency - Download Wasmer
