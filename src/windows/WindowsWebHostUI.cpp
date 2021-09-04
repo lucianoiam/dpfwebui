@@ -30,7 +30,7 @@ WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t bac
 
 WindowsWebHostUI::~WindowsWebHostUI()
 {
-    // TODO
+    // TODO - standalone support
 }
 
 // Explanation for the GCC warnings https://github.com/chriskohlhoff/asio/issues/631
@@ -78,11 +78,11 @@ void WindowsWebHostUI::openSystemWebBrowser(String& url)
 
 uintptr_t WindowsWebHostUI::createStandaloneWindow()
 {
-    // TODO
+    // TODO - standalone support
     return 0;
 }
 
 void WindowsWebHostUI::processStandaloneEvents()
 {
-    // TODO
+    // TODO - standalone support
 }

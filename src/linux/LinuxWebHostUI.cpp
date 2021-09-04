@@ -53,7 +53,7 @@ LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgro
 
 LinuxWebHostUI::~LinuxWebHostUI()
 {
-    // TODO
+    // TODO - standalone support
 }
 
 float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
@@ -91,11 +91,11 @@ void LinuxWebHostUI::openSystemWebBrowser(String& url)
 
 uintptr_t LinuxWebHostUI::createStandaloneWindow()
 {
-    // TODO
+    // TODO - standalone support
     return 0;
 }
 
 void LinuxWebHostUI::processStandaloneEvents()
 {
-    // TODO
+    // TODO - standalone support
 }

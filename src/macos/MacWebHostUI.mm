@@ -32,8 +32,10 @@ MacWebHostUI::MacWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundC
 
 MacWebHostUI::~MacWebHostUI()
 {
-    [fNsWindow orderOut:nil];
-    [fNsWindow release];
+    if (isStandalone()) {
+        [fNsWindow orderOut:nil];
+        [fNsWindow release];
+    }
 }
 
 float MacWebHostUI::getDisplayScaleFactor(uintptr_t window)
@@ -68,7 +70,7 @@ uintptr_t MacWebHostUI::createStandaloneWindow()
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     [NSApp activateIgnoringOtherApps:YES];
 
-    CGRect contentRect = NSMakeRect(0,0,200,200);
+    CGRect contentRect = NSMakeRect(0, 0, (CGFloat)getWidth(), (CGFloat)getHeight());
     NSWindowStyleMask styleMask = NSWindowStyleMaskClosable | NSWindowStyleMaskResizable | NSWindowStyleMaskTitled;
     NSWindow* window = [[NSWindow alloc] initWithContentRect:contentRect
                                                    styleMask:styleMask
