@@ -20,6 +20,8 @@
 
 #include "CocoaWebView.hpp"
 
+#include "macro.h"
+
 // Avoid symbol name collisions
 #define OBJC_INTERFACE_NAME_HELPER_1(INAME, SEP, SUFFIX) INAME ## SEP ## SUFFIX
 #define OBJC_INTERFACE_NAME_HELPER_2(INAME, SUFFIX) OBJC_INTERFACE_NAME_HELPER_1(INAME, _, SUFFIX)
@@ -28,8 +30,9 @@
 #define DistrhoWebView         OBJC_INTERFACE_NAME(DistrhoWebView)
 #define DistrhoWebViewDelegate OBJC_INTERFACE_NAME(DistrhoWebViewDelegate)
 
-#define fWebView         ((DistrhoWebView*)fView)
-#define fWebViewDelegate ((DistrhoWebViewDelegate*)fDelegate)
+#define fTopView         ((NSView *)fViewBg)
+#define fWebView         ((DistrhoWebView *)fView)
+#define fWebViewDelegate ((DistrhoWebViewDelegate *)fDelegate)
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
@@ -48,11 +51,13 @@ USE_NAMESPACE_DISTRHO
 
 CocoaWebView::CocoaWebView()
 {
-    // Create the web view
-    fView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];
-    fWebView.hidden = YES;
+    fViewBg = [[NSView alloc] initWithFrame:CGRectZero];
+    fTopView.autoresizesSubviews = YES;
 
-    // Create a ObjC object that responds to some web view callbacks
+    fView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];
+    fWebView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    [fTopView addSubview:fWebView];
+
     fDelegate = [[DistrhoWebViewDelegate alloc] init];
     fWebViewDelegate.cppView = this;
     fWebView.navigationDelegate = fWebViewDelegate;
@@ -64,32 +69,38 @@ CocoaWebView::CocoaWebView()
 
 CocoaWebView::~CocoaWebView()
 {
+    [fWebViewDelegate release];
+
     [fWebView removeFromSuperview];
     [fWebView release];
-    [fWebViewDelegate release];
+
+    [fTopView removeFromSuperview];
+    [fTopView release];
 }
 
 void CocoaWebView::setParent(uintptr_t parent)
 {
     AbstractWebView::setParent(parent);
-    [(NSView *)parent addSubview:fWebView];
+    [(NSView *)parent addSubview:fTopView];
 }
 
 void CocoaWebView::setBackgroundColor(uint32_t rgba)
 {
-    // macOS WKWebView apparently does not offer a method for setting a background color, so the
-    // background is removed altogether to reveal the underneath window paint. Do it safely.
-    (void)rgba;
+    @try {
+        if ([fTopView respondsToSelector:@selector(setBackgroundColor:)]) {
+            CGFloat c[] = { DISTRHO_UNPACK_RGBA_NORM(rgba, CGFloat) };
+            NSColor* color = [NSColor colorWithRed:c[0] green:c[1] blue:c[2] alpha:c[3]];
+            [fTopView setValue:color forKey:@"backgroundColor"];
+            [color release];
+        }
 
-    if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
-        @try {
+        if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
             NSNumber *no = [[NSNumber alloc] initWithBool:NO];
             [fWebView setValue:no forKey:@"drawsBackground"];
             [no release];
         }
-        @catch (NSException *e) {
-            NSLog(@"Could not set transparent color for WKWebView");
-        }
+    } @catch (NSException *e) {
+        NSLog(@"Could not set background color");
     }
 }
 
@@ -100,9 +111,9 @@ void CocoaWebView::setSize(uint width, uint height)
     frame.origin.y = 0;
     frame.size.width = (CGFloat)width;
     frame.size.height = (CGFloat)height;
-    frame = [fWebView.window convertRectFromBacking:frame];
-    frame.origin.y = fWebView.superview.frame.origin.y;
-    fWebView.frame = frame;
+    frame = [fTopView.window convertRectFromBacking:frame];
+    frame.origin.y = fTopView.superview.frame.origin.y;
+    fTopView.frame = frame;
 }
 
 void CocoaWebView::navigate(String& url)

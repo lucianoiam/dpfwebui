@@ -17,7 +17,6 @@
 #import <AppKit/Appkit.h>
 
 #include "MacWebHostUI.hpp"
-#include "macro.h"
 
 #define fNsWindow ((NSWindow*)fWindow)
 
@@ -76,10 +75,6 @@ uintptr_t MacWebHostUI::createStandaloneWindow()
                                                    styleMask:styleMask
                                                      backing:NSBackingStoreBuffered
                                                        defer:NO];
-    
-    CGFloat c[] = { DISTRHO_UNPACK_RGBA_NORM(getBackgroundColor(), CGFloat) };
-    window.backgroundColor =  [NSColor colorWithRed:c[0] green:c[1] blue:c[2] alpha:1.f];
-
     [window makeKeyAndOrderFront:window];
     fWindow = (uintptr_t)window;
 

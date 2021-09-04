@@ -46,6 +46,7 @@ public:
     void didReceiveScriptMessage(const JsValueVector& args) { handleScriptMessage(args); }
 
 private:
+    void *fViewBg;
     void *fView;
     void *fDelegate;
 
