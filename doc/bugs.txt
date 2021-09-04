@@ -8,7 +8,7 @@ LINUX
 -----
 
 - REAPER does not tightly wrap plugin view after resize until manually resizing
-  host container view
+  host container view, possible bug in DPF ExternalWindow.
 - Workaround with tag LXRESIZEBUG https://bugs.webkit.org/show_bug.cgi?id=229227
 - DSSI plugin builds but UI does not open
 
