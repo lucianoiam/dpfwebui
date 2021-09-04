@@ -361,13 +361,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             set_view_size(ctx);
             break;
         }
-
-        case OP_SET_POSITION: {
-            const helper_pos_t *pos = (const helper_pos_t *)packet.v;
-            gtk_window_move(ctx->window, pos->x, pos->y);
-            break;
-        }
-
+        
         case OP_SET_KEYBOARD_FOCUS: {
             gboolean focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
             set_keyboard_focus(ctx, focus);
