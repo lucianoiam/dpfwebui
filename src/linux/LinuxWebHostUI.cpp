@@ -27,29 +27,8 @@ USE_NAMESPACE_DISTRHO
 LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
 {
-    const bool standalone = isStandalone();
-
-    path::setRunningStandalone(standalone);
-
-    if (!standalone) {
-        ::Window parent = getParentWindowHandle();
-
-        if (parent != 0) {
-            Display* display = XOpenDisplay(0);
-
-            if (display != 0) {
-                XSetWindowBackground(display, parent, backgroundColor >> 8);
-                XClearWindow(display, parent);
-                XCloseDisplay(display);
-            }
-        }
-    }
-
-    // Special case for Linux: set background color before setting parent window
-    // handle to prevent further flicker on startup, see helper.c create_view()
-
-    fWebView.setBackgroundColor(getBackgroundColor());
-
+    path::setRunningStandalone(isStandalone());
+    
     initWebView(fWebView);
 }
 

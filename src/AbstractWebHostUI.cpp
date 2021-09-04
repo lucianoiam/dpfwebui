@@ -33,8 +33,8 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 {
     uintptr_t parent = isStandalone() ? createStandaloneWindow() : getParentWindowHandle();
 
-    webView.setParent(parent);
     webView.setBackgroundColor(fBackgroundColor);
+    webView.setParent(parent);
     webView.setEventHandler(this);
 #ifdef HIPHOP_PRINT_TRAFFIC
     webView.setPrintTraffic(true);
@@ -60,6 +60,7 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 void AbstractWebHostUI::sizeChanged(uint width, uint height)
 {
     UI::sizeChanged(width, height);
+    
     getWebView().setSize(width, height);
     webPostMessage({"UI", "sizeChanged", width, height});
 }

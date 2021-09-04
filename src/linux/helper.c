@@ -123,6 +123,7 @@ static void create_view(helper_context_t *ctx, uintptr_t parentId)
         ctx->container);
     ctx->window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
     g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkWindow);
+    
     // After the web view becomes visible, gtk_window_resize() will not cause
     // its contents to resize anymore. The issue is probably related to the
     // GdkWindow wrapping a X11 window and not emitting Glib events like

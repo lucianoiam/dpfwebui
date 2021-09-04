@@ -39,6 +39,39 @@
 
 USE_NAMESPACE_DISTRHO
 
+bool AbstractWebView::getKeyboardFocus()
+{
+    return fKeyboardFocus;
+}    
+
+void AbstractWebView::setKeyboardFocus(bool focus)
+{
+    fKeyboardFocus = focus;
+    onKeyboardFocus(focus);
+}
+
+uint32_t AbstractWebView::getBackgroundColor()
+{
+    return fBackgroundColor;
+}
+
+void AbstractWebView::setBackgroundColor(uint32_t rgba)
+{
+    fBackgroundColor = rgba;
+    onBackgroundColor(rgba);
+}
+
+uintptr_t AbstractWebView::getParent()
+{
+    return fParent;
+}
+
+void AbstractWebView::setParent(uintptr_t parent)
+{
+    fParent = parent;
+    onParent(parent);
+}
+
 void AbstractWebView::injectDefaultScripts(String& platformSpecificScript)
 {
     String js = String()

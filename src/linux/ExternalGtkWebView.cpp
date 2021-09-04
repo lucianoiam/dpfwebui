@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <X11/Xlib.h>
+
 #include "ExternalGtkWebView.hpp"
 
 #include <cstdio>
@@ -119,11 +121,6 @@ ExternalGtkWebView::~ExternalGtkWebView()
     }
 }
 
-void ExternalGtkWebView::setBackgroundColor(uint32_t rgba)
-{
-    ipcWrite(OP_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
-}
-
 void ExternalGtkWebView::setSize(uint width, uint height)
 {
     helper_size_t sizePkt = { width, height };
@@ -145,23 +142,29 @@ void ExternalGtkWebView::injectScript(String& source)
     ipcWriteString(OP_INJECT_SCRIPT, source);
 }
 
-void ExternalGtkWebView::setKeyboardFocus(bool focus)
+void ExternalGtkWebView::onBackgroundColor(uint32_t rgba)
 {
-    AbstractWebView::setKeyboardFocus(focus);
-    
-    char val = focus ? 1 : 0;
-    ipcWrite(OP_SET_KEYBOARD_FOCUS, &val, sizeof(val));
+    ipcWrite(OP_SET_BACKGROUND_COLOR, &rgba, sizeof(rgba));
 }
 
-void ExternalGtkWebView::setParent(uintptr_t parent)
+void ExternalGtkWebView::onParent(uintptr_t parent)
 {
-    AbstractWebView::setParent(parent);
+    ::Display* display = XOpenDisplay(0);
+    XSetWindowBackground(display, (::Window)parent, getBackgroundColor() >> 8);
+    XClearWindow(display, (::Window)parent);
+    XCloseDisplay(display);
 
     int windowId = static_cast<int>(parent);
     ipcWrite(OP_CREATE_VIEW, &windowId, sizeof(windowId));
 
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
+}
+
+void ExternalGtkWebView::onKeyboardFocus(bool focus)
+{
+    char val = focus ? 1 : 0;
+    ipcWrite(OP_SET_KEYBOARD_FOCUS, &val, sizeof(val));
 }
 
 int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str) const

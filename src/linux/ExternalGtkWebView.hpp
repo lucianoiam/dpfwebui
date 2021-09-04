@@ -39,13 +39,15 @@ public:
     ExternalGtkWebView();
     virtual ~ExternalGtkWebView();
 
-    void setBackgroundColor(uint32_t rgba) override;
     void setSize(uint width, uint height) override;
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;
-    void setKeyboardFocus(bool focus) override;
-    void setParent(uintptr_t parent) override;
+
+protected:
+    void onBackgroundColor(uint32_t rgba) override;
+    void onParent(uintptr_t parent) override;
+    void onKeyboardFocus(bool focus) override;
 
 private:
     ipc_t* ipc() const { return fIpc; }
