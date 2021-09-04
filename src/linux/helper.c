@@ -157,16 +157,16 @@ static void set_background_color(helper_context_t *ctx, uint32_t rgba)
 
 static void set_view_size(const helper_context_t *ctx)
 {
-    char js[1024];
-
     unsigned width = ctx->size.width;
     unsigned height = ctx->size.height;
 
-    // Does not result in webview contents size update LXRESIZEBUG
+    // LXRESIZEBUG - does not result in webview contents size update
     //gtk_window_resize(ctx->window, width, height);
 
-    // Set container size in case host reads it
+    // TODO - this does not seem to be needed
     XResizeWindow(ctx->display, ctx->container, width, height);
+
+    char js[1024];
 
     sprintf(js, "document.body.style.width  = '%dpx';"
                 "document.body.style.height = '%dpx';",
