@@ -370,7 +370,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             inject_script(ctx, packet.v);
             break;
 
-        case OP_QUIT:
+        case OP_TERMINATE:
             gtk_main_quit();
             break;
 

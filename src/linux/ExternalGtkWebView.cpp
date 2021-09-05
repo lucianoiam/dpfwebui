@@ -94,7 +94,7 @@ ExternalGtkWebView::ExternalGtkWebView()
 ExternalGtkWebView::~ExternalGtkWebView()
 {
     if (fPid != -1) {
-        ipcWrite(OP_QUIT, 0, 0);
+        ipcWrite(OP_TERMINATE, 0, 0);
 
         int stat;
         waitpid(fPid, &stat, 0);

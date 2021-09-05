@@ -80,6 +80,8 @@ CocoaWebView::~CocoaWebView()
 
 void CocoaWebView::realize()
 {
+    [(NSView *)getParent() addSubview:fTopView];
+    
     @try {
         if ([fTopView respondsToSelector:@selector(setBackgroundColor:)]) {
             CGFloat c[] = { DISTRHO_UNPACK_RGBA_NORM(getBackgroundColor(), CGFloat) };
@@ -96,8 +98,6 @@ void CocoaWebView::realize()
     } @catch (NSException *e) {
         NSLog(@"Could not set background color");
     }
-
-    [(NSView *)getParent() addSubview:fTopView];
 }
 
 void CocoaWebView::navigate(String& url)

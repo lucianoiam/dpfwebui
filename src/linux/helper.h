@@ -30,7 +30,7 @@ typedef enum {
     OP_INJECT_SCRIPT,
     OP_HANDLE_SCRIPT_MESSAGE,
     OP_HANDLE_LOAD_FINISHED,
-    OP_QUIT
+    OP_TERMINATE
 } helper_opcode_t;
 
 typedef enum {
