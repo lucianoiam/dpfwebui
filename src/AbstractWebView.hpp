@@ -42,34 +42,34 @@ public:
 class AbstractWebView
 {
 public:
-    AbstractWebView()
-        : fBackgroundColor(0)
-        , fParent(0)
-        , fKeyboardFocus(false)
-        , fPrintTraffic(false)
-        , fHandler(0) {}
+    AbstractWebView();
     virtual ~AbstractWebView() {}
 
-    bool      getKeyboardFocus();
-    void      setKeyboardFocus(bool focus);
+    uint      getWidth();
+    uint      getHeight();
+    void      setSize(uint width, uint height);
+    
     uint32_t  getBackgroundColor();
     void      setBackgroundColor(uint32_t rgba);
+    
     uintptr_t getParent();
     void      setParent(uintptr_t parent);
+    
+    bool      getKeyboardFocus();
+    void      setKeyboardFocus(bool focus);
 
-    void setPrintTraffic(bool printTraffic) { fPrintTraffic = printTraffic; }
-    void setEventHandler(WebViewEventHandler* handler) { fHandler = handler; }
-    void postMessage(const JsValueVector& args);
+    void      setPrintTraffic(bool printTraffic);
+    void      setEventHandler(WebViewEventHandler* handler);
+    void      postMessage(const JsValueVector& args);
 
-    virtual void setSize(uint width, uint height) = 0;
+    virtual void realize() = 0;
     virtual void navigate(String& url) = 0;
     virtual void runScript(String& source) = 0;
     virtual void injectScript(String& source) = 0;
 
 protected:
+    virtual void onSize(uint width, uint height) = 0;
     virtual void onKeyboardFocus(bool focus) { (void)focus; };
-    virtual void onBackgroundColor(uint32_t rgba) { (void)rgba; };
-    virtual void onParent(uintptr_t parent) { (void)parent; };
 
     void injectDefaultScripts(String& platformSpecificScript);
     
@@ -81,6 +81,8 @@ private:
 
     void addStylesheet(String& source);
 
+    uint      fWidth;
+    uint      fHeight;
     uint32_t  fBackgroundColor;
     uintptr_t fParent;
     bool      fKeyboardFocus;

@@ -39,6 +39,53 @@
 
 USE_NAMESPACE_DISTRHO
 
+AbstractWebView::AbstractWebView()
+        : fWidth(0)
+        , fHeight(0)
+        , fBackgroundColor(0)
+        , fParent(0)
+        , fKeyboardFocus(false)
+        , fPrintTraffic(false)
+        , fHandler(0)
+{}
+
+uint AbstractWebView::getWidth()
+{
+    return fWidth;
+}
+
+uint AbstractWebView::getHeight()
+{
+    return fHeight;
+}
+
+void AbstractWebView::setSize(uint width, uint height)
+{
+    fWidth = width;
+    fHeight = height;
+    onSize(width, height);
+}
+
+uint32_t AbstractWebView::getBackgroundColor()
+{
+    return fBackgroundColor;
+}
+
+void AbstractWebView::setBackgroundColor(uint32_t rgba)
+{
+    fBackgroundColor = rgba;
+}
+
+uintptr_t AbstractWebView::getParent()
+{
+    return fParent;
+}
+
+void AbstractWebView::setParent(uintptr_t parent)
+{
+    fParent = parent;
+}
+
 bool AbstractWebView::getKeyboardFocus()
 {
     return fKeyboardFocus;
@@ -50,31 +97,34 @@ void AbstractWebView::setKeyboardFocus(bool focus)
     onKeyboardFocus(focus);
 }
 
-uint32_t AbstractWebView::getBackgroundColor()
+void AbstractWebView::setPrintTraffic(bool printTraffic)
 {
-    return fBackgroundColor;
+    fPrintTraffic = printTraffic;
 }
 
-void AbstractWebView::setBackgroundColor(uint32_t rgba)
+void AbstractWebView::setEventHandler(WebViewEventHandler* handler)
 {
-    fBackgroundColor = rgba;
-    onBackgroundColor(rgba);
+    fHandler = handler;
 }
 
-uintptr_t AbstractWebView::getParent()
+void AbstractWebView::postMessage(const JsValueVector& args)
 {
-    return fParent;
-}
+    // WebKit-based webviews implement a standard mechanism for transferring messages from JS to the
+    // native side, carrying a payload of JavaScript values that can be accessed through jsc_value_*
+    // calls in WebKitGTK or automatically bridged to Objective-C objects in WKWebView. On Edge
+    // WebView2 only JSON is available, see EdgeWebView::handleWebView2WebMessageReceived().
+    // There is no equivalent inverse mechanism for passing messages from native to JS, other than
+    // calling custom JavaScript using a function provided by webviews on all platforms.
+    // This method implements something like a "reverse postMessage()" aiming to keep the bridge
+    // symmetrical. Global window.webviewHost is an EventTarget that can be listened for messages.
+    String payload = serializeJsValues(args);
 
-void AbstractWebView::setParent(uintptr_t parent)
-{
-    if (parent == 0) {
-        return;
+    if (fPrintTraffic) {
+        std::cerr << "cpp -> js : " << payload.buffer() << std::endl << std::flush;
     }
-
-    fParent = parent;
     
-    onParent(parent);
+    String js = "window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:" + payload + "}));";
+    runScript(js);
 }
 
 void AbstractWebView::injectDefaultScripts(String& platformSpecificScript)
@@ -102,26 +152,6 @@ void AbstractWebView::handleLoadFinished()
     if (fHandler != 0) {
         fHandler->handleWebViewContentLoadFinished();
     }
-}
-
-void AbstractWebView::postMessage(const JsValueVector& args)
-{
-    // WebKit-based webviews implement a standard mechanism for transferring messages from JS to the
-    // native side, carrying a payload of JavaScript values that can be accessed through jsc_value_*
-    // calls in WebKitGTK or automatically bridged to Objective-C objects in WKWebView. On Edge
-    // WebView2 only JSON is available, see EdgeWebView::handleWebView2WebMessageReceived().
-    // There is no equivalent inverse mechanism for passing messages from native to JS, other than
-    // calling custom JavaScript using a function provided by webviews on all platforms.
-    // This method implements something like a "reverse postMessage()" aiming to keep the bridge
-    // symmetrical. Global window.webviewHost is an EventTarget that can be listened for messages.
-    String payload = serializeJsValues(args);
-
-    if (fPrintTraffic) {
-        std::cerr << "cpp -> js : " << payload.buffer() << std::endl << std::flush;
-    }
-    
-    String js = "window.webviewHost.dispatchEvent(new CustomEvent('message',{detail:" + payload + "}));";
-    runScript(js);
 }
 
 void AbstractWebView::handleScriptMessage(const JsValueVector& args)

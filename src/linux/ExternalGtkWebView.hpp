@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <sys/types.h>
+#include <X11/Xlib.h>
 
 #include "extra/Thread.hpp"
 
@@ -39,13 +40,13 @@ public:
     ExternalGtkWebView();
     virtual ~ExternalGtkWebView();
 
-    void setSize(uint width, uint height) override;
+    void realize() override;
     void navigate(String& url) override;
     void runScript(String& source) override;
     void injectScript(String& source) override;
 
 protected:
-    void onParent(uintptr_t parent) override;
+    void onSize(uint width, uint height) override;
     void onKeyboardFocus(bool focus) override;
 
 private:
@@ -56,10 +57,12 @@ private:
 
     void   handleHelperScriptMessage(const char *payload, int payloadSize);
 
-    int     fPipeFd[2][2];
-    pid_t   fPid;
-    ipc_t*  fIpc;
-    Thread* fIpcThread;
+    ::Display* fDisplay;
+    ::Window   fBackground;
+    int        fPipeFd[2][2];
+    pid_t      fPid;
+    ipc_t*     fIpc;
+    Thread*    fIpcThread;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ExternalGtkWebView)
 

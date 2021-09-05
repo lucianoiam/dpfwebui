@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <X11/Xlib.h>
-
 #include "ExternalGtkWebView.hpp"
 
 #include <cstdio>
@@ -47,10 +45,14 @@ extern char **environ;
 USE_NAMESPACE_DISTRHO
 
 ExternalGtkWebView::ExternalGtkWebView()
-    : fPid(-1)
+    : fDisplay(0)
+    , fBackground(0)
+    , fPid(-1)
     , fIpc(0)
     , fIpcThread(0)
 {
+    fDisplay = XOpenDisplay(0);
+
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
 
     if (pipe(fPipeFd[0]) == -1) {
@@ -119,12 +121,27 @@ ExternalGtkWebView::~ExternalGtkWebView()
             fPipeFd[i][j] = -1;
         }
     }
+
+    /*if (fBackground != 0) {
+        XDestroyWindow(fDisplay, fBackground);
+    }*/
+
+    XCloseDisplay(fDisplay);
 }
 
-void ExternalGtkWebView::setSize(uint width, uint height)
+void ExternalGtkWebView::realize()
 {
-    helper_size_t sizePkt = { width, height };
-    ipcWrite(OP_SET_SIZE, &sizePkt, sizeof(sizePkt));
+    fBackground = XCreateSimpleWindow(fDisplay, (::Window)getParent(), 0, 0, getWidth(), getHeight(), 0, 0, 0);
+    XMapWindow(fDisplay, fBackground);
+    XSetWindowBackground(fDisplay, fBackground, getBackgroundColor() >> 8);
+    XClearWindow(fDisplay, fBackground);
+    XSync(fDisplay, False);
+
+    int windowId = static_cast<int>(fBackground);
+    ipcWrite(OP_REALIZE, &windowId, sizeof(windowId));
+
+    String js = String(JS_POST_MESSAGE_SHIM);
+    injectDefaultScripts(js);
 }
 
 void ExternalGtkWebView::navigate(String& url)
@@ -142,18 +159,17 @@ void ExternalGtkWebView::injectScript(String& source)
     ipcWriteString(OP_INJECT_SCRIPT, source);
 }
 
-void ExternalGtkWebView::onParent(uintptr_t parent)
+void ExternalGtkWebView::onSize(uint width, uint height)
 {
-    ::Display* display = XOpenDisplay(0);
-    XSetWindowBackground(display, (::Window)parent, getBackgroundColor() >> 8);
-    XClearWindow(display, (::Window)parent);
-    XCloseDisplay(display);
+    if (fBackground == 0) {
+        return;
+    }
 
-    int windowId = static_cast<int>(parent);
-    ipcWrite(OP_SET_PARENT, &windowId, sizeof(windowId));
+    XResizeWindow(fDisplay, fBackground, width, height);
+    XSync(fDisplay, False);
 
-    String js = String(JS_POST_MESSAGE_SHIM);
-    injectDefaultScripts(js);
+    helper_size_t sizePkt = { width, height };
+    ipcWrite(OP_SET_SIZE, &sizePkt, sizeof(sizePkt));
 }
 
 void ExternalGtkWebView::onKeyboardFocus(bool focus)

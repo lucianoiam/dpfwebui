@@ -22,9 +22,9 @@
 #include <stdint.h>
 
 typedef enum {
-    OP_SET_PARENT,
-    OP_SET_KEYBOARD_FOCUS,
     OP_SET_SIZE,
+    OP_SET_KEYBOARD_FOCUS,
+    OP_REALIZE,
     OP_NAVIGATE,
     OP_RUN_SCRIPT,
     OP_INJECT_SCRIPT,

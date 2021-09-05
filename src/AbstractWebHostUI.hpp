@@ -36,8 +36,6 @@ public:
     uint getInitWidth() const { return fInitWidth; }
     uint getInitHeight() const { return fInitHeight; }
 
-    uint32_t getBackgroundColor() const { return fBackgroundColor; }
-
     virtual float getDisplayScaleFactor(uintptr_t window) = 0;
     virtual void  openSystemWebBrowser(String& url) = 0;
 

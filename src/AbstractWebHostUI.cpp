@@ -31,24 +31,28 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
 
 void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 {
-    uintptr_t parent = isStandalone() ? createStandaloneWindow() : getParentWindowHandle();
-
-    webView.setBackgroundColor(fBackgroundColor);
-    webView.setParent(parent);
-    webView.setEventHandler(this);
-#ifdef HIPHOP_PRINT_TRAFFIC
-    webView.setPrintTraffic(true);
-#endif
-
     // Web views adjust their contents following the system display scale factor,
     // adjust window size so it correctly wraps content on high density displays.
+    uintptr_t parent = isStandalone() ? createStandaloneWindow() : getParentWindowHandle();
+
+    if (parent == 0) {
+        // This can happen during initialization when running as a plugin,
+        // constructor/destructor can be repeatedly called for a few times.
+        return;
+    }
+
     float k = getDisplayScaleFactor(parent);
     fInitWidth = k * getWidth();
     fInitHeight = k * getHeight();
-    setSize(fInitWidth, fInitHeight);
 
-#ifdef DISTRHO_OS_WINDOWS
     webView.setSize(fInitWidth, fInitHeight);
+    webView.setBackgroundColor(fBackgroundColor);
+    webView.setParent(parent);
+    webView.realize();
+
+    webView.setEventHandler(this);
+#ifdef HIPHOP_PRINT_TRAFFIC
+    webView.setPrintTraffic(true);
 #endif
 
     String js = String(
@@ -59,6 +63,8 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
 
     String url = "file://" + path::getLibraryPath() + "/ui/index.html";
     webView.navigate(url);
+
+    setSize(fInitWidth, fInitHeight);
 }
 
 void AbstractWebHostUI::sizeChanged(uint width, uint height)
