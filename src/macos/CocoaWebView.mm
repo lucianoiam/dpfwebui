@@ -202,7 +202,6 @@ void CocoaWebView::onSize(uint width, uint height)
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
     self.cppView->didFinishNavigation();
-    webView.hidden = NO;
 }
 
 - (void)userContentController:(WKUserContentController *)controller didReceiveScriptMessage:(WKScriptMessage *)message
