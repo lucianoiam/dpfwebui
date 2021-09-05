@@ -87,7 +87,6 @@ void CocoaWebView::realize()
             CGFloat c[] = { DISTRHO_UNPACK_RGBA_NORM(getBackgroundColor(), CGFloat) };
             NSColor* color = [NSColor colorWithRed:c[0] green:c[1] blue:c[2] alpha:c[3]];
             [fTopView setValue:color forKey:@"backgroundColor"];
-            [color release];
         }
 
         if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
