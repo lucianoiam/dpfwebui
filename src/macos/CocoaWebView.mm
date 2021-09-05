@@ -78,16 +78,26 @@ CocoaWebView::~CocoaWebView()
     [fTopView release];
 }
 
-void CocoaWebView::setSize(uint width, uint height)
+void CocoaWebView::realize()
 {
-    CGRect frame;
-    frame.origin.x = 0;
-    frame.origin.y = 0;
-    frame.size.width = (CGFloat)width;
-    frame.size.height = (CGFloat)height;
-    frame = [fTopView.window convertRectFromBacking:frame];
-    frame.origin.y = fTopView.superview.frame.origin.y;
-    fTopView.frame = frame;
+    @try {
+        if ([fTopView respondsToSelector:@selector(setBackgroundColor:)]) {
+            CGFloat c[] = { DISTRHO_UNPACK_RGBA_NORM(getBackgroundColor(), CGFloat) };
+            NSColor* color = [NSColor colorWithRed:c[0] green:c[1] blue:c[2] alpha:c[3]];
+            [fTopView setValue:color forKey:@"backgroundColor"];
+            [color release];
+        }
+
+        if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
+            NSNumber *no = [[NSNumber alloc] initWithBool:NO];
+            [fWebView setValue:no forKey:@"drawsBackground"];
+            [no release];
+        }
+    } @catch (NSException *e) {
+        NSLog(@"Could not set background color");
+    }
+
+    [(NSView *)getParent() addSubview:fTopView];
 }
 
 void CocoaWebView::navigate(String& url)
@@ -116,29 +126,16 @@ void CocoaWebView::injectScript(String& source)
     [js release];
 }
 
-void CocoaWebView::onBackgroundColor(uint32_t rgba)
+void CocoaWebView::onSize(uint width, uint height)
 {
-    @try {
-        if ([fTopView respondsToSelector:@selector(setBackgroundColor:)]) {
-            CGFloat c[] = { DISTRHO_UNPACK_RGBA_NORM(rgba, CGFloat) };
-            NSColor* color = [NSColor colorWithRed:c[0] green:c[1] blue:c[2] alpha:c[3]];
-            [fTopView setValue:color forKey:@"backgroundColor"];
-            [color release];
-        }
-
-        if ([fWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
-            NSNumber *no = [[NSNumber alloc] initWithBool:NO];
-            [fWebView setValue:no forKey:@"drawsBackground"];
-            [no release];
-        }
-    } @catch (NSException *e) {
-        NSLog(@"Could not set background color");
-    }
-}
-
-void CocoaWebView::onParent(uintptr_t parent)
-{
-    [(NSView *)parent addSubview:fTopView];
+    CGRect frame;
+    frame.origin.x = 0;
+    frame.origin.y = 0;
+    frame.size.width = (CGFloat)width;
+    frame.size.height = (CGFloat)height;
+    frame = [fTopView.window convertRectFromBacking:frame];
+    frame.origin.y = fTopView.superview.frame.origin.y;
+    fTopView.frame = frame;
 }
 
 @implementation DistrhoWebView
