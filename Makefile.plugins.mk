@@ -303,14 +303,26 @@ endif
 # Dependency - Built-in JavaScript library include
 
 ifeq ($(WEB_UI),true)
-UI_JS_INCLUDE_PATH = $(HIPHOP_SRC_PATH)/ui/distrho-ui.js.include
+UI_JS_INCLUDE_PATH = $(HIPHOP_SRC_PATH)/ui/distrho-ui.js.inc
 
-TARGETS += jsinclude
+TARGETS += jsuiinc
 
-jsinclude:
-	@echo 'R"UI_JS(' > $(UI_JS_INCLUDE_PATH)
+jsuiinc:
+	@echo 'R"JS(' > $(UI_JS_INCLUDE_PATH)
 	@cat $(HIPHOP_SRC_PATH)/ui/distrho-ui.js >> $(UI_JS_INCLUDE_PATH)
-	@echo ')UI_JS"' >> $(UI_JS_INCLUDE_PATH)
+	@echo ')JS"' >> $(UI_JS_INCLUDE_PATH)
+
+ifeq ($(MACOS),true)
+POLYFILL_JS_INCLUDE_PATH = $(HIPHOP_SRC_PATH)/ui/event-target-polyfill.js.inc
+
+TARGETS += jspolyfillinc
+
+jspolyfillinc:
+	@echo 'R"JS(' > $(POLYFILL_JS_INCLUDE_PATH)
+	@cat $(HIPHOP_SRC_PATH)/ui/event-target-polyfill.js >> $(POLYFILL_JS_INCLUDE_PATH)
+	@echo ')JS"' >> $(POLYFILL_JS_INCLUDE_PATH)
+
+endif
 endif
 
 # ------------------------------------------------------------------------------

@@ -63,7 +63,15 @@ CocoaWebView::CocoaWebView()
     fWebView.navigationDelegate = fWebViewDelegate;
     [fWebView.configuration.userContentController addScriptMessageHandler:fWebViewDelegate name:@"host"];
 
-    String js = String(JS_POST_MESSAGE_SHIM);
+    // EventTarget() constructor is unavailable on Safari < 14 (2020-09-16)
+    // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/EventTarget
+    // https://github.com/ungap/event-target
+    String js = String(
+#include "ui/event-target-polyfill.js.inc"
+    );
+    injectScript(js);
+
+    js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
 }
 
@@ -153,12 +161,14 @@ void CocoaWebView::onSize(uint width, uint height)
 {
     // Allow the web view to immediately process clicks when the plugin window
     // is unfocused, otherwise the first click is swallowed to focus web view.
+    (void)event;
     return YES;
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event
 {
     // Make the web view ignore key shortcuts like Cmd+Q and Cmd+H
+    (void)event;
     return NO;
 }
 
@@ -201,11 +211,15 @@ void CocoaWebView::onSize(uint width, uint height)
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
+    (void)webView;
+    (void)navigation;
     self.cppView->didFinishNavigation();
 }
 
 - (void)userContentController:(WKUserContentController *)controller didReceiveScriptMessage:(WKScriptMessage *)message
 {
+    (void)controller;
+    
     if (![message.body isKindOfClass:[NSArray class]]) {
         return;
     }
