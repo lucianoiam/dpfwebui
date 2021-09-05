@@ -64,8 +64,6 @@ USE_NAMESPACE_DISTRHO
 
 EdgeWebView::EdgeWebView()
     : fHelperHwnd(0)
-    , fWidth(0)
-    , fHeight(0)
     , fHandler(0)
     , fController(0)
     , fView(0)
@@ -124,24 +122,11 @@ EdgeWebView::~EdgeWebView()
     free((void*)fHelperClass.lpszClassName);
 }
 
-void EdgeWebView::setSize(uint width, uint height)
+void EdgeWebView::realize()
 {
-    fWidth = width;
-    fHeight = height;
-
-    SetWindowPos(fHelperHwnd, 0, 0, 0, width, height, SWP_NOOWNERZORDER | SWP_NOMOVE);
-
-    if (fController == 0) {
-        return; // queue
-    }
-
-    RECT bounds;
-    bounds.left = 0;
-    bounds.top = 0;
-    bounds.right = static_cast<LONG>(width);
-    bounds.bottom = static_cast<LONG>(height);
-
-    ICoreWebView2Controller2_put_Bounds(fController, bounds);
+    SetParent(fHelperHwnd, (HWND)getParent());
+    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA, (LONG_PTR)getBackgroundColor());
+    RedrawWindow(fHelperHwnd, 0, 0, RDW_ERASE);
 }
 
 void EdgeWebView::navigate(String& url)
@@ -174,21 +159,25 @@ void EdgeWebView::injectScript(String& source)
     ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
 }
 
+void EdgeWebView::onSize(uint width, uint height)
+{
+    SetWindowPos(fHelperHwnd, 0, 0, 0, width, height, SWP_NOOWNERZORDER | SWP_NOMOVE);
+
+    if (fController != 0) {
+        RECT bounds;
+        bounds.left = 0;
+        bounds.top = 0;
+        bounds.right = static_cast<LONG>(width);
+        bounds.bottom = static_cast<LONG>(height);
+
+        ICoreWebView2Controller2_put_Bounds(fController, bounds);
+    }
+}
+
 void EdgeWebView::onKeyboardFocus(bool focus)
 {
     // Allow KeyboardRouter to read focus state
     SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA + 1, (LONG_PTR)focus);
-}
-
-void EdgeWebView::onBackgroundColor(uint32_t rgba)
-{
-    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA, (LONG_PTR)rgba);
-    RedrawWindow(fHelperHwnd, 0, 0, RDW_ERASE);
-}
-
-void EdgeWebView::onParent(uintptr_t parent)
-{
-    SetParent(fHelperHwnd, (HWND)parent);
 }
 
 HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
@@ -249,10 +238,7 @@ HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
     (void)sender;
     (void)eventArgs;
 
-    if (fController != 0) {
-        setSize(fWidth, fHeight);
-        handleLoadFinished();
-    }
+    handleLoadFinished();
     
     return S_OK;
 }
