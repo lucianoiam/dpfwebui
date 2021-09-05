@@ -122,18 +122,28 @@ ExternalGtkWebView::~ExternalGtkWebView()
         }
     }
 
-    /*if (fBackground != 0) {
+    if (fBackground != 0) {
         XDestroyWindow(fDisplay, fBackground);
-    }*/
+    }
 
     XCloseDisplay(fDisplay);
 }
 
 void ExternalGtkWebView::realize()
 {
-    fBackground = XCreateSimpleWindow(fDisplay, (::Window)getParent(), 0, 0, getWidth(), getHeight(), 0, 0, 0);
+    ::Window parent = (::Window)getParent();
+    unsigned long color = getBackgroundColor() >> 8;
+
+    // The only reliable way to keep background color while window manager open
+    // and close animations are performed is to paint the provided window. This
+    // is needed for hosts that show floating windows like Carla and Bitwig.
+    XSetWindowBackground(fDisplay, parent, color);
+    XClearWindow(fDisplay, parent);
+
+    // A colored top view is needed to avoid initial flicker on REAPER
+    fBackground = XCreateSimpleWindow(fDisplay, parent, 0, 0, getWidth(), getHeight(), 0, 0, 0);
     XMapWindow(fDisplay, fBackground);
-    XSetWindowBackground(fDisplay, fBackground, getBackgroundColor() >> 8);
+    XSetWindowBackground(fDisplay, fBackground, color);
     XClearWindow(fDisplay, fBackground);
     XSync(fDisplay, False);
 
