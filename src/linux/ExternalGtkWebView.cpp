@@ -140,7 +140,7 @@ void ExternalGtkWebView::realize()
     XSetWindowBackground(fDisplay, parent, color);
     XClearWindow(fDisplay, parent);
 
-    // A colored top view is needed to avoid initial flicker on REAPER
+    // A colored top view is also needed to avoid initial flicker on REAPER
     fBackground = XCreateSimpleWindow(fDisplay, parent, 0, 0, getWidth(), getHeight(), 0, 0, 0);
     XMapWindow(fDisplay, fBackground);
     XSetWindowBackground(fDisplay, fBackground, color);
