@@ -36,14 +36,13 @@ typedef struct {
     Window         container;
     GtkWindow*     window;
     WebKitWebView* webView;
-    helper_size_t  size;
     Window         focusXWin;
     gboolean       focus;
     pthread_t      watchdog;
 } helper_context_t;
 
 static void realize(helper_context_t *ctx, uintptr_t parentId);
-static void apply_size(const helper_context_t *ctx);
+static void set_size(const helper_context_t *ctx, unsigned width, unsigned height);
 static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
 static void* focus_watchdog_worker(void *arg);
@@ -141,14 +140,11 @@ static void realize(helper_context_t *ctx, uintptr_t parentId)
     webkit_user_content_manager_register_script_message_handler(manager, "host");
 }
 
-static void apply_size(const helper_context_t *ctx)
+static void set_size(const helper_context_t *ctx, unsigned width, unsigned height)
 {
     if (ctx->webView == NULL) {
         return;
     }
-
-    unsigned width = ctx->size.width;
-    unsigned height = ctx->size.height;
 
     // LXRESIZEBUG - does not result in webview contents size update
     //gtk_window_resize(ctx->window, width, height);
@@ -338,8 +334,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     switch (packet.t) {
         case OP_SET_SIZE: {
             const helper_size_t *size = (const helper_size_t *)packet.v;
-            ctx->size = *size;
-            apply_size(ctx);
+            set_size(ctx, size->width, size->height);
             break;
         }
 
