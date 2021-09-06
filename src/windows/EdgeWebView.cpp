@@ -76,14 +76,8 @@ EdgeWebView::EdgeWebView()
     fHelperClass.lpszClassName = wcsdup(className);
     fHelperClass.lpfnWndProc = HelperWindowProc;
     RegisterClassEx(&fHelperClass);
-    fHelperHwnd = CreateWindowEx(
-        0,
-        fHelperClass.lpszClassName,
-        L"EdgeWebView Helper",
-        WS_CHILD,
-        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-        HWND_MESSAGE, 0, 0, 0
-    );
+    fHelperHwnd = CreateWindowEx(0, fHelperClass.lpszClassName, L"EdgeWebView Helper",
+                                    WS_CHILD, 0, 0, 0, 0, HWND_MESSAGE, 0, 0, 0);
     SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA, 0x000000ff);
     ShowWindow(fHelperHwnd, SW_SHOW);
 
