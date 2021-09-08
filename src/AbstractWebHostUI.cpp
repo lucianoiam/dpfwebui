@@ -190,6 +190,7 @@ void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& 
         webPostMessage({"UI", "isResizable", isResizable()});
 
     } else if ((method == "setSize") && (argc == 2)) {
+        // Queuing is needed for REAPER on Linux and does no harm on others
         queue([this, args]() {
             setSize(
                 static_cast<uint>(args[kArg0].getDouble()), // width
