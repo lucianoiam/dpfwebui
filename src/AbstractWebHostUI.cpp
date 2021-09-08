@@ -27,6 +27,7 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     : UI(baseWidth, baseHeight)
     , fFlushedInitMsgQueue(false)
     , fBackgroundColor(backgroundColor)
+    , fRunUiBlock(false)
 {}
 
 void AbstractWebHostUI::initWebView(AbstractWebView& webView)
@@ -100,6 +101,11 @@ void AbstractWebHostUI::stateChanged(const char* key, const char* value)
 
 void AbstractWebHostUI::uiIdle()
 {
+    if (fRunUiBlock) {
+        fRunUiBlock = false;
+        fQueuedUiBlock();
+    }
+
     if (isStandalone()) {
         processStandaloneEvents();
     }
@@ -131,6 +137,12 @@ void AbstractWebHostUI::flushInitMessageQueue()
 void AbstractWebHostUI::setKeyboardFocus(bool focus)
 {
     getWebView().setKeyboardFocus(focus);
+}
+
+void AbstractWebHostUI::queue(const UiBlock& block)
+{
+    fQueuedUiBlock = block;
+    fRunUiBlock = true;
 }
 
 void AbstractWebHostUI::handleWebViewContentLoadFinished()
@@ -165,19 +177,25 @@ void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& 
         webPostMessage({"UI", "getHeight", static_cast<double>(getHeight())});
 
     } else if ((method == "setWidth") && (argc == 1)) {
-        setWidth(static_cast<uint>(args[kArg0].getDouble()));
+        queue([this, args]() {
+            setWidth(static_cast<uint>(args[kArg0].getDouble()));
+        });
 
     } else if ((method == "setHeight") && (argc == 1)) {
-        setHeight(static_cast<uint>(args[kArg0].getDouble()));
+        queue([this, args]() {
+            setHeight(static_cast<uint>(args[kArg0].getDouble()));
+        });
 
     } else if (method == "isResizable") {
         webPostMessage({"UI", "isResizable", isResizable()});
 
     } else if ((method == "setSize") && (argc == 2)) {
-        setSize(
-            static_cast<uint>(args[kArg0].getDouble()), // width
-            static_cast<uint>(args[kArg1].getDouble())  // height
-        );
+        queue([this, args]() {
+            setSize(
+                static_cast<uint>(args[kArg0].getDouble()), // width
+                static_cast<uint>(args[kArg1].getDouble())  // height
+            );
+        });
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     } else if ((method == "sendNote") && (argc == 3)) {

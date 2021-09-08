@@ -19,6 +19,7 @@
 #ifndef ABSTRACT_WEB_HOST_UI_HPP
 #define ABSTRACT_WEB_HOST_UI_HPP
 
+#include <functional>
 #include <vector>
 
 #include "DistrhoUI.hpp"
@@ -68,6 +69,10 @@ protected:
     void initWebView(AbstractWebView& webView);
 
 private:
+    typedef std::function<void()> UiBlock;
+
+    void queue(const UiBlock& block);
+
     // WebViewEventHandler
 
     virtual void handleWebViewContentLoadFinished() override;
@@ -80,6 +85,8 @@ private:
     uint32_t         fBackgroundColor;
     uint             fInitWidth;
     uint             fInitHeight;
+    bool             fRunUiBlock;
+    UiBlock          fQueuedUiBlock;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AbstractWebHostUI)
 
