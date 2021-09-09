@@ -127,17 +127,14 @@ static void realize(helper_context_t *ctx, uintptr_t parentId)
     // this renders viewport based units useless (vw/vh/vmin/vmax). LXRESIZEBUG
     gtk_window_resize(ctx->window, MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT);
 
-    // Create the web view
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
-    gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
-    gtk_widget_show(GTK_WIDGET(ctx->webView));
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
-    g_signal_connect(ctx->webView, "key_press_event", G_CALLBACK(web_view_keypress_cb), ctx);
-
-    // Listen to script messages
+    g_signal_connect(ctx->webView, "key-press-event", G_CALLBACK(web_view_keypress_cb), ctx);
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
     g_signal_connect(manager, "script-message-received::host", G_CALLBACK(web_view_script_message_cb), ctx);
     webkit_user_content_manager_register_script_message_handler(manager, "host");
+
+    gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
 }
 
 static void set_size(const helper_context_t *ctx, unsigned width, unsigned height)
@@ -239,7 +236,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
-            gtk_widget_show(GTK_WIDGET(ctx->window));
+            gtk_widget_show_all(GTK_WIDGET(ctx->window));
             usleep(50000L); // 50ms -- prevent flicker and occasional blank view
             ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
             break;
