@@ -111,7 +111,8 @@ void CocoaWebView::navigate(String& url)
 {
     NSString *urlStr = [[NSString alloc] initWithCString:url encoding:NSUTF8StringEncoding];
     NSURL *urlObj = [[NSURL alloc] initWithString:urlStr];
-    [fWebView loadFileURL:urlObj allowingReadAccessToURL:urlObj];
+    NSURL *urlBase = [urlObj URLByDeletingLastPathComponent];
+    [fWebView loadFileURL:urlObj allowingReadAccessToURL:urlBase];
     [urlObj release];
     [urlStr release];
 }
@@ -141,7 +142,7 @@ void CocoaWebView::onSize(uint width, uint height)
     frame.size.width = (CGFloat)width;
     frame.size.height = (CGFloat)height;
     frame = [fTopView.window convertRectFromBacking:frame];
-    frame.origin.y = fTopView.superview.frame.origin.y;
+    //frame.origin.y = fTopView.superview.frame.origin.y;
     fTopView.frame = frame;
 }
 
