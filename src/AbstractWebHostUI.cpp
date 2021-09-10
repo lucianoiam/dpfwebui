@@ -59,7 +59,8 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
     String js = String(
 #include "ui/distrho-ui.js.inc"
     );
-    js += "const DISTRHO = Object.freeze({ UI: UI });";
+    js += "const DISTRHO = Object.freeze({ UI: UI });" \
+          "UI = null;";
     webView.injectScript(js);
 
     String url = "file://" + path::getLibraryPath() + "/ui/index.html";
