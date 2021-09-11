@@ -33,9 +33,8 @@ WindowsWebHostUI::~WindowsWebHostUI()
     // TODO - standalone support
 }
 
-// Explanation for the GCC warnings https://github.com/chriskohlhoff/asio/issues/631
-typedef HRESULT (WINAPI* PFN_GetProcessDpiAwareness)(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
-typedef HRESULT (WINAPI* PFN_GetScaleFactorForMonitor)(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
+typedef HRESULT (*PFN_GetProcessDpiAwareness)(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
+typedef HRESULT (*PFN_GetScaleFactorForMonitor)(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
 
 float WindowsWebHostUI::getDisplayScaleFactor(uintptr_t window)
 {
@@ -47,9 +46,9 @@ float WindowsWebHostUI::getDisplayScaleFactor(uintptr_t window)
     }
 
     const PFN_GetProcessDpiAwareness GetProcessDpiAwareness
-        = (PFN_GetProcessDpiAwareness)GetProcAddress(hm, "GetProcessDpiAwareness");
+        = (PFN_GetProcessDpiAwareness)(void(*)())GetProcAddress(hm, "GetProcessDpiAwareness");
     const PFN_GetScaleFactorForMonitor GetScaleFactorForMonitor
-        = (PFN_GetScaleFactorForMonitor)GetProcAddress(hm, "GetScaleFactorForMonitor");
+        = (PFN_GetScaleFactorForMonitor)(void(*)())GetProcAddress(hm, "GetScaleFactorForMonitor");
 
     PROCESS_DPI_AWARENESS dpiAware;
 

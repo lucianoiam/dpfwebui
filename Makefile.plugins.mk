@@ -112,8 +112,7 @@ HIPHOP_FILES_UI += windows/WindowsPath.cpp \
                    windows/EdgeWebView.cpp \
                    windows/WebView2EventHandler.cpp \
                    windows/KeyboardRouter.cpp \
-                   windows/cJSON.c \
-                   windows/resources/plugin.rc
+                   windows/cJSON.c
 endif
 
 FILES_UI += $(HIPHOP_FILES_UI:%=$(HIPHOP_SRC_PATH)/%)
@@ -179,10 +178,10 @@ ifeq ($(MACOS),true)
 LINK_FLAGS += -framework WebKit 
 endif
 ifeq ($(WINDOWS),true)
-BASE_FLAGS += -I$(EDGE_WEBVIEW2_PATH)/build/native/include
+BASE_FLAGS += -I$(EDGE_WEBVIEW2_PATH)/build/native/include -Wno-unknown-pragmas
 LINK_FLAGS += -L$(EDGE_WEBVIEW2_PATH)/build/native/x64 \
               -lole32 -lShlwapi -lMfplat -lksuser -lmfuuid -lwmcodecdspuuid \
-              -lWebView2Loader.dll -static-libgcc -static-libstdc++ -Wl,-Bstatic \
+              -static-libgcc -static-libstdc++ -Wl,-Bstatic \
               -lstdc++ -lpthread
 endif
 endif
@@ -492,27 +491,16 @@ ifeq ($(WEB_UI),true)
 ifeq ($(WINDOWS),true)
 HIPHOP_TARGET += edgelib
 WEBVIEW_DLL = $(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll
-WEBVIEW_DLL_MANIFEST = $(HIPHOP_SRC_PATH)/windows/resources/WebView2Loader.manifest
 
 edgelib:
-	@($(TEST_WINDOWS_JACK) \
-		&& cp $(WEBVIEW_DLL) $(TARGET_DIR) \
+	@($(TEST_JACK_OR_WINDOWS_VST) \
+		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR) \
+		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(TARGET_LIB_DIR) \
 		) || true
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
-		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
-		&& cp $(WEBVIEW_DLL_MANIFEST) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
+		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
 		) || true
-	@($(TEST_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/WebView2Loader \
-		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader \
-		&& cp $(WEBVIEW_DLL_MANIFEST) $(TARGET_DIR)/WebView2Loader \
-		) || true
-
-clean: clean_edgelib
-
-clean_edgelib:
-	@rm -rf $(TARGET_DIR)/WebView2Loader
 endif
 endif
 

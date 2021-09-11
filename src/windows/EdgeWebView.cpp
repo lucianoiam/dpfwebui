@@ -40,6 +40,10 @@
 
 #define WEBVIEW2_DOWNLOAD_URL "https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"
 
+typedef (*PFN_CreateCoreWebView2EnvironmentWithOptions)(PCWSTR browserExecutableFolder, PCWSTR userDataFolder,
+    ICoreWebView2EnvironmentOptions* environmentOptions,
+    ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler* environmentCreatedHandler);
+
 LRESULT CALLBACK HelperWindowProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
     if (umsg == WM_ERASEBKGND) {
@@ -68,6 +72,14 @@ EdgeWebView::EdgeWebView()
     , fController(0)
     , fView(0)
 {
+    SetDllDirectory(TO_LPCWSTR(path::getLibraryPath()));
+    HMODULE hm = LoadLibrary(L"WebView2Loader.dll");
+
+    if (hm == 0) {
+        HIPHOP_LOG_STDERR_COLOR("Could not load WebView2Loader.dll");
+        return;
+    }
+
     WCHAR className[256];
     swprintf(className, sizeof(className), L"EdgeWebView_%s_%d", XSTR(HIPHOP_PROJECT_ID_HASH), std::rand());
     ZeroMemory(&fHelperClass, sizeof(fHelperClass));
@@ -90,14 +102,19 @@ EdgeWebView::EdgeWebView()
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
 
-    // Initialize Edge WebView2. Make sure COM is initialized - 0x800401F0 CO_E_NOTINITIALIZED
+    // Initialize Edge WebView2. Avoid error: Make sure COM is initialized - 0x800401F0 CO_E_NOTINITIALIZED
     CoInitializeEx(0, COINIT_APARTMENTTHREADED);
 
-    HRESULT result = CreateCoreWebView2EnvironmentWithOptions(0,
-                        TO_LPCWSTR(path::getTemporaryPath()), 0, fHandler);
+    const PFN_CreateCoreWebView2EnvironmentWithOptions pfnCreateCoreWebView2EnvironmentWithOptions
+        = (PFN_CreateCoreWebView2EnvironmentWithOptions)(void(*)())GetProcAddress(hm, "CreateCoreWebView2EnvironmentWithOptions");
+
+    HRESULT result = pfnCreateCoreWebView2EnvironmentWithOptions(0, TO_LPCWSTR(path::getTemporaryPath()), 0, fHandler);
+
     if (FAILED(result)) {
         webViewLoaderErrorMessageBox(result);
     }
+
+    FreeLibrary(hm);
 }
 
 EdgeWebView::~EdgeWebView()
