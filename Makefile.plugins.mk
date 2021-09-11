@@ -491,21 +491,22 @@ endif
 ifeq ($(WEB_UI),true)
 ifeq ($(WINDOWS),true)
 HIPHOP_TARGET += edgelib
+WEBVIEW_DLL = $(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll
+WEBVIEW_DLL_MANIFEST = $(HIPHOP_SRC_PATH)/windows/resources/WebView2Loader.manifest
 
 edgelib:
-	@$(eval WEBVIEW_DLL=$(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll)
 	@($(TEST_WINDOWS_JACK) \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR) \
 		) || true
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
-		&& cp $(HIPHOP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
+		&& cp $(WEBVIEW_DLL_MANIFEST) $(TARGET_DIR)/$(NAME).lv2/WebView2Loader \
 		) || true
 	@($(TEST_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/WebView2Loader \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/WebView2Loader \
-		&& cp $(HIPHOP_SRC_PATH)/windows/resources/WebView2Loader.manifest $(TARGET_DIR)/WebView2Loader \
+		&& cp $(WEBVIEW_DLL_MANIFEST) $(TARGET_DIR)/WebView2Loader \
 		) || true
 
 clean: clean_edgelib
