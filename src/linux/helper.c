@@ -77,8 +77,6 @@ int main(int argc, char* argv[])
     gdk_set_allowed_backends("x11");
     gtk_init(0, NULL);
 
-    XInitThreads();
-
     ctx.display = XOpenDisplay(NULL);
 
     if (ctx.display == NULL) {
