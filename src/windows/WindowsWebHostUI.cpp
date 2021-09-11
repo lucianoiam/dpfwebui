@@ -33,9 +33,6 @@ WindowsWebHostUI::~WindowsWebHostUI()
     // TODO - standalone support
 }
 
-typedef HRESULT (*PFN_GetProcessDpiAwareness)(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
-typedef HRESULT (*PFN_GetScaleFactorForMonitor)(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
-
 float WindowsWebHostUI::getDisplayScaleFactor(uintptr_t window)
 {
     float k = 1.f;
@@ -45,10 +42,20 @@ float WindowsWebHostUI::getDisplayScaleFactor(uintptr_t window)
         return k;
     }
 
+    typedef HRESULT (*PFN_GetProcessDpiAwareness)(HANDLE hProc, PROCESS_DPI_AWARENESS *pValue);
+    typedef HRESULT (*PFN_GetScaleFactorForMonitor)(HMONITOR hMon, DEVICE_SCALE_FACTOR *pScale);
+
+# if defined(__GNUC__) && (__GNUC__ >= 9)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wcast-function-type"
+# endif
     const PFN_GetProcessDpiAwareness GetProcessDpiAwareness
-        = (PFN_GetProcessDpiAwareness)(void(*)())GetProcAddress(hm, "GetProcessDpiAwareness");
+        = (PFN_GetProcessDpiAwareness)GetProcAddress(hm, "GetProcessDpiAwareness");
     const PFN_GetScaleFactorForMonitor GetScaleFactorForMonitor
-        = (PFN_GetScaleFactorForMonitor)(void(*)())GetProcAddress(hm, "GetScaleFactorForMonitor");
+        = (PFN_GetScaleFactorForMonitor)GetProcAddress(hm, "GetScaleFactorForMonitor");
+# if defined(__GNUC__) && (__GNUC__ >= 9)
+#  pragma GCC diagnostic pop
+# endif
 
     PROCESS_DPI_AWARENESS dpiAware;
 
