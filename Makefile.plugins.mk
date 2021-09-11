@@ -330,7 +330,7 @@ endif
 
 ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
-LXHELPER_BIN = $(BUILD_DIR)/$(NAME)-ui
+LXHELPER_BIN = $(BUILD_DIR)/ui-helper
 HIPHOP_TARGET += $(LXHELPER_BIN)
 
 $(LXHELPER_BIN): $(HIPHOP_SRC_PATH)/linux/helper.c $(HIPHOP_SRC_PATH)/linux/ipc.c
@@ -370,13 +370,16 @@ HIPHOP_TARGET += lxhelper
 
 lxhelper:
 	@($(TEST_LINUX_OR_MACOS_JACK) || $(TEST_LINUX_VST) \
-		&& cp $(LXHELPER_BIN) $(TARGET_DIR) \
+		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR) \
+		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(TARGET_LIB_DIR) \
 		) || true
 	@($(TEST_LV2) \
-		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME).lv2 \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
+		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
 		) || true
 	@($(TEST_DSSI) \
-		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME)-dssi \
+		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
+		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
 		) || true
 
 clean: clean_lxhelper
