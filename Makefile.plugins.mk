@@ -485,7 +485,6 @@ endif
 # ------------------------------------------------------------------------------
 # Post build - Copy Windows Edge WebView2 DLL
 # This Makefile version is too lazy to support 32-bit but DLL is also available.
-# The "bare" DLL is enough for the standalone JACK target, no need for assembly.
 
 ifeq ($(WEB_UI),true)
 ifeq ($(WINDOWS),true)
