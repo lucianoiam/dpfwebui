@@ -137,22 +137,10 @@ void CocoaWebView::injectScript(String& source)
 void CocoaWebView::onSize(uint width, uint height)
 {
     CGRect frame;
-
-    frame.origin.x = 0;
-    frame.origin.y = 0;
     frame.size.width = (CGFloat)width;
     frame.size.height = (CGFloat)height;
-    frame = [fBackgroundNs.window convertRectFromBacking:frame];
-
-    NSView* hostParentView = fBackgroundNs.superview;
-
-    // Do not overlap REAPER's own subviews. For some annoying reason this
-    // host provides a parent window with some other subviews attached.
-    
-    if (hostParentView.subviews.count > 1) {
-        frame.origin.y = hostParentView.frame.origin.y;
-    }
-
+    frame = [fBackgroundNs.window convertRectFromBacking:frame]; // convert DPF coords. to AppKit
+    frame.origin = fBackgroundNs.frame.origin; // keep position, for example REAPER sets it
     fBackgroundNs.frame = frame;
 }
 
