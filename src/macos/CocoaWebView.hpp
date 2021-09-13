@@ -47,8 +47,8 @@ protected:
     void onSize(uint width, uint height) override;
 
 private:
-    void *fViewBg;
-    void *fView;
+    void *fBackground;
+    void *fWebView;
     void *fDelegate;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CocoaWebView)
