@@ -24,4 +24,4 @@ MACOS
 WINDOWS
 -------
 
-- WasmHostPlugin crashes Carla and Live, works as expected on REAPER. WINWASMBUG
+- WasmHostPlugin crashes Carla and Live, works on REAPER and Renoise. WINWASMBUG
