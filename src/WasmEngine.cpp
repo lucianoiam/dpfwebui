@@ -74,14 +74,14 @@ void WasmEngine::load(const char* modulePath)
         throwWasmerLastError();
     }
 
-    // WINWASMBUG - following call crashes some hosts
     fStore = wasm_store_new(fEngine); 
 
-    if (fEngine == 0) {
+    if (fStore == 0) {
         wasm_byte_vec_delete(&fileBytes);
         throwWasmerLastError();
     }
 
+    // WINWASMBUG - following call crashes some hosts, see bugs.txt
     fModule = wasm_module_new(fStore, &fileBytes);
     
     wasm_byte_vec_delete(&fileBytes);

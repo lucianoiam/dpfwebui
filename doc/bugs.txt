@@ -7,7 +7,7 @@ GENERAL
 LINUX
 -----
 
-- Broken CSS viewport units (vw/vh/vmin/vmax) due to workaround for LXRESIZEBUG
+- LXRESIZEBUG: broken CSS viewport units (vw/vh/vmin/vmax) due to workaround for 
   https://bugs.webkit.org/show_bug.cgi?id=229227
 - DSSI plugin builds but UI does not open
 
@@ -24,4 +24,5 @@ MACOS
 WINDOWS
 -------
 
-- WasmHostPlugin crashes Carla and Live, works on REAPER and Renoise. WINWASMBUG
+- WINWASMBUG: WASM plugins crash on Carla and Live, work as expected on REAPER,
+  Renoise and Ardour 7. See WasmEngine.cpp
