@@ -143,8 +143,8 @@ static void set_size(const helper_context_t *ctx, unsigned width, unsigned heigh
 
     char js[1024];
 
-    sprintf(js, "document.body.style.width  = '%dpx';"
-                "document.body.style.height = '%dpx';",
+    sprintf(js, "document.documentElement.style.width  = '%dpx';"
+                "document.documentElement.style.height = '%dpx';",
                 width, height);
     webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
 }
