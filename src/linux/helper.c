@@ -27,9 +27,6 @@
 #include "ipc.h"
 #include "macro.h"
 
-#define MAX_WEBVIEW_WIDTH  1536
-#define MAX_WEBVIEW_HEIGHT 1536
-
 typedef struct {
     ipc_t*         ipc;
     Display*       display;
@@ -41,7 +38,7 @@ typedef struct {
     pthread_t      watchdog;
 } helper_context_t;
 
-static void realize(helper_context_t *ctx, uintptr_t parentId);
+static void realize(helper_context_t *ctx, const helper_config_t *config);
 static void set_size(const helper_context_t *ctx, unsigned width, unsigned height);
 static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
@@ -102,11 +99,11 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-static void realize(helper_context_t *ctx, uintptr_t parentId)
+static void realize(helper_context_t *ctx, const helper_config_t *config)
 {
     // Create a native container window of arbitrary maximum size
-    ctx->container = XCreateSimpleWindow(ctx->display, (Window)parentId, 0, 0,
-                                        MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT, 0, 0, 0);
+    ctx->container = XCreateSimpleWindow(ctx->display, (Window)config->parent, 0, 0,
+                                        config->max_width, config->max_height, 0, 0, 0);
     XSync(ctx->display, False);
 
     // Wrap container in a GDK window. Web view text input colored focus boxes
@@ -116,14 +113,14 @@ static void realize(helper_context_t *ctx, uintptr_t parentId)
     ctx->window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
     g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkWindow);
 
-    // After the web view becomes visible, gtk_window_resize() will not cause
-    // its contents to resize anymore. The issue is probably related to the
-    // GdkWindow wrapping a X11 window and not emitting Glib events like
-    // configure-event. The workaround consists in creating the window with a
-    // predetermined max size and using JavaScript to resize the DOM instead of
-    // resizing the window natively. It is an ugly solution but works well. Note
-    // this renders viewport based units useless (vw/vh/vmin/vmax). LXRESIZEBUG
-    gtk_window_resize(ctx->window, MAX_WEBVIEW_WIDTH, MAX_WEBVIEW_HEIGHT);
+    // LXRESIZEBUG : After the web view becomes visible, gtk_window_resize()
+    // will not cause its contents to resize anymore. The issue is probably
+    // related to the GdkWindow wrapping a X11 window and not emitting Glib
+    // events like configure-event. The workaround consists in creating the
+    // window with a predetermined max size and using JavaScript to resize the
+    // DOM instead of resizing the window natively. It is an ugly solution that
+    // works. Note this renders viewport based units useless (vw/vh/vmin/vmax). 
+    gtk_window_resize(ctx->window, config->max_width, config->max_height);
 
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
@@ -141,7 +138,7 @@ static void set_size(const helper_context_t *ctx, unsigned width, unsigned heigh
         return;
     }
 
-    // LXRESIZEBUG - does not result in webview contents size update
+    // LXRESIZEBUG : does not result in webview contents size update
     //gtk_window_resize(ctx->window, width, height);
 
     char js[1024];
@@ -340,7 +337,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
         }
 
         case OP_REALIZE:
-            realize(ctx, *((uintptr_t *)packet.v));
+            realize(ctx, (const helper_config_t *)packet.v);
             break;
 
         case OP_NAVIGATE:

@@ -157,10 +157,10 @@ BASE_FLAGS += -I$(WASMER_PATH)/include
 ifeq ($(HIPHOP_ENABLE_WASI),true)
 BASE_FLAGS += -DHIPHOP_ENABLE_WASI
 endif
+LINK_FLAGS += -L$(WASMER_PATH)/lib -lwasmer
 ifeq ($(LINUX),true)
 LINK_FLAGS += -lpthread -ldl
 endif
-LINK_FLAGS += -L$(WASMER_PATH)/lib -lwasmer
 ifeq ($(MACOS),true)
 LINK_FLAGS += -framework AppKit 
 endif

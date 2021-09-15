@@ -81,7 +81,7 @@ void WasmEngine::load(const char* modulePath)
         throwWasmerLastError();
     }
 
-    // WINWASMBUG - following call crashes some hosts, see bugs.txt
+    // WINWASMBUG : following call crashes some hosts, see bugs.txt
     fModule = wasm_module_new(fStore, &fileBytes);
     
     wasm_byte_vec_delete(&fileBytes);

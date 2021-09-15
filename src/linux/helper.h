@@ -47,8 +47,9 @@ typedef struct {
 } helper_size_t;
 
 typedef struct {
-    int x;
-    int y;
-} helper_pos_t;
+    uintptr_t parent;
+    unsigned  max_width;
+    unsigned  max_height;
+} helper_config_t;
 
 #endif  // HELPER_H

@@ -29,11 +29,18 @@
 
 #include "Path.hpp"
 #include "macro.h"
+#include "DistrhoPluginInfo.h"
 
-/*
-  Need to launch a separate process hosting the GTK web view because linking
-  plugins to UI toolkit libraries like GTK or QT is known to be problematic.
-*/
+// LXRESIZEBUG : webview is created with a fixed maximum size, see helper.c for
+// a comprehensive explanation. Plugins that do not allow to change their UI
+// size during runtime might want to set these values in DistrhoPluginInfo.h
+// to ensure CSS viewport dimensions (vw/vw/vmin/vmax) are relative to known
+// dimensions. Resizable plugins might benefit from a (theoretical) performance
+// gain if the maximum dimensions are known beforehand.
+#if !defined(HIPHOP_PLUGIN_MAX_WIDTH) || !defined(HIPHOP_PLUGIN_MAX_HEIGHT)
+#define HIPHOP_PLUGIN_MAX_WIDTH 1536
+#define HIPHOP_PLUGIN_MAX_HEIGHT 1536
+#endif
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
@@ -51,6 +58,9 @@ ExternalGtkWebView::ExternalGtkWebView()
     , fIpc(0)
     , fIpcThread(0)
 {
+    // Need to launch a separate process hosting the GTK web view because linking
+    // plugins to UI toolkit libraries like GTK or QT is known to be problematic.
+
     fDisplay = XOpenDisplay(0);
 
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
@@ -145,8 +155,11 @@ void ExternalGtkWebView::realize()
     XClearWindow(fDisplay, fBackground);
     XSync(fDisplay, False);
 
-    int windowId = static_cast<int>(fBackground);
-    ipcWrite(OP_REALIZE, &windowId, sizeof(windowId));
+    helper_config_t config;
+    config.parent = static_cast<uintptr_t>(fBackground);
+    config.max_width = HIPHOP_PLUGIN_MAX_WIDTH;
+    config.max_height = HIPHOP_PLUGIN_MAX_HEIGHT;
+    ipcWrite(OP_REALIZE, &config, sizeof(config));
 
     String js = String(JS_POST_MESSAGE_SHIM);
     injectDefaultScripts(js);
