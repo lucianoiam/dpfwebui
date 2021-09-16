@@ -339,7 +339,7 @@ HIPHOP_TARGET += $(LXHELPER_BIN)
 
 $(LXHELPER_BIN): $(HIPHOP_SRC_PATH)/linux/gtk_webview.c $(HIPHOP_SRC_PATH)/linux/ipc.c
 	@echo "Building helper..."
-	$(SILENT)$(CC) $^ -I$(HIPHOP_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
+	$(SILENT)$(CC) $^ -I. -I$(HIPHOP_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
 		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
 endif

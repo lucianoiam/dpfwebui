@@ -39,17 +39,15 @@ typedef enum {
     ARG_TYPE_TRUE,
     ARG_TYPE_DOUBLE,
     ARG_TYPE_STRING
-} msg_arg_type_t;
+} msg_js_arg_type_t;
+
+typedef struct {
+    uintptr_t parent;
+} msg_win_cfg_t;
 
 typedef struct {
     unsigned width;
     unsigned height;
 } msg_win_size_t;
-
-typedef struct {
-    uintptr_t parent;
-    unsigned  max_width;
-    unsigned  max_height;
-} msg_win_cfg_t;
 
 #endif  // IPC_MESSAGE_H

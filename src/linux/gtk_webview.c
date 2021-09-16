@@ -25,6 +25,19 @@
 #include "ipc.h"
 #include "ipc_message.h"
 #include "macro.h"
+#include "DistrhoPluginInfo.h"
+
+// LXRESIZEBUG : webview is created with a fixed maximum size, see comprehensive
+// explanation in realize(). Plugins that do not change their UI size during
+// runtime might want to set these values in DistrhoPluginInfo.h to ensure CSS
+// viewport dimensions (vw/vw/vmin/vmax) are relative to some known fixed values.
+#if !defined(HIPHOP_PLUGIN_MAX_WIDTH) || !defined(HIPHOP_PLUGIN_MAX_HEIGHT)
+#define HIPHOP_PLUGIN_MAX_WIDTH 1536
+#define HIPHOP_PLUGIN_MAX_HEIGHT 1536
+#endif
+
+// CSS touch-action based approach seems to be failing for WebKitGTK. Looks like a bug.
+#define JS_DISABLE_PINCH_ZOOM_WORKAROUND "if (document.body.children.length > 0) document.body.children[0].addEventListener('touchstart', (ev) => { ev.preventDefault(); });"
 
 typedef struct {
     ipc_t*         ipc;
@@ -35,24 +48,24 @@ typedef struct {
     Window         focusXWin;
     gboolean       focus;
     pthread_t      watchdog;
-} helper_context_t;
+} context_t;
 
-static void realize(helper_context_t *ctx, const msg_win_cfg_t *config);
-static void set_size(const helper_context_t *ctx, unsigned width, unsigned height);
-static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
-static void inject_script(const helper_context_t *ctx, const char* js);
+static void realize(context_t *ctx, const msg_win_cfg_t *config);
+static void set_size(const context_t *ctx, unsigned width, unsigned height);
+static void set_keyboard_focus(context_t *ctx, gboolean focus);
+static void inject_script(const context_t *ctx, const char* js);
 static void* focus_watchdog_worker(void *arg);
 static gboolean release_focus(gpointer data);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
 static gboolean web_view_keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
-static int ipc_write_simple(const helper_context_t *ctx, msg_opcode_t opcode, const void *payload, int payload_sz);
+static int ipc_write_simple(const context_t *ctx, msg_opcode_t opcode, const void *payload, int payload_sz);
 
 int main(int argc, char* argv[])
 {
     int i;
-    helper_context_t ctx;
+    context_t ctx;
     ipc_conf_t conf;
     GIOChannel* channel;
 
@@ -98,11 +111,12 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-static void realize(helper_context_t *ctx, const msg_win_cfg_t *config)
+static void realize(context_t *ctx, const msg_win_cfg_t *config)
 {
     // Create a native container window of arbitrary maximum size
     ctx->container = XCreateSimpleWindow(ctx->display, (Window)config->parent, 0, 0,
-                                        config->max_width, config->max_height, 0, 0, 0);
+                                        HIPHOP_PLUGIN_MAX_WIDTH, HIPHOP_PLUGIN_MAX_HEIGHT,
+                                        0, 0, 0);
     XSync(ctx->display, False);
 
     // Wrap container in a GDK window. Web view text input colored focus boxes
@@ -119,7 +133,7 @@ static void realize(helper_context_t *ctx, const msg_win_cfg_t *config)
     // window with a predetermined max size and using JavaScript to resize the
     // DOM instead of resizing the window natively. It is an ugly solution that
     // works. Note this renders viewport based units useless (vw/vh/vmin/vmax). 
-    gtk_window_resize(ctx->window, config->max_width, config->max_height);
+    gtk_window_resize(ctx->window, HIPHOP_PLUGIN_MAX_WIDTH, HIPHOP_PLUGIN_MAX_HEIGHT);
 
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);
@@ -131,7 +145,7 @@ static void realize(helper_context_t *ctx, const msg_win_cfg_t *config)
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
 }
 
-static void set_size(const helper_context_t *ctx, unsigned width, unsigned height)
+static void set_size(const context_t *ctx, unsigned width, unsigned height)
 {
     if (ctx->webView == NULL) {
         return;
@@ -148,7 +162,7 @@ static void set_size(const helper_context_t *ctx, unsigned width, unsigned heigh
     webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
 }
 
-static void set_keyboard_focus(helper_context_t *ctx, gboolean focus)
+static void set_keyboard_focus(context_t *ctx, gboolean focus)
 {
     if (ctx->focus == focus) {
         return;
@@ -179,7 +193,7 @@ static void set_keyboard_focus(helper_context_t *ctx, gboolean focus)
     }
 }
 
-static void inject_script(const helper_context_t *ctx, const char* js)
+static void inject_script(const context_t *ctx, const char* js)
 {
     if (ctx->webView == NULL) {
         return;
@@ -197,7 +211,7 @@ static void* focus_watchdog_worker(void *arg)
     // Use a thread to poll plugin keyboard focus status because Gdk wrapped X11
     // windows do not seem to emit focus events like a regular GdkWindow
 
-    helper_context_t *ctx = (helper_context_t *)arg;
+    context_t *ctx = (context_t *)arg;
 
     while (ctx->focus) {
         if (ctx->focus && (ctx->focusXWin != 0)) {
@@ -219,17 +233,19 @@ static void* focus_watchdog_worker(void *arg)
 
 static gboolean release_focus(gpointer data)
 {
-    set_keyboard_focus((helper_context_t *)data, FALSE);
+    set_keyboard_focus((context_t *)data, FALSE);
     return FALSE;
 }
 
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data)
 {
-    helper_context_t *ctx = (helper_context_t *)data;
+    context_t *ctx = (context_t *)data;
 
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
+            webkit_web_view_run_javascript(ctx->webView, JS_DISABLE_PINCH_ZOOM_WORKAROUND,
+                NULL, NULL, NULL);
             gtk_widget_show_all(GTK_WIDGET(ctx->window));
             usleep(50000L); // 50ms -- prevent flicker and occasional blank view
             ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
@@ -243,7 +259,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data)
 {
     // Serialize JS values into type;value chunks. Available types are restricted to
-    // those defined by msg_arg_type_t so there is no need to encode value sizes.
+    // those defined by msg_js_arg_type_t so there is no need to encode value sizes.
     gint32 numArgs, i;
     JSCValue *jsArg;
     JSCValue *jsArgs = webkit_javascript_result_get_js_value(res);
@@ -291,7 +307,7 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
 
     webkit_javascript_result_unref(res);
 
-    ipc_write_simple((helper_context_t *)data, OP_HANDLE_SCRIPT_MESSAGE, payload, offset);
+    ipc_write_simple((context_t *)data, OP_HANDLE_SCRIPT_MESSAGE, payload, offset);
 
     if (payload) {
         free(payload);
@@ -300,7 +316,7 @@ static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKit
 
 static gboolean web_view_keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
-    helper_context_t *ctx = (helper_context_t *)data;
+    context_t *ctx = (context_t *)data;
 
     int revert;
     XGetInputFocus(ctx->display, &ctx->focusXWin, &revert);
@@ -310,7 +326,7 @@ static gboolean web_view_keypress_cb(GtkWidget *widget, GdkEventKey *event, gpoi
 
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data)
 {
-    helper_context_t *ctx = (helper_context_t *)data;
+    context_t *ctx = (context_t *)data;
     tlv_t packet;
 
     if ((condition & G_IO_IN) == 0) {
@@ -366,7 +382,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     return TRUE;
 }
 
-static int ipc_write_simple(const helper_context_t *ctx, msg_opcode_t opcode, const void *payload, int payload_sz)
+static int ipc_write_simple(const context_t *ctx, msg_opcode_t opcode, const void *payload, int payload_sz)
 {
     int retval;
     tlv_t packet;

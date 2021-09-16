@@ -29,23 +29,8 @@
 
 #include "Path.hpp"
 #include "macro.h"
-#include "DistrhoPluginInfo.h"
-
-// LXRESIZEBUG : webview is created with a fixed maximum size, see helper.c for
-// a comprehensive explanation. Plugins that do not allow to change their UI
-// size during runtime might want to set these values in DistrhoPluginInfo.h
-// to ensure CSS viewport dimensions (vw/vw/vmin/vmax) are relative to known
-// dimensions. Resizable plugins might benefit from a (theoretical) performance
-// gain if the maximum dimensions are known beforehand.
-#if !defined(HIPHOP_PLUGIN_MAX_WIDTH) || !defined(HIPHOP_PLUGIN_MAX_HEIGHT)
-#define HIPHOP_PLUGIN_MAX_WIDTH 1536
-#define HIPHOP_PLUGIN_MAX_HEIGHT 1536
-#endif
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
-
-// CSS touch-action based approach seems to be failing for WebKitGTK. Looks like a bug.
-#define JS_DISABLE_PINCH_ZOOM_WORKAROUND "if (document.body.children.length > 0) document.body.children[0].addEventListener('touchstart', (ev) => { ev.preventDefault(); });"
 
 extern char **environ;
 
@@ -159,8 +144,6 @@ void ChildProcessWebView::realize()
 
     msg_win_cfg_t config;
     config.parent = static_cast<uintptr_t>(fBackground);
-    config.max_width = HIPHOP_PLUGIN_MAX_WIDTH;
-    config.max_height = HIPHOP_PLUGIN_MAX_HEIGHT;
     ipcWrite(OP_REALIZE, &config, sizeof(config));
 
     String js = String(JS_POST_MESSAGE_SHIM);
@@ -227,8 +210,6 @@ void ChildProcessWebView::ipcReadCallback(const tlv_t& packet)
 {
     switch (static_cast<msg_opcode_t>(packet.t)) {
         case OP_HANDLE_LOAD_FINISHED: {
-            String js = String(JS_DISABLE_PINCH_ZOOM_WORKAROUND);
-            runScript(js);
             handleLoadFinished();
             break;
         }
