@@ -34,15 +34,13 @@ quite young and under continued development.
 
 ### Web view UI
 
-- On Linux a WebKitGTK web view instance runs in a separate process to keep the
-plugin GTK-free. It is X11-based and runs well on XWayland too.
+- On Linux a CEF (WIP) or WebKitGTK web view instance runs in a child process.
 
-- On macOS the built-in WKWebView is used.
+- On macOS the system WKWebView is used.
 
 - On Windows Edge WebView2 is used. As of Aug '21 the end user needs to install
-a runtime library https://developer.microsoft.com/microsoft-edge/webview2. It is
-an official library from MS and expected to become bundled into Windows at some
-point.
+an official runtime library from Microsoft. It is reasonable to expect it to
+become part of Windows https://developer.microsoft.com/microsoft-edge/webview2
 
 Usage of JS frameworks is up to the developer. No web equivalent versions of the
 DPF/DGL widgets are provided. There are some options available:
