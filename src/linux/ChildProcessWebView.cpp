@@ -144,11 +144,13 @@ void ChildProcessWebView::realize()
 
     // The only reliable way to keep background color while window manager open
     // and close animations are performed is to paint the provided window. This
-    // is needed for hosts that show floating windows like Carla and Bitwig.
+    // is needed for hosts that show floating windows like Carla and Bitwig and
+    // at least true for the Gnome Shell window manager.
     XSetWindowBackground(fDisplay, parent, color);
     XClearWindow(fDisplay, parent);
 
     // A colored top view is also needed to avoid initial flicker on REAPER
+    // because the child process takes non-zero time to start
     fBackground = XCreateSimpleWindow(fDisplay, parent, 0, 0, getWidth(), getHeight(), 0, 0, 0);
     XMapWindow(fDisplay, fBackground);
     XSetWindowBackground(fDisplay, fBackground, color);
