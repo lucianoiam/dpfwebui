@@ -1,14 +1,31 @@
 # Filename: Makefile.helper.mk
 # Author:   oss@lucianoiam.com
 
-LXHELPER_FILES += gtk_webview/helper.c \
-                  ipc.c
+# ------------------------------------------------------------------------------
+# Helper binary
 
-LXHELPER_FILES_PATH = $(LXHELPER_FILES:%=$(HIPHOP_SRC_PATH)/linux/%)
+LXHELPER_SRC += gtk_webview/helper.c \
+				ipc.c
 
-$(LXHELPER_BIN): $(LXHELPER_FILES_PATH)
-	@echo "Building WebKitGTK helper..."
-	@mkdir -p $(LXHELPER_BUILD_DIR)
-	$(SILENT)$(CC) $^ -I. -I$(HIPHOP_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
-		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
-		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
+LXHELPER_OBJ = $(LXHELPER_SRC:%=$(LXHELPER_BUILD_DIR)/%.o)
+
+LXHELPER_CPPFLAGS = -I. -I$(HIPHOP_SRC_PATH) \
+					$(shell $(PKG_CONFIG) --cflags gtk+-3.0 webkit2gtk-4.0)
+LXHELPER_LDFLAGS = -lpthread -lX11 \
+				   $(shell $(PKG_CONFIG) --libs gtk+-3.0 webkit2gtk-4.0)
+
+lxhelper_bin: $(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME)
+
+$(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME): $(LXHELPER_OBJ)
+	@echo "Compiling $<"
+	@$(CXX) $^ -o $@ $(LXHELPER_LDFLAGS)
+
+$(LXHELPER_BUILD_DIR)/%.c.o: $(HIPHOP_SRC_PATH)/linux/%.c
+	@mkdir -p $(dir $@)
+	@echo "Compiling $<"
+	@$(CC) $(LXHELPER_CPPFLAGS) -c $< -o $@
+
+# ------------------------------------------------------------------------------
+# List of helper files
+
+LXHELPER_FILES = $(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME)

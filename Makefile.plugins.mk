@@ -310,9 +310,9 @@ endif
 ifeq ($(WEB_UI),true)
 UI_JS_INCLUDE_PATH = $(HIPHOP_SRC_PATH)/ui/distrho-ui.js.inc
 
-TARGETS += jsuiinc
+TARGETS += js_ui_inc
 
-jsuiinc:
+js_ui_inc:
 	@echo 'R"JS(' > $(UI_JS_INCLUDE_PATH)
 	@cat $(HIPHOP_SRC_PATH)/ui/distrho-ui.js >> $(UI_JS_INCLUDE_PATH)
 	@echo ')JS"' >> $(UI_JS_INCLUDE_PATH)
@@ -320,9 +320,9 @@ jsuiinc:
 ifeq ($(MACOS),true)
 POLYFILL_JS_INCLUDE_PATH = $(HIPHOP_SRC_PATH)/ui/event-target-polyfill.js.inc
 
-TARGETS += jspolyfillinc
+TARGETS += js_polyfill_inc
 
-jspolyfillinc:
+js_polyfill_inc:
 	@echo 'R"JS(' > $(POLYFILL_JS_INCLUDE_PATH)
 	@cat $(HIPHOP_SRC_PATH)/ui/event-target-polyfill.js >> $(POLYFILL_JS_INCLUDE_PATH)
 	@echo ')JS"' >> $(POLYFILL_JS_INCLUDE_PATH)
@@ -335,11 +335,11 @@ endif
 
 ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
-LXHELPER_BUILD_DIR = $(BUILD_DIR)/helper
-LXHELPER_BIN = $(LXHELPER_BUILD_DIR)/ui-helper
-HIPHOP_TARGET += $(LXHELPER_BIN)
-
 WEBVIEW_HELPER ?= gtk
+HIPHOP_TARGET += lxhelper_bin
+
+LXHELPER_NAME = ui-helper
+LXHELPER_BUILD_DIR = $(BUILD_DIR)/helper
 
 include $(HIPHOP_SRC_PATH)/linux/$(WEBVIEW_HELPER)_webview/Makefile.helper.mk
 endif
@@ -352,7 +352,7 @@ ifeq ($(MACOS),true)
 $(BUILD_DIR)/%.mm.o: %.mm
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
+	@$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 endif
 
 # ------------------------------------------------------------------------------
@@ -366,30 +366,25 @@ $(BUILD_DIR)/%.rc.o: %.rc
 endif
 
 # ------------------------------------------------------------------------------
-# Post build - Copy Linux helper
+# Post build - Copy Linux helper files
 
 ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
-HIPHOP_TARGET += lxhelper
+HIPHOP_TARGET += lxhelper_res
 
-lxhelper:
+lxhelper_res: $(LXHELPER_FILES)
 	@($(TEST_LINUX_OR_MACOS_JACK) || $(TEST_LINUX_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR) \
-		&& cp $(LXHELPER_BUILD_DIR)/* $(TARGET_DIR)/$(TARGET_LIB_DIR) \
+		&& cp $< $(TARGET_DIR)/$(TARGET_LIB_DIR) \
 		) || true
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
-		&& cp $(LXHELPER_BUILD_DIR)/* $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
+		&& cp $< $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
 		) || true
 	@($(TEST_DSSI) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
-		&& cp $(LXHELPER_BUILD_DIR)/* $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
+		&& cp $< $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
 		) || true
-
-clean: clean_lxhelper
-
-clean_lxhelper:
-	@rm -rf $(LXHELPER_BUILD_DIR)
 endif
 endif
 
@@ -397,15 +392,15 @@ endif
 # Post build - Create macOS VST bundle
 
 ifeq ($(MACOS),true)
-HIPHOP_TARGET += macvst
+HIPHOP_TARGET += mac_vst
 
-macvst:
+mac_vst:
 	@# TODO - generate-vst-bundles.sh expects hardcoded directory bin/
 	@cd $(DPF_TARGET_DIR)/.. && $(abspath $(DPF_PATH))/utils/generate-vst-bundles.sh
 
-clean: clean_macvst
+clean: clean_mac_vst
 
-clean_macvst:
+clean_mac_vst:
 	@rm -rf $(TARGET_DIR)/$(NAME).vst
 endif
 
@@ -414,23 +409,23 @@ endif
 
 ifneq ($(AS_DSP),)
 ifneq ($(HIPHOP_AS_SKIP_FRAMEWORK_FILES),true)
-HIPHOP_TARGET += frameworkas
+HIPHOP_TARGET += framework_as
 
 AS_ASSEMBLY_PATH = $(HIPHOP_AS_DSP_PATH)/assembly
 
-frameworkas:
+framework_as:
 	@test -f $(AS_ASSEMBLY_PATH)/index.ts \
 		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/index.ts) $(AS_ASSEMBLY_PATH)
 	@test -f $(AS_ASSEMBLY_PATH)/distrho-plugin.ts \
 		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
 endif
 
-HIPHOP_TARGET += libdsp
+HIPHOP_TARGET += lib_dsp
 
 WASM_SRC_PATH = $(HIPHOP_AS_DSP_PATH)/build/optimized.wasm
 WASM_DST_PATH = dsp/plugin.wasm
 
-libdsp:
+lib_dsp:
 	@echo "Building AssemblyScript project..."
 	@# npm --prefix fails on MinGW due to paths mixing \ and /
 	@test -d $(HIPHOP_AS_DSP_PATH)/node_modules \
@@ -459,9 +454,9 @@ endif
 # Post build - Always copy web UI files
 
 ifeq ($(WEB_UI),true)
-HIPHOP_TARGET += libui
+HIPHOP_TARGET += lib_ui
 
-libui:
+lib_ui:
 	@echo "Copying web UI files..."
 	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR)/ui \
@@ -491,10 +486,10 @@ endif
 
 ifeq ($(WEB_UI),true)
 ifeq ($(WINDOWS),true)
-HIPHOP_TARGET += edgelib
+HIPHOP_TARGET += edge_lib
 WEBVIEW_DLL = $(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll
 
-edgelib:
+edge_lib:
 	@($(TEST_JACK_OR_WINDOWS_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR) \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(TARGET_LIB_DIR) \
