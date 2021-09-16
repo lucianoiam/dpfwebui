@@ -231,7 +231,7 @@ endif
 WASMER_URL = https://github.com/wasmerio/wasmer/releases/download/2.0.0/$(WASMER_PKG_FILE)
 endif
 ifeq ($(WINDOWS),true)
-# Wasmer official binary distribution requires MSVC 
+# Wasmer official binary distribution requires MSVC, download a custom build
 WASMER_PKG_FILE = wasmer-mingw-amd64.tar.gz
 WASMER_URL = https://github.com/lucianoiam/hiphop/files/6795372/wasmer-mingw-amd64.tar.gz
 endif
@@ -487,8 +487,7 @@ clean_lib:
 endif
 
 # ------------------------------------------------------------------------------
-# Post build - Copy Windows Edge WebView2 DLL
-# This Makefile version is too lazy to support 32-bit but DLL is also available.
+# Post build - Copy Windows Edge WebView2 DLL, currently only 64-bit is supported
 
 ifeq ($(WEB_UI),true)
 ifeq ($(WINDOWS),true)
