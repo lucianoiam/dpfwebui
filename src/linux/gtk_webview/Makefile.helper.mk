@@ -1,4 +1,4 @@
-# Filename: Makefile.webview.mk
+# Filename: Makefile.helper.mk
 # Author:   oss@lucianoiam.com
 
 LXHELPER_FILES += gtk_webview/helper.c \
