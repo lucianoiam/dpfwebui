@@ -34,6 +34,15 @@
 
 extern char **environ;
 
+/*
+  Need to launch a child process hosting the web view
+
+  - CEF lifecycle and usage of globals is not compatible with plugins
+    https://bitbucket.org/chromiumembedded/cef/issues/421
+
+  - WebKitGTK is a no-go because linking plugins to UI toolkits is problematic
+*/
+
 USE_NAMESPACE_DISTRHO
 
 ChildProcessWebView::ChildProcessWebView()
@@ -43,9 +52,6 @@ ChildProcessWebView::ChildProcessWebView()
     , fIpc(0)
     , fIpcThread(0)
 {
-    // Need to launch a separate process hosting the GTK web view because linking
-    // plugins to UI toolkit libraries like GTK or QT is known to be problematic.
-
     fDisplay = XOpenDisplay(0);
 
     fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
