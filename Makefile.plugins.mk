@@ -21,6 +21,7 @@ ifneq ($(HIPHOP_AS_DSP_PATH),)
 AS_DSP = true
 HIPHOP_ENABLE_WASI ?= true
 endif
+
 ifneq ($(HIPHOP_WEB_UI_PATH),)
 WEB_UI = true
 endif
@@ -330,18 +331,17 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
-# Linux only - Build WebKitGTK helper binary
+# Linux only - Build webview helper binary
 
 ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
-LXHELPER_BIN = $(BUILD_DIR)/ui-helper
+LXHELPER_BUILD_DIR = $(BUILD_DIR)/helper
+LXHELPER_BIN = $(LXHELPER_BUILD_DIR)/ui-helper
 HIPHOP_TARGET += $(LXHELPER_BIN)
 
-$(LXHELPER_BIN): $(HIPHOP_SRC_PATH)/linux/gtk_webview.c $(HIPHOP_SRC_PATH)/linux/ipc.c
-	@echo "Building helper..."
-	$(SILENT)$(CC) $^ -I. -I$(HIPHOP_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
-		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
-		$(shell $(PKG_CONFIG) --cflags --libs webkit2gtk-4.0)
+WEBVIEW_HELPER ?= gtk
+
+include $(HIPHOP_SRC_PATH)/linux/$(WEBVIEW_HELPER)_webview/Makefile.helper.mk
 endif
 endif
 
@@ -375,22 +375,21 @@ HIPHOP_TARGET += lxhelper
 lxhelper:
 	@($(TEST_LINUX_OR_MACOS_JACK) || $(TEST_LINUX_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR) \
-		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(TARGET_LIB_DIR) \
+		&& cp $(LXHELPER_BUILD_DIR)/* $(TARGET_DIR)/$(TARGET_LIB_DIR) \
 		) || true
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
-		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
+		&& cp $(LXHELPER_BUILD_DIR)/* $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
 		) || true
 	@($(TEST_DSSI) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
-		&& cp $(LXHELPER_BIN) $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
+		&& cp $(LXHELPER_BUILD_DIR)/* $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
 		) || true
 
 clean: clean_lxhelper
 
 clean_lxhelper:
-	@rm -rf $(TARGET_DIR)/$(notdir $(LXHELPER_BIN))
-	@rm -rf $(LXHELPER_BIN)
+	@rm -rf $(LXHELPER_BUILD_DIR)
 endif
 endif
 

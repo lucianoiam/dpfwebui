@@ -22,10 +22,10 @@
 #include <webkit2/webkit2.h>
 #include <X11/Xlib.h>
 
-#include "ipc.h"
-#include "ipc_message.h"
-#include "macro.h"
 #include "DistrhoPluginInfo.h"
+#include "macro.h"
+#include "linux/ipc.h"
+#include "linux/ipc_message.h"
 
 // LXRESIZEBUG : webview is created with a fixed maximum size, see comprehensive
 // explanation in realize(). Plugins that do not change their UI size during
