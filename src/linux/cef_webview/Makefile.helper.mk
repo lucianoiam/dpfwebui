@@ -10,7 +10,15 @@ CEF_PKG = cef_binary_93.1.12+ga8ffe4b+chromium-93.0.4577.82_linux64_minimal
 CEF_PKG_FILE = $(CEF_PKG).tar.bz2
 CEF_URL = https://cef-builds.spotifycdn.com/$(CEF_PKG_FILE)
 
-$(LXHELPER_BIN): $(CEF_PATH)
+LXHELPER_FILES += cef_webview/helper.cpp \
+                  ipc.c
+
+LXHELPER_FILES_PATH = $(LXHELPER_FILES:%=$(HIPHOP_SRC_PATH)/linux/%)
+
+$(LXHELPER_BIN): $(CEF_PATH) $(LXHELPER_FILES_PATH)
+	@echo "Building CEF helper..."
+	@echo CEF helper is work in progress!!
+	@return 1
 
 $(CEF_PATH):
 	@echo Downloading CEF...

@@ -20,7 +20,7 @@ endif
 all: simple
 
 CEF_CXX = c++
-CEF_CPPFLAGS = -I$(CEF_PATH) -std=c++14 -DOVERRIDE=
+CEF_CPPFLAGS = -I$(CEF_PATH) -std=c++14
 CEF_CXXFLAGS = -DCEF_USE_SANDBOX -DNDEBUG -DWRAPPING_CEF_SHARED -D_FILE_OFFSET_BITS=64 -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -O3 -DNDEBUG -fno-strict-aliasing -fPIC -fstack-protector -funwind-tables -fvisibility=hidden --param=ssp-buffer-size=4 -pipe -pthread -Wall -Werror -Wno-missing-field-initializers -Wno-unused-parameter -Wno-error=comment -Wno-comment -m64 -march=x86-64 -fno-exceptions -fno-rtti -fno-threadsafe-statics -fvisibility-inlines-hidden -std=gnu++11 -Wsign-compare -Wno-undefined-var-template -Wno-literal-suffix -Wno-narrowing -Wno-attributes -O2 -fdata-sections -ffunction-sections -fno-ident -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2
 CEF_LDFLAGS = -lcef_dll_wrapper -L$(CEF_BUILD_DIR) -lcef -L$(CEF_BIN_PATH) -lX11 -O3 -DNDEBUG -rdynamic -fPIC -pthread -Wl,--disable-new-dtags -Wl,--fatal-warnings -Wl,-rpath,. -Wl,-z,noexecstack -Wl,-z,now -Wl,-z,relro -m64 -Wl,-O1 -Wl,--as-needed -Wl,--gc-sections
 

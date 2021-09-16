@@ -23,30 +23,30 @@ class SimpleHandler : public CefClient,
   static SimpleHandler* GetInstance();
 
   // CefClient methods:
-  virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() OVERRIDE {
+  virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override {
     return this;
   }
-  virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() OVERRIDE {
+  virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override {
     return this;
   }
-  virtual CefRefPtr<CefLoadHandler> GetLoadHandler() OVERRIDE { return this; }
+  virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
 
   // CefDisplayHandler methods:
   virtual void OnTitleChange(CefRefPtr<CefBrowser> browser,
-                             const CefString& title) OVERRIDE;
+                             const CefString& title) override;
 
   // CefLifeSpanHandler methods:
-  virtual bool OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, const CefString& target_url, const CefString& target_frame_name, CefLifeSpanHandler::WindowOpenDisposition target_disposition, bool user_gesture, const CefPopupFeatures& popupFeatures, CefWindowInfo& windowInfo, CefRefPtr<CefClient>& client, CefBrowserSettings& settings, CefRefPtr<CefDictionaryValue>& extra_info, bool* no_javascript_access) OVERRIDE;
-  virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) OVERRIDE;
-  virtual bool DoClose(CefRefPtr<CefBrowser> browser) OVERRIDE;
-  virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) OVERRIDE;
+  virtual bool OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, const CefString& target_url, const CefString& target_frame_name, CefLifeSpanHandler::WindowOpenDisposition target_disposition, bool user_gesture, const CefPopupFeatures& popupFeatures, CefWindowInfo& windowInfo, CefRefPtr<CefClient>& client, CefBrowserSettings& settings, CefRefPtr<CefDictionaryValue>& extra_info, bool* no_javascript_access) override;
+  virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
+  virtual bool DoClose(CefRefPtr<CefBrowser> browser) override;
+  virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override;
 
   // CefLoadHandler methods:
   virtual void OnLoadError(CefRefPtr<CefBrowser> browser,
                            CefRefPtr<CefFrame> frame,
                            ErrorCode errorCode,
                            const CefString& errorText,
-                           const CefString& failedUrl) OVERRIDE;
+                           const CefString& failedUrl) override;
 
  private:
   // Platform-specific implementation.
