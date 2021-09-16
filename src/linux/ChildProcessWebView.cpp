@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ExternalGtkWebView.hpp"
+#include "ChildProcessWebView.hpp"
 
 #include <cstdio>
 #include <libgen.h>
@@ -51,7 +51,7 @@ extern char **environ;
 
 USE_NAMESPACE_DISTRHO
 
-ExternalGtkWebView::ExternalGtkWebView()
+ChildProcessWebView::ChildProcessWebView()
     : fDisplay(0)
     , fBackground(0)
     , fPid(-1)
@@ -99,7 +99,7 @@ ExternalGtkWebView::ExternalGtkWebView()
     }
 }
 
-ExternalGtkWebView::~ExternalGtkWebView()
+ChildProcessWebView::~ChildProcessWebView()
 {
     if (fPid != -1) {
         ipcWrite(OP_TERMINATE, 0, 0);
@@ -137,7 +137,7 @@ ExternalGtkWebView::~ExternalGtkWebView()
     XCloseDisplay(fDisplay);
 }
 
-void ExternalGtkWebView::realize()
+void ChildProcessWebView::realize()
 {
     ::Window parent = (::Window)getParent();
     unsigned long color = getBackgroundColor() >> 8;
@@ -155,7 +155,7 @@ void ExternalGtkWebView::realize()
     XClearWindow(fDisplay, fBackground);
     XSync(fDisplay, False);
 
-    helper_config_t config;
+    msg_win_cfg_t config;
     config.parent = static_cast<uintptr_t>(fBackground);
     config.max_width = HIPHOP_PLUGIN_MAX_WIDTH;
     config.max_height = HIPHOP_PLUGIN_MAX_HEIGHT;
@@ -165,22 +165,22 @@ void ExternalGtkWebView::realize()
     injectDefaultScripts(js);
 }
 
-void ExternalGtkWebView::navigate(String& url)
+void ChildProcessWebView::navigate(String& url)
 {
     ipcWriteString(OP_NAVIGATE, url);
 }
 
-void ExternalGtkWebView::runScript(String& source)
+void ChildProcessWebView::runScript(String& source)
 {
     ipcWriteString(OP_RUN_SCRIPT, source);
 }
 
-void ExternalGtkWebView::injectScript(String& source)
+void ChildProcessWebView::injectScript(String& source)
 {
     ipcWriteString(OP_INJECT_SCRIPT, source);
 }
 
-void ExternalGtkWebView::onSize(uint width, uint height)
+void ChildProcessWebView::onSize(uint width, uint height)
 {
     if (fBackground == 0) {
         return;
@@ -189,23 +189,23 @@ void ExternalGtkWebView::onSize(uint width, uint height)
     XResizeWindow(fDisplay, fBackground, width, height);
     XSync(fDisplay, False);
 
-    helper_size_t sizePkt = { width, height };
+    msg_win_size_t sizePkt = { width, height };
     ipcWrite(OP_SET_SIZE, &sizePkt, sizeof(sizePkt));
 }
 
-void ExternalGtkWebView::onKeyboardFocus(bool focus)
+void ChildProcessWebView::onKeyboardFocus(bool focus)
 {
     char val = focus ? 1 : 0;
     ipcWrite(OP_SET_KEYBOARD_FOCUS, &val, sizeof(val));
 }
 
-int ExternalGtkWebView::ipcWriteString(helper_opcode_t opcode, String str) const
+int ChildProcessWebView::ipcWriteString(msg_opcode_t opcode, String str) const
 {
     const char *cStr = static_cast<const char *>(str);
     return ipcWrite(opcode, cStr, strlen(cStr) + 1);
 }
 
-int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize) const
+int ChildProcessWebView::ipcWrite(msg_opcode_t opcode, const void *payload, int payloadSize) const
 {
     tlv_t packet;
     packet.t = static_cast<short>(opcode);
@@ -221,9 +221,9 @@ int ExternalGtkWebView::ipcWrite(helper_opcode_t opcode, const void *payload, in
     return retval;
 }
 
-void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
+void ChildProcessWebView::ipcReadCallback(const tlv_t& packet)
 {
-    switch (static_cast<helper_opcode_t>(packet.t)) {
+    switch (static_cast<msg_opcode_t>(packet.t)) {
         case OP_HANDLE_LOAD_FINISHED: {
             String js = String(JS_DISABLE_PINCH_ZOOM_WORKAROUND);
             runScript(js);
@@ -239,7 +239,7 @@ void ExternalGtkWebView::ipcReadCallback(const tlv_t& packet)
     }
 }
 
-void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payloadSize)
+void ChildProcessWebView::handleHelperScriptMessage(const char *payload, int payloadSize)
 {
     // Should validate payload is never read past payloadSize 
     JsValueVector args;
@@ -280,7 +280,7 @@ void ExternalGtkWebView::handleHelperScriptMessage(const char *payload, int payl
     handleScriptMessage(args);
 }
 
-IpcReadThread::IpcReadThread(ExternalGtkWebView& view)
+IpcReadThread::IpcReadThread(ChildProcessWebView& view)
     : Thread("ipc_read_" XSTR(HIPHOP_PROJECT_ID_HASH))
     , fView(view)
 {}

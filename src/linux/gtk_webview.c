@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "helper.h"
-
 #include <stdint.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
@@ -25,6 +23,7 @@
 #include <X11/Xlib.h>
 
 #include "ipc.h"
+#include "ipc_message.h"
 #include "macro.h"
 
 typedef struct {
@@ -38,7 +37,7 @@ typedef struct {
     pthread_t      watchdog;
 } helper_context_t;
 
-static void realize(helper_context_t *ctx, const helper_config_t *config);
+static void realize(helper_context_t *ctx, const msg_win_cfg_t *config);
 static void set_size(const helper_context_t *ctx, unsigned width, unsigned height);
 static void set_keyboard_focus(helper_context_t *ctx, gboolean focus);
 static void inject_script(const helper_context_t *ctx, const char* js);
@@ -48,7 +47,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data);
 static gboolean web_view_keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data);
 static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer data);
-static int ipc_write_simple(const helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz);
+static int ipc_write_simple(const helper_context_t *ctx, msg_opcode_t opcode, const void *payload, int payload_sz);
 
 int main(int argc, char* argv[])
 {
@@ -99,7 +98,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-static void realize(helper_context_t *ctx, const helper_config_t *config)
+static void realize(helper_context_t *ctx, const msg_win_cfg_t *config)
 {
     // Create a native container window of arbitrary maximum size
     ctx->container = XCreateSimpleWindow(ctx->display, (Window)config->parent, 0, 0,
@@ -244,7 +243,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
 static void web_view_script_message_cb(WebKitUserContentManager *manager, WebKitJavascriptResult *res, gpointer data)
 {
     // Serialize JS values into type;value chunks. Available types are restricted to
-    // those defined by helper_msg_arg_type_t so there is no need to encode value sizes.
+    // those defined by msg_arg_type_t so there is no need to encode value sizes.
     gint32 numArgs, i;
     JSCValue *jsArg;
     JSCValue *jsArgs = webkit_javascript_result_get_js_value(res);
@@ -325,7 +324,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
 
     switch (packet.t) {
         case OP_SET_SIZE: {
-            const helper_size_t *size = (const helper_size_t *)packet.v;
+            const msg_win_size_t *size = (const msg_win_size_t *)packet.v;
             set_size(ctx, size->width, size->height);
             break;
         }
@@ -337,7 +336,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
         }
 
         case OP_REALIZE:
-            realize(ctx, (const helper_config_t *)packet.v);
+            realize(ctx, (const msg_win_cfg_t *)packet.v);
             break;
 
         case OP_NAVIGATE:
@@ -367,7 +366,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     return TRUE;
 }
 
-static int ipc_write_simple(const helper_context_t *ctx, helper_opcode_t opcode, const void *payload, int payload_sz)
+static int ipc_write_simple(const helper_context_t *ctx, msg_opcode_t opcode, const void *payload, int payload_sz)
 {
     int retval;
     tlv_t packet;

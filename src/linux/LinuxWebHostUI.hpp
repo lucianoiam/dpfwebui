@@ -20,7 +20,7 @@
 #define LINUX_WEB_HOST_UI_HPP
 
 #include "AbstractWebHostUI.hpp"
-#include "ExternalGtkWebView.hpp"
+#include "ChildProcessWebView.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -40,7 +40,7 @@ protected:
     AbstractWebView& getWebView() override { return fWebView; }
 
 private:
-    ExternalGtkWebView fWebView;
+    ChildProcessWebView fWebView;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LinuxWebHostUI)
 

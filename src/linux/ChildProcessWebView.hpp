@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef EXTERNAL_GTK_WEBVIEW_HPP
-#define EXTERNAL_GTK_WEBVIEW_HPP
+#ifndef CHILD_PROCESS_WEBVIEW_HPP
+#define CHILD_PROCESS_WEBVIEW_HPP
 
 #include <cstdint>
 #include <sys/types.h>
@@ -28,17 +28,17 @@
 #include "AbstractWebView.hpp"
 
 #include "ipc.h"
-#include "helper.h"
+#include "ipc_message.h"
 
 START_NAMESPACE_DISTRHO
 
-class ExternalGtkWebView : public AbstractWebView
+class ChildProcessWebView : public AbstractWebView
 {
 friend class IpcReadThread;
 
 public:
-    ExternalGtkWebView();
-    virtual ~ExternalGtkWebView();
+    ChildProcessWebView();
+    virtual ~ChildProcessWebView();
 
     void realize() override;
     void navigate(String& url) override;
@@ -51,8 +51,8 @@ protected:
 
 private:
     ipc_t* ipc() const { return fIpc; }
-    int    ipcWriteString(helper_opcode_t opcode, String str) const;
-    int    ipcWrite(helper_opcode_t opcode, const void *payload, int payloadSize) const; 
+    int    ipcWriteString(msg_opcode_t opcode, String str) const;
+    int    ipcWrite(msg_opcode_t opcode, const void *payload, int payloadSize) const; 
     void   ipcReadCallback(const tlv_t& message);
 
     void   handleHelperScriptMessage(const char *payload, int payloadSize);
@@ -64,22 +64,22 @@ private:
     ipc_t*     fIpc;
     Thread*    fIpcThread;
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ExternalGtkWebView)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChildProcessWebView)
 
 };
 
 class IpcReadThread : public Thread
 {
 public:
-    IpcReadThread(ExternalGtkWebView& view);
+    IpcReadThread(ChildProcessWebView& view);
     
     void run() override;
 
 private:
-    ExternalGtkWebView& fView;
+    ChildProcessWebView& fView;
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // EXTERNAL_GTK_WEBVIEW_HPP
+#endif  // CHILD_PROCESS_WEBVIEW_HPP

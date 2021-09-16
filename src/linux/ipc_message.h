@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef HELPER_H
-#define HELPER_H
+#ifndef IPC_MESSAGE_H
+#define IPC_MESSAGE_H
 
 #include <stdint.h>
 
@@ -31,7 +31,7 @@ typedef enum {
     OP_HANDLE_SCRIPT_MESSAGE,
     OP_HANDLE_LOAD_FINISHED,
     OP_TERMINATE
-} helper_opcode_t;
+} msg_opcode_t;
 
 typedef enum {
     ARG_TYPE_NULL,
@@ -39,17 +39,17 @@ typedef enum {
     ARG_TYPE_TRUE,
     ARG_TYPE_DOUBLE,
     ARG_TYPE_STRING
-} helper_msg_arg_type_t;
+} msg_arg_type_t;
 
 typedef struct {
     unsigned width;
     unsigned height;
-} helper_size_t;
+} msg_win_size_t;
 
 typedef struct {
     uintptr_t parent;
     unsigned  max_width;
     unsigned  max_height;
-} helper_config_t;
+} msg_win_cfg_t;
 
-#endif  // HELPER_H
+#endif  // IPC_MESSAGE_H

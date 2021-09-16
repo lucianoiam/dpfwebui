@@ -98,7 +98,7 @@ HIPHOP_FILES_UI  = AbstractWebHostUI.cpp \
 ifeq ($(LINUX),true)
 HIPHOP_FILES_UI += linux/LinuxPath.cpp \
                    linux/LinuxWebHostUI.cpp \
-                   linux/ExternalGtkWebView.cpp \
+                   linux/ChildProcessWebView.cpp \
                    linux/ipc.c
 endif
 ifeq ($(MACOS),true)
@@ -337,7 +337,7 @@ ifeq ($(LINUX),true)
 LXHELPER_BIN = $(BUILD_DIR)/ui-helper
 HIPHOP_TARGET += $(LXHELPER_BIN)
 
-$(LXHELPER_BIN): $(HIPHOP_SRC_PATH)/linux/helper.c $(HIPHOP_SRC_PATH)/linux/ipc.c
+$(LXHELPER_BIN): $(HIPHOP_SRC_PATH)/linux/gtk_webview.c $(HIPHOP_SRC_PATH)/linux/ipc.c
 	@echo "Building helper..."
 	$(SILENT)$(CC) $^ -I$(HIPHOP_SRC_PATH) -o $(LXHELPER_BIN) -lX11 \
 		$(shell $(PKG_CONFIG) --cflags --libs gtk+-3.0) \
