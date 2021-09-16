@@ -148,7 +148,7 @@ void AbstractWebHostUI::queue(const UiBlock& block)
 
 void AbstractWebHostUI::handleWebViewContentLoadFinished()
 {
-    // Trigger the JavaScript sizeChanged() callback, useful for LXRESIZEBUG.
+    // Trigger the JavaScript sizeChanged() callback, useful for WKGTKRESIZEBUG.
     sizeChanged(fInitWidth, fInitHeight);
     onWebContentReady();
 }

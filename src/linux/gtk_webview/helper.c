@@ -27,7 +27,7 @@
 #include "linux/ipc.h"
 #include "linux/ipc_message.h"
 
-// LXRESIZEBUG : webview is created with a fixed maximum size, see comprehensive
+// WKGTKRESIZEBUG : webview created with a fixed maximum size, see comprehensive
 // explanation in realize(). Plugins that do not change their UI size during
 // runtime might want to set these values in DistrhoPluginInfo.h to ensure CSS
 // viewport dimensions (vw/vw/vmin/vmax) are relative to some known fixed values.
@@ -126,7 +126,7 @@ static void realize(context_t *ctx, const msg_win_cfg_t *config)
     ctx->window = GTK_WINDOW(gtk_widget_new(GTK_TYPE_WINDOW, NULL));
     g_signal_connect(ctx->window, "realize", G_CALLBACK(gtk_widget_set_window), gdkWindow);
 
-    // LXRESIZEBUG : After the web view becomes visible, gtk_window_resize()
+    // WKGTKRESIZEBUG : After the web view becomes visible, gtk_window_resize()
     // will not cause its contents to resize anymore. The issue is probably
     // related to the GdkWindow wrapping a X11 window and not emitting Glib
     // events like configure-event. The workaround consists in creating the
@@ -151,7 +151,7 @@ static void set_size(const context_t *ctx, unsigned width, unsigned height)
         return;
     }
 
-    // LXRESIZEBUG : does not result in webview contents size update
+    // WKGTKRESIZEBUG : does not result in webview contents size update
     //gtk_window_resize(ctx->window, width, height);
 
     char js[1024];
