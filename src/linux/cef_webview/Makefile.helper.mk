@@ -1,13 +1,16 @@
 # Filename: Makefile.helper.mk
 # Author:   oss@lucianoiam.com
 
-# Only 64-bit is currently supported
+# ------------------------------------------------------------------------------
+# Currently only the 64-bit version of CEF is supported though the library is
+# also available on 32-bit platforms. https://bitbucket.org/chromiumembedded/cef/
 
 CEF_DISTRO = cef_binary_93.1.12+ga8ffe4b+chromium-93.0.4577.82_linux64_minimal
 CEF_DISTRO_FILE = $(CEF_DISTRO).tar.bz2
-CEF_URL = https://cef-builds.spotifycdn.com/$(CEF_DISTRO_FILE)
 CEF_PATH = $(HIPHOP_LIB_PATH)/cef
-CEF_LIB_PATH = $(CEF_PATH)/Release
+CEF_BIN_PATH = $(CEF_PATH)/Release
+CEF_RES_PATH = $(CEF_PATH)/Resources
+CEF_URL = https://cef-builds.spotifycdn.com/$(CEF_DISTRO_FILE)
 
 # ------------------------------------------------------------------------------
 # CEF distribution download
@@ -202,8 +205,7 @@ CEF_FILES_WRAPPER = \
 	shutdown_checker.cc \
 	transfer_util.cc
 
-CEF_CPPFLAGS = -I$(CEF_PATH)
-CEF_CXXFLAGS = -DCEF_USE_SANDBOX -DNDEBUG -DWRAPPING_CEF_SHARED -D_FILE_OFFSET_BITS=64 \
+CEF_CXXFLAGS = -I$(CEF_PATH) -DCEF_USE_SANDBOX -DNDEBUG -DWRAPPING_CEF_SHARED -D_FILE_OFFSET_BITS=64 \
 			   -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -O3 -DNDEBUG -fno-strict-aliasing \
 			   -fPIC -fstack-protector -funwind-tables -fvisibility=hidden --param=ssp-buffer-size=4 \
 			   -pipe -pthread -Wall -Werror -Wno-missing-field-initializers -Wno-unused-parameter \
@@ -220,7 +222,7 @@ $(BUILD_DIR)/libcef_dll_wrapper.a: $(CEF_WRAPPER_OBJ)
 $(BUILD_DIR)/libcef_dll_wrapper/%.o: $(CEF_PATH)/libcef_dll/%.cc
 	@mkdir -p $(dir $@)
 	@echo "Compiling $<"
-	@$(CXX) $(CEF_CXXFLAGS) $(CEF_CPPFLAGS) -c $< -o $@
+	@$(CXX) $(CEF_CXXFLAGS) -c $< -o $@
 
 # ------------------------------------------------------------------------------
 # Helper binary
@@ -233,7 +235,7 @@ LXHELPER_SRC += cef_webview/helper.cpp \
 
 LXHELPER_OBJ = $(LXHELPER_SRC:%=$(LXHELPER_BUILD_DIR)/%.o)
 
-LXHELPER_LDFLAGS = -lcef_dll_wrapper -L$(BUILD_DIR) -lcef -L$(CEF_LIB_PATH) \
+LXHELPER_LDFLAGS = -lcef_dll_wrapper -L$(BUILD_DIR) -lcef -L$(CEF_BIN_PATH) \
 				   -lX11 -O3 -DNDEBUG -rdynamic -fPIC -pthread -Wl,--disable-new-dtags \
 				   -Wl,--fatal-warnings -Wl,-rpath,. -Wl,-z,noexecstack \
 				   -Wl,-z,now -Wl,-z,relro -m64 -Wl,-O1 -Wl,--as-needed \
@@ -274,6 +276,6 @@ CEF_FILES_RES = \
 	icudtl.dat \
 	locales
 
-LXHELPER_FILES = $(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME)
-
-# TODO
+LXHELPER_FILES =  $(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME)
+LXHELPER_FILES += $(CEF_FILES_BIN:%=$(CEF_BIN_PATH)/%)
+LXHELPER_FILES += $(CEF_FILES_RES:%=$(CEF_RES_PATH)/%)

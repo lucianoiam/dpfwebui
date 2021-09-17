@@ -58,7 +58,7 @@ endif
 
 # ------------------------------------------------------------------------------
 # Utility for determining built targets
-# User defined TARGETS are only available *after* inclusion of this Makefile
+# User defined TARGETS become available only *after* inclusion of this Makefile
 
 TEST_LV2 = test -d $(TARGET_DIR)/$(NAME).lv2
 TEST_DSSI = test -d $(TARGET_DIR)/$(NAME)-dssi
@@ -198,10 +198,10 @@ endif
 TARGETS += info
 
 info:
-	@echo "Hip-Hop : $(HIPHOP_ROOT_PATH)"
-	@echo "DPF     : $(DPF_PATH) @ $(DPF_GIT_BRANCH)"
-	@echo "Build   : $(DPF_BUILD_DIR)"
-	@echo "Target  : $(DPF_TARGET_DIR)"
+	@echo "hiphop : $(HIPHOP_ROOT_PATH)"
+	@echo "DPF    : $(DPF_PATH) @ $(DPF_GIT_BRANCH)"
+	@echo "Build  : $(DPF_BUILD_DIR)"
+	@echo "Target : $(DPF_TARGET_DIR)"
 
 # ------------------------------------------------------------------------------
 # Dependency - Build DPF Graphics Library
@@ -231,7 +231,7 @@ endif
 WASMER_URL = https://github.com/wasmerio/wasmer/releases/download/2.0.0/$(WASMER_PKG_FILE)
 endif
 ifeq ($(WINDOWS),true)
-# Wasmer official binary distribution requires MSVC, download a custom build
+# Wasmer official Windows binary distribution requires MSVC, download a custom build for MinGW
 WASMER_PKG_FILE = wasmer-mingw-amd64.tar.gz
 WASMER_URL = https://github.com/lucianoiam/hiphop/files/6795372/wasmer-mingw-amd64.tar.gz
 endif
@@ -305,7 +305,7 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
-# Dependency - Built-in JavaScript library include
+# Dependency - Built-in JavaScript library include and polyfills
 
 ifeq ($(WEB_UI),true)
 UI_JS_INCLUDE_PATH = $(HIPHOP_SRC_PATH)/ui/distrho-ui.js.inc
@@ -335,13 +335,13 @@ endif
 
 ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
-WEBVIEW_HELPER ?= gtk
+LXWEBVIEW_TYPE ?= gtk
 HIPHOP_TARGET += lxhelper_bin
 
 LXHELPER_NAME = ui-helper
 LXHELPER_BUILD_DIR = $(BUILD_DIR)/helper
 
-include $(HIPHOP_SRC_PATH)/linux/$(WEBVIEW_HELPER)_webview/Makefile.helper.mk
+include $(HIPHOP_SRC_PATH)/linux/$(LXWEBVIEW_TYPE)_webview/Makefile.helper.mk
 endif
 endif
 
@@ -372,18 +372,19 @@ ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
 HIPHOP_TARGET += lxhelper_res
 
-lxhelper_res: $(LXHELPER_FILES)
+lxhelper_res:
+	@echo "Copying UI helper files..."
 	@($(TEST_LINUX_OR_MACOS_JACK) || $(TEST_LINUX_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR) \
-		&& cp $< $(TARGET_DIR)/$(TARGET_LIB_DIR) \
+		&& cp -ru $(LXHELPER_FILES) $(TARGET_DIR)/$(TARGET_LIB_DIR) \
 		) || true
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
-		&& cp $< $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
+		&& cp -ru $(LXHELPER_FILES) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
 		) || true
 	@($(TEST_DSSI) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
-		&& cp $< $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
+		&& cp -ru $(LXHELPER_FILES) $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
 		) || true
 endif
 endif

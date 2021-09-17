@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// TODO
 
 #include "helper.h"
 
@@ -25,8 +26,6 @@
 #include "include/wrapper/cef_helpers.h"
 #include "simple_handler.h"
 #include "ipc.h"
-
-// TODO
 
 SimpleApp::SimpleApp() {}
 
