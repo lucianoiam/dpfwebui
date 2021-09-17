@@ -248,12 +248,12 @@ $(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME): $(LXHELPER_OBJ)
 $(LXHELPER_BUILD_DIR)/%.cpp.o: $(HIPHOP_SRC_PATH)/linux/%.cpp
 	@mkdir -p $(dir $@)
 	@echo "Compiling $<"
-	@$(CXX) -I$(HIPHOP_SRC_PATH)/linux -I$(CEF_PATH) -c $< -o $@
+	@$(CXX) -I$(HIPHOP_SRC_PATH) -I$(DPF_PATH) -I$(CEF_PATH) -c $< -o $@
 
 $(LXHELPER_BUILD_DIR)/%.c.o: $(HIPHOP_SRC_PATH)/linux/%.c
 	@mkdir -p $(dir $@)
 	@echo "Compiling $<"
-	@$(CC) -I$(HIPHOP_SRC_PATH)/linux -c $< -o $@
+	@$(CC) -I$(HIPHOP_SRC_PATH) -c $< -o $@
 
 # ------------------------------------------------------------------------------
 # List of helper files

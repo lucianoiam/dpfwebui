@@ -90,7 +90,7 @@ ChildProcessWebView::ChildProcessWebView()
     int status = posix_spawnp(&fPid, helperPath, &fa, 0, (char* const*)argv, environ);
 
     if (status != 0) {
-        HIPHOP_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
+        HIPHOP_LOG_STDERR_ERRNO("Could not spawn helper child process");
     }
 }
 

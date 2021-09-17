@@ -31,7 +31,7 @@
                                        ( c & 0x000000ff)        / (t)(255)
 #ifdef __cplusplus
 
-#include "DistrhoUtils.hpp"
+#include "distrho/DistrhoUtils.hpp"
 
 #define HIPHOP_LOG_STDERR(msg)        d_stderr("%s : %s", __PRETTY_FUNCTION__, msg); fflush(stderr);
 #define HIPHOP_LOG_STDERR_INT(msg,n)  d_stderr("%s : %s - %x", __PRETTY_FUNCTION__, msg, n); fflush(stderr);
