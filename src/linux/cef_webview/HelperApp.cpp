@@ -19,6 +19,7 @@
 #include "HelperApp.h"
 
 #include <string>
+#include <sys/select.h>
 
 #if defined(CEF_X11)
 #include <X11/Xlib.h>
@@ -34,11 +35,12 @@ static int XIOErrorHandlerImpl(Display* display);
 
 #include "CefHandler.h"
 #include "macro.h"
+#include "linux/ipc_message.h"
 
-// Entry point function for all processes.
+// Entry point function for all processes
 int main(int argc, char* argv[])
 {
-    // Provide CEF with command-line arguments.
+    // Provide CEF with command-line arguments
     CefMainArgs main_args(argc, argv);
 
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
@@ -46,52 +48,116 @@ int main(int argc, char* argv[])
     // if this is a sub-process, executes the appropriate logic.
     int code = CefExecuteProcess(main_args, nullptr, nullptr);
     if (code >= 0) {
-        // The sub-process has completed so return here.
+        // The sub-process has completed so return here
         return code;
     }
 
+    // Initialize custom (non-CEF) IPC channel
+    ipc_conf_t conf;
+
+    if (argc < 3) {
+        HIPHOP_LOG_STDERR("Invalid argument count");
+        return -1;
+    }
+
+    if ((sscanf(argv[1], "%d", &conf.fd_r) == 0) || (sscanf(argv[2], "%d", &conf.fd_w) == 0)) {
+        HIPHOP_LOG_STDERR("Invalid file descriptor");
+        return -1;
+    }
+
+    ipc_t* ipc = ipc_init(&conf);
+
 #if defined(CEF_X11)
     // Install xlib error handlers so that the application won't be terminated
-    // on non-fatal errors.
+    // on non-fatal errors
     XSetErrorHandler(XErrorHandlerImpl);
     XSetIOErrorHandler(XIOErrorHandlerImpl);
 #endif
 
-    // Parse command-line arguments for use in this method.
+    // Parse command-line arguments for use in this method
     CefRefPtr<CefCommandLine> command_line = CefCommandLine::CreateCommandLine();
     command_line->InitFromArgv(argc, argv);
 
-    // Specify CEF global settings here.
+    // Specify CEF global settings here
     CefSettings settings;
-
-    if (command_line->HasSwitch("enable-chrome-runtime")) {
-        // Enable experimental Chrome runtime. See issue #2969 for details.
-        settings.chrome_runtime = true;
-    }
-
-    // When generating projects with CMake the CEF_USE_SANDBOX value will be defined
-    // automatically. Pass -DUSE_SANDBOX=OFF to the CMake command-line to disable
-    // use of the sandbox.
-#if !defined(CEF_USE_SANDBOX)
-    settings.no_sandbox = true;
-#endif
+    //settings.no_sandbox = true;
 
     // HelperApp implements application-level callbacks for the browser process.
     // It will create the first browser instance in OnContextInitialized() after
     // CEF has initialized.
-    CefRefPtr<HelperApp> app(new HelperApp);
+    CefRefPtr<HelperApp> app(new HelperApp(ipc));
 
     // Initialize CEF for the browser process.
     CefInitialize(main_args, settings, app.get(), nullptr);
 
-    // Run the CEF message loop. This will block until CefQuitMessageLoop() is
-    // called.
-    CefRunMessageLoop();
+    // Run main loop
+    app.get()->run();
 
-    // Shut down CEF.
+    // Cleanup
     CefShutdown();
+    ipc_destroy(ipc);
 
     return 0;
+}
+
+HelperApp::HelperApp(ipc_t* ipc) : fRun(false), fIpc(ipc)
+{}
+
+void HelperApp::run()
+{
+    int fd = ipc_get_config(fIpc)->fd_r;
+    fd_set rfds;
+    struct timeval tv;
+    tlv_t packet;
+
+    fRun = true;
+    
+    while (fRun) {
+        CefDoMessageLoopWork();
+
+        FD_ZERO(&rfds);
+        FD_SET(fd, &rfds);
+        tv.tv_sec = tv.tv_usec = 0; // poll
+
+        int retval = select(fd + 1, &rfds, 0, 0, &tv);
+
+        if (retval == -1) {
+            HIPHOP_LOG_STDERR_ERRNO("Failed select() on IPC channel");
+            fRun = false;
+            continue;
+        }
+
+        if (retval == 0) {
+            continue; // no fd ready
+        }
+
+        if (ipc_read(fIpc, &packet) == -1) {
+            HIPHOP_LOG_STDERR_ERRNO("Could not read from IPC channel");
+            fRun = false;
+            continue;
+        }
+
+        dispatch(&packet);
+    }
+
+    // TODO
+    LOG(INFO) << "Exit run()";       
+}
+
+void HelperApp::dispatch(const tlv_t* packet)
+{
+    LOG(INFO) << "Got packet with tag = " << packet->t;
+
+    // TODO
+
+    switch (static_cast<msg_opcode_t>(packet->t)) {
+        case OP_TERMINATE:
+            fRun = false;
+            break;
+
+        default:
+            break;
+    }
 }
 
 void HelperApp::OnContextInitialized()

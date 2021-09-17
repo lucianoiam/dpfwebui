@@ -26,6 +26,6 @@ $(LXHELPER_BUILD_DIR)/%.c.o: $(HIPHOP_SRC_PATH)/linux/%.c
 	@$(CC) $(LXHELPER_CPPFLAGS) -c $< -o $@
 
 # ------------------------------------------------------------------------------
-# List of helper files
+# GTK helper is a monolithic binary
 
 LXHELPER_FILES = $(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME)

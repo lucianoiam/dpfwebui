@@ -21,11 +21,15 @@
 
 #include "include/cef_app.h"
 
+#include "linux/ipc.h"
+
 // Implement application-level callbacks for the browser process.
 class HelperApp : public CefApp, public CefBrowserProcessHandler
 {
 public:
-    HelperApp() {}
+    HelperApp(ipc_t* ipc);
+
+    void run();
 
     // CefApp methods
 
@@ -39,6 +43,10 @@ public:
     virtual void OnContextInitialized() override;
 
 private:
+    void dispatch(const tlv_t* packet);
+
+    bool   fRun;
+    ipc_t* fIpc;
     
     // Include the default reference counting implementation
     IMPLEMENT_REFCOUNTING(HelperApp);

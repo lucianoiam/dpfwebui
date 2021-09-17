@@ -205,7 +205,7 @@ CEF_FILES_WRAPPER = \
 	shutdown_checker.cc \
 	transfer_util.cc
 
-CEF_CXXFLAGS = -I$(CEF_PATH) -DCEF_USE_SANDBOX -DNDEBUG -DWRAPPING_CEF_SHARED -D_FILE_OFFSET_BITS=64 \
+CEF_CXXFLAGS = -I$(CEF_PATH) -DNDEBUG -DWRAPPING_CEF_SHARED -D_FILE_OFFSET_BITS=64 \
 			   -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -O3 -DNDEBUG -fno-strict-aliasing \
 			   -fPIC -fstack-protector -funwind-tables -fvisibility=hidden --param=ssp-buffer-size=4 \
 			   -pipe -pthread -Wall -Werror -Wno-missing-field-initializers -Wno-unused-parameter \
@@ -256,7 +256,7 @@ $(LXHELPER_BUILD_DIR)/%.c.o: $(HIPHOP_SRC_PATH)/linux/%.c
 	@$(CC) -I$(HIPHOP_SRC_PATH) -c $< -o $@
 
 # ------------------------------------------------------------------------------
-# List of helper files
+# List of helper binaries and resource files
 
 CEF_FILES_BIN = \
 	chrome-sandbox \

@@ -64,7 +64,6 @@ static int ipc_write_simple(const context_t *ctx, msg_opcode_t opcode, const voi
 
 int main(int argc, char* argv[])
 {
-    int i;
     context_t ctx;
     ipc_conf_t conf;
     GIOChannel* channel;

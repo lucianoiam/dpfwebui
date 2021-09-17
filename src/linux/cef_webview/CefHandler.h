@@ -50,10 +50,6 @@ public:
         return this;
     }
 
-    // CefDisplayHandler methods
-
-    virtual void OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title) override;
-
     // CefLifeSpanHandler methods
 
     virtual bool OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
