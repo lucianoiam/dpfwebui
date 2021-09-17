@@ -40,7 +40,7 @@ extern char **environ;
   - CEF lifecycle and usage of globals is not compatible with plugins
     https://bitbucket.org/chromiumembedded/cef/issues/421
 
-  - WebKitGTK is a no-go because linking plugins to UI toolkits is problematic
+  - WebKitGTK is a no-go because linking plugins to UI toolkits is a bad idea
 */
 
 USE_NAMESPACE_DISTRHO
@@ -74,16 +74,20 @@ ChildProcessWebView::ChildProcessWebView()
     fIpcThread = new IpcReadThread(*this);
     fIpcThread->startThread();
 
-    // BIN_BASENAME is defined in Makefile
     char rfd[10];
     sprintf(rfd, "%d", fPipeFd[0][0]);
     char wfd[10];
     sprintf(wfd, "%d", fPipeFd[1][1]);
     
-    String helperPath = path::getLibraryPath() + "/ui-helper";
+    String libPath = path::getLibraryPath();
+    posix_spawn_file_actions_t fa;
+    posix_spawn_file_actions_init(&fa);
+    posix_spawn_file_actions_addchdir_np(&fa, libPath);
+
+    String helperPath = libPath + "/ui-helper";
     const char *argv[] = { helperPath, rfd, wfd, 0 };
 
-    int status = posix_spawn(&fPid, helperPath, 0, 0, (char* const*)argv, environ);
+    int status = posix_spawnp(&fPid, helperPath, &fa, 0, (char* const*)argv, environ);
 
     if (status != 0) {
         HIPHOP_LOG_STDERR_ERRNO("Could not spawn helper subprocess");
