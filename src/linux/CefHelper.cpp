@@ -16,8 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "HelperApp.h"
+#include "CefHelper.hpp"
 
+#include <sstream>
 #include <string>
 #include <sys/select.h>
 
@@ -28,14 +29,18 @@ static int XErrorHandlerImpl(Display* display, XErrorEvent* event);
 static int XIOErrorHandlerImpl(Display* display);
 #endif
 
+#include "include/base/cef_bind.h"
 #include "include/base/cef_logging.h"
 #include "include/cef_browser.h"
 #include "include/cef_command_line.h"
+#include "include/cef_parser.h"
+#include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_helpers.h"
 
-#include "CefHandler.h"
 #include "macro.h"
-#include "linux/ipc_message.h"
+#include "ipc_message.h"
+
+CefHelperHandler* sInstance = nullptr;
 
 // Entry point function for all processes
 int main(int argc, char* argv[])
@@ -82,10 +87,10 @@ int main(int argc, char* argv[])
     CefSettings settings;
     //settings.no_sandbox = true;
 
-    // HelperApp implements application-level callbacks for the browser process.
+    // CefHelper implements application-level callbacks for the browser process.
     // It will create the first browser instance in OnContextInitialized() after
     // CEF has initialized.
-    CefRefPtr<HelperApp> app(new HelperApp(ipc));
+    CefRefPtr<CefHelper> app(new CefHelper(ipc));
 
     // Initialize CEF for the browser process.
     CefInitialize(main_args, settings, app.get(), nullptr);
@@ -100,10 +105,10 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-HelperApp::HelperApp(ipc_t* ipc) : fRun(false), fIpc(ipc)
+CefHelper::CefHelper(ipc_t* ipc) : fRun(false), fIpc(ipc)
 {}
 
-void HelperApp::run()
+void CefHelper::run()
 {
     int fd = ipc_get_config(fIpc)->fd_r;
     fd_set rfds;
@@ -144,7 +149,12 @@ void HelperApp::run()
     LOG(INFO) << "Exit run()";       
 }
 
-void HelperApp::dispatch(const tlv_t* packet)
+CefRefPtr<CefBrowserProcessHandler> CefHelper::GetBrowserProcessHandler()
+{
+    return this;
+}
+
+void CefHelper::dispatch(const tlv_t* packet)
 {
     LOG(INFO) << "Got packet with tag = " << packet->t;
 
@@ -160,12 +170,12 @@ void HelperApp::dispatch(const tlv_t* packet)
     }
 }
 
-void HelperApp::OnContextInitialized()
+void CefHelper::OnContextInitialized()
 {
     CEF_REQUIRE_UI_THREAD();
 
-    // CefHandler implements browser-level callbacks.
-    CefRefPtr<CefHandler> handler(new CefHandler());
+    // CefHelperHandler implements browser-level callbacks.
+    CefRefPtr<CefHelperHandler> handler(new CefHelperHandler());
 
     // Specify CEF browser settings here.
     CefBrowserSettings browser_settings;
@@ -178,6 +188,103 @@ void HelperApp::OnContextInitialized()
     // Create the browser window.
     CefBrowserHost::CreateBrowser(window_info, handler, url, browser_settings,
         nullptr, nullptr);
+}
+
+// Returns a data: URI with the specified contents.
+std::string GetDataURI(const std::string& data, const std::string& mimeType)
+{
+    return "data:" + mimeType + ";base64," +
+            CefURIEncode(CefBase64Encode(data.data(), data.size()), false)
+            .ToString();
+}
+
+CefHelperHandler::CefHelperHandler()
+{
+    DCHECK(!sInstance);
+    sInstance = this;
+}
+
+CefHelperHandler::~CefHelperHandler()
+{
+    sInstance = nullptr;
+}
+
+// static
+CefHelperHandler* CefHelperHandler::GetInstance()
+{
+    return sInstance;
+}
+
+bool CefHelperHandler::OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                               const CefString& target_url, 
+                               const CefString& target_frame_name,
+                               CefLifeSpanHandler::WindowOpenDisposition target_disposition,
+                               bool user_gesture,
+                               const CefPopupFeatures& popupFeatures,
+                               CefWindowInfo& windowInfo,
+                               CefRefPtr<CefClient>& client,
+                               CefBrowserSettings& settings,
+                               CefRefPtr<CefDictionaryValue>& extra_info,
+                               bool* no_javascript_access)
+{
+    CEF_REQUIRE_UI_THREAD();
+
+    // Disable popups, only the main browser is allowed
+    return true;
+}
+
+void CefHelperHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
+{
+    CEF_REQUIRE_UI_THREAD();
+
+    // Keep browser.
+    fBrowser = browser;
+}
+
+bool CefHelperHandler::DoClose(CefRefPtr<CefBrowser> browser)
+{
+    CEF_REQUIRE_UI_THREAD();
+
+    // Closing the main window requires special handling. See the DoClose()
+    // documentation in the CEF header for a detailed destription of this
+    // process.
+
+    // Allow the close. For windowed browsers this will result in the OS close
+    // event being sent.
+    return false;
+}
+
+void CefHelperHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser)
+{
+    CEF_REQUIRE_UI_THREAD();
+
+    // All browser windows have closed. Quit the application message loop.
+    CefQuitMessageLoop();
+
+    fBrowser = nullptr;
+}
+
+void CefHelperHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
+                             CefRefPtr<CefFrame> frame,
+                             ErrorCode errorCode,
+                             const CefString& errorText,
+                             const CefString& failedUrl)
+{
+    CEF_REQUIRE_UI_THREAD();
+
+    // Don't display an error for downloaded files.
+    if (errorCode == ERR_ABORTED) {
+        return;
+    }
+
+    // Display a load error message using a data: URI.
+    std::stringstream ss;
+    ss << "<html><body bgcolor=\"white\">"
+          "<h2>Failed to load URL "
+       << std::string(failedUrl) << " with error " << std::string(errorText)
+       << " (" << errorCode << ").</h2></body></html>";
+
+    frame->LoadURL(GetDataURI(ss.str(), "text/html"));
 }
 
 #if defined(CEF_X11)

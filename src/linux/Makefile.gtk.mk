@@ -2,9 +2,9 @@
 # Author:   oss@lucianoiam.com
 
 # ------------------------------------------------------------------------------
-# Helper binary
+# Build helper binary
 
-LXHELPER_SRC += gtk_webview/helper.c \
+LXHELPER_SRC += gtk_helper.c \
 				ipc.c
 
 LXHELPER_OBJ = $(LXHELPER_SRC:%=$(LXHELPER_BUILD_DIR)/%.o)
@@ -26,6 +26,6 @@ $(LXHELPER_BUILD_DIR)/%.c.o: $(HIPHOP_SRC_PATH)/linux/%.c
 	@$(CC) $(LXHELPER_CPPFLAGS) -c $< -o $@
 
 # ------------------------------------------------------------------------------
-# GTK helper is a monolithic binary
+# Only copy the monolithic GTK helper binary
 
 LXHELPER_FILES = $(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME)

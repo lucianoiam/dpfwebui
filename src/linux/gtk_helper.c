@@ -23,9 +23,9 @@
 #include <X11/Xlib.h>
 
 #include "DistrhoPluginInfo.h"
+#include "ipc.h"
+#include "ipc_message.h"
 #include "macro.h"
-#include "linux/ipc.h"
-#include "linux/ipc_message.h"
 
 // WKGTKRESIZEBUG : webview created with a fixed maximum size, see comprehensive
 // explanation in realize(). Plugins that do not change their UI size during

@@ -16,22 +16,53 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef CEF_HANDLER_HPP
-#define CEF_HANDLER_HPP
+#ifndef CEF_HELPER_HPP
+#define CEF_HELPER_HPP
 
-#include <list>
-
+#include "include/cef_app.h"
 #include "include/cef_client.h"
 
-class CefHandler : public CefClient, public CefDisplayHandler,
-                   public CefLifeSpanHandler, public CefLoadHandler
+#include "ipc.h"
+
+// Implement application-level callbacks for the browser process.
+class CefHelper : public CefApp, public CefBrowserProcessHandler
 {
 public:
-    explicit CefHandler();
-    ~CefHandler();
+    CefHelper(ipc_t* ipc);
+
+    void run();
+
+    // CefApp methods
+
+    virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override;
+
+    // CefBrowserProcessHandler methods
+
+    virtual void OnContextInitialized() override;
+
+private:
+    void dispatch(const tlv_t* packet);
+
+    bool   fRun;
+    ipc_t* fIpc;
+    
+    // Include the default reference counting implementation
+    IMPLEMENT_REFCOUNTING(CefHelper);
+};
+
+
+// TODO : consider merging CefHelperHandler into CefHelper, first determine
+//        which handler methods are needed
+
+class CefHelperHandler : public CefClient, public CefDisplayHandler,
+                         public CefLifeSpanHandler, public CefLoadHandler
+{
+public:
+    explicit CefHelperHandler();
+    ~CefHelperHandler();
 
     // Provide access to the single global instance of this object
-    static CefHandler* GetInstance();
+    static CefHelperHandler* GetInstance();
 
     // CefClient methods
 
@@ -76,14 +107,11 @@ public:
                              const CefString& failedUrl) override;
 
 private:
-    // Platform-specific implementation
-    void PlatformTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title);
-
     // Existing browser windows. Only accessed on the CEF UI thread.
     CefRefPtr<CefBrowser> fBrowser;
 
     // Include the default reference counting implementation
-    IMPLEMENT_REFCOUNTING(CefHandler);
+    IMPLEMENT_REFCOUNTING(CefHelperHandler);
 };
 
-#endif  // CEF_HANDLER_HPP
+#endif  // CEF_HELPER_HPP

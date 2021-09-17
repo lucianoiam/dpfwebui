@@ -225,10 +225,9 @@ $(BUILD_DIR)/libcef_dll_wrapper/%.o: $(CEF_PATH)/libcef_dll/%.cc
 	@$(CXX) $(CEF_CXXFLAGS) -c $< -o $@
 
 # ------------------------------------------------------------------------------
-# Helper binary
+# Build helper binary
 
-LXHELPER_SRC += cef_webview/HelperApp.cpp \
-				cef_webview/CefHandler.cpp \
+LXHELPER_SRC += CefHelper.cpp \
 				ipc.c
 
 LXHELPER_OBJ = $(LXHELPER_SRC:%=$(LXHELPER_BUILD_DIR)/%.o)
