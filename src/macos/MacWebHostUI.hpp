@@ -37,11 +37,8 @@ protected:
     uintptr_t createStandaloneWindow() override;
     void      processStandaloneEvents() override;
 
-    AbstractWebView& getWebView() override { return fWebView; }
-
 private:
-    uintptr_t    fWindow;
-    CocoaWebView fWebView;
+    uintptr_t fWindow;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MacWebHostUI)
 

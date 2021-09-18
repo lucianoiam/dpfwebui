@@ -37,11 +37,7 @@ protected:
     uintptr_t createStandaloneWindow() override;
     void      processStandaloneEvents() override;
 
-    AbstractWebView& getWebView() override { return fWebView; }
-
 private:
-    EdgeWebView fWebView;
-
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WindowsWebHostUI)
 
 };

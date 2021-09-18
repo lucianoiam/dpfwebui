@@ -29,7 +29,9 @@ LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgro
 {
     path::setRunningStandalone(isStandalone());
     
-    initWebView(fWebView);
+    if (shouldCreateWebView()) {
+        setWebView(new ChildProcessWebView());
+    }
 }
 
 LinuxWebHostUI::~LinuxWebHostUI()

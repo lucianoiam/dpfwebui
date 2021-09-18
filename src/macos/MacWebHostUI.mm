@@ -26,12 +26,14 @@ MacWebHostUI::MacWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundC
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
     , fWindow(0)
 {
-    initWebView(fWebView);
+    if (shouldCreateWebView()) {
+        setWebView(new CocoaWebView());
+    }
 }
 
 MacWebHostUI::~MacWebHostUI()
 {
-    if (isStandalone()) {
+    if (fNsWindow != 0) {
         [fNsWindow orderOut:nil];
         [fNsWindow release];
     }

@@ -139,7 +139,7 @@ class UI {
         this._call('flushInitMessageQueue');
     }
 
-    // void WebHostUI::webPostMessage(const JsValueVector& args)
+    // void WebHostUI::webViewPostMessage(const JsValueVector& args)
     postMessage(...args) {
         window.webviewHost.postMessage(args);
     }

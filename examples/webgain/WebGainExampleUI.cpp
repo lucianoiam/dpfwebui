@@ -36,18 +36,18 @@ UI* DISTRHO::createUI()
 WebGainExampleUI::WebGainExampleUI()
     : WebHostUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA)
 {
-    // Web view not guaranteed to be ready yet. Calls to getWebView().runScript()
+    // Web view not guaranteed to be ready yet. Calls to getWebView()->runScript()
     // or any DPF methods mapped by WebHostUI are forbidden. Mapped methods are
     // those that have their JavaScript counterparts; they rely on message
-    // passing and ultimately getWebView().runScript(). Still it is safe to call
-    // getWebView().injectScript() to queue scripts that will run immediately
+    // passing and ultimately getWebView()->runScript(). Still it is safe to call
+    // getWebView()->injectScript() to queue scripts that will run immediately
     // after web content finishes loading and before any referenced <script> runs.
 }
 
 void WebGainExampleUI::onWebContentReady()
 {
     // Called when the main document finished loading and DOM is ready. It is
-    // now safe to call getWebView().runScript() and mapped DPF methods.
+    // now safe to call getWebView()->runScript() and mapped DPF methods.
 }
 
 void WebGainExampleUI::onWebMessageReceived(const JsValueVector& args)

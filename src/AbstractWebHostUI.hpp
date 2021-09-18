@@ -32,7 +32,7 @@ class AbstractWebHostUI : public UI, private WebViewEventHandler
 {
 public:
     AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor);
-    virtual ~AbstractWebHostUI() {}
+    virtual ~AbstractWebHostUI();
     
     uint getInitWidth() const { return fInitWidth; }
     uint getInitHeight() const { return fInitHeight; }
@@ -41,6 +41,18 @@ public:
     virtual void  openSystemWebBrowser(String& url) = 0;
 
 protected:
+    bool shouldCreateWebView();
+
+    AbstractWebView* getWebView();
+    void setWebView(AbstractWebView* webView);
+
+    void webViewPostMessage(const JsValueVector& args);
+
+    void flushInitMessageQueue();
+    void setKeyboardFocus(bool focus);
+
+    void uiIdle() override;
+
     void sizeChanged(uint width, uint height) override;
 
     void parameterChanged(uint32_t index, float value) override;
@@ -51,22 +63,11 @@ protected:
     void stateChanged(const char* key, const char* value) override;
 #endif
 
-    void uiIdle() override;
-
-    void flushInitMessageQueue();
-    void setKeyboardFocus(bool focus);
-
-    void webPostMessage(const JsValueVector& args);
-
     virtual void onWebContentReady() {}
     virtual void onWebMessageReceived(const JsValueVector& args) { (void)args; }
 
     virtual uintptr_t createStandaloneWindow() = 0;
     virtual void      processStandaloneEvents() = 0;
-
-    virtual AbstractWebView& getWebView() = 0;
-
-    void initWebView(AbstractWebView& webView);
 
 private:
     typedef std::function<void()> UiBlock;
@@ -80,12 +81,13 @@ private:
 
     typedef std::vector<JsValueVector> InitMessageQueue;
 
-    InitMessageQueue fInitMsgQueue;
-    bool             fFlushedInitMsgQueue;
-    uint32_t         fBackgroundColor;
+    AbstractWebView* fWebView;
     uint             fInitWidth;
     uint             fInitHeight;
+    uint32_t         fBackgroundColor;
+    bool             fFlushedInitMsgQueue;
     bool             fRunUiBlock;
+    InitMessageQueue fInitMsgQueue;
     UiBlock          fQueuedUiBlock;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AbstractWebHostUI)

@@ -25,35 +25,54 @@ USE_NAMESPACE_DISTRHO
 
 AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : UI(baseWidth, baseHeight)
-    , fFlushedInitMsgQueue(false)
+    , fWebView(0)
+    , fInitWidth(0)
+    , fInitHeight(0)
     , fBackgroundColor(backgroundColor)
+    , fFlushedInitMsgQueue(false)
     , fRunUiBlock(false)
 {}
 
-void AbstractWebHostUI::initWebView(AbstractWebView& webView)
+AbstractWebHostUI::~AbstractWebHostUI()
 {
+    if (fWebView != 0) {
+        delete fWebView;
+    }
+}
+
+bool AbstractWebHostUI::shouldCreateWebView()
+{
+    // When running as a plugin the UI ctor/dtor can be repeatedly called with
+    // no parent window available, do not create the web view in such cases.
+    return isStandalone() || (getParentWindowHandle() != 0);
+}
+
+AbstractWebView* AbstractWebHostUI::getWebView()
+{
+    return fWebView;
+}
+
+void AbstractWebHostUI::setWebView(AbstractWebView* webView)
+{
+    fWebView = webView;
+
     // Web views adjust their contents following the system display scale factor,
     // adjust window size so it correctly wraps content on high density displays.
+    // Cannot call virtual method createStandaloneWindow() from constructor.
     uintptr_t parent = isStandalone() ? createStandaloneWindow() : getParentWindowHandle();
-
-    if (parent == 0) {
-        // This can happen during initialization when running as a plugin,
-        // constructor/destructor can be repeatedly called for a few times.
-        return;
-    }
 
     float k = getDisplayScaleFactor(parent);
     fInitWidth = k * getWidth();
     fInitHeight = k * getHeight();
 
-    webView.setSize(fInitWidth, fInitHeight);
-    webView.setBackgroundColor(fBackgroundColor);
-    webView.setParent(parent);
-    webView.realize();
+    fWebView->setSize(fInitWidth, fInitHeight);
+    fWebView->setBackgroundColor(fBackgroundColor);
+    fWebView->setParent(parent);
+    fWebView->realize();
 
-    webView.setEventHandler(this);
+    fWebView->setEventHandler(this);
 #ifdef HIPHOP_PRINT_TRAFFIC
-    webView.setPrintTraffic(true);
+    fWebView->setPrintTraffic(true);
 #endif
 
     String js = String(
@@ -61,60 +80,18 @@ void AbstractWebHostUI::initWebView(AbstractWebView& webView)
     );
     js += "const DISTRHO = Object.freeze({ UI: UI });" \
           "UI = null;";
-    webView.injectScript(js);
+    fWebView->injectScript(js);
 
     String url = "file://" + path::getLibraryPath() + "/ui/index.html";
-    webView.navigate(url);
+    fWebView->navigate(url);
 
     setSize(fInitWidth, fInitHeight);
-}
+};
 
-void AbstractWebHostUI::sizeChanged(uint width, uint height)
+void AbstractWebHostUI::webViewPostMessage(const JsValueVector& args)
 {
-    UI::sizeChanged(width, height);
-    
-    getWebView().setSize(width, height);
-    webPostMessage({"UI", "sizeChanged", width, height});
-}
-
-void AbstractWebHostUI::parameterChanged(uint32_t index, float value)
-{
-    webPostMessage({"UI", "parameterChanged", index, value});
-}
-
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-
-void AbstractWebHostUI::programLoaded(uint32_t index)
-{
-    webPostMessage({"UI", "programLoaded", index});
-}
-
-#endif // DISTRHO_PLUGIN_WANT_PROGRAMS
-
-#if DISTRHO_PLUGIN_WANT_STATE
-
-void AbstractWebHostUI::stateChanged(const char* key, const char* value)
-{
-    webPostMessage({"UI", "stateChanged", key, value});
-}
-
-#endif // DISTRHO_PLUGIN_WANT_STATE
-
-void AbstractWebHostUI::uiIdle()
-{
-    if (fRunUiBlock) {
-        fRunUiBlock = false;
-        fQueuedUiBlock();
-    }
-
-    if (isStandalone()) {
-        processStandaloneEvents();
-    }
-}
-
-void AbstractWebHostUI::webPostMessage(const JsValueVector& args) {
     if (fFlushedInitMsgQueue) {
-        getWebView().postMessage(args);
+        fWebView->postMessage(args);
     } else {
         fInitMsgQueue.push_back(args);
     }
@@ -129,7 +106,7 @@ void AbstractWebHostUI::flushInitMessageQueue()
     fFlushedInitMsgQueue = true;
 
     for (InitMessageQueue::iterator it = fInitMsgQueue.begin(); it != fInitMsgQueue.end(); ++it) {
-        getWebView().postMessage(*it);
+        fWebView->postMessage(*it);
     }
     
     fInitMsgQueue.clear();
@@ -137,8 +114,51 @@ void AbstractWebHostUI::flushInitMessageQueue()
 
 void AbstractWebHostUI::setKeyboardFocus(bool focus)
 {
-    getWebView().setKeyboardFocus(focus);
+    fWebView->setKeyboardFocus(focus);
 }
+
+void AbstractWebHostUI::uiIdle()
+{
+    if (fRunUiBlock) {
+        fRunUiBlock = false;
+        fQueuedUiBlock();
+    }
+
+    if (isStandalone()) {
+        processStandaloneEvents();
+    }
+}
+
+void AbstractWebHostUI::sizeChanged(uint width, uint height)
+{
+    UI::sizeChanged(width, height);
+    
+    fWebView->setSize(width, height);
+    webViewPostMessage({"UI", "sizeChanged", width, height});
+}
+
+void AbstractWebHostUI::parameterChanged(uint32_t index, float value)
+{
+    webViewPostMessage({"UI", "parameterChanged", index, value});
+}
+
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+
+void AbstractWebHostUI::programLoaded(uint32_t index)
+{
+    webViewPostMessage({"UI", "programLoaded", index});
+}
+
+#endif // DISTRHO_PLUGIN_WANT_PROGRAMS
+
+#if DISTRHO_PLUGIN_WANT_STATE
+
+void AbstractWebHostUI::stateChanged(const char* key, const char* value)
+{
+    webViewPostMessage({"UI", "stateChanged", key, value});
+}
+
+#endif // DISTRHO_PLUGIN_WANT_STATE
 
 void AbstractWebHostUI::queue(const UiBlock& block)
 {
@@ -172,10 +192,10 @@ void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& 
     int argc = args.size() - kArg0;
 
     if (method == "getWidth") {
-        webPostMessage({"UI", "getWidth", static_cast<double>(getWidth())});
+        webViewPostMessage({"UI", "getWidth", static_cast<double>(getWidth())});
 
     } else if (method == "getHeight") {
-        webPostMessage({"UI", "getHeight", static_cast<double>(getHeight())});
+        webViewPostMessage({"UI", "getHeight", static_cast<double>(getHeight())});
 
     } else if ((method == "setWidth") && (argc == 1)) {
         queue([this, args]() {
@@ -188,7 +208,7 @@ void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& 
         });
 
     } else if (method == "isResizable") {
-        webPostMessage({"UI", "isResizable", isResizable()});
+        webViewPostMessage({"UI", "isResizable", isResizable()});
 
     } else if ((method == "setSize") && (argc == 2)) {
         // Queuing is needed for REAPER on Linux and does no harm on others
@@ -229,7 +249,7 @@ void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& 
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
     } else if (method == "isStandalone") {
-        webPostMessage({"UI", "isStandalone", isStandalone()});
+        webViewPostMessage({"UI", "isStandalone", isStandalone()});
 
     } else if ((method == "setKeyboardFocus") && (argc == 1)) {
         setKeyboardFocus(static_cast<bool>(args[kArg0].getBool()));
@@ -239,10 +259,10 @@ void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& 
         openSystemWebBrowser(url);
 
     } else if (method == "getInitWidth") {
-        webPostMessage({"UI", "getInitWidth", static_cast<double>(getInitWidth())});
+        webViewPostMessage({"UI", "getInitWidth", static_cast<double>(getInitWidth())});
 
     } else if (method == "getInitHeight") {
-        webPostMessage({"UI", "getInitHeight", static_cast<double>(getInitHeight())});
+        webViewPostMessage({"UI", "getInitHeight", static_cast<double>(getInitHeight())});
 
     } else if (method == "flushInitMessageQueue") {
         flushInitMessageQueue();

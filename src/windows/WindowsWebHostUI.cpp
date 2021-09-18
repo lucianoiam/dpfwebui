@@ -25,7 +25,9 @@ USE_NAMESPACE_DISTRHO
 WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
 {
-    initWebView(fWebView);
+    if (shouldCreateWebView()) {
+        setWebView(new EdgeWebView());
+    }
 }
 
 WindowsWebHostUI::~WindowsWebHostUI()
