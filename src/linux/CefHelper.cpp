@@ -40,8 +40,6 @@ static int XIOErrorHandlerImpl(Display* display);
 #include "macro.h"
 #include "ipc_message.h"
 
-CefHelperHandler* sInstance = nullptr;
-
 // Entry point function for all processes
 int main(int argc, char* argv[])
 {
@@ -143,10 +141,7 @@ void CefHelper::run()
         }
 
         dispatch(&packet);
-    }
-
-    // TODO
-    LOG(INFO) << "Exit run()";       
+    }     
 }
 
 CefRefPtr<CefBrowserProcessHandler> CefHelper::GetBrowserProcessHandler()
@@ -156,10 +151,6 @@ CefRefPtr<CefBrowserProcessHandler> CefHelper::GetBrowserProcessHandler()
 
 void CefHelper::dispatch(const tlv_t* packet)
 {
-    LOG(INFO) << "Got packet with tag = " << packet->t;
-
-    // TODO
-
     switch (static_cast<msg_opcode_t>(packet->t)) {
         case OP_TERMINATE:
             fRun = false;
@@ -186,9 +177,15 @@ void CefHelper::OnContextInitialized()
     CefWindowInfo window_info;
 
     // Create the browser window.
-    CefBrowserHost::CreateBrowser(window_info, handler, url, browser_settings,
-        nullptr, nullptr);
+    fBrowser = CefBrowserHost::CreateBrowserSync(window_info, handler, url,
+        browser_settings, nullptr, nullptr);
 }
+
+CefHelperHandler::CefHelperHandler()
+{}
+
+CefHelperHandler::~CefHelperHandler()
+{}
 
 // Returns a data: URI with the specified contents.
 std::string GetDataURI(const std::string& data, const std::string& mimeType)
@@ -196,72 +193,6 @@ std::string GetDataURI(const std::string& data, const std::string& mimeType)
     return "data:" + mimeType + ";base64," +
             CefURIEncode(CefBase64Encode(data.data(), data.size()), false)
             .ToString();
-}
-
-CefHelperHandler::CefHelperHandler()
-{
-    DCHECK(!sInstance);
-    sInstance = this;
-}
-
-CefHelperHandler::~CefHelperHandler()
-{
-    sInstance = nullptr;
-}
-
-// static
-CefHelperHandler* CefHelperHandler::GetInstance()
-{
-    return sInstance;
-}
-
-bool CefHelperHandler::OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                               const CefString& target_url, 
-                               const CefString& target_frame_name,
-                               CefLifeSpanHandler::WindowOpenDisposition target_disposition,
-                               bool user_gesture,
-                               const CefPopupFeatures& popupFeatures,
-                               CefWindowInfo& windowInfo,
-                               CefRefPtr<CefClient>& client,
-                               CefBrowserSettings& settings,
-                               CefRefPtr<CefDictionaryValue>& extra_info,
-                               bool* no_javascript_access)
-{
-    CEF_REQUIRE_UI_THREAD();
-
-    // Disable popups, only the main browser is allowed
-    return true;
-}
-
-void CefHelperHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
-{
-    CEF_REQUIRE_UI_THREAD();
-
-    // Keep browser.
-    fBrowser = browser;
-}
-
-bool CefHelperHandler::DoClose(CefRefPtr<CefBrowser> browser)
-{
-    CEF_REQUIRE_UI_THREAD();
-
-    // Closing the main window requires special handling. See the DoClose()
-    // documentation in the CEF header for a detailed destription of this
-    // process.
-
-    // Allow the close. For windowed browsers this will result in the OS close
-    // event being sent.
-    return false;
-}
-
-void CefHelperHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser)
-{
-    CEF_REQUIRE_UI_THREAD();
-
-    // All browser windows have closed. Quit the application message loop.
-    CefQuitMessageLoop();
-
-    fBrowser = nullptr;
 }
 
 void CefHelperHandler::OnLoadError(CefRefPtr<CefBrowser> browser,

@@ -45,7 +45,9 @@ private:
 
     bool   fRun;
     ipc_t* fIpc;
-    
+
+    CefRefPtr<CefBrowser> fBrowser;
+
     // Include the default reference counting implementation
     IMPLEMENT_REFCOUNTING(CefHelper);
 };
@@ -54,49 +56,18 @@ private:
 // TODO : consider merging CefHelperHandler into CefHelper, first determine
 //        which handler methods are needed
 
-class CefHelperHandler : public CefClient, public CefDisplayHandler,
-                         public CefLifeSpanHandler, public CefLoadHandler
+class CefHelperHandler : public CefClient, public CefLoadHandler
 {
 public:
     explicit CefHelperHandler();
     ~CefHelperHandler();
 
-    // Provide access to the single global instance of this object
-    static CefHelperHandler* GetInstance();
-
     // CefClient methods
-
-    virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override
-    {
-        return this;
-    }
-
-    virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
-    {
-        return this;
-    }
 
     virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override
     {
         return this;
     }
-
-    // CefLifeSpanHandler methods
-
-    virtual bool OnBeforePopup(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                               const CefString& target_url, 
-                               const CefString& target_frame_name,
-                               CefLifeSpanHandler::WindowOpenDisposition target_disposition,
-                               bool user_gesture,
-                               const CefPopupFeatures& popupFeatures,
-                               CefWindowInfo& windowInfo,
-                               CefRefPtr<CefClient>& client,
-                               CefBrowserSettings& settings,
-                               CefRefPtr<CefDictionaryValue>& extra_info,
-                               bool* no_javascript_access) override;
-    virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
-    virtual bool DoClose(CefRefPtr<CefBrowser> browser) override;
-    virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override;
 
     // CefLoadHandler methods
 
@@ -107,9 +78,6 @@ public:
                              const CefString& failedUrl) override;
 
 private:
-    // Existing browser windows. Only accessed on the CEF UI thread.
-    CefRefPtr<CefBrowser> fBrowser;
-
     // Include the default reference counting implementation
     IMPLEMENT_REFCOUNTING(CefHelperHandler);
 };
