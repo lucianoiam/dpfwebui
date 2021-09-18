@@ -34,7 +34,8 @@ quite young and under continued development.
 
 ### Web view UI
 
-- On Linux a CEF (WIP) or WebKitGTK web view instance runs in a child process.
+- On Linux a WebKitGTK or Chromium Embedded Framework (CEF) web view instance
+  runs in a child process. CEF variant is work in progress as of Sep '21.
 
 - On macOS the system WKWebView is used.
 
