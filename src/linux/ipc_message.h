@@ -22,15 +22,15 @@
 #include <stdint.h>
 
 typedef enum {
-    OP_SET_SIZE,
-    OP_SET_KEYBOARD_FOCUS,
     OP_REALIZE,
     OP_NAVIGATE,
     OP_RUN_SCRIPT,
     OP_INJECT_SCRIPT,
+    OP_SET_SIZE,
+    OP_SET_KEYBOARD_FOCUS,
+    OP_TERMINATE,
     OP_HANDLE_SCRIPT_MESSAGE,
-    OP_HANDLE_LOAD_FINISHED,
-    OP_TERMINATE
+    OP_HANDLE_LOAD_FINISHED
 } msg_opcode_t;
 
 typedef enum {
@@ -42,12 +42,14 @@ typedef enum {
 } msg_js_arg_type_t;
 
 typedef struct {
-    uintptr_t parent;
-} msg_win_cfg_t;
-
-typedef struct {
     unsigned width;
     unsigned height;
 } msg_win_size_t;
+
+typedef struct {
+    uintptr_t      parent;
+    uint32_t       color;
+    msg_win_size_t size;
+} msg_win_cfg_t;
 
 #endif  // IPC_MESSAGE_H

@@ -51,9 +51,9 @@ typedef struct {
 } context_t;
 
 static void realize(context_t *ctx, const msg_win_cfg_t *config);
+static void inject_script(const context_t *ctx, const char* js);
 static void set_size(const context_t *ctx, unsigned width, unsigned height);
 static void set_keyboard_focus(context_t *ctx, gboolean focus);
-static void inject_script(const context_t *ctx, const char* js);
 static void* focus_watchdog_worker(void *arg);
 static gboolean release_focus(gpointer data);
 static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event, gpointer data);
@@ -144,6 +144,19 @@ static void realize(context_t *ctx, const msg_win_cfg_t *config)
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
 }
 
+static void inject_script(const context_t *ctx, const char* js)
+{
+    if (ctx->webView == NULL) {
+        return;
+    }
+
+    WebKitUserScript *script = webkit_user_script_new(js, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+        WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL);
+    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
+    webkit_user_content_manager_add_script(manager, script);
+    webkit_user_script_unref(script);
+}
+
 static void set_size(const context_t *ctx, unsigned width, unsigned height)
 {
     if (ctx->webView == NULL) {
@@ -190,19 +203,6 @@ static void set_keyboard_focus(context_t *ctx, gboolean focus)
             ctx->watchdog = 0;
         }
     }
-}
-
-static void inject_script(const context_t *ctx, const char* js)
-{
-    if (ctx->webView == NULL) {
-        return;
-    }
-
-    WebKitUserScript *script = webkit_user_script_new(js, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
-        WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL);
-    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
-    webkit_user_content_manager_add_script(manager, script);
-    webkit_user_script_unref(script);
 }
 
 static void* focus_watchdog_worker(void *arg)
@@ -338,18 +338,6 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
     }
 
     switch (packet.t) {
-        case OP_SET_SIZE: {
-            const msg_win_size_t *size = (const msg_win_size_t *)packet.v;
-            set_size(ctx, size->width, size->height);
-            break;
-        }
-
-        case OP_SET_KEYBOARD_FOCUS: {
-            gboolean focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
-            set_keyboard_focus(ctx, focus);
-            break;
-        }
-
         case OP_REALIZE:
             realize(ctx, (const msg_win_cfg_t *)packet.v);
             break;
@@ -369,6 +357,18 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
         case OP_INJECT_SCRIPT:
             inject_script(ctx, packet.v);
             break;
+
+        case OP_SET_SIZE: {
+            const msg_win_size_t *size = (const msg_win_size_t *)packet.v;
+            set_size(ctx, size->width, size->height);
+            break;
+        }
+
+        case OP_SET_KEYBOARD_FOCUS: {
+            gboolean focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
+            set_keyboard_focus(ctx, focus);
+            break;
+        }
 
         case OP_TERMINATE:
             gtk_main_quit();

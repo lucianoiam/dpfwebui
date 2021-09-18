@@ -65,9 +65,9 @@ void AbstractWebHostUI::setWebView(AbstractWebView* webView)
     fInitWidth = k * getWidth();
     fInitHeight = k * getHeight();
 
-    fWebView->setSize(fInitWidth, fInitHeight);
-    fWebView->setBackgroundColor(fBackgroundColor);
     fWebView->setParent(parent);
+    fWebView->setBackgroundColor(fBackgroundColor);
+    fWebView->setSize(fInitWidth, fInitHeight);
     fWebView->realize();
 
     fWebView->setEventHandler(this);

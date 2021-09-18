@@ -20,28 +20,31 @@
 #define CEF_HELPER_HPP
 
 #include "include/cef_app.h"
+#include "include/cef_browser.h"
 #include "include/cef_client.h"
 
 #include "ipc.h"
+#include "ipc_message.h"
 
-// Implement application-level callbacks for the browser process.
-class CefHelper : public CefApp, public CefBrowserProcessHandler
+class CefHelper : public CefApp, public CefClient, public CefLoadHandler
 {
 public:
     CefHelper(ipc_t* ipc);
 
-    void run();
+    void runMainLoop();
 
-    // CefApp methods
+    // CefClient
+    
+    virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
 
-    virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override;
+    // CefLoadHandler
 
-    // CefBrowserProcessHandler methods
-
-    virtual void OnContextInitialized() override;
-
+    virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser,
+                           CefRefPtr<CefFrame> frame,
+                           int httpStatusCode) override;
 private:
     void dispatch(const tlv_t* packet);
+    void realize(const msg_win_cfg_t *config);
 
     bool   fRun;
     ipc_t* fIpc;
@@ -52,34 +55,4 @@ private:
     IMPLEMENT_REFCOUNTING(CefHelper);
 };
 
-
-// TODO : consider merging CefHelperHandler into CefHelper, first determine
-//        which handler methods are needed
-
-class CefHelperHandler : public CefClient, public CefLoadHandler
-{
-public:
-    explicit CefHelperHandler();
-    ~CefHelperHandler();
-
-    // CefClient methods
-
-    virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override
-    {
-        return this;
-    }
-
-    // CefLoadHandler methods
-
-    virtual void OnLoadError(CefRefPtr<CefBrowser> browser,
-                             CefRefPtr<CefFrame> frame,
-                             ErrorCode errorCode,
-                             const CefString& errorText,
-                             const CefString& failedUrl) override;
-
-private:
-    // Include the default reference counting implementation
-    IMPLEMENT_REFCOUNTING(CefHelperHandler);
-};
-
-#endif  // CEF_HELPER_HPP
+#endif // CEF_HELPER_HPP

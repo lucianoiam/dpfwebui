@@ -154,6 +154,8 @@ void ChildProcessWebView::realize()
 
     msg_win_cfg_t config;
     config.parent = static_cast<uintptr_t>(fBackground);
+    config.color = color;
+    config.size = { getWidth(), getHeight() };
     ipcWrite(OP_REALIZE, &config, sizeof(config));
 
     String js = String(JS_POST_MESSAGE_SHIM);
