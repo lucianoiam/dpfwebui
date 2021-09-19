@@ -23,6 +23,7 @@
 
 #ifdef CEF_X11
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 static int XErrorHandlerImpl(Display* display, XErrorEvent* event);
 static int XIOErrorHandlerImpl(Display* display);
 #endif // CEF_X11
@@ -148,11 +149,11 @@ void CefHelper::dispatch(const tlv_t* packet)
 
         case OP_SET_SIZE: {
             // TODO - untested
-            const msg_win_size_t *size = (const msg_win_size_t *)packet->v;
+            /*const msg_win_size_t *size = (const msg_win_size_t *)packet->v;
             ::Display* display = cef_get_xdisplay();
             ::Window window = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
             XResizeWindow(display, window, size->width, size->height);
-            XSync(display, False);
+            XSync(display, False);*/
             break;
         }
 
@@ -171,6 +172,23 @@ void CefHelper::dispatch(const tlv_t* packet)
 
 void CefHelper::realize(const msg_win_cfg_t *config)
 {
+    ::Display* display = XOpenDisplay(NULL);
+    ::Window parent = static_cast<::Window>(config->parent);
+
+    XVisualInfo vinfo;
+    XMatchVisualInfo(display, DefaultScreen(display), 24, TrueColor, &vinfo);
+
+    XSetWindowAttributes attrs;
+    attrs.colormap = XCreateColormap(display, XDefaultRootWindow(display), vinfo.visual, AllocNone);
+
+    ::Window container = XCreateWindow(display, parent, 0, 0,
+                                       config->size.width, config->size.height, 0,
+                                       vinfo.depth, CopyFromParent, vinfo.visual,
+                                       CWColormap, &attrs);
+    XMapWindow(display, container);
+    XSync(display, false);
+
+
     CefBrowserSettings settings;
 
     // TODO
@@ -180,7 +198,7 @@ void CefHelper::realize(const msg_win_cfg_t *config)
     settings.background_color = static_cast<cef_color_t>(config->color);
 
     CefWindowInfo windowInfo;
-    windowInfo.parent_window = static_cast<CefWindowHandle>(config->parent);
+    windowInfo.parent_window = container;
     windowInfo.width = config->size.width;
     windowInfo.height = config->size.height;
 
@@ -204,11 +222,10 @@ static int XErrorHandlerImpl(Display* display, XErrorEvent* event)
        << "type " << event->type << ", "
        << "serial " << event->serial << ", "
        << "error_code " << static_cast<int>(event->error_code) << ", "
-       << "request_code " << static_cast<int>(event->request_code)
-       << ", "
+       << "request_code " << static_cast<int>(event->request_code) << ", "
        << "minor_code " << static_cast<int>(event->minor_code);
 
-    HIPHOP_LOG_STDERR_COLOR(ss.str());
+    HIPHOP_LOG_STDERR_COLOR(ss.str().c_str());
     
     return 0;
 }
