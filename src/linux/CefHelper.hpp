@@ -19,6 +19,8 @@
 #ifndef CEF_HELPER_HPP
 #define CEF_HELPER_HPP
 
+#include <X11/Xlib.h>
+
 #include "include/cef_app.h"
 #include "include/cef_browser.h"
 #include "include/cef_client.h"
@@ -30,6 +32,7 @@ class CefHelper : public CefApp, public CefClient, public CefLoadHandler
 {
 public:
     CefHelper(ipc_t* ipc);
+    virtual ~CefHelper();
 
     void runMainLoop();
 
@@ -46,8 +49,10 @@ private:
     void dispatch(const tlv_t* packet);
     void realize(const msg_win_cfg_t *config);
 
-    bool   fRun;
-    ipc_t* fIpc;
+    bool       fRun;
+    ipc_t*     fIpc;
+    ::Display* fDisplay;
+    ::Window   fContainer;
 
     CefRefPtr<CefBrowser> fBrowser;
 

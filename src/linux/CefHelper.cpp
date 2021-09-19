@@ -20,15 +20,12 @@
 
 #include <sstream>
 #include <sys/select.h>
-
-#ifdef CEF_X11
-#include <X11/Xlib.h>
 #include <X11/Xutil.h>
-static int XErrorHandlerImpl(Display* display, XErrorEvent* event);
-static int XIOErrorHandlerImpl(Display* display);
-#endif // CEF_X11
 
 #include "macro.h"
+
+static int XErrorHandlerImpl(Display* display, XErrorEvent* event);
+static int XIOErrorHandlerImpl(Display* display);
 
 // Entry point function for all processes
 int main(int argc, char* argv[])
@@ -59,12 +56,10 @@ int main(int argc, char* argv[])
 
     ipc_t* ipc = ipc_init(&conf);
 
-#ifdef CEF_X11
     // Install xlib error handlers so that the application won't be terminated
     // on non-fatal errors
     XSetErrorHandler(XErrorHandlerImpl);
     XSetIOErrorHandler(XIOErrorHandlerImpl);
-#endif // CEF_X11
 
     CefSettings settings;
     //settings.no_sandbox = true;
@@ -85,8 +80,29 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-CefHelper::CefHelper(ipc_t* ipc) : fRun(false), fIpc(ipc)
-{}
+CefHelper::CefHelper(ipc_t* ipc)
+    : fRun(false)
+    , fIpc(ipc)
+    , fDisplay(0)
+    , fContainer(0)
+{
+    fDisplay = XOpenDisplay(NULL);
+
+    if (fDisplay == NULL) {
+        HIPHOP_LOG_STDERR("Cannot open display");
+    }
+}
+
+CefHelper::~CefHelper()
+{
+    if (fContainer != 0) {
+        XDestroyWindow(fDisplay, fContainer);
+    }
+
+    if (fDisplay != 0) {
+        XCloseDisplay(fDisplay);
+    }
+}
 
 void CefHelper::runMainLoop()
 {
@@ -172,33 +188,26 @@ void CefHelper::dispatch(const tlv_t* packet)
 
 void CefHelper::realize(const msg_win_cfg_t *config)
 {
-    ::Display* display = XOpenDisplay(NULL);
-    ::Window parent = static_cast<::Window>(config->parent);
-
     XVisualInfo vinfo;
-    XMatchVisualInfo(display, DefaultScreen(display), 24, TrueColor, &vinfo);
+    XMatchVisualInfo(fDisplay, DefaultScreen(fDisplay), 24, TrueColor, &vinfo);
 
     XSetWindowAttributes attrs;
-    attrs.colormap = XCreateColormap(display, XDefaultRootWindow(display), vinfo.visual, AllocNone);
+    attrs.colormap = XCreateColormap(fDisplay, XDefaultRootWindow(fDisplay),
+                                     vinfo.visual, AllocNone);
 
-    ::Window container = XCreateWindow(display, parent, 0, 0,
-                                       config->size.width, config->size.height, 0,
-                                       vinfo.depth, CopyFromParent, vinfo.visual,
-                                       CWColormap, &attrs);
-    XMapWindow(display, container);
-    XSync(display, false);
-
+    fContainer = XCreateWindow(fDisplay, static_cast<::Window>(config->parent),
+                               0, 0, config->size.width, config->size.height, 0,
+                               vinfo.depth, CopyFromParent, vinfo.visual,
+                               CWColormap, &attrs);
+    XSync(fDisplay, false);
 
     CefBrowserSettings settings;
 
     // TODO
     //settings.log_severity = DISABLE;
 
-    // FIXME - not working
-    settings.background_color = static_cast<cef_color_t>(config->color);
-
     CefWindowInfo windowInfo;
-    windowInfo.parent_window = container;
+    windowInfo.parent_window = fContainer;
     windowInfo.width = config->size.width;
     windowInfo.height = config->size.height;
 
@@ -210,10 +219,12 @@ void CefHelper::OnLoadEnd(CefRefPtr<CefBrowser> browser,
                           CefRefPtr<CefFrame> frame,
                           int httpStatusCode)
 {
+    XMapWindow(fDisplay, fContainer);
+    XSync(fDisplay, False);
+
     // TODO
 }
 
-#ifdef CEF_X11
 static int XErrorHandlerImpl(Display* display, XErrorEvent* event)
 {
     std::stringstream ss;
@@ -234,4 +245,3 @@ static int XIOErrorHandlerImpl(Display* display)
 {
     return 0;
 }
-#endif // CEF_X11
