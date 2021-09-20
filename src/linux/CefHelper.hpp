@@ -28,7 +28,8 @@
 #include "ipc.h"
 #include "ipc_message.h"
 
-class CefHelper : public CefApp, public CefClient, public CefLoadHandler
+class CefHelper : public CefApp, public CefClient, 
+                  public CefBrowserProcessHandler, public CefLoadHandler
 {
 public:
     CefHelper(ipc_t* ipc);
@@ -38,12 +39,23 @@ public:
 
     // CefClient
     
-    virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
+    virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override
+    {
+        return this;
+    }
+
+    virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override
+    {
+        return this;
+    }
+
+    // CefBrowserProcessHandler
+
+    virtual void OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine);
 
     // CefLoadHandler
 
-    virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser,
-                           CefRefPtr<CefFrame> frame,
+    virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                            int httpStatusCode) override;
 private:
     void dispatch(const tlv_t* packet);

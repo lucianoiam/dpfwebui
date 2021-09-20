@@ -64,6 +64,7 @@ int main(int argc, char* argv[])
 
     CefSettings settings;
     //settings.no_sandbox = true;
+    settings.chrome_runtime = false;
 
     // CefHelper implements application-level callbacks for the browser process.
     // It will create the first browser instance in OnContextInitialized() after
@@ -146,6 +147,20 @@ void CefHelper::runMainLoop()
     }
 }
 
+void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine)
+{
+    commandLine->AppendSwitch("disable-extensions");
+}
+
+void CefHelper::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                          int httpStatusCode)
+{
+    XMapWindow(fDisplay, fContainer);
+    XSync(fDisplay, False);
+
+    // TODO
+}
+
 void CefHelper::dispatch(const tlv_t* packet)
 {
     switch (static_cast<msg_opcode_t>(packet->t)) {
@@ -221,16 +236,6 @@ void CefHelper::realize(const msg_win_cfg_t *config)
 
     fBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings,
         nullptr, nullptr);
-}
-
-void CefHelper::OnLoadEnd(CefRefPtr<CefBrowser> browser,
-                          CefRefPtr<CefFrame> frame,
-                          int httpStatusCode)
-{
-    XMapWindow(fDisplay, fContainer);
-    XSync(fDisplay, False);
-
-    // TODO
 }
 
 static int XErrorHandlerImpl(Display* display, XErrorEvent* event)
