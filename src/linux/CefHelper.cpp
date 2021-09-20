@@ -192,6 +192,10 @@ void CefHelper::dispatch(const tlv_t* packet)
 
 void CefHelper::realize(const msg_win_cfg_t *config)
 {
+    // Top view is needed to ensure 24-bit colormap otherwise CreateBrowserSync()
+    // will fail producing multiple Xlib errors. This can only be reproduced on
+    // REAPER when trying to open the plugin interface by clicking the UI button.
+
     XVisualInfo vinfo;
     XMatchVisualInfo(fDisplay, DefaultScreen(fDisplay), 24, TrueColor, &vinfo);
 
