@@ -39,14 +39,16 @@
 // CSS touch-action based approach seems to be failing for WebKitGTK. Looks like a bug.
 #define JS_DISABLE_PINCH_ZOOM_WORKAROUND "if (document.body.children.length > 0) document.body.children[0].addEventListener('touchstart', (ev) => { ev.preventDefault(); });"
 
+#define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
+
 typedef struct {
     ipc_t*         ipc;
     Display*       display;
     Window         container;
     GtkWindow*     window;
     WebKitWebView* webView;
-    Window         focusXWin;
     gboolean       focus;
+    Window         focusXWin;
     pthread_t      watchdog;
 } context_t;
 
@@ -359,6 +361,10 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
 
         case OP_INJECT_SCRIPT:
             inject_script(ctx, packet.v);
+            break;
+
+        case OP_INJECT_SHIMS:
+            inject_script(ctx, JS_POST_MESSAGE_SHIM);
             break;
 
         case OP_SET_SIZE: {

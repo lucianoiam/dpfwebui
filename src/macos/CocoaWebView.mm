@@ -71,8 +71,10 @@ CocoaWebView::CocoaWebView()
     );
     injectScript(js);
 
+    injectDefaultScripts();
+
     js = String(JS_POST_MESSAGE_SHIM);
-    injectDefaultScripts(js);
+    injectScript(js);
 }
 
 CocoaWebView::~CocoaWebView()

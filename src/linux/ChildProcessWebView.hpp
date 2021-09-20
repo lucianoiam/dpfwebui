@@ -51,8 +51,9 @@ protected:
 
 private:
     ipc_t* ipc() const { return fIpc; }
-    int    ipcWriteString(msg_opcode_t opcode, String str) const;
     int    ipcWrite(msg_opcode_t opcode, const void *payload, int payloadSize) const; 
+    int    ipcWriteOpcode(msg_opcode_t opcode) const;
+    int    ipcWriteString(msg_opcode_t opcode, String str) const;
     void   ipcReadCallback(const tlv_t& message);
 
     void   handleHelperScriptMessage(const char *payload, int payloadSize);

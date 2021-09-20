@@ -190,6 +190,10 @@ void CefHelper::dispatch(const tlv_t* packet)
             fInjectedScripts.push_back(static_cast<const char*>(packet->v));
             break;
 
+        case OP_INJECT_SHIMS:
+            // TODO
+            break;
+
         case OP_SET_SIZE: {
             // TODO - untested
             /*const msg_win_size_t *size = (const msg_win_size_t *)packet->v;

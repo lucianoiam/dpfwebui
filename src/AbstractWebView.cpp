@@ -127,14 +127,13 @@ void AbstractWebView::postMessage(const JsValueVector& args)
     runScript(js);
 }
 
-void AbstractWebView::injectDefaultScripts(String& platformSpecificScript)
+void AbstractWebView::injectDefaultScripts()
 {
     String js = String()
         + String(JS_DISABLE_CONTEXT_MENU)
         + String(JS_DISABLE_PRINT)
         + String(JS_CREATE_CONSOLE)
         + String(JS_CREATE_HOST_OBJECT)
-        + platformSpecificScript
     ;
     injectScript(js);
 }

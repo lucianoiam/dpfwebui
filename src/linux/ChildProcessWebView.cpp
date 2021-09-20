@@ -30,8 +30,6 @@
 #include "Path.hpp"
 #include "macro.h"
 
-#define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
-
 extern char **environ;
 
 /*
@@ -97,7 +95,7 @@ ChildProcessWebView::ChildProcessWebView()
 ChildProcessWebView::~ChildProcessWebView()
 {
     if (fPid != -1) {
-        ipcWrite(OP_TERMINATE, 0, 0);
+        ipcWriteOpcode(OP_TERMINATE);
 
         int stat;
         waitpid(fPid, &stat, 0);
@@ -158,8 +156,8 @@ void ChildProcessWebView::realize()
     config.size = { getWidth(), getHeight() };
     ipcWrite(OP_REALIZE, &config, sizeof(config));
 
-    String js = String(JS_POST_MESSAGE_SHIM);
-    injectDefaultScripts(js);
+    injectDefaultScripts();
+    ipcWriteOpcode(OP_INJECT_SHIMS);
 }
 
 void ChildProcessWebView::navigate(String& url)
@@ -196,12 +194,6 @@ void ChildProcessWebView::onKeyboardFocus(bool focus)
     ipcWrite(OP_SET_KEYBOARD_FOCUS, &val, sizeof(val));
 }
 
-int ChildProcessWebView::ipcWriteString(msg_opcode_t opcode, String str) const
-{
-    const char *cStr = static_cast<const char *>(str);
-    return ipcWrite(opcode, cStr, strlen(cStr) + 1);
-}
-
 int ChildProcessWebView::ipcWrite(msg_opcode_t opcode, const void *payload, int payloadSize) const
 {
     tlv_t packet;
@@ -216,6 +208,17 @@ int ChildProcessWebView::ipcWrite(msg_opcode_t opcode, const void *payload, int 
     }
 
     return retval;
+}
+
+int ChildProcessWebView::ipcWriteString(msg_opcode_t opcode, String str) const
+{
+    const char *cStr = static_cast<const char *>(str);
+    return ipcWrite(opcode, cStr, strlen(cStr) + 1);
+}
+
+int ChildProcessWebView::ipcWriteOpcode(msg_opcode_t opcode) const
+{
+    return ipcWrite(opcode, 0, 0);
 }
 
 void ChildProcessWebView::ipcReadCallback(const tlv_t& packet)

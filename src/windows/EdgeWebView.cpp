@@ -94,9 +94,10 @@ EdgeWebView::EdgeWebView()
 
     fHandler = new InternalWebView2EventHandler(this);
 
-    // This request is queued until Edge WebView2 initializes itself
+    // These requests are queued until Edge WebView2 initializes itself
+    injectDefaultScripts();
     String js = String(JS_POST_MESSAGE_SHIM);
-    injectDefaultScripts(js);
+    injectScript(js);  
 
     // Initialize Edge WebView2. Avoid error: Make sure COM is initialized - 0x800401F0 CO_E_NOTINITIALIZED
     CoInitializeEx(0, COINIT_APARTMENTTHREADED);
