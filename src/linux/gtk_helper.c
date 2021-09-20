@@ -206,9 +206,12 @@ static void set_keyboard_focus(context_t *ctx, gboolean focus)
 }
 
 static void* focus_watchdog_worker(void *arg)
-{        
-    // Use a thread to poll plugin keyboard focus status because Gdk wrapped X11
-    // windows do not seem to emit focus events like a regular GdkWindow
+{
+    // GdkWindow instances created with gdk_x11_window_foreign_new_for_display()
+    // do not seem to emit focus events like a regular GdkWindow instance. That
+    // makes it difficult to detect when the plugin window goes out of focus in
+    // order to release the keyboard lock. This solution uses a thread to poll
+    // X11 focus, detect changes and release the keyboard lock when needed.
 
     context_t *ctx = (context_t *)arg;
 
