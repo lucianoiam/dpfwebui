@@ -246,8 +246,8 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
             webkit_web_view_run_javascript(ctx->webView, JS_DISABLE_PINCH_ZOOM_WORKAROUND,
                 NULL, NULL, NULL);
             gtk_widget_show_all(GTK_WIDGET(ctx->window));
-            usleep(50000L); // 50ms -- prevent flicker and occasional blank view
             ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
+            usleep(10000); // 10ms -- prevents flicker, why?
             break;
 
         default:
