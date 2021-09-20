@@ -245,8 +245,6 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
 
     navigate(fUrl);
 
-    fInjectedScripts.clear();
-
     return S_OK;
 }
 

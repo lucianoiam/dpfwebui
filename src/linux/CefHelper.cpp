@@ -152,6 +152,14 @@ void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine
     commandLine->AppendSwitch("disable-extensions");
 }
 
+void CefHelper::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                            TransitionType transitionType)
+{
+    for (std::vector<CefString>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
+        frame->ExecuteJavaScript(*it, "", 0);
+    }
+}
+
 void CefHelper::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                           int httpStatusCode)
 {
@@ -175,11 +183,11 @@ void CefHelper::dispatch(const tlv_t* packet)
         }
 
         case OP_RUN_SCRIPT:
-            // TODO
+            fBrowser->GetMainFrame()->ExecuteJavaScript(static_cast<const char*>(packet->v), "", 0);
             break;
 
         case OP_INJECT_SCRIPT:
-            // TODO
+            fInjectedScripts.push_back(static_cast<const char*>(packet->v));
             break;
 
         case OP_SET_SIZE: {

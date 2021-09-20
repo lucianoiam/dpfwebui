@@ -19,6 +19,8 @@
 #ifndef CEF_HELPER_HPP
 #define CEF_HELPER_HPP
 
+#include <vector>
+
 #include <X11/Xlib.h>
 
 #include "include/cef_app.h"
@@ -55,6 +57,9 @@ public:
 
     // CefLoadHandler
 
+    virtual void OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                             TransitionType transitionType) override;
+
     virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                            int httpStatusCode) override;
 private:
@@ -65,8 +70,9 @@ private:
     ipc_t*     fIpc;
     ::Display* fDisplay;
     ::Window   fContainer;
-
-    CefRefPtr<CefBrowser> fBrowser;
+    
+    std::vector<CefString> fInjectedScripts;
+    CefRefPtr<CefBrowser>  fBrowser;
 
     // Include the default reference counting implementation
     IMPLEMENT_REFCOUNTING(CefHelper);
