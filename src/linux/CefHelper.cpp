@@ -19,6 +19,7 @@
 #include "CefHelper.hpp"
 
 #include <sstream>
+
 #include <sys/select.h>
 #include <X11/Xutil.h>
 
@@ -67,14 +68,17 @@ int main(int argc, char* argv[])
     // CefHelper implements application-level callbacks for the browser process.
     // It will create the first browser instance in OnContextInitialized() after
     // CEF has initialized.
-    CefRefPtr<CefHelper> app(new CefHelper(ipc));
+    CefHelper* app = new CefHelper(ipc);
 
     // Initialize CEF for the browser process
-    CefInitialize(args, settings, app.get(), nullptr);
+    CefInitialize(args, settings, app, nullptr);
 
-    app.get()->runMainLoop();
+    app->runMainLoop();
+    delete app;
 
+    // fBrowser must be deleted before calling CefShutdown() otherwise it hangs
     CefShutdown();
+
     ipc_destroy(ipc);
 
     return 0;
@@ -139,7 +143,7 @@ void CefHelper::runMainLoop()
         }
 
         dispatch(&packet);
-    }     
+    }
 }
 
 void CefHelper::dispatch(const tlv_t* packet)
