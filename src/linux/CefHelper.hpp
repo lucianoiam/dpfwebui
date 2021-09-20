@@ -30,23 +30,34 @@
 #include "ipc.h"
 #include "ipc_message.h"
 
-class CefHelper : public CefApp, public CefClient, 
-                  public CefBrowserProcessHandler, public CefLoadHandler
+class CefHelper : public CefApp,
+                  public CefClient, 
+                  public CefBrowserProcessHandler, 
+                  public CefRenderProcessHandler,
+                  public CefLoadHandler,
+                  public CefV8Handler
 {
 public:
-    CefHelper(ipc_t* ipc);
+    CefHelper();
     virtual ~CefHelper();
+
+    void createIpc(const ipc_conf_t& conf);
 
     void runMainLoop();
 
     // CefClient
-    
-    virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override
+
+    virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override
     {
         return this;
     }
 
-    virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override
+    virtual CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() override
+    {
+        return this;
+    }
+    
+    virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override
     {
         return this;
     }
@@ -55,6 +66,11 @@ public:
 
     virtual void OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine);
 
+    // CefRenderProcessHandler
+
+    virtual void OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                                  CefRefPtr<CefV8Context> context) override;
+
     // CefLoadHandler
 
     virtual void OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
@@ -62,11 +78,17 @@ public:
 
     virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                            int httpStatusCode) override;
+
+    // CefV8Handler
+
+    virtual bool Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments,
+                         CefRefPtr<CefV8Value>& retval, CefString& exception) override;
+
 private:
     void dispatch(const tlv_t* packet);
     void realize(const msg_win_cfg_t *config);
 
-    bool       fRun;
+    bool       fRunMainLoop;
     ipc_t*     fIpc;
     ::Display* fDisplay;
     ::Window   fContainer;

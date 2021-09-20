@@ -25,19 +25,26 @@
 
 #include "macro.h"
 
+#define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.hostPostMessage(args);"
+
 static int XErrorHandlerImpl(Display* display, XErrorEvent* event);
 static int XIOErrorHandlerImpl(Display* display);
 
 // Entry point function for all processes
 int main(int argc, char* argv[])
 {
+    // CefHelper implements application-level callbacks for the browser process.
+    // It will create the first browser instance in OnContextInitialized() after
+    // CEF has initialized.
+    CefRefPtr<CefHelper> app = new CefHelper();
+
     // Provide CEF with command-line arguments
     CefMainArgs args(argc, argv);
 
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
     // that share the same executable. This function checks the command-line and,
     // if this is a sub-process, executes the appropriate logic.
-    int code = CefExecuteProcess(args, nullptr, nullptr);
+    int code = CefExecuteProcess(args, app.get(), nullptr);
     if (code >= 0) {
         // The sub-process has completed so return here
         return code;
@@ -55,7 +62,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    ipc_t* ipc = ipc_init(&conf);
+    app->createIpc(conf);
 
     // Install xlib error handlers so that the application won't be terminated
     // on non-fatal errors
@@ -66,37 +73,24 @@ int main(int argc, char* argv[])
     //settings.no_sandbox = true;
     settings.chrome_runtime = false;
 
-    // CefHelper implements application-level callbacks for the browser process.
-    // It will create the first browser instance in OnContextInitialized() after
-    // CEF has initialized.
-    CefHelper* app = new CefHelper(ipc);
-
     // Initialize CEF for the browser process
-    CefInitialize(args, settings, app, nullptr);
+    CefInitialize(args, settings, app.get(), nullptr);
 
     app->runMainLoop();
-    delete app;
 
     // fBrowser must be deleted before calling CefShutdown() otherwise it hangs
+    app = nullptr;
     CefShutdown();
-
-    ipc_destroy(ipc);
 
     return 0;
 }
 
-CefHelper::CefHelper(ipc_t* ipc)
-    : fRun(false)
-    , fIpc(ipc)
+CefHelper::CefHelper()
+    : fRunMainLoop(false)
+    , fIpc(0)
     , fDisplay(0)
     , fContainer(0)
-{
-    fDisplay = XOpenDisplay(NULL);
-
-    if (fDisplay == NULL) {
-        HIPHOP_LOG_STDERR("Cannot open display");
-    }
-}
+{}
 
 CefHelper::~CefHelper()
 {
@@ -107,18 +101,34 @@ CefHelper::~CefHelper()
     if (fDisplay != 0) {
         XCloseDisplay(fDisplay);
     }
+
+    if (fIpc != 0) {
+        ipc_destroy(fIpc);
+    }
+}
+
+void CefHelper::createIpc(const ipc_conf_t& conf)
+{
+    fIpc = ipc_init(&conf);
 }
 
 void CefHelper::runMainLoop()
 {
+    fDisplay = XOpenDisplay(NULL);
+
+    if (fDisplay == 0) {
+        HIPHOP_LOG_STDERR("Cannot open display");
+        return;
+    }
+
     int fd = ipc_get_config(fIpc)->fd_r;
     fd_set rfds;
     struct timeval tv;
     tlv_t packet;
 
-    fRun = true;
+    fRunMainLoop = true;
     
-    while (fRun) {
+    while (fRunMainLoop) {
         CefDoMessageLoopWork();
 
         FD_ZERO(&rfds);
@@ -129,7 +139,7 @@ void CefHelper::runMainLoop()
 
         if (retval == -1) {
             HIPHOP_LOG_STDERR_ERRNO("Failed select() on IPC channel");
-            fRun = false;
+            fRunMainLoop = false;
             continue;
         }
 
@@ -139,7 +149,7 @@ void CefHelper::runMainLoop()
 
         if (ipc_read(fIpc, &packet) == -1) {
             HIPHOP_LOG_STDERR_ERRNO("Could not read from IPC channel");
-            fRun = false;
+            fRunMainLoop = false;
             continue;
         }
 
@@ -150,11 +160,31 @@ void CefHelper::runMainLoop()
 void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine)
 {
     commandLine->AppendSwitch("disable-extensions");
+
+    const ipc_conf_t* conf = ipc_get_config(fIpc);
+    commandLine->AppendSwitchWithValue("fdr", std::to_string(conf->fd_r));
+    commandLine->AppendSwitchWithValue("fdw", std::to_string(conf->fd_w));
+}
+
+void CefHelper::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                                 CefRefPtr<CefV8Context> context)
+{
+    // OnContextCreated() is only called in renderer process
+    CefRefPtr<CefV8Value> window = context->GetGlobal();
+    window->SetValue("hostPostMessage", CefV8Value::CreateFunction("hostPostMessage", this),
+                     V8_PROPERTY_ATTRIBUTE_NONE);
 }
 
 void CefHelper::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                             TransitionType transitionType)
 {
+    // Run injected scripts from renderer process to ensure window.hostPostMessage
+    // is defined because such function is called by the injected shim
+
+    if (fRunMainLoop) {
+        return;
+    }
+
     for (std::vector<CefString>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
         frame->ExecuteJavaScript(*it, "", 0);
     }
@@ -163,10 +193,32 @@ void CefHelper::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> f
 void CefHelper::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                           int httpStatusCode)
 {
+    // Window is managed by the browser process
+    if (!fRunMainLoop) {
+        return;
+    }
+
     XMapWindow(fDisplay, fContainer);
     XSync(fDisplay, False);
 
     // TODO
+}
+
+bool CefHelper::Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments,
+                        CefRefPtr<CefV8Value>& retval, CefString& exception)
+{
+    // Execute() is only called in renderer process
+
+    if ((name != "hostPostMessage") || (arguments.size() != 1) || (!arguments[0]->IsArray())) {
+        HIPHOP_LOG_STDERR_COLOR("Invalid call to host");
+        return false;
+    }
+
+    CefRefPtr<CefV8Value> args = arguments[0];
+
+    printf("FIXME : hostPostMessage() called with %d arguments\n", args->GetArrayLength());
+
+    return true;
 }
 
 void CefHelper::dispatch(const tlv_t* packet)
@@ -191,7 +243,7 @@ void CefHelper::dispatch(const tlv_t* packet)
             break;
 
         case OP_INJECT_SHIMS:
-            // TODO
+            fInjectedScripts.push_back(JS_POST_MESSAGE_SHIM);
             break;
 
         case OP_SET_SIZE: {
@@ -209,7 +261,7 @@ void CefHelper::dispatch(const tlv_t* packet)
             break;
 
         case OP_TERMINATE:
-            fRun = false;
+            fRunMainLoop = false;
             break;
 
         default:
@@ -234,7 +286,7 @@ void CefHelper::realize(const msg_win_cfg_t *config)
                                0, 0, config->size.width, config->size.height, 0,
                                vinfo.depth, CopyFromParent, vinfo.visual,
                                CWColormap, &attrs);
-    XSync(fDisplay, false);
+    XSync(fDisplay, False);
 
     CefBrowserSettings settings;
 
