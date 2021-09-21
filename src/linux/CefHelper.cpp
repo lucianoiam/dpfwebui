@@ -34,12 +34,12 @@ static int XIOErrorHandlerImpl(Display* display);
 int main(int argc, char* argv[])
 {
     CefMainArgs args(argc, argv);
-    CefRefPtr<CefHelper> app = new CefHelper();
+    CefRefPtr<CefHelperSubprocess> proc = new CefHelperSubprocess();
 
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
     // that share the same executable. This function checks the command-line and,
     // if this is a sub-process, executes the appropriate logic.
-    int code = CefExecuteProcess(args, app.get(), nullptr);
+    int code = CefExecuteProcess(args, proc.get(), nullptr);
     if (code >= 0) {
         // The sub-process has completed so return here
         return code;
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    app->createIpc(conf);
+    CefRefPtr<CefHelper> app = new CefHelper(conf);
 
     // Install xlib error handlers so that the application won't be terminated
     // on non-fatal errors
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
     settings.chrome_runtime = false;
 
     // Initialize CEF for the browser process
-    CefInitialize(args, settings, app.get(), nullptr);
+    CefInitialize(args, settings, app, nullptr);
 
     app->runMainLoop();
 
@@ -80,12 +80,21 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-CefHelper::CefHelper()
+CefHelper::CefHelper(const ipc_conf_t& conf)
     : fIpc(0)
-    , fbRunMainLoop(false)
-    , fbDisplay(0)
-    , fbContainer(0)
-{}
+    , fRunMainLoop(false)
+    , fDisplay(0)
+    , fContainer(0)
+{
+    fDisplay = XOpenDisplay(NULL);
+
+    if (fDisplay == 0) {
+        HIPHOP_LOG_STDERR("Cannot open display");
+        return;
+    }
+
+    fIpc = ipc_init(&conf);
+}
 
 CefHelper::~CefHelper()
 {
@@ -93,37 +102,25 @@ CefHelper::~CefHelper()
         ipc_destroy(fIpc);
     }
 
-    if (fbContainer != 0) {
-        XDestroyWindow(fbDisplay, fbContainer);
+    if (fContainer != 0) {
+        XDestroyWindow(fDisplay, fContainer);
     }
 
-    if (fbDisplay != 0) {
-        XCloseDisplay(fbDisplay);
+    if (fDisplay != 0) {
+        XCloseDisplay(fDisplay);
     }
-}
-
-void CefHelper::createIpc(const ipc_conf_t& conf)
-{
-    fIpc = ipc_init(&conf);
 }
 
 void CefHelper::runMainLoop()
 {
-    fbDisplay = XOpenDisplay(NULL);
-
-    if (fbDisplay == 0) {
-        HIPHOP_LOG_STDERR("Cannot open display");
-        return;
-    }
-
     int fd = ipc_get_config(fIpc)->fd_r;
     fd_set rfds;
     struct timeval tv;
     tlv_t packet;
 
-    fbRunMainLoop = true;
+    fRunMainLoop = true;
     
-    while (fbRunMainLoop) {
+    while (fRunMainLoop) {
         CefDoMessageLoopWork();
 
         FD_ZERO(&rfds);
@@ -134,7 +131,7 @@ void CefHelper::runMainLoop()
 
         if (retval == -1) {
             HIPHOP_LOG_STDERR_ERRNO("Failed select() on IPC channel");
-            fbRunMainLoop = false;
+            fRunMainLoop = false;
             continue;
         }
 
@@ -144,7 +141,7 @@ void CefHelper::runMainLoop()
 
         if (ipc_read(fIpc, &packet) == -1) {
             HIPHOP_LOG_STDERR_ERRNO("Could not read from IPC channel");
-            fbRunMainLoop = false;
+            fRunMainLoop = false;
             continue;
         }
 
@@ -152,72 +149,27 @@ void CefHelper::runMainLoop()
     }
 }
 
-// Called in browser and renderer processes
-bool CefHelper::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
-                                         CefRefPtr<CefFrame> frame,
-                                         CefProcessId sourceProcess,
-                                         CefRefPtr<CefProcessMessage> message)
-{
-    if ((sourceProcess == PID_BROWSER) && (message->GetName() == "inject_script")) {
-        frInjectedScript = message->GetArgumentList()->GetString(0);
-        return true;
-    }
-
-    return false;
-}
-
-// Called in browser process
 void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine)
 {
     // Renderer process owns the JavaScript callback and needs writing back to host
     const ipc_conf_t* conf = ipc_get_config(fIpc);
-    commandLine->AppendSwitchWithValue("fd", std::to_string(conf->fd_w));
+    commandLine->AppendSwitchWithValue("ipc-fd", std::to_string(conf->fd_w));
 
     // Set some Chromium options
     commandLine->AppendSwitch("disable-extensions");
 }
 
-// Called in renderer process
-void CefHelper::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                                 CefRefPtr<CefV8Context> context)
-{
-    // V8 context is ready, first define the window.hostPostMessage function.
-    CefRefPtr<CefV8Value> window = context->GetGlobal();
-    window->SetValue("hostPostMessage", CefV8Value::CreateFunction("hostPostMessage", this),
-                     V8_PROPERTY_ATTRIBUTE_NONE);
-
-    // Then run queued injected script
-    frame->ExecuteJavaScript(frInjectedScript, frame->GetURL(), 0);
-}
-
-// Called in browser and renderer processes
 void CefHelper::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                           int httpStatusCode)
 {
-    if (!fbRunMainLoop) {
+    if (!fRunMainLoop) {
         return;
     }
 
-    XMapWindow(fbDisplay, fbContainer);
-    XSync(fbDisplay, False);
+    XMapWindow(fDisplay, fContainer);
+    XSync(fDisplay, False);
 
     // TODO
-}
-
-// Called in renderer process
-bool CefHelper::Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments,
-                        CefRefPtr<CefV8Value>& retval, CefString& exception)
-{
-    if ((name != "hostPostMessage") || (arguments.size() != 1) || (!arguments[0]->IsArray())) {
-        HIPHOP_LOG_STDERR_COLOR("Invalid call to host");
-        return false;
-    }
-
-    CefRefPtr<CefV8Value> args = arguments[0];
-
-    printf("FIXME : hostPostMessage() called with %d arguments\n", args->GetArrayLength());
-
-    return true;
 }
 
 void CefHelper::realize(const msg_win_cfg_t *config)
@@ -226,17 +178,17 @@ void CefHelper::realize(const msg_win_cfg_t *config)
     // will fail producing multiple Xlib errors. This can only be reproduced on
     // REAPER when trying to open the plugin interface by clicking the UI button.
     XVisualInfo vinfo;
-    XMatchVisualInfo(fbDisplay, DefaultScreen(fbDisplay), 24, TrueColor, &vinfo);
+    XMatchVisualInfo(fDisplay, DefaultScreen(fDisplay), 24, TrueColor, &vinfo);
 
     XSetWindowAttributes attrs;
-    attrs.colormap = XCreateColormap(fbDisplay, XDefaultRootWindow(fbDisplay),
+    attrs.colormap = XCreateColormap(fDisplay, XDefaultRootWindow(fDisplay),
                                      vinfo.visual, AllocNone);
 
-    fbContainer = XCreateWindow(fbDisplay, static_cast<::Window>(config->parent),
+    fContainer = XCreateWindow(fDisplay, static_cast<::Window>(config->parent),
                                0, 0, config->size.width, config->size.height, 0,
                                vinfo.depth, CopyFromParent, vinfo.visual,
                                CWColormap, &attrs);
-    XSync(fbDisplay, False);
+    XSync(fDisplay, False);
 
     CefBrowserSettings settings;
 
@@ -244,11 +196,11 @@ void CefHelper::realize(const msg_win_cfg_t *config)
     //settings.log_severity = DISABLE;
 
     CefWindowInfo windowInfo;
-    windowInfo.parent_window = fbContainer;
+    windowInfo.parent_window = fContainer;
     windowInfo.width = config->size.width;
     windowInfo.height = config->size.height;
 
-    fbBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings,
+    fBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings,
         nullptr, nullptr);
 
     // Injecting a script means queuing it to run right before document starts
@@ -256,10 +208,10 @@ void CefHelper::realize(const msg_win_cfg_t *config)
     // be already initialized in order to run scripts. Send the script to
     // renderer because V8 ready event (OnContextCreated) only fires in there.
     
-    fbInjectedScript += JS_POST_MESSAGE_SHIM;
+    fInjectedScript += JS_POST_MESSAGE_SHIM;
     CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("inject_script");
-    message->GetArgumentList()->SetString(0, fbInjectedScript);
-    fbBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
+    message->GetArgumentList()->SetString(0, fInjectedScript);
+    fBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
 }
 
 void CefHelper::dispatch(const tlv_t* packet)
@@ -271,19 +223,19 @@ void CefHelper::dispatch(const tlv_t* packet)
 
         case OP_NAVIGATE: {
             const char* url = static_cast<const char*>(packet->v);
-            fbBrowser->GetMainFrame()->LoadURL(url);
+            fBrowser->GetMainFrame()->LoadURL(url);
             break;
         }
 
         case OP_RUN_SCRIPT: {
             const char* js = static_cast<const char*>(packet->v);
-            CefRefPtr<CefFrame> frame = fbBrowser->GetMainFrame();
+            CefRefPtr<CefFrame> frame = fBrowser->GetMainFrame();
             frame->ExecuteJavaScript(js, frame->GetURL(), 0);
             break;
         }
 
         case OP_INJECT_SCRIPT: {
-            fbInjectedScript += static_cast<const char*>(packet->v);
+            fInjectedScript += static_cast<const char*>(packet->v);
             break;
         }
 
@@ -291,7 +243,7 @@ void CefHelper::dispatch(const tlv_t* packet)
             // TODO - untested
             /*const msg_win_size_t *size = (const msg_win_size_t *)packet->v;
             ::Display* display = cef_get_xdisplay();
-            ::Window window = static_cast<::Window>(fbBrowser->GetHost()->GetWindowHandle());
+            ::Window window = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
             XResizeWindow(display, window, size->width, size->height);
             XSync(display, False);*/
             break;
@@ -302,12 +254,63 @@ void CefHelper::dispatch(const tlv_t* packet)
             break;
 
         case OP_TERMINATE:
-            fbRunMainLoop = false;
+            fRunMainLoop = false;
             break;
 
         default:
             break;
     }
+}
+
+CefHelperSubprocess::CefHelperSubprocess()
+    : fIpc(0)
+{}
+
+CefHelperSubprocess::~CefHelperSubprocess()
+{
+    if (fIpc != 0) {
+        ipc_destroy(fIpc);
+    }
+}
+
+bool CefHelperSubprocess::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                                   CefRefPtr<CefFrame> frame,
+                                                   CefProcessId sourceProcess,
+                                                   CefRefPtr<CefProcessMessage> message)
+{
+    if ((sourceProcess == PID_BROWSER) && (message->GetName() == "inject_script")) {
+        fInjectedScript = message->GetArgumentList()->GetString(0);
+        return true;
+    }
+
+    return false;
+}
+
+void CefHelperSubprocess::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                                           CefRefPtr<CefV8Context> context)
+{
+    // V8 context is ready, first define the window.hostPostMessage function.
+    CefRefPtr<CefV8Value> window = context->GetGlobal();
+    window->SetValue("hostPostMessage", CefV8Value::CreateFunction("hostPostMessage", this),
+                     V8_PROPERTY_ATTRIBUTE_NONE);
+
+    // Then run queued injected script
+    frame->ExecuteJavaScript(fInjectedScript, frame->GetURL(), 0);
+}
+
+bool CefHelperSubprocess::Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments,
+                                  CefRefPtr<CefV8Value>& retval, CefString& exception)
+{
+    if ((name != "hostPostMessage") || (arguments.size() != 1) || (!arguments[0]->IsArray())) {
+        HIPHOP_LOG_STDERR_COLOR("Invalid call to host");
+        return false;
+    }
+
+    CefRefPtr<CefV8Value> args = arguments[0];
+
+    printf("FIXME : hostPostMessage() called with %d arguments\n", args->GetArrayLength());
+
+    return true;
 }
 
 static int XErrorHandlerImpl(Display* display, XErrorEvent* event)

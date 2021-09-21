@@ -30,18 +30,12 @@
 #include "ipc.h"
 #include "ipc_message.h"
 
-class CefHelper : public CefApp,
-                  public CefClient, 
-                  public CefBrowserProcessHandler, 
-                  public CefRenderProcessHandler,
-                  public CefLoadHandler,
-                  public CefV8Handler
+class CefHelper : public CefApp, public CefClient, 
+                  public CefBrowserProcessHandler, public CefLoadHandler
 {
 public:
-    CefHelper();
+    CefHelper(const ipc_conf_t& conf);
     virtual ~CefHelper();
-
-    void createIpc(const ipc_conf_t& conf);
 
     void runMainLoop();
 
@@ -51,52 +45,66 @@ public:
     {
         return this;
     }
-
-    virtual CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() override
-    {
-        return this;
-    }
     
     virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override
     {
         return this;
     }
   
-    virtual bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
-                                          CefRefPtr<CefFrame> frame,
-                                          CefProcessId sourceProcess,
-                                          CefRefPtr<CefProcessMessage> message) override;
-
     // CefBrowserProcessHandler
     virtual void OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine) override;
-
-    // CefRenderProcessHandler
-    virtual void OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                                  CefRefPtr<CefV8Context> context) override;
 
     // CefLoadHandler
     virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                            int httpStatusCode) override;
-
-    // CefV8Handler
-    virtual bool Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments,
-                         CefRefPtr<CefV8Value>& retval, CefString& exception) override;
 
 private:
     void realize(const msg_win_cfg_t *config);
     void dispatch(const tlv_t* packet);
 
     ipc_t*     fIpc;
-    bool       fbRunMainLoop;
-    ::Display* fbDisplay;
-    ::Window   fbContainer;
+    bool       fRunMainLoop;
+    ::Display* fDisplay;
+    ::Window   fContainer;
     
-    CefRefPtr<CefBrowser> fbBrowser;
-    std::string           fbInjectedScript;
-    CefString             frInjectedScript;
+    CefRefPtr<CefBrowser> fBrowser;
+    std::string           fInjectedScript;
 
     // Include the CEF default reference counting implementation
     IMPLEMENT_REFCOUNTING(CefHelper);
+};
+
+class CefHelperSubprocess : public CefApp, public CefClient,
+                            public CefRenderProcessHandler, public CefV8Handler
+{
+public:
+    CefHelperSubprocess();
+    virtual ~CefHelperSubprocess();
+
+    virtual CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() override
+    {
+        return this;
+    }
+
+    // CefClient
+    virtual bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                          CefRefPtr<CefFrame> frame,
+                                          CefProcessId sourceProcess,
+                                          CefRefPtr<CefProcessMessage> message) override;
+
+    // CefRenderProcessHandler
+    virtual void OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                                  CefRefPtr<CefV8Context> context) override;
+
+    // CefV8Handler
+    virtual bool Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments,
+                         CefRefPtr<CefV8Value>& retval, CefString& exception) override;
+
+private:
+    ipc_t*    fIpc;
+    CefString fInjectedScript;
+
+    IMPLEMENT_REFCOUNTING(CefHelperSubprocess);
 };
 
 #endif // CEF_HELPER_HPP
