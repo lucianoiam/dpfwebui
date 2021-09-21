@@ -52,15 +52,19 @@ ChildProcessWebView::ChildProcessWebView()
 {
     fDisplay = XOpenDisplay(0);
 
-    fPipeFd[0][0] = fPipeFd[0][1] = fPipeFd[1][0] = fPipeFd[1][1] = -1;
+    fPipeFd[0][0] = -1;
+    fPipeFd[0][1] = -1;
 
     if (pipe(fPipeFd[0]) == -1) {
-        HIPHOP_LOG_STDERR_ERRNO("Could not create parent->helper pipe");
+        HIPHOP_LOG_STDERR_ERRNO("Could not create host->helper pipe");
         return;
     }
 
+    fPipeFd[1][0] = -1;
+    fPipeFd[1][1] = -1;
+
     if (pipe(fPipeFd[1]) == -1) {
-        HIPHOP_LOG_STDERR_ERRNO("Could not create helper->parent pipe");
+        HIPHOP_LOG_STDERR_ERRNO("Could not create helper->host pipe");
         return;
     }
 
@@ -89,6 +93,7 @@ ChildProcessWebView::ChildProcessWebView()
 
     if (status != 0) {
         HIPHOP_LOG_STDERR_ERRNO("Could not spawn helper child process");
+        return;
     }
 
     injectDefaultScripts();
