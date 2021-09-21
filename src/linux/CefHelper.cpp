@@ -159,7 +159,7 @@ bool CefHelper::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
                                          CefRefPtr<CefProcessMessage> message)
 {
     if ((sourceProcess == PID_BROWSER) && (message->GetName() == "inject_script")) {
-        frFullInjectedScript = message->GetArgumentList()->GetString(0);
+        frInjectedScript = message->GetArgumentList()->GetString(0);
         return true;
     }
 
@@ -187,7 +187,7 @@ void CefHelper::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFra
                      V8_PROPERTY_ATTRIBUTE_NONE);
 
     // Then run queued injected script
-    frame->ExecuteJavaScript(frFullInjectedScript, frame->GetURL(), 0);
+    frame->ExecuteJavaScript(frInjectedScript, frame->GetURL(), 0);
 }
 
 // Called in browser and renderer processes
@@ -238,8 +238,7 @@ void CefHelper::dispatch(const tlv_t* packet)
             break;
 
         case OP_INJECT_SCRIPT: {
-            const char *js = static_cast<const char*>(packet->v);
-            fbInjectedScripts.push_back(js);
+            fbInjectedScript += static_cast<const char*>(packet->v);
             break;
         }
 
@@ -302,16 +301,9 @@ void CefHelper::realize(const msg_win_cfg_t *config)
     // be already initialized in order to run scripts. Send the script to
     // renderer because V8 ready event (OnContextCreated) only fires in there.
     
-    std::string js = "";
-
-    for (std::vector<CefString>::iterator it = fbInjectedScripts.begin(); it != fbInjectedScripts.end(); ++it) {
-        js += *it;
-    }
-
-    js += JS_POST_MESSAGE_SHIM;
-
+    fbInjectedScript += JS_POST_MESSAGE_SHIM;
     CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("inject_script");
-    message->GetArgumentList()->SetString(0, js);
+    message->GetArgumentList()->SetString(0, fbInjectedScript);
     fbBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
 }
 

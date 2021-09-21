@@ -91,9 +91,9 @@ private:
     ::Display* fbDisplay;
     ::Window   fbContainer;
     
-    CefRefPtr<CefBrowser>  fbBrowser;
-    std::vector<CefString> fbInjectedScripts;
-    CefString              frFullInjectedScript;
+    CefRefPtr<CefBrowser> fbBrowser;
+    std::string           fbInjectedScript;
+    CefString             frInjectedScript;
 
     // Include the CEF default reference counting implementation
     IMPLEMENT_REFCOUNTING(CefHelper);

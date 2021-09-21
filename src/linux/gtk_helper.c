@@ -52,7 +52,7 @@ typedef struct {
     gboolean       focus;
     Window         focusXWin;
     pthread_t      watchdog;
-    char           js[65536];
+    char           injectedJs[65536];
 } context_t;
 
 static void realize(context_t *ctx, const msg_win_cfg_t *config);
@@ -146,8 +146,8 @@ static void realize(context_t *ctx, const msg_win_cfg_t *config)
     webkit_user_content_manager_register_script_message_handler(manager, "host");
 
     // Inject queued scripts
-    strcat(ctx->js, JS_POST_MESSAGE_SHIM);
-    WebKitUserScript *script = webkit_user_script_new(ctx->js, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+    strcat(ctx->injectedJs, JS_POST_MESSAGE_SHIM);
+    WebKitUserScript *script = webkit_user_script_new(ctx->injectedJs, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
         WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL);
     webkit_user_content_manager_add_script(manager, script);
     webkit_user_script_unref(script);
@@ -356,7 +356,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             break;
 
         case OP_INJECT_SCRIPT:
-            strcat(ctx->js, (const char *)packet.v);
+            strcat(ctx->injectedJs, (const char *)packet.v);
             break;
 
         case OP_SET_SIZE: {
