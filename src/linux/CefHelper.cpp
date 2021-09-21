@@ -171,7 +171,7 @@ void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine
 {
     // Renderer process owns the JavaScript callback and needs writing back to host
     const ipc_conf_t* conf = ipc_get_config(fIpc);
-    commandLine->AppendSwitchWithValue("fdw", std::to_string(conf->fd_w));
+    commandLine->AppendSwitchWithValue("fd", std::to_string(conf->fd_w));
 
     // Set some Chromium options
     commandLine->AppendSwitch("disable-extensions");
@@ -220,51 +220,6 @@ bool CefHelper::Execute(const CefString& name, CefRefPtr<CefV8Value> object, con
     return true;
 }
 
-void CefHelper::dispatch(const tlv_t* packet)
-{
-    switch (static_cast<msg_opcode_t>(packet->t)) {
-        case OP_REALIZE:
-            realize((const msg_win_cfg_t *)packet->v);
-            break;
-
-        case OP_NAVIGATE: {
-            const char* url = static_cast<const char*>(packet->v);
-            fbBrowser->GetMainFrame()->LoadURL(url);
-            break;
-        }
-
-        case OP_RUN_SCRIPT:
-            fbBrowser->GetMainFrame()->ExecuteJavaScript(static_cast<const char*>(packet->v), "", 0);
-            break;
-
-        case OP_INJECT_SCRIPT: {
-            fbInjectedScript += static_cast<const char*>(packet->v);
-            break;
-        }
-
-        case OP_SET_SIZE: {
-            // TODO - untested
-            /*const msg_win_size_t *size = (const msg_win_size_t *)packet->v;
-            ::Display* display = cef_get_xdisplay();
-            ::Window window = static_cast<::Window>(fbBrowser->GetHost()->GetWindowHandle());
-            XResizeWindow(display, window, size->width, size->height);
-            XSync(display, False);*/
-            break;
-        }
-
-        case OP_SET_KEYBOARD_FOCUS:
-            // TODO
-            break;
-
-        case OP_TERMINATE:
-            fbRunMainLoop = false;
-            break;
-
-        default:
-            break;
-    }
-}
-
 void CefHelper::realize(const msg_win_cfg_t *config)
 {
     // Top view is needed to ensure 24-bit colormap otherwise CreateBrowserSync()
@@ -305,6 +260,54 @@ void CefHelper::realize(const msg_win_cfg_t *config)
     CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("inject_script");
     message->GetArgumentList()->SetString(0, fbInjectedScript);
     fbBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
+}
+
+void CefHelper::dispatch(const tlv_t* packet)
+{
+    switch (static_cast<msg_opcode_t>(packet->t)) {
+        case OP_REALIZE:
+            realize((const msg_win_cfg_t *)packet->v);
+            break;
+
+        case OP_NAVIGATE: {
+            const char* url = static_cast<const char*>(packet->v);
+            fbBrowser->GetMainFrame()->LoadURL(url);
+            break;
+        }
+
+        case OP_RUN_SCRIPT: {
+            const char* js = static_cast<const char*>(packet->v);
+            CefRefPtr<CefFrame> frame = fbBrowser->GetMainFrame();
+            frame->ExecuteJavaScript(js, frame->GetURL(), 0);
+            break;
+        }
+
+        case OP_INJECT_SCRIPT: {
+            fbInjectedScript += static_cast<const char*>(packet->v);
+            break;
+        }
+
+        case OP_SET_SIZE: {
+            // TODO - untested
+            /*const msg_win_size_t *size = (const msg_win_size_t *)packet->v;
+            ::Display* display = cef_get_xdisplay();
+            ::Window window = static_cast<::Window>(fbBrowser->GetHost()->GetWindowHandle());
+            XResizeWindow(display, window, size->width, size->height);
+            XSync(display, False);*/
+            break;
+        }
+
+        case OP_SET_KEYBOARD_FOCUS:
+            // TODO
+            break;
+
+        case OP_TERMINATE:
+            fbRunMainLoop = false;
+            break;
+
+        default:
+            break;
+    }
 }
 
 static int XErrorHandlerImpl(Display* display, XErrorEvent* event)

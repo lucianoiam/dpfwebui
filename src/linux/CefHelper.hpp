@@ -83,8 +83,8 @@ public:
                          CefRefPtr<CefV8Value>& retval, CefString& exception) override;
 
 private:
-    void dispatch(const tlv_t* packet);
     void realize(const msg_win_cfg_t *config);
+    void dispatch(const tlv_t* packet);
 
     ipc_t*     fIpc;
     bool       fbRunMainLoop;
