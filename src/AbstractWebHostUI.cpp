@@ -31,7 +31,104 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     , fBackgroundColor(backgroundColor)
     , fFlushedInitMsgQueue(false)
     , fRunUiBlock(false)
-{}
+{
+    // It is not possible to implement JS synchronous calls that return values
+    // without resorting to dirty hacks. Use JS async functions instead, and
+    // fulfill their promises here. See for example isResizable() below.
+
+    fHandler["getWidth"] = std::make_pair(0, [this](const JsValueVector&) {
+        webViewPostMessage({"UI", "getWidth", static_cast<double>(getWidth())});
+    });
+
+    fHandler["getHeight"] = std::make_pair(0, [this](const JsValueVector&) {
+        webViewPostMessage({"UI", "getHeight", static_cast<double>(getHeight())});
+    });
+
+    fHandler["setWidth"] = std::make_pair(1, [this](const JsValueVector& args) {
+        queue([this, args]() {
+            setWidth(static_cast<uint>(args[0].getDouble()));
+        });
+    });
+
+    fHandler["setHeight"] = std::make_pair(1, [this](const JsValueVector& args) {
+        queue([this, args]() {
+            setHeight(static_cast<uint>(args[0].getDouble()));
+        });
+    });
+
+    fHandler["isResizable"] = std::make_pair(0, [this](const JsValueVector&) {
+        webViewPostMessage({"UI", "isResizable", isResizable()});
+    });
+
+    fHandler["setSize"] = std::make_pair(2, [this](const JsValueVector& args) {
+        // Queuing is needed for REAPER on Linux and does no harm on others
+        queue([this, args]() {
+            setSize(
+                static_cast<uint>(args[0].getDouble()), // width
+                static_cast<uint>(args[1].getDouble())  // height
+            );
+        });
+
+    });
+
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    fHandler["sendNote"] = std::make_pair(3, [this](const JsValueVector& args) {
+        sendNote(
+            static_cast<uint8_t>(args[0].getDouble()),  // channel
+            static_cast<uint8_t>(args[1].getDouble()),  // note
+            static_cast<uint8_t>(args[2].getDouble())   // velocity
+        );
+    });
+#endif // DISTRHO_PLUGIN_WANT_MIDI_INPUT
+
+    fHandler["editParameter"] = std::make_pair(2, [this](const JsValueVector& args) {
+        editParameter(
+            static_cast<uint32_t>(args[0].getDouble()), // index
+            static_cast<bool>(args[1].getBool())        // started
+        );
+    });
+
+    fHandler["setParameterValue"] = std::make_pair(2, [this](const JsValueVector& args) {
+        setParameterValue(
+            static_cast<uint32_t>(args[0].getDouble()), // index
+            static_cast<float>(args[1].getDouble())     // value
+        );
+    });
+
+#if DISTRHO_PLUGIN_WANT_STATE
+    fHandler["setState"] = std::make_pair(2, [this](const JsValueVector& args) {
+        setState(
+            args[0].getString(), // key
+            args[1].getString()  // value
+        );
+    });
+#endif // DISTRHO_PLUGIN_WANT_STATE
+
+    fHandler["isStandalone"] = std::make_pair(0, [this](const JsValueVector&) {
+        webViewPostMessage({"UI", "isStandalone", isStandalone()});
+    });
+
+    fHandler["setKeyboardFocus"] = std::make_pair(1, [this](const JsValueVector& args) {
+        setKeyboardFocus(static_cast<bool>(args[0].getBool()));
+    });
+
+    fHandler["openSystemWebBrowser"] = std::make_pair(1, [this](const JsValueVector& args) {
+        String url = args[0].getString();
+        openSystemWebBrowser(url);
+    });
+
+    fHandler["getInitWidth"] = std::make_pair(0, [this](const JsValueVector&) {
+        webViewPostMessage({"UI", "getInitWidth", static_cast<double>(getInitWidth())});
+    });
+
+    fHandler["getInitHeight"] = std::make_pair(0, [this](const JsValueVector&) {
+        webViewPostMessage({"UI", "getInitHeight", static_cast<double>(getInitHeight())});
+    });
+
+    fHandler["flushInitMessageQueue"] = std::make_pair(0, [this](const JsValueVector&) {
+        flushInitMessageQueue();
+    });
+}
 
 AbstractWebHostUI::~AbstractWebHostUI()
 {
@@ -173,101 +270,28 @@ void AbstractWebHostUI::handleWebViewContentLoadFinished()
     onWebContentReady();
 }
 
-#define kArg0 2
-#define kArg1 3
-#define kArg2 4
-
 void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
 {
-    if (args[0].getString() != "UI") {
+    if ((args.size() < 2) || (args[0].getString() != "UI")) {
         onWebMessageReceived(args); // passthrough
         return;
     }
 
-    // It is not possible to implement JS synchronous calls that return values
-    // without resorting to dirty hacks. Use JS async functions instead, and
-    // fulfill their promises here. See for example isResizable() below.
+    String key = args[1].getString();
 
-    String method = args[1].getString();
-    int argc = args.size() - kArg0;
-
-    if (method == "getWidth") {
-        webViewPostMessage({"UI", "getWidth", static_cast<double>(getWidth())});
-
-    } else if (method == "getHeight") {
-        webViewPostMessage({"UI", "getHeight", static_cast<double>(getHeight())});
-
-    } else if ((method == "setWidth") && (argc == 1)) {
-        queue([this, args]() {
-            setWidth(static_cast<uint>(args[kArg0].getDouble()));
-        });
-
-    } else if ((method == "setHeight") && (argc == 1)) {
-        queue([this, args]() {
-            setHeight(static_cast<uint>(args[kArg0].getDouble()));
-        });
-
-    } else if (method == "isResizable") {
-        webViewPostMessage({"UI", "isResizable", isResizable()});
-
-    } else if ((method == "setSize") && (argc == 2)) {
-        // Queuing is needed for REAPER on Linux and does no harm on others
-        queue([this, args]() {
-            setSize(
-                static_cast<uint>(args[kArg0].getDouble()), // width
-                static_cast<uint>(args[kArg1].getDouble())  // height
-            );
-        });
-
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    } else if ((method == "sendNote") && (argc == 3)) {
-        sendNote(
-            static_cast<uint8_t>(args[kArg0].getDouble()),  // channel
-            static_cast<uint8_t>(args[kArg1].getDouble()),  // note
-            static_cast<uint8_t>(args[kArg2].getDouble())   // velocity
-        );
-#endif
-
-    } else if ((method == "editParameter") && (argc == 2)) {
-        editParameter(
-            static_cast<uint32_t>(args[kArg0].getDouble()), // index
-            static_cast<bool>(args[kArg1].getBool())        // started
-        );
-
-    } else if ((method == "setParameterValue") && (argc == 2)) {
-        setParameterValue(
-            static_cast<uint32_t>(args[kArg0].getDouble()), // index
-            static_cast<float>(args[kArg1].getDouble())     // value
-        );
-
-#if DISTRHO_PLUGIN_WANT_STATE
-    } else if ((method == "setState") && (argc == 2)) {
-        setState(
-            args[kArg0].getString(), // key
-            args[kArg1].getString()  // value
-        );
-#endif // DISTRHO_PLUGIN_WANT_STATE
-
-    } else if (method == "isStandalone") {
-        webViewPostMessage({"UI", "isStandalone", isStandalone()});
-
-    } else if ((method == "setKeyboardFocus") && (argc == 1)) {
-        setKeyboardFocus(static_cast<bool>(args[kArg0].getBool()));
-
-    } else if ((method == "openSystemWebBrowser") && (argc == 1)) {
-        String url = args[kArg0].getString();
-        openSystemWebBrowser(url);
-
-    } else if (method == "getInitWidth") {
-        webViewPostMessage({"UI", "getInitWidth", static_cast<double>(getInitWidth())});
-
-    } else if (method == "getInitHeight") {
-        webViewPostMessage({"UI", "getInitHeight", static_cast<double>(getInitHeight())});
-
-    } else if (method == "flushInitMessageQueue") {
-        flushInitMessageQueue();
-
-    } else {
-        HIPHOP_LOG_STDERR_COLOR("Invalid call to WebHostUI method");
+    if (fHandler.find(key.buffer()) == fHandler.end()) {
+        HIPHOP_LOG_STDERR_COLOR("Unknown WebHostUI method");
+        return;
     }
+
+    const JsValueVector handlerArgs(args.cbegin() + 2, args.cend());
+    
+    ArgumentCountAndMessageHandler handler = fHandler[key.buffer()];
+
+    if (handler.first != static_cast<int>(handlerArgs.size())) {
+        HIPHOP_LOG_STDERR_COLOR("Incorrect WebHostUI method argument count");
+        return;
+    }
+
+    handler.second(handlerArgs);
 }

@@ -20,6 +20,7 @@
 #define ABSTRACT_WEB_HOST_UI_HPP
 
 #include <functional>
+#include <unordered_map>
 #include <vector>
 
 #include "DistrhoUI.hpp"
@@ -81,14 +82,19 @@ private:
 
     typedef std::vector<JsValueVector> InitMessageQueue;
 
-    AbstractWebView* fWebView;
-    uint             fInitWidth;
-    uint             fInitHeight;
-    uint32_t         fBackgroundColor;
-    bool             fFlushedInitMsgQueue;
-    bool             fRunUiBlock;
-    InitMessageQueue fInitMsgQueue;
-    UiBlock          fQueuedUiBlock;
+    typedef std::function<void(const JsValueVector& args)> MessageHandler;
+    typedef std::pair<int, MessageHandler> ArgumentCountAndMessageHandler;
+    typedef std::unordered_map<std::string, ArgumentCountAndMessageHandler> MessageHandlerMap;
+
+    AbstractWebView*  fWebView;
+    uint              fInitWidth;
+    uint              fInitHeight;
+    uint32_t          fBackgroundColor;
+    bool              fFlushedInitMsgQueue;
+    bool              fRunUiBlock;
+    InitMessageQueue  fInitMsgQueue;
+    UiBlock           fQueuedUiBlock;
+    MessageHandlerMap fHandler;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AbstractWebHostUI)
 
