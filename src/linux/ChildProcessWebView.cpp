@@ -90,6 +90,8 @@ ChildProcessWebView::ChildProcessWebView()
     if (status != 0) {
         HIPHOP_LOG_STDERR_ERRNO("Could not spawn helper child process");
     }
+
+    injectDefaultScripts();
 }
 
 ChildProcessWebView::~ChildProcessWebView()
@@ -155,9 +157,6 @@ void ChildProcessWebView::realize()
     config.color = color;
     config.size = { getWidth(), getHeight() };
     ipcWrite(OP_REALIZE, &config, sizeof(config));
-
-    injectDefaultScripts();
-    ipcWriteOpcode(OP_INJECT_SHIMS);
 }
 
 void ChildProcessWebView::navigate(String& url)

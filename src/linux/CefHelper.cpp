@@ -33,13 +33,8 @@ static int XIOErrorHandlerImpl(Display* display);
 // Entry point function for all processes
 int main(int argc, char* argv[])
 {
-    // CefHelper implements application-level callbacks for the browser process.
-    // It will create the first browser instance in OnContextInitialized() after
-    // CEF has initialized.
-    CefRefPtr<CefHelper> app = new CefHelper();
-
-    // Provide CEF with command-line arguments
     CefMainArgs args(argc, argv);
+    CefRefPtr<CefHelper> app = new CefHelper();
 
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
     // that share the same executable. This function checks the command-line and,
@@ -86,24 +81,24 @@ int main(int argc, char* argv[])
 }
 
 CefHelper::CefHelper()
-    : fRunMainLoop(false)
-    , fIpc(0)
-    , fDisplay(0)
-    , fContainer(0)
+    : fIpc(0)
+    , fbRunMainLoop(false)
+    , fbDisplay(0)
+    , fbContainer(0)
 {}
 
 CefHelper::~CefHelper()
 {
-    if (fContainer != 0) {
-        XDestroyWindow(fDisplay, fContainer);
-    }
-
-    if (fDisplay != 0) {
-        XCloseDisplay(fDisplay);
-    }
-
     if (fIpc != 0) {
         ipc_destroy(fIpc);
+    }
+
+    if (fbContainer != 0) {
+        XDestroyWindow(fbDisplay, fbContainer);
+    }
+
+    if (fbDisplay != 0) {
+        XCloseDisplay(fbDisplay);
     }
 }
 
@@ -114,9 +109,9 @@ void CefHelper::createIpc(const ipc_conf_t& conf)
 
 void CefHelper::runMainLoop()
 {
-    fDisplay = XOpenDisplay(NULL);
+    fbDisplay = XOpenDisplay(NULL);
 
-    if (fDisplay == 0) {
+    if (fbDisplay == 0) {
         HIPHOP_LOG_STDERR("Cannot open display");
         return;
     }
@@ -126,9 +121,9 @@ void CefHelper::runMainLoop()
     struct timeval tv;
     tlv_t packet;
 
-    fRunMainLoop = true;
+    fbRunMainLoop = true;
     
-    while (fRunMainLoop) {
+    while (fbRunMainLoop) {
         CefDoMessageLoopWork();
 
         FD_ZERO(&rfds);
@@ -139,7 +134,7 @@ void CefHelper::runMainLoop()
 
         if (retval == -1) {
             HIPHOP_LOG_STDERR_ERRNO("Failed select() on IPC channel");
-            fRunMainLoop = false;
+            fbRunMainLoop = false;
             continue;
         }
 
@@ -149,7 +144,7 @@ void CefHelper::runMainLoop()
 
         if (ipc_read(fIpc, &packet) == -1) {
             HIPHOP_LOG_STDERR_ERRNO("Could not read from IPC channel");
-            fRunMainLoop = false;
+            fbRunMainLoop = false;
             continue;
         }
 
@@ -157,58 +152,62 @@ void CefHelper::runMainLoop()
     }
 }
 
-void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine)
+// Called in browser and renderer processes
+bool CefHelper::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                         CefRefPtr<CefFrame> frame,
+                                         CefProcessId sourceProcess,
+                                         CefRefPtr<CefProcessMessage> message)
 {
-    commandLine->AppendSwitch("disable-extensions");
+    if ((sourceProcess == PID_BROWSER) && (message->GetName() == "inject_script")) {
+        frFullInjectedScript = message->GetArgumentList()->GetString(0);
+        return true;
+    }
 
-    const ipc_conf_t* conf = ipc_get_config(fIpc);
-    commandLine->AppendSwitchWithValue("fdr", std::to_string(conf->fd_r));
-    commandLine->AppendSwitchWithValue("fdw", std::to_string(conf->fd_w));
+    return false;
 }
 
+// Called in browser process
+void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine)
+{
+    // Renderer process owns the JavaScript callback and needs writing back to host
+    const ipc_conf_t* conf = ipc_get_config(fIpc);
+    commandLine->AppendSwitchWithValue("fdw", std::to_string(conf->fd_w));
+
+    // Set some Chromium options
+    commandLine->AppendSwitch("disable-extensions");
+}
+
+// Called in renderer process
 void CefHelper::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                                  CefRefPtr<CefV8Context> context)
 {
-    // OnContextCreated() is only called in renderer process
+    // V8 context is ready, first define the window.hostPostMessage function.
     CefRefPtr<CefV8Value> window = context->GetGlobal();
     window->SetValue("hostPostMessage", CefV8Value::CreateFunction("hostPostMessage", this),
                      V8_PROPERTY_ATTRIBUTE_NONE);
+
+    // Then run queued injected script
+    frame->ExecuteJavaScript(frFullInjectedScript, frame->GetURL(), 0);
 }
 
-void CefHelper::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                            TransitionType transitionType)
-{
-    // Run injected scripts from renderer process to ensure window.hostPostMessage
-    // is defined because such function is called by the injected shim
-
-    if (fRunMainLoop) {
-        return;
-    }
-
-    for (std::vector<CefString>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
-        frame->ExecuteJavaScript(*it, "", 0);
-    }
-}
-
+// Called in browser and renderer processes
 void CefHelper::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                           int httpStatusCode)
 {
-    // Window is managed by the browser process
-    if (!fRunMainLoop) {
+    if (!fbRunMainLoop) {
         return;
     }
 
-    XMapWindow(fDisplay, fContainer);
-    XSync(fDisplay, False);
+    XMapWindow(fbDisplay, fbContainer);
+    XSync(fbDisplay, False);
 
     // TODO
 }
 
+// Called in renderer process
 bool CefHelper::Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments,
                         CefRefPtr<CefV8Value>& retval, CefString& exception)
 {
-    // Execute() is only called in renderer process
-
     if ((name != "hostPostMessage") || (arguments.size() != 1) || (!arguments[0]->IsArray())) {
         HIPHOP_LOG_STDERR_COLOR("Invalid call to host");
         return false;
@@ -230,27 +229,25 @@ void CefHelper::dispatch(const tlv_t* packet)
 
         case OP_NAVIGATE: {
             const char* url = static_cast<const char*>(packet->v);
-            fBrowser->GetMainFrame()->LoadURL(url);
+            fbBrowser->GetMainFrame()->LoadURL(url);
             break;
         }
 
         case OP_RUN_SCRIPT:
-            fBrowser->GetMainFrame()->ExecuteJavaScript(static_cast<const char*>(packet->v), "", 0);
+            fbBrowser->GetMainFrame()->ExecuteJavaScript(static_cast<const char*>(packet->v), "", 0);
             break;
 
-        case OP_INJECT_SCRIPT:
-            fInjectedScripts.push_back(static_cast<const char*>(packet->v));
+        case OP_INJECT_SCRIPT: {
+            const char *js = static_cast<const char*>(packet->v);
+            fbInjectedScripts.push_back(js);
             break;
-
-        case OP_INJECT_SHIMS:
-            fInjectedScripts.push_back(JS_POST_MESSAGE_SHIM);
-            break;
+        }
 
         case OP_SET_SIZE: {
             // TODO - untested
             /*const msg_win_size_t *size = (const msg_win_size_t *)packet->v;
             ::Display* display = cef_get_xdisplay();
-            ::Window window = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
+            ::Window window = static_cast<::Window>(fbBrowser->GetHost()->GetWindowHandle());
             XResizeWindow(display, window, size->width, size->height);
             XSync(display, False);*/
             break;
@@ -261,7 +258,7 @@ void CefHelper::dispatch(const tlv_t* packet)
             break;
 
         case OP_TERMINATE:
-            fRunMainLoop = false;
+            fbRunMainLoop = false;
             break;
 
         default:
@@ -274,19 +271,18 @@ void CefHelper::realize(const msg_win_cfg_t *config)
     // Top view is needed to ensure 24-bit colormap otherwise CreateBrowserSync()
     // will fail producing multiple Xlib errors. This can only be reproduced on
     // REAPER when trying to open the plugin interface by clicking the UI button.
-
     XVisualInfo vinfo;
-    XMatchVisualInfo(fDisplay, DefaultScreen(fDisplay), 24, TrueColor, &vinfo);
+    XMatchVisualInfo(fbDisplay, DefaultScreen(fbDisplay), 24, TrueColor, &vinfo);
 
     XSetWindowAttributes attrs;
-    attrs.colormap = XCreateColormap(fDisplay, XDefaultRootWindow(fDisplay),
+    attrs.colormap = XCreateColormap(fbDisplay, XDefaultRootWindow(fbDisplay),
                                      vinfo.visual, AllocNone);
 
-    fContainer = XCreateWindow(fDisplay, static_cast<::Window>(config->parent),
+    fbContainer = XCreateWindow(fbDisplay, static_cast<::Window>(config->parent),
                                0, 0, config->size.width, config->size.height, 0,
                                vinfo.depth, CopyFromParent, vinfo.visual,
                                CWColormap, &attrs);
-    XSync(fDisplay, False);
+    XSync(fbDisplay, False);
 
     CefBrowserSettings settings;
 
@@ -294,12 +290,29 @@ void CefHelper::realize(const msg_win_cfg_t *config)
     //settings.log_severity = DISABLE;
 
     CefWindowInfo windowInfo;
-    windowInfo.parent_window = fContainer;
+    windowInfo.parent_window = fbContainer;
     windowInfo.width = config->size.width;
     windowInfo.height = config->size.height;
 
-    fBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings,
+    fbBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings,
         nullptr, nullptr);
+
+    // Injecting a script means queuing it to run right before document starts
+    // loading to ensure they run before any user script. The V8 context must
+    // be already initialized in order to run scripts. Send the script to
+    // renderer because V8 ready event (OnContextCreated) only fires in there.
+    
+    std::string js = "";
+
+    for (std::vector<CefString>::iterator it = fbInjectedScripts.begin(); it != fbInjectedScripts.end(); ++it) {
+        js += *it;
+    }
+
+    js += JS_POST_MESSAGE_SHIM;
+
+    CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("inject_script");
+    message->GetArgumentList()->SetString(0, js);
+    fbBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
 }
 
 static int XErrorHandlerImpl(Display* display, XErrorEvent* event)

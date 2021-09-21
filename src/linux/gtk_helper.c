@@ -17,6 +17,8 @@
  */
 
 #include <stdint.h>
+#include <string.h>
+
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
@@ -50,10 +52,10 @@ typedef struct {
     gboolean       focus;
     Window         focusXWin;
     pthread_t      watchdog;
+    char           js[65536];
 } context_t;
 
 static void realize(context_t *ctx, const msg_win_cfg_t *config);
-static void inject_script(const context_t *ctx, const char* js);
 static void set_size(const context_t *ctx, unsigned width, unsigned height);
 static void set_keyboard_focus(context_t *ctx, gboolean focus);
 static void* focus_watchdog_worker(void *arg);
@@ -143,20 +145,14 @@ static void realize(context_t *ctx, const msg_win_cfg_t *config)
     g_signal_connect(manager, "script-message-received::host", G_CALLBACK(web_view_script_message_cb), ctx);
     webkit_user_content_manager_register_script_message_handler(manager, "host");
 
-    gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
-}
-
-static void inject_script(const context_t *ctx, const char* js)
-{
-    if (ctx->webView == NULL) {
-        return;
-    }
-
-    WebKitUserScript *script = webkit_user_script_new(js, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+    // Inject queued scripts
+    strcat(ctx->js, JS_POST_MESSAGE_SHIM);
+    WebKitUserScript *script = webkit_user_script_new(ctx->js, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
         WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL);
-    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
     webkit_user_content_manager_add_script(manager, script);
     webkit_user_script_unref(script);
+
+    gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
 }
 
 static void set_size(const context_t *ctx, unsigned width, unsigned height)
@@ -252,7 +248,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
                 NULL, NULL, NULL);
             gtk_widget_show_all(GTK_WIDGET(ctx->window));
             ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
-            usleep(10000); // 10ms -- prevents flicker, why?
+            usleep(20000); // 20ms -- prevents flicker, why?
             break;
 
         default:
@@ -360,11 +356,7 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             break;
 
         case OP_INJECT_SCRIPT:
-            inject_script(ctx, packet.v);
-            break;
-
-        case OP_INJECT_SHIMS:
-            inject_script(ctx, JS_POST_MESSAGE_SHIM);
+            strcat(ctx->js, (const char *)packet.v);
             break;
 
         case OP_SET_SIZE: {

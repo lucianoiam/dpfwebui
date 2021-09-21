@@ -56,6 +56,18 @@ void AbstractWebHostUI::setWebView(AbstractWebView* webView)
 {
     fWebView = webView;
 
+    fWebView->setEventHandler(this);
+#ifdef HIPHOP_PRINT_TRAFFIC
+    fWebView->setPrintTraffic(true);
+#endif
+    
+    String js = String(
+#include "ui/distrho-ui.js.inc"
+    );
+    js += "const DISTRHO = Object.freeze({ UI: UI });" \
+          "UI = null;";
+    fWebView->injectScript(js);
+
     // Web views adjust their contents following the system display scale factor,
     // adjust window size so it correctly wraps content on high density displays.
     // Cannot call virtual method createStandaloneWindow() from constructor.
@@ -69,18 +81,6 @@ void AbstractWebHostUI::setWebView(AbstractWebView* webView)
     fWebView->setBackgroundColor(fBackgroundColor);
     fWebView->setSize(fInitWidth, fInitHeight);
     fWebView->realize();
-
-    fWebView->setEventHandler(this);
-#ifdef HIPHOP_PRINT_TRAFFIC
-    fWebView->setPrintTraffic(true);
-#endif
-
-    String js = String(
-#include "ui/distrho-ui.js.inc"
-    );
-    js += "const DISTRHO = Object.freeze({ UI: UI });" \
-          "UI = null;";
-    fWebView->injectScript(js);
 
     String url = "file://" + path::getLibraryPath() + "/ui/index.html";
     fWebView->navigate(url);

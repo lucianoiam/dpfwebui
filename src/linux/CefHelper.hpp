@@ -61,26 +61,24 @@ public:
     {
         return this;
     }
+  
+    virtual bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                          CefRefPtr<CefFrame> frame,
+                                          CefProcessId sourceProcess,
+                                          CefRefPtr<CefProcessMessage> message) override;
 
     // CefBrowserProcessHandler
-
-    virtual void OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine);
+    virtual void OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine) override;
 
     // CefRenderProcessHandler
-
     virtual void OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                                   CefRefPtr<CefV8Context> context) override;
 
     // CefLoadHandler
-
-    virtual void OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                             TransitionType transitionType) override;
-
     virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                            int httpStatusCode) override;
 
     // CefV8Handler
-
     virtual bool Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments,
                          CefRefPtr<CefV8Value>& retval, CefString& exception) override;
 
@@ -88,15 +86,16 @@ private:
     void dispatch(const tlv_t* packet);
     void realize(const msg_win_cfg_t *config);
 
-    bool       fRunMainLoop;
     ipc_t*     fIpc;
-    ::Display* fDisplay;
-    ::Window   fContainer;
+    bool       fbRunMainLoop;
+    ::Display* fbDisplay;
+    ::Window   fbContainer;
     
-    std::vector<CefString> fInjectedScripts;
-    CefRefPtr<CefBrowser>  fBrowser;
+    CefRefPtr<CefBrowser>  fbBrowser;
+    std::vector<CefString> fbInjectedScripts;
+    CefString              frFullInjectedScript;
 
-    // Include the default reference counting implementation
+    // Include the CEF default reference counting implementation
     IMPLEMENT_REFCOUNTING(CefHelper);
 };
 
