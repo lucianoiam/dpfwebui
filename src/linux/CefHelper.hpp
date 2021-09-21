@@ -59,8 +59,8 @@ public:
                            int httpStatusCode) override;
 
 private:
+    int  readMessage();
     void realize(const msg_win_cfg_t *config);
-    void dispatch(const tlv_t* packet);
 
     ipc_t*     fIpc;
     bool       fRunMainLoop;

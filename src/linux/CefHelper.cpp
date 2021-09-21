@@ -113,40 +113,94 @@ CefHelper::~CefHelper()
 
 void CefHelper::runMainLoop()
 {
-    int fd = ipc_get_config(fIpc)->fd_r;
-    fd_set rfds;
-    struct timeval tv;
-    tlv_t packet;
-
     fRunMainLoop = true;
     
     while (fRunMainLoop) {
         CefDoMessageLoopWork();
-
-        FD_ZERO(&rfds);
-        FD_SET(fd, &rfds);
-        tv.tv_sec = tv.tv_usec = 0; // poll
-
-        int retval = select(fd + 1, &rfds, 0, 0, &tv);
-
-        if (retval == -1) {
-            HIPHOP_LOG_STDERR_ERRNO("Failed select() on IPC channel");
+        
+        if (readMessage() != 0) {
             fRunMainLoop = false;
-            continue;
         }
-
-        if (retval == 0) {
-            continue; // no fd ready
-        }
-
-        if (ipc_read(fIpc, &packet) == -1) {
-            HIPHOP_LOG_STDERR_ERRNO("Could not read from IPC channel");
-            fRunMainLoop = false;
-            continue;
-        }
-
-        dispatch(&packet);
     }
+}
+
+int CefHelper::readMessage()
+{
+    fd_set rfds;
+    FD_ZERO(&rfds);
+
+    int fd = ipc_get_config(fIpc)->fd_r;
+    FD_SET(fd, &rfds);
+
+    struct timeval tv;
+    tv.tv_sec = tv.tv_usec = 0; // poll
+
+    int retval = select(fd + 1, &rfds, 0, 0, &tv);
+
+    if (retval == -1) {
+        HIPHOP_LOG_STDERR_ERRNO("Failed select() on IPC channel");
+        fRunMainLoop = false;
+        return -1;
+    }
+
+    if (retval == 0) {
+        return 0; // no fd ready
+    }
+
+    tlv_t packet;
+
+    if (ipc_read(fIpc, &packet) == -1) {
+        HIPHOP_LOG_STDERR_ERRNO("Could not read from IPC channel");
+        fRunMainLoop = false;
+        return -1;
+    }
+
+    switch (static_cast<msg_opcode_t>(packet.t)) {
+        case OP_REALIZE:
+            realize((const msg_win_cfg_t *)packet.v);
+            break;
+
+        case OP_NAVIGATE: {
+            const char* url = static_cast<const char*>(packet.v);
+            fBrowser->GetMainFrame()->LoadURL(url);
+            break;
+        }
+
+        case OP_RUN_SCRIPT: {
+            const char* js = static_cast<const char*>(packet.v);
+            CefRefPtr<CefFrame> frame = fBrowser->GetMainFrame();
+            frame->ExecuteJavaScript(js, frame->GetURL(), 0);
+            break;
+        }
+
+        case OP_INJECT_SCRIPT: {
+            fInjectedScript += static_cast<const char*>(packet.v);
+            break;
+        }
+
+        case OP_SET_SIZE: {
+            // TODO - untested
+            /*const msg_win_size_t *size = (const msg_win_size_t *)packet.v;
+            ::Display* display = cef_get_xdisplay();
+            ::Window window = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
+            XResizeWindow(display, window, size->width, size->height);
+            XSync(display, False);*/
+            break;
+        }
+
+        case OP_SET_KEYBOARD_FOCUS:
+            // TODO
+            break;
+
+        case OP_TERMINATE:
+            fRunMainLoop = false;
+            break;
+
+        default:
+            break;
+    }
+
+    return 0;
 }
 
 void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine)
@@ -212,54 +266,6 @@ void CefHelper::realize(const msg_win_cfg_t *config)
     CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("inject_script");
     message->GetArgumentList()->SetString(0, fInjectedScript);
     fBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
-}
-
-void CefHelper::dispatch(const tlv_t* packet)
-{
-    switch (static_cast<msg_opcode_t>(packet->t)) {
-        case OP_REALIZE:
-            realize((const msg_win_cfg_t *)packet->v);
-            break;
-
-        case OP_NAVIGATE: {
-            const char* url = static_cast<const char*>(packet->v);
-            fBrowser->GetMainFrame()->LoadURL(url);
-            break;
-        }
-
-        case OP_RUN_SCRIPT: {
-            const char* js = static_cast<const char*>(packet->v);
-            CefRefPtr<CefFrame> frame = fBrowser->GetMainFrame();
-            frame->ExecuteJavaScript(js, frame->GetURL(), 0);
-            break;
-        }
-
-        case OP_INJECT_SCRIPT: {
-            fInjectedScript += static_cast<const char*>(packet->v);
-            break;
-        }
-
-        case OP_SET_SIZE: {
-            // TODO - untested
-            /*const msg_win_size_t *size = (const msg_win_size_t *)packet->v;
-            ::Display* display = cef_get_xdisplay();
-            ::Window window = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
-            XResizeWindow(display, window, size->width, size->height);
-            XSync(display, False);*/
-            break;
-        }
-
-        case OP_SET_KEYBOARD_FOCUS:
-            // TODO
-            break;
-
-        case OP_TERMINATE:
-            fRunMainLoop = false;
-            break;
-
-        default:
-            break;
-    }
 }
 
 CefHelperSubprocess::CefHelperSubprocess()
