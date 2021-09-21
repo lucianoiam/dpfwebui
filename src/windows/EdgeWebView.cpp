@@ -152,11 +152,9 @@ void EdgeWebView::navigate(String& url)
 {
     fUrl = url;
 
-    if (fView == 0) {
-        return; // queue
+    if (fView != 0) {
+        ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
     }
-
-    ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
 }
 
 void EdgeWebView::runScript(String& source)
@@ -170,12 +168,11 @@ void EdgeWebView::runScript(String& source)
 
 void EdgeWebView::injectScript(String& source)
 {
-    if (fController == 0) {
-        fInjectedScripts.push_back(source);
-        return; // queue
-    }
+    fInjectedScript += source;
 
-    ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
+    if (fController != 0) {
+        ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
+    }
 }
 
 void EdgeWebView::onSize(uint width, uint height)
@@ -240,11 +237,13 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 
-    for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
-        injectScript(*it);
+    if (!fInjectedScript.isEmpty()) {
+        ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(fInjectedScript), 0);
     }
 
-    navigate(fUrl);
+    if (!fUrl.isEmpty()) {
+        ICoreWebView2_Navigate(fView, TO_LPCWSTR(fUrl));
+    }
 
     return S_OK;
 }

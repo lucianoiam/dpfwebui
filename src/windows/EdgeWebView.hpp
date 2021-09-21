@@ -76,10 +76,10 @@ protected:
 private:
     void webViewLoaderErrorMessageBox(HRESULT result);
 
-    WNDCLASSEX          fHelperClass;
-    HWND                fHelperHwnd;
-    std::vector<String> fInjectedScripts;
-    String              fUrl;
+    WNDCLASSEX  fHelperClass;
+    HWND        fHelperHwnd;
+    String      fInjectedScript;
+    String      fUrl;
     
     InternalWebView2EventHandler* fHandler;
     ICoreWebView2Controller*      fController;
