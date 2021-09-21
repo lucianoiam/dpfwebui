@@ -98,6 +98,9 @@ ChildProcessWebView::~ChildProcessWebView()
 {
     if (fPid != -1) {
         ipcWriteOpcode(OP_TERMINATE);
+#ifdef LXHELPER_SIGTERM
+        kill(fPid, SIGTERM);
+#endif
 
         int stat;
         waitpid(fPid, &stat, 0);

@@ -336,6 +336,11 @@ endif
 ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
 LXWEBVIEW_TYPE ?= gtk
+
+ifeq ($(LXWEBVIEW_TYPE),cef)
+BASE_FLAGS += -DLXHELPER_SIGTERM
+endif
+
 HIPHOP_TARGET += lxhelper_bin
 
 LXHELPER_NAME = ui-helper
