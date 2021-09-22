@@ -100,6 +100,7 @@ ifeq ($(LINUX),true)
 HIPHOP_FILES_UI += linux/LinuxPath.cpp \
                    linux/LinuxWebHostUI.cpp \
                    linux/ChildProcessWebView.cpp \
+                   linux/IpcInterface.cpp \
                    linux/ipc.c
 endif
 ifeq ($(MACOS),true)

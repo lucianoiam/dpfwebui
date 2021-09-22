@@ -34,7 +34,7 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
 {
     // It is not possible to implement JS synchronous calls that return values
     // without resorting to dirty hacks. Use JS async functions instead, and
-    // fulfill their promises here. See for example isResizable() below.
+    // fulfill their promises here. See for example getWidth() and getHeight().
 
     fHandler["getWidth"] = std::make_pair(0, [this](const JsValueVector&) {
         webViewPostMessage({"UI", "getWidth", static_cast<double>(getWidth())});
@@ -61,7 +61,7 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     });
 
     fHandler["setSize"] = std::make_pair(2, [this](const JsValueVector& args) {
-        // Queuing is needed for REAPER on Linux and does no harm on others
+        // Queuing is needed by REAPER on Linux and it is harmless for others
         queue([this, args]() {
             setSize(
                 static_cast<uint>(args[0].getDouble()), // width

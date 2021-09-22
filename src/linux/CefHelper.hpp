@@ -60,6 +60,7 @@ public:
 
 private:
     int  readMessage();
+    void dispatch(const tlv_t& packet);
     void realize(const msg_win_cfg_t *config);
 
     ipc_t*     fIpc;

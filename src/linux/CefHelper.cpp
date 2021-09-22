@@ -113,12 +113,15 @@ CefHelper::~CefHelper()
 
 void CefHelper::runMainLoop()
 {
+    int rc;
+
     fRunMainLoop = true;
     
     while (fRunMainLoop) {
         CefDoMessageLoopWork();
+        rc = readMessage();
         
-        if (readMessage() != 0) {
+        if (rc != 0) {
             fRunMainLoop = false;
         }
     }
@@ -155,6 +158,13 @@ int CefHelper::readMessage()
         return -1;
     }
 
+    dispatch(packet);
+
+    return 0;
+}
+
+void CefHelper::dispatch(const tlv_t& packet)
+{
     switch (static_cast<msg_opcode_t>(packet.t)) {
         case OP_REALIZE:
             realize((const msg_win_cfg_t *)packet.v);
@@ -199,8 +209,6 @@ int CefHelper::readMessage()
         default:
             break;
     }
-
-    return 0;
 }
 
 void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine)

@@ -159,6 +159,7 @@ class UI {
         if (method in this._resolve) {
             this._resolve[method][1](); // reject previous
         }
+        
         return new Promise((resolve, reject) => {
             this._resolve[method] = [resolve, reject];
             this._call(method, ...args);
