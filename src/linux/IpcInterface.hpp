@@ -35,9 +35,9 @@ public:
 
     int read(tlv_t* packet) const;
 
+    int write(msg_opcode_t opcode) const;
+    int write(msg_opcode_t opcode, String& str) const;
     int write(msg_opcode_t opcode, const void* payload, int payloadSize) const; 
-    int writeOpcode(msg_opcode_t opcode) const;
-    int writeString(msg_opcode_t opcode, String& str) const;
 
 private:
     long int fTimeout;

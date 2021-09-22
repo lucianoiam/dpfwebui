@@ -68,12 +68,9 @@ ChildProcessWebView::ChildProcessWebView()
         return;
     }
 
-    ipc_conf_t conf;
-    conf.fd_r = fPipeFd[1][0];
-    conf.fd_w = fPipeFd[0][1];
-
-    fIpc = ipc_init(&conf);
-    fIpcThread = new IpcReadThread(*this);
+    fIpc = new IpcInterface(fPipeFd[1][0], fPipeFd[0][1], 100000);
+    fIpcThread = new IpcReadThread(fIpc,
+        std::bind(&ChildProcessWebView::ipcReadCallback, this, std::placeholders::_1));
     fIpcThread->startThread();
 
     char rfd[10];
@@ -102,7 +99,7 @@ ChildProcessWebView::ChildProcessWebView()
 ChildProcessWebView::~ChildProcessWebView()
 {
     if (fPid != -1) {
-        ipcWriteOpcode(OP_TERMINATE);
+        fIpc->write(OP_TERMINATE);
 #ifdef LXHELPER_SIGTERM
         kill(fPid, SIGTERM);
 #endif
@@ -119,7 +116,7 @@ ChildProcessWebView::~ChildProcessWebView()
     }
 
     if (fIpc != 0) {
-        ipc_destroy(fIpc);
+        delete fIpc;
         fIpc = 0;
     }
 
@@ -164,22 +161,22 @@ void ChildProcessWebView::realize()
     config.parent = static_cast<uintptr_t>(fBackground);
     config.color = color;
     config.size = { getWidth(), getHeight() };
-    ipcWrite(OP_REALIZE, &config, sizeof(config));
+    fIpc->write(OP_REALIZE, &config, sizeof(config));
 }
 
 void ChildProcessWebView::navigate(String& url)
 {
-    ipcWriteString(OP_NAVIGATE, url);
+    fIpc->write(OP_NAVIGATE, url);
 }
 
 void ChildProcessWebView::runScript(String& source)
 {
-    ipcWriteString(OP_RUN_SCRIPT, source);
+    fIpc->write(OP_RUN_SCRIPT, source);
 }
 
 void ChildProcessWebView::injectScript(String& source)
 {
-    ipcWriteString(OP_INJECT_SCRIPT, source);
+    fIpc->write(OP_INJECT_SCRIPT, source);
 }
 
 void ChildProcessWebView::onSize(uint width, uint height)
@@ -192,40 +189,13 @@ void ChildProcessWebView::onSize(uint width, uint height)
     XSync(fDisplay, False);
 
     msg_win_size_t sizePkt = { width, height };
-    ipcWrite(OP_SET_SIZE, &sizePkt, sizeof(sizePkt));
+    fIpc->write(OP_SET_SIZE, &sizePkt, sizeof(sizePkt));
 }
 
 void ChildProcessWebView::onKeyboardFocus(bool focus)
 {
     char val = focus ? 1 : 0;
-    ipcWrite(OP_SET_KEYBOARD_FOCUS, &val, sizeof(val));
-}
-
-int ChildProcessWebView::ipcWrite(msg_opcode_t opcode, const void *payload, int payloadSize) const
-{
-    tlv_t packet;
-    packet.t = static_cast<short>(opcode);
-    packet.l = payloadSize;
-    packet.v = payload;
-
-    int retval;
-
-    if ((retval = ipc_write(fIpc, &packet)) == -1) {
-        HIPHOP_LOG_STDERR_ERRNO("Could not write to IPC channel");
-    }
-
-    return retval;
-}
-
-int ChildProcessWebView::ipcWriteString(msg_opcode_t opcode, String str) const
-{
-    const char *cStr = static_cast<const char *>(str);
-    return ipcWrite(opcode, cStr, strlen(cStr) + 1);
-}
-
-int ChildProcessWebView::ipcWriteOpcode(msg_opcode_t opcode) const
-{
-    return ipcWrite(opcode, 0, 0);
+    fIpc->write(OP_SET_KEYBOARD_FOCUS, &val, sizeof(val));
 }
 
 void ChildProcessWebView::ipcReadCallback(const tlv_t& packet)
@@ -285,44 +255,19 @@ void ChildProcessWebView::handleHelperScriptMessage(const char *payload, int pay
     handleScriptMessage(args);
 }
 
-IpcReadThread::IpcReadThread(ChildProcessWebView& view)
+IpcReadThread::IpcReadThread(IpcInterface* ipc, IpcReadCallback callback)
     : Thread("ipc_read_" XSTR(HIPHOP_PROJECT_ID_HASH))
-    , fView(view)
+    , fIpc(ipc)
+    , fCallback(callback)
 {}
 
 void IpcReadThread::run()
 {
-    int fd = ipc_get_config(fView.ipc())->fd_r;
-    fd_set rfds;
-    struct timeval tv;
     tlv_t packet;
 
-    while (true) {
-        FD_ZERO(&rfds);
-        FD_SET(fd, &rfds);
-        tv.tv_sec = 0;
-        tv.tv_usec = 100000;
-
-        int retval = select(fd + 1, &rfds, 0, 0, &tv);
-
-        if (retval == -1) {
-            HIPHOP_LOG_STDERR_ERRNO("Failed select() on IPC channel");
-            break;
+    while (!shouldThreadExit()) {
+        if (fIpc->read(&packet) == 0) {
+            fCallback(packet);
         }
-
-        if (shouldThreadExit()) {
-            break;
-        }
-
-        if (retval == 0) {
-            continue; // timeout
-        }
-
-        if (ipc_read(fView.ipc(), &packet) == -1) {
-            HIPHOP_LOG_STDERR_ERRNO("Could not read from IPC channel");
-            break;
-        }
-
-        fView.ipcReadCallback(packet);
     }
 }

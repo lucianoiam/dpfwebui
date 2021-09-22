@@ -46,7 +46,8 @@ int IpcInterface::read(tlv_t* packet) const
 
     FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
-    tv.tv_sec = tv.tv_usec = fTimeout;
+    tv.tv_sec = 0;
+    tv.tv_usec = fTimeout;
 
     int rc = select(fd + 1, &rfds, 0, 0, &tv);
 
@@ -56,7 +57,7 @@ int IpcInterface::read(tlv_t* packet) const
     }
 
     if (rc == 0) {
-        return 0; // no fd ready
+        return -1; // no fd ready
     }
 
     if (ipc_read(fIpc, packet) == -1) {
@@ -67,22 +68,30 @@ int IpcInterface::read(tlv_t* packet) const
     return 0;
 }
 
-int IpcInterface::write(msg_opcode_t opcode, const void* payload, int payloadSize) const
-{
-    tlv_t packet;
-    packet.t = opcode;
-    packet.l = payloadSize;
-    packet.v = payload;
-    return ipc_write(fIpc, &packet);
-} 
-
-int IpcInterface::writeOpcode(msg_opcode_t opcode) const
+int IpcInterface::write(msg_opcode_t opcode) const
 {
     return write(opcode, 0, 0);
 }
 
-int IpcInterface::writeString(msg_opcode_t opcode, String& str) const
+int IpcInterface::write(msg_opcode_t opcode, String& str) const
 {
     const char *cStr = static_cast<const char *>(str);
     return write(opcode, cStr, strlen(cStr) + 1);
+}
+
+int IpcInterface::write(msg_opcode_t opcode, const void* payload, int payloadSize) const
+{
+    tlv_t packet;
+
+    packet.t = static_cast<short>(opcode);
+    packet.l = payloadSize;
+    packet.v = payload;
+
+    int rc = ipc_write(fIpc, &packet);
+
+    if (rc == -1) {
+        HIPHOP_LOG_STDERR_ERRNO("Could not write to IPC channel");
+    }
+
+    return rc;
 }
