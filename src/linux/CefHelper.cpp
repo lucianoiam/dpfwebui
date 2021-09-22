@@ -68,7 +68,7 @@ CefHelper::CefHelper(int fdr, int fdw)
     , fDisplay(0)
     , fContainer(0)
 {
-    fIpc = new IpcInterface(fdr, fdw, 0 /*poll*/);
+    fIpc = new IpcInterface(fdr, fdw, 5);
 }
 
 CefHelper::~CefHelper()
@@ -108,13 +108,25 @@ int CefHelper::run()
     CefMainArgs emptyArgs(0, nullptr);
     CefInitialize(emptyArgs, settings, this, nullptr);
 
-    fRunMainLoop = true;
     tlv_t packet;
+    int rc;
 
+    fRunMainLoop = true;
+    
     while (fRunMainLoop) {
+        // Call CefDoMessageLoopWork() on a regular basis instead of calling
+        // CefRunMessageLoop(). Each call to CefDoMessageLoopWork() will perform
+        // a single iteration of the CEF message loop. Caution should be used
+        // with this approach. Calling the method too infrequently will starve
+        // the CEF message loop and negatively impact browser performance.
+        // Calling the method too frequently will negatively impact CPU usage.
+        // https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage
         CefDoMessageLoopWork();
 
-        if (fIpc->read(&packet) == 0) {
+        // Configured to timeout after 5ms when no data is available
+        rc = fIpc->read(&packet);
+
+        if (rc == 0) {
             dispatch(packet);
         }
     }

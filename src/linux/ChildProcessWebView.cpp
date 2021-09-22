@@ -67,7 +67,7 @@ ChildProcessWebView::ChildProcessWebView()
         return;
     }
 
-    fIpc = new IpcInterface(fPipeFd[1][0], fPipeFd[0][1], 100000);
+    fIpc = new IpcInterface(fPipeFd[1][0], fPipeFd[0][1], 100/*ms*/);
     fIpcThread = new IpcReadThread(fIpc,
         std::bind(&ChildProcessWebView::ipcReadCallback, this, std::placeholders::_1));
     fIpcThread->startThread();

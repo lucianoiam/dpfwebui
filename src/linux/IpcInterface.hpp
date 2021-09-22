@@ -30,7 +30,7 @@ START_NAMESPACE_DISTRHO
 class IpcInterface
 {
 public:
-    IpcInterface(int fdr, int fdw, long int readTimeoutUsec);
+    IpcInterface(int fdr, int fdw, int readTimeoutMs);
     virtual ~IpcInterface();
 
     int getFdRead() const;
@@ -43,8 +43,8 @@ public:
     int write(msg_opcode_t opcode, const void* payload, int payloadSize) const; 
 
 private:
-    long int fTimeout;
-    ipc_t*   fIpc;
+    int    fTimeout;
+    ipc_t* fIpc;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(IpcInterface)
 

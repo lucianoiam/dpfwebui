@@ -24,8 +24,8 @@
 
 USE_NAMESPACE_DISTRHO
 
-IpcInterface::IpcInterface(int fdr, int fdw, long int readTimeoutUsec)
-    : fTimeout(readTimeoutUsec)
+IpcInterface::IpcInterface(int fdr, int fdw, int readTimeoutMs)
+    : fTimeout(readTimeoutMs)
 {
     ipc_conf_t conf;
     conf.fd_r = fdr;
@@ -60,7 +60,7 @@ int IpcInterface::read(tlv_t* packet) const
     FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
     tv.tv_sec = 0;
-    tv.tv_usec = fTimeout;
+    tv.tv_usec = 1000L * fTimeout;
 
     rc = select(fd + 1, &rfds, 0, 0, &tv);
 
