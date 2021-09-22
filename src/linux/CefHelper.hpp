@@ -27,7 +27,7 @@
 #include "include/cef_browser.h"
 #include "include/cef_client.h"
 
-#include "IpcInterface.hpp"
+#include "IpcWrapper.hpp"
 
 class CefHelper : public CefApp, public CefClient, 
                   public CefBrowserProcessHandler, public CefLoadHandler
@@ -61,10 +61,10 @@ private:
     void dispatch(const tlv_t& packet);
     void realize(const msg_win_cfg_t *config);
 
-    IpcInterface* fIpc;
-    bool          fRunMainLoop;
-    ::Display*    fDisplay;
-    ::Window      fContainer;
+    IpcWrapper* fIpc;
+    bool        fRunMainLoop;
+    ::Display*  fDisplay;
+    ::Window    fContainer;
     
     CefRefPtr<CefBrowser> fBrowser;
     std::string           fInjectedScript;
@@ -100,8 +100,8 @@ public:
                          CefRefPtr<CefV8Value>& retval, CefString& exception) override;
 
 private:
-    IpcInterface* fIpc;
-    CefString     fInjectedScript;
+    IpcWrapper* fIpc;
+    CefString   fInjectedScript;
 
     IMPLEMENT_REFCOUNTING(CefHelperSubprocess);
 };

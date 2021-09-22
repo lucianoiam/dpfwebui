@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "IpcInterface.hpp"
+#include "IpcWrapper.hpp"
 
 #include <sys/select.h>
 
@@ -24,7 +24,7 @@
 
 USE_NAMESPACE_DISTRHO
 
-IpcInterface::IpcInterface(int fdr, int fdw, int readTimeoutMs)
+IpcWrapper::IpcWrapper(int fdr, int fdw, int readTimeoutMs)
     : fTimeout(readTimeoutMs)
 {
     ipc_conf_t conf;
@@ -33,24 +33,24 @@ IpcInterface::IpcInterface(int fdr, int fdw, int readTimeoutMs)
     fIpc = ipc_init(&conf); 
 }
 
-IpcInterface::~IpcInterface()
+IpcWrapper::~IpcWrapper()
 {
     if (fIpc != 0) {
         ipc_destroy(fIpc);
     }
 }
 
-int IpcInterface::getFdRead() const
+int IpcWrapper::getFdRead() const
 {
     return ipc_get_config(fIpc)->fd_r;
 }
 
-int IpcInterface::getFdWrite() const
+int IpcWrapper::getFdWrite() const
 {
     return ipc_get_config(fIpc)->fd_w;
 }
 
-int IpcInterface::read(tlv_t* packet) const
+int IpcWrapper::read(tlv_t* packet) const
 {
     fd_set rfds;
     struct timeval tv;  
@@ -81,18 +81,18 @@ int IpcInterface::read(tlv_t* packet) const
     return 0;
 }
 
-int IpcInterface::write(msg_opcode_t opcode) const
+int IpcWrapper::write(msg_opcode_t opcode) const
 {
     return write(opcode, 0, 0);
 }
 
-int IpcInterface::write(msg_opcode_t opcode, String& str) const
+int IpcWrapper::write(msg_opcode_t opcode, String& str) const
 {
     const char *cStr = static_cast<const char *>(str);
     return write(opcode, cStr, strlen(cStr) + 1);
 }
 
-int IpcInterface::write(msg_opcode_t opcode, const void* payload, int payloadSize) const
+int IpcWrapper::write(msg_opcode_t opcode, const void* payload, int payloadSize) const
 {
     tlv_t packet;
 

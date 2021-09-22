@@ -67,7 +67,7 @@ ChildProcessWebView::ChildProcessWebView()
         return;
     }
 
-    fIpc = new IpcInterface(fPipeFd[1][0], fPipeFd[0][1], 100/*ms*/);
+    fIpc = new IpcWrapper(fPipeFd[1][0], fPipeFd[0][1], 100/*ms*/);
     fIpcThread = new IpcReadThread(fIpc,
         std::bind(&ChildProcessWebView::ipcReadCallback, this, std::placeholders::_1));
     fIpcThread->startThread();
@@ -253,7 +253,7 @@ void ChildProcessWebView::handleHelperScriptMessage(const char *payload, int pay
     handleScriptMessage(args);
 }
 
-IpcReadThread::IpcReadThread(IpcInterface* ipc, IpcReadCallback callback)
+IpcReadThread::IpcReadThread(IpcWrapper* ipc, IpcReadCallback callback)
     : Thread("ipc_read_" XSTR(HIPHOP_PROJECT_ID_HASH))
     , fIpc(ipc)
     , fCallback(callback)

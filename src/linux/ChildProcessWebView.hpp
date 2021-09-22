@@ -28,7 +28,7 @@
 #include "extra/Thread.hpp"
 
 #include "AbstractWebView.hpp"
-#include "IpcInterface.hpp"
+#include "IpcWrapper.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -51,12 +51,12 @@ private:
     void ipcReadCallback(const tlv_t& message);
     void handleHelperScriptMessage(const char *payload, int payloadSize);
 
-    ::Display*    fDisplay;
-    ::Window      fBackground;
-    int           fPipeFd[2][2];
-    pid_t         fPid;
-    IpcInterface* fIpc;
-    Thread*       fIpcThread;
+    ::Display*  fDisplay;
+    ::Window    fBackground;
+    int         fPipeFd[2][2];
+    pid_t       fPid;
+    IpcWrapper* fIpc;
+    Thread*     fIpcThread;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ChildProcessWebView)
 
@@ -67,12 +67,12 @@ class IpcReadThread : public Thread
 public:
     typedef std::function<void(const tlv_t& message)> IpcReadCallback;
 
-    IpcReadThread(IpcInterface* ipc, IpcReadCallback callback);
+    IpcReadThread(IpcWrapper* ipc, IpcReadCallback callback);
     
     void run() override;
 
 private:
-    IpcInterface*   fIpc;
+    IpcWrapper*     fIpc;
     IpcReadCallback fCallback;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(IpcReadThread)

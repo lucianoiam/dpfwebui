@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef IPC_INTERFACE_HPP
-#define IPC_INTERFACE_HPP
+#ifndef IPC_WRAPPER_HPP
+#define IPC_WRAPPER_HPP
 
 #include "distrho/extra/LeakDetector.hpp"
 #include "distrho/extra/String.hpp"
@@ -27,11 +27,11 @@
 
 START_NAMESPACE_DISTRHO
 
-class IpcInterface
+class IpcWrapper
 {
 public:
-    IpcInterface(int fdr, int fdw, int readTimeoutMs);
-    virtual ~IpcInterface();
+    IpcWrapper(int fdr, int fdw, int readTimeoutMs);
+    virtual ~IpcWrapper();
 
     int getFdRead() const;
     int getFdWrite() const;
@@ -46,10 +46,10 @@ private:
     int    fTimeout;
     ipc_t* fIpc;
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(IpcInterface)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(IpcWrapper)
 
 };
 
 END_NAMESPACE_DISTRHO
 
-#endif  // IPC_INTERFACE_HPP
+#endif  // IPC_WRAPPER_HPP

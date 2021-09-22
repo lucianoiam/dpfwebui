@@ -68,7 +68,7 @@ CefHelper::CefHelper(int fdr, int fdw)
     , fDisplay(0)
     , fContainer(0)
 {
-    fIpc = new IpcInterface(fdr, fdw, 5);
+    fIpc = new IpcWrapper(fdr, fdw, 5);
 }
 
 CefHelper::~CefHelper()
@@ -251,7 +251,7 @@ void CefHelper::realize(const msg_win_cfg_t *config)
 CefHelperSubprocess::CefHelperSubprocess()
     : fIpc(0)
 {
-    // TODO - create IpcInterface using CEF arguments
+    // TODO - create IpcWrapper using CEF arguments
 }
 
 CefHelperSubprocess::~CefHelperSubprocess()
