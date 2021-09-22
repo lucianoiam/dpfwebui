@@ -101,7 +101,7 @@ int CefHelper::run()
     }
 
     CefSettings settings;
-    //settings.no_sandbox = true;
+    settings.log_severity = LOGSEVERITY_DISABLE;
     settings.chrome_runtime = false;
 
     // Initialize CEF for the browser process
@@ -222,15 +222,12 @@ void CefHelper::realize(const msg_win_cfg_t* config)
                                CWColormap, &attrs);
     XSync(fDisplay, False);
 
-    CefBrowserSettings settings;
-
-    // TODO
-    //settings.log_severity = DISABLE;
-
     CefWindowInfo windowInfo;
     windowInfo.parent_window = fContainer;
     windowInfo.width = config->size.width;
     windowInfo.height = config->size.height;
+
+    CefBrowserSettings settings;
 
     fBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings,
         nullptr, nullptr);
