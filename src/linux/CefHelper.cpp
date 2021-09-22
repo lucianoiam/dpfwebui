@@ -20,7 +20,6 @@
 
 #include <sstream>
 
-#include <sys/select.h>
 #include <X11/Xutil.h>
 
 #include "macro.h"

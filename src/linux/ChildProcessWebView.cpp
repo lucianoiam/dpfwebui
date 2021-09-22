@@ -24,7 +24,6 @@
 #include <spawn.h>
 #include <unistd.h>
 #include <linux/limits.h>
-#include <sys/select.h>
 #include <sys/wait.h>
 
 #include "Path.hpp"

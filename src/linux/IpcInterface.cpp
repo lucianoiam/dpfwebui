@@ -18,6 +18,8 @@
 
 #include "IpcInterface.hpp"
 
+#include <sys/select.h>
+
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
