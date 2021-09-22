@@ -29,8 +29,8 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     , fInitWidth(0)
     , fInitHeight(0)
     , fBackgroundColor(backgroundColor)
-    , fFlushedInitMsgQueue(false)
-    , fRunUiBlock(false)
+    , fUiBlockQueued(false)
+    , fInitMessageQueueFlushed(false)
 {
     // It is not possible to implement JS synchronous calls that return values
     // without resorting to dirty hacks. Use JS async functions instead, and
@@ -45,15 +45,11 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     });
 
     fHandler["setWidth"] = std::make_pair(1, [this](const JsValueVector& args) {
-        queue([this, args]() {
-            setWidth(static_cast<uint>(args[0].getDouble()));
-        });
+        setWidth(static_cast<uint>(args[0].getDouble()));
     });
 
     fHandler["setHeight"] = std::make_pair(1, [this](const JsValueVector& args) {
-        queue([this, args]() {
-            setHeight(static_cast<uint>(args[0].getDouble()));
-        });
+        setHeight(static_cast<uint>(args[0].getDouble()));
     });
 
     fHandler["isResizable"] = std::make_pair(0, [this](const JsValueVector&) {
@@ -61,14 +57,10 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     });
 
     fHandler["setSize"] = std::make_pair(2, [this](const JsValueVector& args) {
-        // Queuing is needed by REAPER on Linux and it is harmless for others
-        queue([this, args]() {
-            setSize(
-                static_cast<uint>(args[0].getDouble()), // width
-                static_cast<uint>(args[1].getDouble())  // height
-            );
-        });
-
+        setSize(
+            static_cast<uint>(args[0].getDouble()), // width
+            static_cast<uint>(args[1].getDouble())  // height
+        );
     });
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
@@ -137,6 +129,12 @@ AbstractWebHostUI::~AbstractWebHostUI()
     }
 }
 
+void AbstractWebHostUI::queue(const UiBlock& block)
+{
+    fUiBlock = block;
+    fUiBlockQueued = true;
+}
+
 bool AbstractWebHostUI::shouldCreateWebView()
 {
     // When running as a plugin the UI ctor/dtor can be repeatedly called with
@@ -187,26 +185,26 @@ void AbstractWebHostUI::setWebView(AbstractWebView* webView)
 
 void AbstractWebHostUI::webViewPostMessage(const JsValueVector& args)
 {
-    if (fFlushedInitMsgQueue) {
+    if (fInitMessageQueueFlushed) {
         fWebView->postMessage(args);
     } else {
-        fInitMsgQueue.push_back(args);
+        fInitMessageQueue.push_back(args);
     }
 }
 
 void AbstractWebHostUI::flushInitMessageQueue()
 {
-    if (fFlushedInitMsgQueue) {
+    if (fInitMessageQueueFlushed) {
         return;
     }
 
-    fFlushedInitMsgQueue = true;
+    fInitMessageQueueFlushed = true;
 
-    for (InitMessageQueue::iterator it = fInitMsgQueue.begin(); it != fInitMsgQueue.end(); ++it) {
+    for (InitMessageQueue::iterator it = fInitMessageQueue.begin(); it != fInitMessageQueue.end(); ++it) {
         fWebView->postMessage(*it);
     }
     
-    fInitMsgQueue.clear();
+    fInitMessageQueue.clear();
 }
 
 void AbstractWebHostUI::setKeyboardFocus(bool focus)
@@ -216,9 +214,9 @@ void AbstractWebHostUI::setKeyboardFocus(bool focus)
 
 void AbstractWebHostUI::uiIdle()
 {
-    if (fRunUiBlock) {
-        fRunUiBlock = false;
-        fQueuedUiBlock();
+    if (fUiBlockQueued) {
+        fUiBlockQueued = false;
+        fUiBlock();
     }
 
     if (isStandalone()) {
@@ -257,12 +255,6 @@ void AbstractWebHostUI::stateChanged(const char* key, const char* value)
 
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
-void AbstractWebHostUI::queue(const UiBlock& block)
-{
-    fQueuedUiBlock = block;
-    fRunUiBlock = true;
-}
-
 void AbstractWebHostUI::handleWebViewContentLoadFinished()
 {
     // Trigger the JavaScript sizeChanged() callback, useful for WKGTKRESIZEBUG.
@@ -293,5 +285,10 @@ void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& 
         return;
     }
 
-    handler.second(handlerArgs);
+    // Always call UI methods from uiIdle() instead of foreign webview threads.
+    // This is particularly needed on Linux for some methods like getWidth().
+
+    queue([handler, handlerArgs]() {
+        handler.second(handlerArgs);
+    });
 }

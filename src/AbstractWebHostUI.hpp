@@ -34,6 +34,10 @@ class AbstractWebHostUI : public UI, private WebViewEventHandler
 public:
     AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor);
     virtual ~AbstractWebHostUI();
+
+    typedef std::function<void()> UiBlock;
+
+    void queue(const UiBlock& block);
     
     uint getInitWidth() const { return fInitWidth; }
     uint getInitHeight() const { return fInitHeight; }
@@ -71,10 +75,6 @@ protected:
     virtual void      processStandaloneEvents() = 0;
 
 private:
-    typedef std::function<void()> UiBlock;
-
-    void queue(const UiBlock& block);
-
     // WebViewEventHandler
 
     virtual void handleWebViewContentLoadFinished() override;
@@ -90,10 +90,10 @@ private:
     uint              fInitWidth;
     uint              fInitHeight;
     uint32_t          fBackgroundColor;
-    bool              fFlushedInitMsgQueue;
-    bool              fRunUiBlock;
-    InitMessageQueue  fInitMsgQueue;
-    UiBlock           fQueuedUiBlock;
+    bool              fUiBlockQueued;
+    bool              fInitMessageQueueFlushed;
+    UiBlock           fUiBlock;
+    InitMessageQueue  fInitMessageQueue;
     MessageHandlerMap fHandler;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AbstractWebHostUI)
