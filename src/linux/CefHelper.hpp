@@ -59,7 +59,7 @@ public:
 
 private:
     void dispatch(const tlv_t& packet);
-    void realize(const msg_win_cfg_t *config);
+    void realize(const msg_win_cfg_t* config);
 
     IpcWrapper* fIpc;
     bool        fRunMainLoop;

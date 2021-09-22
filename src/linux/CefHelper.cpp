@@ -160,18 +160,16 @@ void CefHelper::dispatch(const tlv_t& packet)
             break;
         }
 
-        case OP_INJECT_SCRIPT: {
+        case OP_INJECT_SCRIPT:
             fInjectedScript += static_cast<const char*>(packet.v);
             break;
-        }
 
         case OP_SET_SIZE: {
-            // TODO - untested
-            /*const msg_win_size_t *size = (const msg_win_size_t *)packet.v;
-            ::Display* display = cef_get_xdisplay();
-            ::Window window = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
-            XResizeWindow(display, window, size->width, size->height);
-            XSync(display, False);*/
+            const msg_win_size_t* size = static_cast<const msg_win_size_t*>(packet.v);
+            ::Window w = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
+            XResizeWindow(fDisplay, w, size->width, size->height);
+            XResizeWindow(fDisplay, fContainer, size->width, size->height);
+            XSync(fDisplay, False);
             break;
         }
 
@@ -206,7 +204,7 @@ void CefHelper::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> fra
     fIpc->write(OP_HANDLE_LOAD_FINISHED);
 }
 
-void CefHelper::realize(const msg_win_cfg_t *config)
+void CefHelper::realize(const msg_win_cfg_t* config)
 {
     // Top view is needed to ensure 24-bit colormap otherwise CreateBrowserSync()
     // will fail producing multiple Xlib errors. This can only be reproduced on
@@ -241,11 +239,14 @@ void CefHelper::realize(const msg_win_cfg_t *config)
     // loading to ensure they run before any user script. The V8 context must
     // be already initialized in order to run scripts. Send the script to
     // renderer because V8 ready event (OnContextCreated) only fires in there.
-    
     fInjectedScript += JS_POST_MESSAGE_SHIM;
     CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("inject_script");
     message->GetArgumentList()->SetString(0, fInjectedScript);
     fBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
+
+    // Reduce artifacts when resizing
+    ::Window w = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
+    XSetWindowBackground(fDisplay, w, config->color);
 }
 
 CefHelperSubprocess::CefHelperSubprocess()
