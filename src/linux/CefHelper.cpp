@@ -45,61 +45,37 @@ int main(int argc, char* argv[])
         return code;
     }
 
-    ipc_conf_t conf;
+    int fdr, fdw;
 
     if (argc < 3) {
         HIPHOP_LOG_STDERR("Invalid argument count");
         return -1;
     }
 
-    if ((sscanf(argv[1], "%d", &conf.fd_r) == 0) || (sscanf(argv[2], "%d", &conf.fd_w) == 0)) {
+    if ((sscanf(argv[1], "%d", &fdr) == 0) || (sscanf(argv[2], "%d", &fdw) == 0)) {
         HIPHOP_LOG_STDERR("Invalid file descriptor");
         return -1;
     }
 
-    CefRefPtr<CefHelper> app = new CefHelper(conf);
+    CefHelper helper(fdr, fdw);
+    code = helper.run();
 
-    // Install xlib error handlers so that the application won't be terminated
-    // on non-fatal errors
-    XSetErrorHandler(XErrorHandlerImpl);
-    XSetIOErrorHandler(XIOErrorHandlerImpl);
-
-    CefSettings settings;
-    //settings.no_sandbox = true;
-    settings.chrome_runtime = false;
-
-    // Initialize CEF for the browser process
-    CefInitialize(args, settings, app, nullptr);
-
-    app->runMainLoop();
-
-    // fBrowser must be deleted before calling CefShutdown() otherwise it hangs
-    app = nullptr;
-    CefShutdown();
-
-    return 0;
+    return code;
 }
 
-CefHelper::CefHelper(const ipc_conf_t& conf)
+CefHelper::CefHelper(int fdr, int fdw)
     : fIpc(0)
     , fRunMainLoop(false)
     , fDisplay(0)
     , fContainer(0)
 {
-    fDisplay = XOpenDisplay(NULL);
-
-    if (fDisplay == 0) {
-        HIPHOP_LOG_STDERR("Cannot open display");
-        return;
-    }
-
-    fIpc = ipc_init(&conf);
+    fIpc = new IpcInterface(fdr, fdw, 0 /*poll*/);
 }
 
 CefHelper::~CefHelper()
 {
     if (fIpc != 0) {
-        ipc_destroy(fIpc);
+        delete fIpc;
     }
 
     if (fContainer != 0) {
@@ -111,54 +87,44 @@ CefHelper::~CefHelper()
     }
 }
 
-void CefHelper::runMainLoop()
+int CefHelper::run()
 {
-    int rc;
+    // Install xlib error handlers so that the application won't be terminated
+    // on non-fatal errors
+    XSetErrorHandler(XErrorHandlerImpl);
+    XSetIOErrorHandler(XIOErrorHandlerImpl);
+
+    fDisplay = XOpenDisplay(NULL);
+
+    if (fDisplay == 0) {
+        HIPHOP_LOG_STDERR("Cannot open display");
+        return -1;
+    }
+
+    CefSettings settings;
+    //settings.no_sandbox = true;
+    settings.chrome_runtime = false;
+
+    // Initialize CEF for the browser process
+    CefMainArgs emptyArgs(0, nullptr);
+    CefInitialize(emptyArgs, settings, this, nullptr);
 
     fRunMainLoop = true;
-    
-    while (fRunMainLoop) {
-        CefDoMessageLoopWork();
-        rc = readMessage();
-        
-        if (rc != 0) {
-            fRunMainLoop = false;
-        }
-    }
-}
-
-int CefHelper::readMessage()
-{
-    fd_set rfds;
-    FD_ZERO(&rfds);
-
-    int fd = ipc_get_config(fIpc)->fd_r;
-    FD_SET(fd, &rfds);
-
-    struct timeval tv;
-    tv.tv_sec = tv.tv_usec = 0; // poll
-
-    int retval = select(fd + 1, &rfds, 0, 0, &tv);
-
-    if (retval == -1) {
-        HIPHOP_LOG_STDERR_ERRNO("Failed select() on IPC channel");
-        fRunMainLoop = false;
-        return -1;
-    }
-
-    if (retval == 0) {
-        return 0; // no fd ready
-    }
-
     tlv_t packet;
 
-    if (ipc_read(fIpc, &packet) == -1) {
-        HIPHOP_LOG_STDERR_ERRNO("Could not read from IPC channel");
-        fRunMainLoop = false;
-        return -1;
+    while (fRunMainLoop) {
+        CefDoMessageLoopWork();
+
+        if (fIpc->read(&packet) == 0) {
+            dispatch(packet);
+        }
     }
 
-    dispatch(packet);
+    // fBrowser must be deleted before calling CefShutdown() otherwise program
+    // can hang or crash
+    fBrowser = nullptr;
+
+    CefShutdown();
 
     return 0;
 }
@@ -214,8 +180,7 @@ void CefHelper::dispatch(const tlv_t& packet)
 void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine)
 {
     // Renderer process owns the JavaScript callback and needs writing back to host
-    const ipc_conf_t* conf = ipc_get_config(fIpc);
-    commandLine->AppendSwitchWithValue("ipc-fd", std::to_string(conf->fd_w));
+    commandLine->AppendSwitchWithValue("ipc-fd", std::to_string(fIpc->getFdRead()));
 
     // Set some Chromium options
     commandLine->AppendSwitch("disable-extensions");
@@ -278,12 +243,14 @@ void CefHelper::realize(const msg_win_cfg_t *config)
 
 CefHelperSubprocess::CefHelperSubprocess()
     : fIpc(0)
-{}
+{
+    // TODO - create IpcInterface using CEF arguments
+}
 
 CefHelperSubprocess::~CefHelperSubprocess()
 {
     if (fIpc != 0) {
-        ipc_destroy(fIpc);
+        delete fIpc;
     }
 }
 

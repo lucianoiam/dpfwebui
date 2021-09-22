@@ -38,18 +38,29 @@ IpcInterface::~IpcInterface()
     }
 }
 
+int IpcInterface::getFdRead() const
+{
+    return ipc_get_config(fIpc)->fd_r;
+}
+
+int IpcInterface::getFdWrite() const
+{
+    return ipc_get_config(fIpc)->fd_w;
+}
+
 int IpcInterface::read(tlv_t* packet) const
 {
-    struct timeval tv;  
     fd_set rfds;
-    int fd = ipc_get_config(fIpc)->fd_r;
+    struct timeval tv;  
+    int fd, rc;
 
+    fd = getFdRead();
     FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
     tv.tv_sec = 0;
     tv.tv_usec = fTimeout;
 
-    int rc = select(fd + 1, &rfds, 0, 0, &tv);
+    rc = select(fd + 1, &rfds, 0, 0, &tv);
 
     if (rc == -1) {
         HIPHOP_LOG_STDERR_ERRNO("Failed select() on IPC channel");

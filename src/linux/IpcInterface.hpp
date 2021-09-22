@@ -33,6 +33,9 @@ public:
     IpcInterface(int fdr, int fdw, long int readTimeoutUsec);
     virtual ~IpcInterface();
 
+    int getFdRead() const;
+    int getFdWrite() const;
+
     int read(tlv_t* packet) const;
 
     int write(msg_opcode_t opcode) const;
