@@ -68,7 +68,7 @@ CefHelper::CefHelper(int fdr, int fdw)
     , fDisplay(0)
     , fContainer(0)
 {
-    fIpc = new IpcWrapper(fdr, fdw, 5);
+    fIpc = new IpcWrapper(fdr, fdw);
 }
 
 CefHelper::~CefHelper()
@@ -123,8 +123,8 @@ int CefHelper::run()
         // https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage
         CefDoMessageLoopWork();
 
-        // Configured to timeout after 5ms when no data is available
-        rc = fIpc->read(&packet);
+        // Use a non-zero timeout for throotling down CefDoMessageLoopWork()
+        rc = fIpc->read(&packet, 5/* ms */);
 
         if (rc == 0) {
             dispatch(packet);

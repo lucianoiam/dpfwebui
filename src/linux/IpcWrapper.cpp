@@ -24,8 +24,7 @@
 
 USE_NAMESPACE_DISTRHO
 
-IpcWrapper::IpcWrapper(int fdr, int fdw, int readTimeoutMs)
-    : fTimeout(readTimeoutMs)
+IpcWrapper::IpcWrapper(int fdr, int fdw)
 {
     ipc_conf_t conf;
     conf.fd_r = fdr;
@@ -50,8 +49,12 @@ int IpcWrapper::getFdWrite() const
     return ipc_get_config(fIpc)->fd_w;
 }
 
-int IpcWrapper::read(tlv_t* packet) const
+int IpcWrapper::read(tlv_t* packet, int timeoutMs) const
 {
+    if (timeoutMs == -1) {
+        return waitAndRead(packet);
+    }
+
     fd_set rfds;
     struct timeval tv;  
     int fd, rc;
@@ -60,7 +63,7 @@ int IpcWrapper::read(tlv_t* packet) const
     FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
     tv.tv_sec = 0;
-    tv.tv_usec = 1000L * fTimeout;
+    tv.tv_usec = 1000L * timeoutMs;
 
     rc = select(fd + 1, &rfds, 0, 0, &tv);
 
@@ -73,6 +76,15 @@ int IpcWrapper::read(tlv_t* packet) const
         return -1; // no fd ready
     }
 
+    if (waitAndRead(packet) == -1) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int IpcWrapper::waitAndRead(tlv_t* packet) const
+{
     if (ipc_read(fIpc, packet) == -1) {
         HIPHOP_LOG_STDERR_ERRNO("Could not read from IPC channel");
         return -1;

@@ -30,20 +30,21 @@ START_NAMESPACE_DISTRHO
 class IpcWrapper
 {
 public:
-    IpcWrapper(int fdr, int fdw, int readTimeoutMs);
+    IpcWrapper(int fdr, int fdw);
     virtual ~IpcWrapper();
 
     int getFdRead() const;
     int getFdWrite() const;
 
-    int read(tlv_t* packet) const;
+    int read(tlv_t* packet, int timeoutMs = 0) const;
 
     int write(msg_opcode_t opcode) const;
     int write(msg_opcode_t opcode, String& str) const;
     int write(msg_opcode_t opcode, const void* payload, int payloadSize) const; 
 
 private:
-    int    fTimeout;
+    int waitAndRead(tlv_t* packet) const;
+
     ipc_t* fIpc;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(IpcWrapper)
