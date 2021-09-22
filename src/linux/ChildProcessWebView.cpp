@@ -102,7 +102,6 @@ ChildProcessWebView::~ChildProcessWebView()
 #ifdef LXHELPER_SIGTERM
         kill(fPid, SIGTERM);
 #endif
-
         int stat;
         waitpid(fPid, &stat, 0);
 

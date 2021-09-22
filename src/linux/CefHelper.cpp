@@ -200,14 +200,10 @@ void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine
 void CefHelper::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                           int httpStatusCode)
 {
-    if (!fRunMainLoop) {
-        return;
-    }
-
     XMapWindow(fDisplay, fContainer);
     XSync(fDisplay, False);
 
-    // TODO
+    fIpc->write(OP_HANDLE_LOAD_FINISHED);
 }
 
 void CefHelper::realize(const msg_win_cfg_t *config)
