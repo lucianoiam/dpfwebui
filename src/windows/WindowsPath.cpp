@@ -52,6 +52,11 @@ String path::getLibraryPath()
     return String(path) + "\\" + kDefaultLibrarySubdirectory;
 }
 
+String path::getCachesPath()
+{
+    // TODO
+}
+
 String path::getTemporaryPath()
 {
     // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPF_Temp

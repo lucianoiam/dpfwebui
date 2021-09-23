@@ -29,6 +29,7 @@ namespace path {
 
     String getBinaryPath();
     String getLibraryPath();
+    String getCachesPath();
     String getTemporaryPath();
 
     const String kDefaultLibrarySubdirectory = String(XSTR(BIN_BASENAME) "-lib");

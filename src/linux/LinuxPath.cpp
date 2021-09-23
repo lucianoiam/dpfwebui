@@ -71,6 +71,11 @@ String path::getBinaryPath()
     }
 }
 
+String path::getCachesPath()
+{
+    // TODO
+}
+
 String path::getLibraryPath()
 {
     char path[PATH_MAX];

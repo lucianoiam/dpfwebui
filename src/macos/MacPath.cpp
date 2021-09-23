@@ -59,6 +59,11 @@ String path::getLibraryPath()
     return String(dirname(path)) + "/" + kDefaultLibrarySubdirectory;
 }
 
+String path::getCachesPath()
+{
+    // TODO
+}
+
 String path::getTemporaryPath()
 {
     return String(); // not implemented
