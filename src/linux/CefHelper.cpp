@@ -56,7 +56,9 @@ CefHelper::CefHelper()
     , fRunMainLoop(false)
     , fDisplay(0)
     , fContainer(0)
-{}
+{
+    fInjectedScripts = CefListValue::Create();
+}
 
 CefHelper::~CefHelper()
 {
@@ -167,9 +169,11 @@ void CefHelper::dispatch(const tlv_t& packet)
             break;
         }
 
-        case OP_INJECT_SCRIPT:
-            fInjectedScript += static_cast<const char*>(packet.v);
+        case OP_INJECT_SCRIPT: {
+            const char* js = static_cast<const char*>(packet.v);
+            fInjectedScripts->SetString(fInjectedScripts->GetSize(), js);
             break;
+        }
 
         case OP_SET_SIZE: {
             const msg_win_size_t* size = static_cast<const msg_win_size_t*>(packet.v);
@@ -182,7 +186,7 @@ void CefHelper::dispatch(const tlv_t& packet)
 
         case OP_SET_KEYBOARD_FOCUS:
         
-            // TODO
+            // TODO - grab or ungrab keyboard lock
 
             break;
 
@@ -193,6 +197,17 @@ void CefHelper::dispatch(const tlv_t& packet)
         default:
             break;
     }
+}
+
+bool CefHelper::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                         CefRefPtr<CefFrame> frame,
+                                         CefProcessId sourceProcess,
+                                         CefRefPtr<CefProcessMessage> message)
+{
+
+    // TODO - Convert JS object received from renderer to IPC message and send to host
+
+    return false;
 }
 
 void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine)
@@ -240,11 +255,15 @@ void CefHelper::realize(const msg_win_cfg_t* config)
 
     // Injecting a script means queuing it to run right before document starts
     // loading to ensure they run before any user script. The V8 context must
-    // be already initialized in order to run scripts. Send the script to
-    // renderer because V8 ready event (OnContextCreated) only fires in there.
-    fInjectedScript += JS_POST_MESSAGE_SHIM;
-    CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("inject_script");
-    message->GetArgumentList()->SetString(0, fInjectedScript);
+    // be already initialized in order to run scripts. V8 init callback fires in
+    // the renderer process. Send the scripts to the renderer process to have
+    // them called from there. Sending a context init event from the renderer
+    // to the browser process to run scripts from the browser process does not
+    // guarantee injected scripts will run before user scripts due to timing.
+
+    fInjectedScripts->SetString(fInjectedScripts->GetSize(), JS_POST_MESSAGE_SHIM);
+    CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("fInjectedScripts");
+    message->GetArgumentList()->SetList(0, fInjectedScripts);
     fBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
 
     // Reduce artifacts when resizing
@@ -252,13 +271,18 @@ void CefHelper::realize(const msg_win_cfg_t* config)
     XSetWindowBackground(fDisplay, w, config->color);
 }
 
+CefHelperSubprocess::CefHelperSubprocess()
+{
+    fInjectedScripts = CefListValue::Create();
+}
+
 bool CefHelperSubprocess::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
                                                    CefRefPtr<CefFrame> frame,
                                                    CefProcessId sourceProcess,
                                                    CefRefPtr<CefProcessMessage> message)
 {
-    if ((sourceProcess == PID_BROWSER) && (message->GetName() == "inject_script")) {
-        fInjectedScript = message->GetArgumentList()->GetString(0);
+    if ((sourceProcess == PID_BROWSER) && (message->GetName() == "fInjectedScripts")) {
+        fInjectedScripts = message->GetArgumentList()->GetList(0)->Copy();
         return true;
     }
 
@@ -273,8 +297,10 @@ void CefHelperSubprocess::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRef
     window->SetValue("hostPostMessage", CefV8Value::CreateFunction("hostPostMessage", this),
                      V8_PROPERTY_ATTRIBUTE_NONE);
 
-    // Then run queued injected script
-    frame->ExecuteJavaScript(fInjectedScript, frame->GetURL(), 0);
+    // Then run queued injected scripts
+    for (int i = 0; i < fInjectedScripts->GetSize(); ++i) {
+        frame->ExecuteJavaScript(fInjectedScripts->GetString(i), frame->GetURL(), 0);
+    }
 }
 
 bool CefHelperSubprocess::Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments,
@@ -287,9 +313,9 @@ bool CefHelperSubprocess::Execute(const CefString& name, CefRefPtr<CefV8Value> o
 
     CefRefPtr<CefV8Value> args = arguments[0];
 
-    printf("hostPostMessage() called with %d arguments\n", args->GetArrayLength());
+    // TODO - send object to browser process
 
-    // TODO
+    printf("hostPostMessage() called with %d arguments\n", args->GetArrayLength());
 
     return true;
 }

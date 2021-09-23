@@ -49,7 +49,12 @@ public:
     {
         return this;
     }
-  
+    
+    virtual bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                          CefRefPtr<CefFrame> frame,
+                                          CefProcessId sourceProcess,
+                                          CefRefPtr<CefProcessMessage> message) override;
+
     // CefBrowserProcessHandler
     virtual void OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine) override;
 
@@ -67,8 +72,8 @@ private:
     ::Display*  fDisplay;
     ::Window    fContainer;
     
-    CefRefPtr<CefBrowser> fBrowser;
-    std::string           fInjectedScript;
+    CefRefPtr<CefBrowser>   fBrowser;
+    CefRefPtr<CefListValue> fInjectedScripts;
 
     // Include the CEF default reference counting implementation
     IMPLEMENT_REFCOUNTING(CefHelper);
@@ -78,7 +83,7 @@ class CefHelperSubprocess : public CefApp, public CefClient,
                             public CefRenderProcessHandler, public CefV8Handler
 {
 public:
-    CefHelperSubprocess() {}
+    CefHelperSubprocess();
     virtual ~CefHelperSubprocess() {}
 
     virtual CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() override
@@ -101,7 +106,7 @@ public:
                          CefRefPtr<CefV8Value>& retval, CefString& exception) override;
 
 private:
-    CefString fInjectedScript;
+    CefRefPtr<CefListValue> fInjectedScripts;
 
     IMPLEMENT_REFCOUNTING(CefHelperSubprocess);
 };

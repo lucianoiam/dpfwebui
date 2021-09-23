@@ -168,7 +168,7 @@ void EdgeWebView::runScript(String& source)
 
 void EdgeWebView::injectScript(String& source)
 {
-    fInjectedScript += source;
+    fInjectedScripts.push_back(source);
 
     if (fController != 0) {
         ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
@@ -237,8 +237,8 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     ICoreWebView2Controller2_put_DefaultBackgroundColor(
         reinterpret_cast<ICoreWebView2Controller2 *>(fController), color);
 
-    if (!fInjectedScript.isEmpty()) {
-        ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(fInjectedScript), 0);
+    for (std::vector<String>::iterator it = fInjectedScripts.begin(); it != fInjectedScripts.end(); ++it) {
+        ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(*it), 0);
     }
 
     if (!fUrl.isEmpty()) {
