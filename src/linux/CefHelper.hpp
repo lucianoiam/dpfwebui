@@ -106,6 +106,7 @@ public:
                          CefRefPtr<CefV8Value>& retval, CefString& exception) override;
 
 private:
+    CefRefPtr<CefBrowser>   fBrowser;
     CefRefPtr<CefListValue> fInjectedScripts;
 
     IMPLEMENT_REFCOUNTING(CefSubprocess);

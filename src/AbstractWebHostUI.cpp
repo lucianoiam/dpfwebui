@@ -52,7 +52,7 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     // as expected on all platform/host combinations. This is specifically
     // needed for REAPER on Linux. Queuing adds a slight latency but that is
     // preferrable to giving special treatment to a certain host on a certain
-    // platform. Special cases based on the host type are not supported, in fact
+    // platform. Special cases based on the host type are discouraged, in fact
     // DPF does not have a method to query the host type.
 
     fHandler["setWidth"] = std::make_pair(1, [this](const JsValueVector& args) {

@@ -204,8 +204,13 @@ bool CefHelper::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
                                          CefProcessId sourceProcess,
                                          CefRefPtr<CefProcessMessage> message)
 {
-
-    // TODO - Convert JS object received from renderer to IPC message and send to host
+    if ((sourceProcess == PID_RENDERER) && (message->GetName() == "ScriptMessage")) {
+        CefRefPtr<CefBinaryValue> val = message->GetArgumentList()->GetBinary(0);
+        char payload[val->GetSize()];
+        val->GetData(payload, sizeof(payload), 0);
+        fIpc->write(OP_HANDLE_SCRIPT_MESSAGE, payload, sizeof(payload));
+        return true;
+    }
 
     return false;
 }
@@ -262,7 +267,7 @@ void CefHelper::realize(const msg_win_cfg_t* config)
     // guarantee injected scripts will run before user scripts due to timing.
 
     fInjectedScripts->SetString(fInjectedScripts->GetSize(), JS_POST_MESSAGE_SHIM);
-    CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("fInjectedScripts");
+    CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("InjectScripts");
     message->GetArgumentList()->SetList(0, fInjectedScripts);
     fBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
 
@@ -281,7 +286,7 @@ bool CefSubprocess::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
                                                    CefProcessId sourceProcess,
                                                    CefRefPtr<CefProcessMessage> message)
 {
-    if ((sourceProcess == PID_BROWSER) && (message->GetName() == "fInjectedScripts")) {
+    if ((sourceProcess == PID_BROWSER) && (message->GetName() == "InjectScripts")) {
         fInjectedScripts = message->GetArgumentList()->GetList(0)->Copy();
         return true;
     }
@@ -292,6 +297,8 @@ bool CefSubprocess::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
 void CefSubprocess::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                                            CefRefPtr<CefV8Context> context)
 {
+    fBrowser = browser;
+
     // V8 context is ready, first define the window.hostPostMessage function.
     CefRefPtr<CefV8Value> window = context->GetGlobal();
     window->SetValue("hostPostMessage", CefV8Value::CreateFunction("hostPostMessage", this),
@@ -311,11 +318,48 @@ bool CefSubprocess::Execute(const CefString& name, CefRefPtr<CefV8Value> object,
         return false;
     }
 
-    CefRefPtr<CefV8Value> args = arguments[0];
+    char *payload = NULL;
+    int offset = 0;
 
-    // TODO - send object to browser process
+    for (int i = 0; i < arguments[0]->GetArrayLength(); i++) {
+        CefRefPtr<CefV8Value> arg = arguments[0]->GetValue(i);
 
-    printf("hostPostMessage() called with %d arguments\n", args->GetArrayLength());
+        if (arg->IsBool()) {
+            payload = static_cast<char *>(realloc(payload, offset + 1));
+            int b = arg->GetBoolValue() ? ARG_TYPE_TRUE : ARG_TYPE_FALSE;
+            *(payload+offset) = static_cast<char>(b);
+            offset += 1;
+
+        } else if (arg->IsDouble()) {
+            payload = static_cast<char *>(realloc(payload, offset + 1 + sizeof(double)));
+            *(payload+offset) = static_cast<char>(ARG_TYPE_DOUBLE);
+            offset += 1;
+            *reinterpret_cast<double *>(payload+offset) = arg->GetDoubleValue();
+            offset += sizeof(double);
+
+        } else if (arg->IsString()) {
+            std::string s = arg->GetStringValue().ToString();
+            int slen = s.length() + 1;
+            payload = static_cast<char *>(realloc(payload, offset + 1 + slen));
+            *(payload+offset) = static_cast<char>(ARG_TYPE_STRING);
+            offset += 1;
+            strcpy(payload+offset, s.c_str());
+            offset += slen;
+
+        } else {
+            payload = static_cast<char *>(realloc(payload, offset + 1));
+            *(payload+offset) = static_cast<char>(ARG_TYPE_NULL);
+            offset += 1;
+        }
+    }
+
+    CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("ScriptMessage");
+    message->GetArgumentList()->SetBinary(0, CefBinaryValue::Create(payload, offset));
+    fBrowser->GetMainFrame()->SendProcessMessage(PID_BROWSER, message);
+
+    if (payload) {
+        free(payload);
+    }
 
     return true;
 }

@@ -4,3 +4,4 @@ GENERAL
 - Wasm: profile plugin for memory leaks
 - Allow calling Window::openFileBrowser() from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs
+- Native JavaScript console support: WebKitGTK, CEF, WKWebView, EdgeWebView2
