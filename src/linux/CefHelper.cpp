@@ -33,7 +33,7 @@ static int XIOErrorHandlerImpl(Display* display);
 int main(int argc, char* argv[])
 {
     CefMainArgs args(argc, argv);
-    CefRefPtr<CefHelperSubprocess> proc = new CefHelperSubprocess();
+    CefRefPtr<CefSubprocess> proc = new CefSubprocess();
 
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
     // that share the same executable. This function checks the command-line and,
@@ -271,12 +271,12 @@ void CefHelper::realize(const msg_win_cfg_t* config)
     XSetWindowBackground(fDisplay, w, config->color);
 }
 
-CefHelperSubprocess::CefHelperSubprocess()
+CefSubprocess::CefSubprocess()
 {
     fInjectedScripts = CefListValue::Create();
 }
 
-bool CefHelperSubprocess::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+bool CefSubprocess::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
                                                    CefRefPtr<CefFrame> frame,
                                                    CefProcessId sourceProcess,
                                                    CefRefPtr<CefProcessMessage> message)
@@ -289,7 +289,7 @@ bool CefHelperSubprocess::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser
     return false;
 }
 
-void CefHelperSubprocess::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+void CefSubprocess::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                                            CefRefPtr<CefV8Context> context)
 {
     // V8 context is ready, first define the window.hostPostMessage function.
@@ -303,7 +303,7 @@ void CefHelperSubprocess::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRef
     }
 }
 
-bool CefHelperSubprocess::Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments,
+bool CefSubprocess::Execute(const CefString& name, CefRefPtr<CefV8Value> object, const CefV8ValueList& arguments,
                                   CefRefPtr<CefV8Value>& retval, CefString& exception)
 {
     if ((name != "hostPostMessage") || (arguments.size() != 1) || (!arguments[0]->IsArray())) {

@@ -79,12 +79,12 @@ private:
     IMPLEMENT_REFCOUNTING(CefHelper);
 };
 
-class CefHelperSubprocess : public CefApp, public CefClient,
-                            public CefRenderProcessHandler, public CefV8Handler
+class CefSubprocess : public CefApp, public CefClient,
+                      public CefRenderProcessHandler, public CefV8Handler
 {
 public:
-    CefHelperSubprocess();
-    virtual ~CefHelperSubprocess() {}
+    CefSubprocess();
+    virtual ~CefSubprocess() {}
 
     virtual CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() override
     {
@@ -108,7 +108,7 @@ public:
 private:
     CefRefPtr<CefListValue> fInjectedScripts;
 
-    IMPLEMENT_REFCOUNTING(CefHelperSubprocess);
+    IMPLEMENT_REFCOUNTING(CefSubprocess);
 };
 
 #endif // CEF_HELPER_HPP
