@@ -44,23 +44,36 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
         webViewPostMessage({"UI", "getHeight", static_cast<double>(getHeight())});
     });
 
-    fHandler["setWidth"] = std::make_pair(1, [this](const JsValueVector& args) {
-        setWidth(static_cast<uint>(args[0].getDouble()));
-    });
-
-    fHandler["setHeight"] = std::make_pair(1, [this](const JsValueVector& args) {
-        setHeight(static_cast<uint>(args[0].getDouble()));
-    });
-
     fHandler["isResizable"] = std::make_pair(0, [this](const JsValueVector&) {
         webViewPostMessage({"UI", "isResizable", isResizable()});
     });
 
+    // Some calls need to be run on next uiIdle() iteration to ensure they work
+    // as expected on all platform/host combinations. This is specifically
+    // needed for REAPER on Linux. Queuing adds a slight latency but that is
+    // preferrable to giving special treatment to a certain host on a certain
+    // platform. Special cases based on the host type are not supported, in fact
+    // DPF does not have a method to query the host type.
+
+    fHandler["setWidth"] = std::make_pair(1, [this](const JsValueVector& args) {
+        queue([this, args]() {
+            setWidth(static_cast<uint>(args[0].getDouble()));
+        });
+    });
+
+    fHandler["setHeight"] = std::make_pair(1, [this](const JsValueVector& args) {
+        queue([this, args]() {
+            setHeight(static_cast<uint>(args[0].getDouble()));
+        });
+    });
+
     fHandler["setSize"] = std::make_pair(2, [this](const JsValueVector& args) {
-        setSize(
-            static_cast<uint>(args[0].getDouble()), // width
-            static_cast<uint>(args[1].getDouble())  // height
-        );
+        queue([this, args]() {
+            setSize(
+                static_cast<uint>(args[0].getDouble()), // width
+                static_cast<uint>(args[1].getDouble())  // height
+            );
+        });
     });
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
@@ -285,10 +298,5 @@ void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& 
         return;
     }
 
-    // Always call UI methods from uiIdle() instead of foreign webview threads.
-    // This is particularly needed on Linux for some methods like getWidth().
-
-    queue([handler, handlerArgs]() {
-        handler.second(handlerArgs);
-    });
+    handler.second(handlerArgs);
 }
