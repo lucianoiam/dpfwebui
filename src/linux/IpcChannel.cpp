@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "IpcWrapper.hpp"
+#include "IpcChannel.hpp"
 
 #include <sys/select.h>
 
@@ -24,7 +24,7 @@
 
 USE_NAMESPACE_DISTRHO
 
-IpcWrapper::IpcWrapper(int fdr, int fdw)
+IpcChannel::IpcChannel(int fdr, int fdw)
 {
     ipc_conf_t conf;
     conf.fd_r = fdr;
@@ -32,24 +32,24 @@ IpcWrapper::IpcWrapper(int fdr, int fdw)
     fIpc = ipc_init(&conf); 
 }
 
-IpcWrapper::~IpcWrapper()
+IpcChannel::~IpcChannel()
 {
     if (fIpc != 0) {
         ipc_destroy(fIpc);
     }
 }
 
-int IpcWrapper::getFdRead() const
+int IpcChannel::getFdRead() const
 {
     return ipc_get_config(fIpc)->fd_r;
 }
 
-int IpcWrapper::getFdWrite() const
+int IpcChannel::getFdWrite() const
 {
     return ipc_get_config(fIpc)->fd_w;
 }
 
-int IpcWrapper::read(tlv_t* packet, int timeoutMs) const
+int IpcChannel::read(tlv_t* packet, int timeoutMs) const
 {
     if (timeoutMs == -1) {
         return waitAndRead(packet);
@@ -83,7 +83,7 @@ int IpcWrapper::read(tlv_t* packet, int timeoutMs) const
     return 0;
 }
 
-int IpcWrapper::waitAndRead(tlv_t* packet) const
+int IpcChannel::waitAndRead(tlv_t* packet) const
 {
     if (ipc_read(fIpc, packet) == -1) {
         HIPHOP_LOG_STDERR_ERRNO("Could not read from IPC channel");
@@ -93,18 +93,18 @@ int IpcWrapper::waitAndRead(tlv_t* packet) const
     return 0;
 }
 
-int IpcWrapper::write(msg_opcode_t opcode) const
+int IpcChannel::write(msg_opcode_t opcode) const
 {
     return write(opcode, 0, 0);
 }
 
-int IpcWrapper::write(msg_opcode_t opcode, String& str) const
+int IpcChannel::write(msg_opcode_t opcode, String& str) const
 {
     const char *cStr = static_cast<const char *>(str);
     return write(opcode, cStr, strlen(cStr) + 1);
 }
 
-int IpcWrapper::write(msg_opcode_t opcode, const void* payload, int payloadSize) const
+int IpcChannel::write(msg_opcode_t opcode, const void* payload, int payloadSize) const
 {
     tlv_t packet;
 

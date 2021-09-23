@@ -44,32 +44,19 @@ int main(int argc, char* argv[])
         return code;
     }
 
-    int fdr, fdw;
-
-    if (argc < 3) {
-        HIPHOP_LOG_STDERR("Invalid argument count");
-        return -1;
-    }
-
-    if ((sscanf(argv[1], "%d", &fdr) == 0) || (sscanf(argv[2], "%d", &fdw) == 0)) {
-        HIPHOP_LOG_STDERR("Invalid file descriptor");
-        return -1;
-    }
-
-    CefHelper helper(fdr, fdw);
-    code = helper.run();
+    // Run main CEF browser process
+    CefHelper helper;
+    code = helper.run(args);
 
     return code;
 }
 
-CefHelper::CefHelper(int fdr, int fdw)
+CefHelper::CefHelper()
     : fIpc(0)
     , fRunMainLoop(false)
     , fDisplay(0)
     , fContainer(0)
-{
-    fIpc = new IpcWrapper(fdr, fdw);
-}
+{}
 
 CefHelper::~CefHelper()
 {
@@ -86,8 +73,24 @@ CefHelper::~CefHelper()
     }
 }
 
-int CefHelper::run()
+int CefHelper::run(const CefMainArgs& args)
 {
+    // Parse command line arguments and create IPC channel
+    if (args.argc < 3) {
+        HIPHOP_LOG_STDERR("Invalid argument count");
+        return -1;
+    }
+
+    int fdr = std::atoi(args.argv[1]);
+    int fdw = std::atoi(args.argv[2]);
+
+    if ((fdr == 0) || (fdw == 0)) {
+        HIPHOP_LOG_STDERR("Invalid file descriptor");
+        return -1;
+    }
+
+    fIpc = new IpcChannel(fdr, fdw);
+
     // Install xlib error handlers so that the application won't be terminated
     // on non-fatal errors
     XSetErrorHandler(XErrorHandlerImpl);
@@ -105,9 +108,21 @@ int CefHelper::run()
     settings.chrome_runtime = false;
 
     // Initialize CEF for the browser process
-    CefMainArgs emptyArgs(0, nullptr);
-    CefInitialize(emptyArgs, settings, this, nullptr);
+    CefInitialize(args, settings, this, nullptr);
 
+    runMainLoop();
+
+    // fBrowser must be deleted before calling CefShutdown() otherwise program
+    // can hang or crash
+    fBrowser = nullptr;
+
+    CefShutdown();
+
+    return 0;
+}
+
+void CefHelper::runMainLoop()
+{
     tlv_t packet;
     int rc;
 
@@ -130,14 +145,6 @@ int CefHelper::run()
             dispatch(packet);
         }
     }
-
-    // fBrowser must be deleted before calling CefShutdown() otherwise program
-    // can hang or crash
-    fBrowser = nullptr;
-
-    CefShutdown();
-
-    return 0;
 }
 
 void CefHelper::dispatch(const tlv_t& packet)
@@ -174,7 +181,9 @@ void CefHelper::dispatch(const tlv_t& packet)
         }
 
         case OP_SET_KEYBOARD_FOCUS:
+        
             // TODO
+
             break;
 
         case OP_TERMINATE:
@@ -188,9 +197,6 @@ void CefHelper::dispatch(const tlv_t& packet)
 
 void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine)
 {
-    // Renderer process owns the JavaScript callback and needs writing back to host
-    commandLine->AppendSwitchWithValue("ipc-fd", std::to_string(fIpc->getFdRead()));
-
     // Set some Chromium options
     commandLine->AppendSwitch("disable-extensions");
 }
@@ -246,19 +252,6 @@ void CefHelper::realize(const msg_win_cfg_t* config)
     XSetWindowBackground(fDisplay, w, config->color);
 }
 
-CefHelperSubprocess::CefHelperSubprocess()
-    : fIpc(0)
-{
-    // TODO - create IpcWrapper using CEF arguments
-}
-
-CefHelperSubprocess::~CefHelperSubprocess()
-{
-    if (fIpc != 0) {
-        delete fIpc;
-    }
-}
-
 bool CefHelperSubprocess::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
                                                    CefRefPtr<CefFrame> frame,
                                                    CefProcessId sourceProcess,
@@ -294,7 +287,9 @@ bool CefHelperSubprocess::Execute(const CefString& name, CefRefPtr<CefV8Value> o
 
     CefRefPtr<CefV8Value> args = arguments[0];
 
-    printf("FIXME : hostPostMessage() called with %d arguments\n", args->GetArrayLength());
+    printf("hostPostMessage() called with %d arguments\n", args->GetArrayLength());
+
+    // TODO
 
     return true;
 }

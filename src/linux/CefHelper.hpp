@@ -27,16 +27,16 @@
 #include "include/cef_browser.h"
 #include "include/cef_client.h"
 
-#include "IpcWrapper.hpp"
+#include "IpcChannel.hpp"
 
 class CefHelper : public CefApp, public CefClient, 
                   public CefBrowserProcessHandler, public CefLoadHandler
 {
 public:
-    CefHelper(int fdr, int fdw);
+    CefHelper();
     virtual ~CefHelper();
 
-    int run();
+    int run(const CefMainArgs& args);
 
     // CefClient
 
@@ -58,10 +58,11 @@ public:
                            int httpStatusCode) override;
 
 private:
+    void runMainLoop();
     void dispatch(const tlv_t& packet);
     void realize(const msg_win_cfg_t* config);
 
-    IpcWrapper* fIpc;
+    IpcChannel* fIpc;
     bool        fRunMainLoop;
     ::Display*  fDisplay;
     ::Window    fContainer;
@@ -77,8 +78,8 @@ class CefHelperSubprocess : public CefApp, public CefClient,
                             public CefRenderProcessHandler, public CefV8Handler
 {
 public:
-    CefHelperSubprocess();
-    virtual ~CefHelperSubprocess();
+    CefHelperSubprocess() {}
+    virtual ~CefHelperSubprocess() {}
 
     virtual CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() override
     {
@@ -100,8 +101,7 @@ public:
                          CefRefPtr<CefV8Value>& retval, CefString& exception) override;
 
 private:
-    IpcWrapper* fIpc;
-    CefString   fInjectedScript;
+    CefString fInjectedScript;
 
     IMPLEMENT_REFCOUNTING(CefHelperSubprocess);
 };
