@@ -227,13 +227,17 @@ $(BUILD_DIR)/libcef_dll_wrapper/%.o: $(CEF_PATH)/libcef_dll/%.cc
 # ------------------------------------------------------------------------------
 # Build helper binary
 
-LXHELPER_SRC += CefHelper.cpp \
-				IpcChannel.cpp \
-				ipc.c
+LXHELPER_SRC += linux/CefHelper.cpp \
+				linux/IpcChannel.cpp \
+				linux/ipc.c \
+				linux/LinuxPath.cpp \
+				Path.cpp
 
 LXHELPER_OBJ = $(LXHELPER_SRC:%=$(LXHELPER_BUILD_DIR)/%.o)
 
-LXHELPER_LDFLAGS = -lcef_dll_wrapper -L$(BUILD_DIR) -lcef -L$(CEF_BIN_PATH) \
+LXHELPER_CFLAGS = -I$(HIPHOP_SRC_PATH) -I$(DPF_PATH) -I$(CEF_PATH) -DPLUGIN_BIN_BASENAME=$(NAME)
+
+LXHELPER_LDFLAGS = -ldl -lcef_dll_wrapper -L$(BUILD_DIR) -lcef -L$(CEF_BIN_PATH) \
 				   -lX11 -O3 -DNDEBUG -rdynamic -fPIC -pthread -Wl,--disable-new-dtags \
 				   -Wl,--fatal-warnings -Wl,-rpath,. -Wl,-z,noexecstack \
 				   -Wl,-z,now -Wl,-z,relro -m64 -Wl,-O1 -Wl,--as-needed \
@@ -245,15 +249,15 @@ $(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME): $(LXHELPER_OBJ)
 	@echo "Compiling $<"
 	@$(CXX) $^ -o $@ $(LXHELPER_LDFLAGS)
 
-$(LXHELPER_BUILD_DIR)/%.cpp.o: $(HIPHOP_SRC_PATH)/linux/%.cpp
+$(LXHELPER_BUILD_DIR)/%.cpp.o: $(HIPHOP_SRC_PATH)/%.cpp
 	@mkdir -p $(dir $@)
 	@echo "Compiling $<"
-	@$(CXX) -I$(HIPHOP_SRC_PATH) -I$(DPF_PATH) -I$(CEF_PATH) -c $< -o $@
+	@$(CXX) $(LXHELPER_CFLAGS) -c $< -o $@
 
-$(LXHELPER_BUILD_DIR)/%.c.o: $(HIPHOP_SRC_PATH)/linux/%.c
+$(LXHELPER_BUILD_DIR)/%.c.o: $(HIPHOP_SRC_PATH)/%.c
 	@mkdir -p $(dir $@)
 	@echo "Compiling $<"
-	@$(CC) -I$(HIPHOP_SRC_PATH) -c $< -o $@
+	@$(CC) $(LXHELPER_CFLAGS) -c $< -o $@
 
 # ------------------------------------------------------------------------------
 # List of helper binaries and resource files

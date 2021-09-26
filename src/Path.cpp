@@ -16,19 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef LINUX_PATH_HPP
-#define LINUX_PATH_HPP
+#include "Path.hpp"
 
-#include "src/DistrhoDefines.h"
+USE_NAMESPACE_DISTRHO
 
-START_NAMESPACE_DISTRHO
+static bool sLoadedFromSharedLibrary;
 
-namespace path {
-
-    void setRunningStandalone(bool runningStandalone);
-
+bool path::isLoadedFromSharedLibrary()
+{
+    return sLoadedFromSharedLibrary;
 }
 
-END_NAMESPACE_DISTRHO
-
-#endif  // LINUX_PATH_HPP
+void path::setLoadedFromSharedLibrary(bool loadedFromSharedLibrary)
+{
+    sLoadedFromSharedLibrary = loadedFromSharedLibrary;
+}

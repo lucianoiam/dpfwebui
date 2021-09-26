@@ -22,6 +22,7 @@
 
 #include <X11/Xutil.h>
 
+#include "Path.hpp"
 #include "macro.h"
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.hostPostMessage(args);"
@@ -108,6 +109,7 @@ int CefHelper::run(const CefMainArgs& args)
     CefSettings settings;
     settings.log_severity = LOGSEVERITY_DISABLE;
     settings.chrome_runtime = false;
+    CefString(&settings.cache_path) = path::getCachesPath();
 
     // Initialize CEF for the browser process
     CefInitialize(args, settings, this, nullptr);
@@ -217,7 +219,7 @@ bool CefHelper::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
 
 void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine)
 {
-    // Set some Chromium options
+    // https://peter.sh/experiments/chromium-command-line-switches/
     commandLine->AppendSwitch("disable-extensions");
 }
 

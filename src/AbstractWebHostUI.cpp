@@ -32,6 +32,8 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     , fUiBlockQueued(false)
     , fInitMessageQueueFlushed(false)
 {
+    path::setLoadedFromSharedLibrary(!isStandalone());
+    
     // It is not possible to implement JS synchronous calls that return values
     // without resorting to dirty hacks. Use JS async functions instead, and
     // fulfill their promises here. See for example getWidth() and getHeight().

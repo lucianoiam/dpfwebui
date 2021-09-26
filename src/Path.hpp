@@ -19,7 +19,7 @@
 #ifndef PATH_HPP
 #define PATH_HPP
 
-#include "extra/String.hpp"
+#include "distrho/extra/String.hpp"
 
 #include "macro.h"
 
@@ -27,12 +27,15 @@ START_NAMESPACE_DISTRHO
 
 namespace path {
 
+    bool isLoadedFromSharedLibrary();
+    void setLoadedFromSharedLibrary(bool loadedFromSharedLibrary);
+
     String getBinaryPath();
     String getLibraryPath();
     String getCachesPath();
-    String getTemporaryPath();
 
-    const String kDefaultLibrarySubdirectory = String(XSTR(BIN_BASENAME) "-lib");
+    const String kDefaultLibrarySubdirectory = String(XSTR(PLUGIN_BIN_BASENAME) "-lib");
+    const String kDefaultCacheSubdirectory = String("cache");
 
 }
 

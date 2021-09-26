@@ -19,7 +19,6 @@
 #include <X11/Xlib.h>
 
 #include "LinuxWebHostUI.hpp"
-#include "LinuxPath.hpp"
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
@@ -27,8 +26,6 @@ USE_NAMESPACE_DISTRHO
 LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
 {
-    path::setRunningStandalone(isStandalone());
-    
     if (shouldCreateWebView()) {
         setWebView(new ChildProcessWebView());
     }

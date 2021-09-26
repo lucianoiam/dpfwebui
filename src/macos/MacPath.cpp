@@ -61,10 +61,5 @@ String path::getLibraryPath()
 
 String path::getCachesPath()
 {
-    // TODO
-}
-
-String path::getTemporaryPath()
-{
     return String(); // not implemented
 }

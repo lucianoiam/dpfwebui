@@ -116,7 +116,7 @@ EdgeWebView::EdgeWebView()
 #  pragma GCC diagnostic pop
 # endif
 
-    HRESULT result = pfnCreateCoreWebView2EnvironmentWithOptions(0, TO_LPCWSTR(path::getTemporaryPath()), 0, fHandler);
+    HRESULT result = pfnCreateCoreWebView2EnvironmentWithOptions(0, TO_LPCWSTR(path::getCachesPath()), 0, fHandler);
 
     if (FAILED(result)) {
         webViewLoaderErrorMessageBox(result);

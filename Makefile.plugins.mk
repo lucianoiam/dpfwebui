@@ -74,7 +74,8 @@ TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
 # Add optional support for AssemblyScript DSP
 
 ifeq ($(AS_DSP),true)
-HIPHOP_FILES_DSP  = WasmHostPlugin.cpp \
+HIPHOP_FILES_DSP  = Path.cpp \
+                    WasmHostPlugin.cpp \
                     WasmEngine.cpp
 ifeq ($(LINUX),true)
 HIPHOP_FILES_DSP += linux/LinuxPath.cpp
@@ -93,7 +94,8 @@ endif
 # Add optional support for web UI
 
 ifeq ($(WEB_UI),true)
-HIPHOP_FILES_UI  = AbstractWebHostUI.cpp \
+HIPHOP_FILES_UI  = Path.cpp \
+                   AbstractWebHostUI.cpp \
                    AbstractWebView.cpp \
                    JsValue.cpp
 ifeq ($(LINUX),true)
@@ -142,7 +144,7 @@ include $(DPF_PATH)/Makefile.plugins.mk
 # ------------------------------------------------------------------------------
 # Add shared build flags
 
-BASE_FLAGS += -I$(HIPHOP_SRC_PATH) -I$(DPF_PATH) -DBIN_BASENAME=$(NAME) \
+BASE_FLAGS += -I$(HIPHOP_SRC_PATH) -I$(DPF_PATH) -DPLUGIN_BIN_BASENAME=$(NAME) \
               -DHIPHOP_PROJECT_ID_HASH=$(shell echo $(NAME):$(HIPHOP_PROJECT_VERSION) \
               	| shasum -a 256 | head -c 8)
 ifeq ($(MACOS),true)

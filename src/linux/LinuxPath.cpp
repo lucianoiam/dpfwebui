@@ -16,26 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cstring>
-#include <dlfcn.h>
-#include <libgen.h>
-#include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
-#include <linux/limits.h>
+#include <cstring>
 
-#include "LinuxPath.hpp"
+#include <dlfcn.h>
+#include <libgen.h>
+#include <pwd.h>
+#include <unistd.h>
+#include <linux/limits.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include "Path.hpp"
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
-
-static bool sRunningStandalone;
-
-void path::setRunningStandalone(bool runningStandalone)
-{
-    sRunningStandalone = runningStandalone;
-}
 
 static String getSharedLibraryPath()
 {
@@ -64,16 +60,11 @@ static String getExecutablePath()
 
 String path::getBinaryPath()
 {
-    if (sRunningStandalone) {
-        return getExecutablePath();
-    } else {
+    if (isLoadedFromSharedLibrary()) {
         return getSharedLibraryPath();
+    } else {
+        return getExecutablePath();
     }
-}
-
-String path::getCachesPath()
-{
-    // TODO
 }
 
 String path::getLibraryPath()
@@ -83,7 +74,14 @@ String path::getLibraryPath()
     return String(dirname(path)) + "/" + kDefaultLibrarySubdirectory;
 }
 
-String path::getTemporaryPath()
+String path::getCachesPath()
 {
-    return String(); // not implemented
+    String path;
+    struct passwd *pw = getpwuid(getuid());
+    path += pw->pw_dir;
+    path += "/.config/" XSTR(PLUGIN_BIN_BASENAME);
+    mkdir(path, 0777);
+    path += "/" + kDefaultCacheSubdirectory;
+    mkdir(path, 0777);
+    return path;
 }

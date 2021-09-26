@@ -54,39 +54,37 @@ String path::getLibraryPath()
 
 String path::getCachesPath()
 {
-    // TODO
-}
-
-String path::getTemporaryPath()
-{
-    // Get temp path inside user files folder: C:\Users\< USERNAME >\AppData\Local\DPF_Temp
-    char tempPath[MAX_PATH];
-    HRESULT result = SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, 0, SHGFP_TYPE_DEFAULT, tempPath);
+    // Get path inside user files folder: C:\Users\< USERNAME >\AppData\Local\PluginName\cache
+    char dataPath[MAX_PATH];
+    HRESULT result = SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, 0, SHGFP_TYPE_DEFAULT, dataPath);
     
     if (FAILED(result)) {
         HIPHOP_LOG_STDERR_INT("Could not determine user app data folder", result);
         return String();
     }
 
-    // Append host executable name to the temp path otherwise WebView2 controller initialization
-    // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
-    // simultaneously due to permissions. C:\Users\< USERNAME >\AppData\Local\DPF_Temp\< HOST_BIN >
-    char exePath[MAX_PATH];
-    
-    if (GetModuleFileName(0, exePath, sizeof(exePath)) == 0) {
-        HIPHOP_LOG_STDERR_INT("Could not determine host executable path", GetLastError());
-        return String();
+    String path = dataPath + "\\" + XSTR(PLUGIN_BIN_BASENAME) + "\\" + kDefaultCacheSubdirectory;
+
+    if (isLoadedFromSharedLibrary()) {
+        // Append host executable name to the cache path otherwise WebView2 controller initialization
+        // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
+        // simultaneously due to permissions. C:\Users\< USERNAME >\AppData\Local\PluginName\cache\< HOST_BIN >
+        char exePath[MAX_PATH];
+        
+        if (GetModuleFileName(0, exePath, sizeof(exePath)) == 0) {
+            HIPHOP_LOG_STDERR_INT("Could not determine host executable path", GetLastError());
+            return String();
+        }
+
+        LPSTR exeFilename = PathFindFileName(exePath);
+
+        // The following call relies on a further Windows library called Pathcch, which is implemented
+        // in api-ms-win-core-path-l1-1-0.dll and requires Windows 8.
+        // Since the minimum plugin target is Windows 7 it is acceptable to use a deprecated function.
+        //PathCchRemoveExtension(exeFilename, sizeof(exeFilename));
+        PathRemoveExtension(exeFilename);
+        path += "\\" + exeFilename;
     }
 
-    LPSTR exeFilename = PathFindFileName(exePath);
-
-    // The following call relies on a further Windows library called Pathcch, which is implemented
-    // in api-ms-win-core-path-l1-1-0.dll and requires Windows 8.
-    // Since the minimum plugin target is Windows 7 it is acceptable to use a deprecated function.
-    //PathCchRemoveExtension(exeFilename, sizeof(exeFilename));
-    PathRemoveExtension(exeFilename);
-    strcat(tempPath, "\\DPF_Temp\\");
-    strcat(tempPath, exeFilename);
-
-    return String(tempPath);
+    return String(cachePath);
 }
