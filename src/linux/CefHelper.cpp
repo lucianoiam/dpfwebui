@@ -285,7 +285,7 @@ void CefHelper::realize(const msg_win_cfg_t* config)
     XSetWindowBackground(fDisplay, w, config->color);
 }
 
-// Returns same value as LinuxWebHostUI::getDisplayScaleFactor()
+// Match value returned by LinuxWebHostUI::getDisplayScaleFactor()
 float CefHelper::getZoomLevel()
 {
     XrmInitialize();

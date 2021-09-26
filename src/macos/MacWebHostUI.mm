@@ -41,17 +41,9 @@ MacWebHostUI::~MacWebHostUI()
 
 float MacWebHostUI::getDisplayScaleFactor(uintptr_t window)
 {
-    NSWindow *w;
-
-    // DGL::Window::getNativeWindowHandle() returns NSView* instead of NSWindow*
-
-    if ([(id)window isKindOfClass:[NSView class]]) {
-        w = [(NSView *)window window];
-    } else {
-        w = (NSWindow *)window;
-    }
-
-    return (w.screen ? w.screen : [NSScreen mainScreen]).backingScaleFactor;
+    NSWindow* nsw = [(id)window isKindOfClass:[NSView class]] ?
+        [(NSView *)window window] : (NSWindow *)window;
+    return (nsw.screen ? nsw.screen : [NSScreen mainScreen]).backingScaleFactor;
 }
 
 void MacWebHostUI::openSystemWebBrowser(String& url)
