@@ -32,35 +32,35 @@ USE_NAMESPACE_DISTRHO
 String path::getBinaryPath()
 {
     Dl_info dl_info;
+    String path;
 
     if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) != 0) {
-        return String(dl_info.dli_fname);
+        path = dl_info.dli_fname;
+    } else {
+        HIPHOP_LOG_STDERR(dlerror());
     }
 
-    HIPHOP_LOG_STDERR(dlerror());
-
-    return String();
+    return path;
 }
 
 String path::getLibraryPath()
 {
-    getCachesPath();
+    char binPath[PATH_MAX];
+    strcpy(binPath, getBinaryPath());
+    String path = String(dirname(binPath));
 
-    char path[PATH_MAX];
-    strcpy(path, getBinaryPath());
-    void *handle = dlopen(path, RTLD_NOLOAD);
+    void *handle = dlopen(binPath, RTLD_NOLOAD);
 
     if (handle != 0) {
         void *addr = dlsym(handle, "VSTPluginMain");
         dlclose(handle);
+
         if (addr != 0) {
-            return String(dirname(path)) + "/../Resources";
+            return path + "/../Resources";
         }
     }
 
-    strcpy(path, getBinaryPath().buffer());
-
-    return String(dirname(path)) + "/" + kDefaultLibrarySubdirectory;
+    return path + "/" + kDefaultLibrarySubdirectory;
 }
 
 String path::getCachesPath()
@@ -68,6 +68,8 @@ String path::getCachesPath()
     NSArray* p = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     String path = String([[p lastObject] cStringUsingEncoding:NSUTF8StringEncoding])
         + "/" XSTR(PLUGIN_BIN_BASENAME);
+    
     mkdir(path, 0777);
+
     return path;
 }
