@@ -37,7 +37,7 @@ LinuxWebHostUI::~LinuxWebHostUI()
     // TODO - standalone support
 }
 
-float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t window)
+float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
 {
 #if LXWEBVIEW_TYPE == cef
     ::Display* const display = XOpenDisplay(nullptr);
