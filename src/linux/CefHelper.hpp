@@ -72,6 +72,8 @@ private:
     
     float getZoomLevel();
 
+    void setKeyboardFocus(bool keyboardFocus);
+
     IpcChannel* fIpc;
     bool        fRunMainLoop;
     ::Display*  fDisplay;

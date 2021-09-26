@@ -236,7 +236,7 @@ LXHELPER_OBJ = $(LXHELPER_SRC:%=$(LXHELPER_BUILD_DIR)/%.o)
 
 LXHELPER_CFLAGS = -I$(HIPHOP_SRC_PATH) -I$(DPF_PATH) -I$(CEF_PATH) -DPLUGIN_BIN_BASENAME=$(NAME)
 
-LXHELPER_LDFLAGS = -ldl -lcef_dll_wrapper -L$(BUILD_DIR) -lcef -L$(CEF_BIN_PATH) \
+LXHELPER_LDFLAGS = -ldl -lXi -lcef_dll_wrapper -L$(BUILD_DIR) -lcef -L$(CEF_BIN_PATH) \
 				   -lX11 -O3 -DNDEBUG -rdynamic -fPIC -pthread -Wl,--disable-new-dtags \
 				   -Wl,--fatal-warnings -Wl,-rpath,. -Wl,-z,noexecstack \
 				   -Wl,-z,now -Wl,-z,relro -m64 -Wl,-O1 -Wl,--as-needed \

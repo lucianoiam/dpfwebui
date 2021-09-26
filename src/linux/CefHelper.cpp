@@ -22,6 +22,7 @@
 
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/XInput2.h>
 
 #include "Path.hpp"
 #include "macro.h"
@@ -188,9 +189,7 @@ void CefHelper::dispatch(const tlv_t& packet)
         }
 
         case OP_SET_KEYBOARD_FOCUS:
-        
-            // TODO - grab or ungrab keyboard lock
-
+            setKeyboardFocus(*((char *)packet.v) == 1);
             break;
 
         case OP_TERMINATE:
@@ -306,6 +305,26 @@ float CefHelper::getZoomLevel()
     }
 
     return 1.f;
+}
+
+void CefHelper::setKeyboardFocus(bool keyboardFocus)
+{
+    if (keyboardFocus) {
+        ::Window w = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
+        XSetInputFocus(fDisplay, w, RevertToNone, CurrentTime);
+        XIEventMask evmask;
+        evmask.deviceid = XIAllMasterDevices;
+        evmask.mask_len = XIMaskLen(XI_LASTEVENT);
+        unsigned char mask [evmask.mask_len];
+        memset(mask, 0, sizeof(mask));
+        XISetMask(mask, XI_RawKeyPress);
+        XISetMask(mask, XI_RawKeyRelease);
+        evmask.mask = mask;
+        XIGrabDevice(fDisplay, XIAllMasterDevices, fContainer, CurrentTime, None,
+            GrabModeAsync, GrabModeAsync, False, &evmask);
+    } else {
+        XIUngrabDevice(fDisplay, XIAllMasterDevices, CurrentTime);
+    }
 }
 
 CefSubprocess::CefSubprocess()

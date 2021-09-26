@@ -5,9 +5,3 @@ GENERAL
 - Ability to open a file browser from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs
 - Profile WebAssembly based plugins for memory leaks
-
-
-LINUX
------
-
-- setKeyboardFocus() support in CEF-based webview
