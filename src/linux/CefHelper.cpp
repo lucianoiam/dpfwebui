@@ -20,6 +20,7 @@
 
 #include <sstream>
 
+#include <X11/Xresource.h>
 #include <X11/Xutil.h>
 
 #include "Path.hpp"
@@ -223,6 +224,12 @@ void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine
     commandLine->AppendSwitch("disable-extensions");
 }
 
+void CefHelper::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                            TransitionType transitionType)
+{
+    browser->GetHost()->SetZoomLevel(getZoomLevel());
+}
+
 void CefHelper::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                           int httpStatusCode)
 {
@@ -276,6 +283,29 @@ void CefHelper::realize(const msg_win_cfg_t* config)
     // Reduce artifacts when resizing
     ::Window w = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
     XSetWindowBackground(fDisplay, w, config->color);
+}
+
+// Returns same value as LinuxWebHostUI::getDisplayScaleFactor()
+float CefHelper::getZoomLevel()
+{
+    XrmInitialize();
+
+    if (char* const rms = XResourceManagerString(fDisplay)) {
+        if (const XrmDatabase sdb = XrmGetStringDatabase(rms)) {
+            char* type = nullptr;
+            XrmValue ret;
+
+            if (XrmGetResource(sdb, "Xft.dpi", "String", &type, &ret)
+                    && (ret.addr != nullptr) && (type != nullptr)
+                    && (std::strncmp("String", type, 6) == 0)) {
+                if (const float dpi = std::atof(ret.addr)) {
+                    return dpi / 96;
+                }
+            }
+        }
+    }
+
+    return 1.f;
 }
 
 CefSubprocess::CefSubprocess()

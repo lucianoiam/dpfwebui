@@ -17,6 +17,7 @@
  */
 
 #include <X11/Xlib.h>
+#include <X11/Xresource.h>
 
 #include "LinuxWebHostUI.hpp"
 #include "macro.h"
@@ -36,11 +37,34 @@ LinuxWebHostUI::~LinuxWebHostUI()
     // TODO - standalone support
 }
 
-float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
+float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t window)
 {
-    // In the lack of a standard Linux interface for getting the display scale
-    // factor, read GTK environment variables since the web view is GTK-based.
+#if LXWEBVIEW_TYPE == cef
+    ::Display* const display = XOpenDisplay(nullptr);
 
+    XrmInitialize();
+
+    if (char* const rms = XResourceManagerString(display)) {
+        if (const XrmDatabase sdb = XrmGetStringDatabase(rms)) {
+            char* type = nullptr;
+            XrmValue ret;
+
+            if (XrmGetResource(sdb, "Xft.dpi", "String", &type, &ret)
+                    && (ret.addr != nullptr) && (type != nullptr)
+                    && (std::strncmp("String", type, 6) == 0)) {
+                if (const float dpi = std::atof(ret.addr)) {
+                    XCloseDisplay(display);
+                    return dpi / 96;
+                }
+            }
+        }
+    }
+
+    XCloseDisplay(display);
+
+#endif // LXWEBVIEW_TYPE == cef
+
+#if LXWEBVIEW_TYPE == gtk
     const char* dpi;
     float k;
 
@@ -55,6 +79,7 @@ float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
     if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
         return k;
     }
+#endif // LXWEBVIEW_TYPE == gtk
 
     return 1.f;
 }

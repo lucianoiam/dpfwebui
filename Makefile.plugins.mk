@@ -340,9 +340,8 @@ ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
 LXWEBVIEW_TYPE ?= gtk
 
-ifeq ($(LXWEBVIEW_TYPE),cef)
-BASE_FLAGS += -DLXHELPER_SIGTERM
-endif
+BASE_FLAGS += -DLXWEBVIEW_TYPE=gtk
+#$(LXWEBVIEW_TYPE)
 
 HIPHOP_TARGET += lxhelper_bin
 

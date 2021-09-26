@@ -59,6 +59,9 @@ public:
     virtual void OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine) override;
 
     // CefLoadHandler
+    virtual void OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                             TransitionType transitionType) override;
+
     virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                            int httpStatusCode) override;
 
@@ -66,6 +69,8 @@ private:
     void runMainLoop();
     void dispatch(const tlv_t& packet);
     void realize(const msg_win_cfg_t* config);
+    
+    float getZoomLevel();
 
     IpcChannel* fIpc;
     bool        fRunMainLoop;
