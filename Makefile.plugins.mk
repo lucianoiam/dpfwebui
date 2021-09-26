@@ -81,7 +81,7 @@ ifeq ($(LINUX),true)
 HIPHOP_FILES_DSP += linux/LinuxPath.cpp
 endif
 ifeq ($(MACOS),true)
-HIPHOP_FILES_DSP += macos/MacPath.cpp
+HIPHOP_FILES_DSP += macos/MacPath.mm
 endif
 ifeq ($(WINDOWS),true)
 HIPHOP_FILES_DSP += windows/WindowsPath.cpp
@@ -106,7 +106,7 @@ HIPHOP_FILES_UI += linux/LinuxPath.cpp \
                    linux/ipc.c
 endif
 ifeq ($(MACOS),true)
-HIPHOP_FILES_UI += macos/MacPath.cpp \
+HIPHOP_FILES_UI += macos/MacPath.mm \
                    macos/MacWebHostUI.mm \
                    macos/CocoaWebView.mm
 endif
