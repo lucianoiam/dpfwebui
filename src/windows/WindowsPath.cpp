@@ -63,7 +63,7 @@ String path::getCachesPath()
         return String();
     }
 
-    String path = dataPath + "\\" + XSTR(PLUGIN_BIN_BASENAME) + "\\" + kDefaultCacheSubdirectory;
+    String path = String(dataPath) + "\\" XSTR(PLUGIN_BIN_BASENAME) "\\" + kDefaultCacheSubdirectory;
 
     if (isLoadedFromSharedLibrary()) {
         // Append host executable name to the cache path otherwise WebView2 controller initialization
@@ -83,8 +83,9 @@ String path::getCachesPath()
         // Since the minimum plugin target is Windows 7 it is acceptable to use a deprecated function.
         //PathCchRemoveExtension(exeFilename, sizeof(exeFilename));
         PathRemoveExtension(exeFilename);
-        path += "\\" + exeFilename;
+        path += "\\";
+        path += exeFilename;
     }
 
-    return String(cachePath);
+    return String(path);
 }
