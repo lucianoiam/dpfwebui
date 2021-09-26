@@ -230,8 +230,7 @@ $(BUILD_DIR)/libcef_dll_wrapper/%.o: $(CEF_PATH)/libcef_dll/%.cc
 LXHELPER_SRC += linux/CefHelper.cpp \
 				linux/IpcChannel.cpp \
 				linux/ipc.c \
-				linux/LinuxPath.cpp \
-				Path.cpp
+				linux/LinuxPath.cpp
 
 LXHELPER_OBJ = $(LXHELPER_SRC:%=$(LXHELPER_BUILD_DIR)/%.o)
 

@@ -27,9 +27,6 @@ START_NAMESPACE_DISTRHO
 
 namespace path {
 
-    bool isLoadedFromSharedLibrary();
-    void setLoadedFromSharedLibrary(bool loadedFromSharedLibrary);
-
     String getBinaryPath();
     String getLibraryPath();
     String getCachesPath();

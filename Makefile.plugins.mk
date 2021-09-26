@@ -74,8 +74,7 @@ TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
 # Add optional support for AssemblyScript DSP
 
 ifeq ($(AS_DSP),true)
-HIPHOP_FILES_DSP  = Path.cpp \
-                    WasmHostPlugin.cpp \
+HIPHOP_FILES_DSP  = WasmHostPlugin.cpp \
                     WasmEngine.cpp
 ifeq ($(LINUX),true)
 HIPHOP_FILES_DSP += linux/LinuxPath.cpp
@@ -94,8 +93,7 @@ endif
 # Add optional support for web UI
 
 ifeq ($(WEB_UI),true)
-HIPHOP_FILES_UI  = Path.cpp \
-                   AbstractWebHostUI.cpp \
+HIPHOP_FILES_UI  = AbstractWebHostUI.cpp \
                    AbstractWebView.cpp \
                    JsValue.cpp
 ifeq ($(LINUX),true)

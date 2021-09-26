@@ -60,11 +60,9 @@ static String getExecutablePath()
 
 String path::getBinaryPath()
 {
-    if (isLoadedFromSharedLibrary()) {
-        return getSharedLibraryPath();
-    } else {
-        return getExecutablePath();
-    }
+    String soPath = getSharedLibraryPath();
+    String exePath = getExecutablePath();
+    return soPath == exePath ? exePath : soPath;
 }
 
 String path::getLibraryPath()

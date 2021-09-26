@@ -65,27 +65,25 @@ String path::getCachesPath()
 
     String path = String(dataPath) + "\\" XSTR(PLUGIN_BIN_BASENAME) "\\" + kDefaultCacheSubdirectory;
 
-    if (isLoadedFromSharedLibrary()) {
-        // Append host executable name to the cache path otherwise WebView2 controller initialization
-        // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
-        // simultaneously due to permissions. C:\Users\< USERNAME >\AppData\Local\PluginName\cache\< HOST_BIN >
-        char exePath[MAX_PATH];
-        
-        if (GetModuleFileName(0, exePath, sizeof(exePath)) == 0) {
-            HIPHOP_LOG_STDERR_INT("Could not determine host executable path", GetLastError());
-            return String();
-        }
-
-        LPSTR exeFilename = PathFindFileName(exePath);
-
-        // The following call relies on a further Windows library called Pathcch, which is implemented
-        // in api-ms-win-core-path-l1-1-0.dll and requires Windows 8.
-        // Since the minimum plugin target is Windows 7 it is acceptable to use a deprecated function.
-        //PathCchRemoveExtension(exeFilename, sizeof(exeFilename));
-        PathRemoveExtension(exeFilename);
-        path += "\\";
-        path += exeFilename;
+    // Append host executable name to the cache path otherwise WebView2 controller initialization
+    // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host
+    // simultaneously due to permissions. C:\Users\< USERNAME >\AppData\Local\PluginName\cache\< HOST_BIN >
+    char exePath[MAX_PATH];
+    
+    if (GetModuleFileName(0, exePath, sizeof(exePath)) == 0) {
+        HIPHOP_LOG_STDERR_INT("Could not determine host executable path", GetLastError());
+        return String();
     }
+
+    LPSTR exeFilename = PathFindFileName(exePath);
+
+    // The following call relies on a further Windows library called Pathcch, which is implemented
+    // in api-ms-win-core-path-l1-1-0.dll and requires Windows 8.
+    // Since the minimum plugin target is Windows 7 it is acceptable to use a deprecated function.
+    //PathCchRemoveExtension(exeFilename, sizeof(exeFilename));
+    PathRemoveExtension(exeFilename);
+    path += "\\";
+    path += exeFilename;
 
     return String(path);
 }
