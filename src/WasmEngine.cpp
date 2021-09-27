@@ -33,7 +33,7 @@ WasmEngine::WasmEngine()
     , fInstance(0)
 #ifdef HIPHOP_ENABLE_WASI
     , fWasiEnv(0)
-#endif
+#endif // HIPHOP_ENABLE_WASI
 {
     memset(&fExportsVec, 0, sizeof(fExportsVec));
 }
@@ -165,7 +165,7 @@ void WasmEngine::start(WasmFunctionMap hostFunctions)
             wasmer_named_extern_t* ne = wasiImports.data[wasiImportIndex[name]];
             imports.data[i] = const_cast<wasm_extern_t *>(wasmer_named_extern_unwrap(ne));
         }
-#endif
+#endif // HIPHOP_ENABLE_WASI
         if (!moduleNeedsWasi) {
             wn = wasm_importtype_module(importTypes.data[i]);
             memcpy(name, wn->data, wn->size);
@@ -186,7 +186,7 @@ void WasmEngine::start(WasmFunctionMap hostFunctions)
     if (moduleNeedsWasi) {
         throw std::runtime_error("WASI is not enabled but module requires WASI");
     }
-#endif
+#endif // HIPHOP_ENABLE_WASI
 
     // -------------------------------------------------------------------------
     // Insert host functions into imports vector
@@ -197,7 +197,7 @@ void WasmEngine::start(WasmFunctionMap hostFunctions)
 #ifndef HIPHOP_ENABLE_WASI
     hostFunctions["abort"] = { { WASM_I32, WASM_I32, WASM_I32, WASM_I32 }, {}, 
         std::bind(&WasmEngine::nonWasiAssemblyScriptAbort, this, std::placeholders::_1) };
-#endif
+#endif // HIPHOP_ENABLE_WASI
 
     for (WasmFunctionMap::const_iterator it = hostFunctions.begin(); it != hostFunctions.end(); ++it) {
         fHostFunctions.push_back(it->second.function);
@@ -236,7 +236,7 @@ void WasmEngine::start(WasmFunctionMap hostFunctions)
     wasm_val_vec_t empty_val_vec = WASM_EMPTY_VEC;
     wasm_func_call(wasiStart, &empty_val_vec, &empty_val_vec);
     wasm_func_delete(wasiStart);
-#endif
+#endif // HIPHOP_ENABLE_WASI
     // -------------------------------------------------------------------------
     // Build a map of externs indexed by name
 
@@ -267,7 +267,7 @@ void WasmEngine::stop()
         wasi_env_delete(fWasiEnv);
         fWasiEnv = 0;
     }
-#endif
+#endif // HIPHOP_ENABLE_WASI
     if (fExportsVec.size != 0) {
         wasm_extern_vec_delete(&fExportsVec);
         fExportsVec.size = 0;

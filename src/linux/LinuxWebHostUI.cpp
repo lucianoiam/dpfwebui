@@ -28,7 +28,7 @@ LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgro
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
 {
     if (shouldCreateWebView()) {
-        setWebView(new ChildProcessWebView());
+        setWebView(new ChildProcessWebView()); // base class owns web view
     }
 }
 

@@ -92,7 +92,7 @@ private:
 
 #ifndef HIPHOP_ENABLE_WASI
     WasmValueVector nonWasiAssemblyScriptAbort(WasmValueVector params);
-#endif
+#endif // HIPHOP_ENABLE_WASI
 
     bool               fStarted;
     wasm_engine_t*     fEngine;
@@ -102,7 +102,7 @@ private:
     wasm_extern_vec_t  fExportsVec;
 #ifdef HIPHOP_ENABLE_WASI
     wasi_env_t*        fWasiEnv;
-#endif
+#endif // HIPHOP_ENABLE_WASI
     WasmFunctionVector fHostFunctions;
     WasmExternMap      fModuleExports;
 

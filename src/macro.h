@@ -47,6 +47,6 @@
 #define HIPHOP_LOG_STDERR_ERRNO(msg)  fprintf(stderr, "%s : %s - %s\n", __PRETTY_FUNCTION__, msg, strerror(errno));
 #define HIPHOP_LOG_STDERR_COLOR(msg)  fprintf(stderr, "\x1b[31m%s : %s\x1b[0m\n", __PRETTY_FUNCTION__, msg);
 
-#endif
+#endif  // __cplusplus
 
 #endif  // MACRO_H

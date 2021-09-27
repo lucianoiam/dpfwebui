@@ -46,22 +46,22 @@ public:
     AbstractWebView();
     virtual ~AbstractWebView() {}
 
-    uint      getWidth();
-    uint      getHeight();
-    void      setSize(uint width, uint height);
+    uint getWidth();
+    uint getHeight();
+    void setSize(uint width, uint height);
     
-    uint32_t  getBackgroundColor();
-    void      setBackgroundColor(uint32_t rgba);
+    uint32_t getBackgroundColor();
+    void     setBackgroundColor(uint32_t rgba);
     
     uintptr_t getParent();
     void      setParent(uintptr_t parent);
     
-    bool      getKeyboardFocus();
-    void      setKeyboardFocus(bool focus);
+    bool getKeyboardFocus();
+    void setKeyboardFocus(bool focus);
 
-    void      setPrintTraffic(bool printTraffic);
-    void      setEventHandler(WebViewEventHandler* handler);
-    void      postMessage(const JsValueVector& args);
+    void setPrintTraffic(bool printTraffic);
+    void setEventHandler(WebViewEventHandler* handler);
+    void postMessage(const JsValueVector& args);
 
     virtual void realize() = 0;
     virtual void navigate(String& url) = 0;

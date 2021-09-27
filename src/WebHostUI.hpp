@@ -27,20 +27,20 @@
 
 typedef LinuxWebHostUI WebHostUI;
 
-#endif
+#endif // DISTRHO_OS_LINUX
 
 #ifdef DISTRHO_OS_MAC
 #include "macos/MacWebHostUI.hpp"
 
  typedef MacWebHostUI WebHostUI;
 
-#endif
+#endif // DISTRHO_OS_MAC
 
 #ifdef DISTRHO_OS_WINDOWS
 #include "windows/WindowsWebHostUI.hpp"
 
 typedef WindowsWebHostUI WebHostUI;
 
-#endif
+#endif // DISTRHO_OS_WINDOWS
 
 #endif  // WEBHOST_UI_HPP

@@ -39,7 +39,7 @@ public:
     const char* getLicense() const override;
 
     uint32_t getVersion() const override;
-    int64_t getUniqueId() const override;
+    int64_t  getUniqueId() const override;
 
     void  initParameter(uint32_t index, Parameter& parameter) override;
     float getParameterValue(uint32_t index) const override;
@@ -48,15 +48,15 @@ public:
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
     void initProgramName(uint32_t index, String& programName) override;
     void loadProgram(uint32_t index) override;
-#endif
+#endif // DISTRHO_PLUGIN_WANT_PROGRAMS
 
 #if DISTRHO_PLUGIN_WANT_STATE
     void   initState(uint32_t index, String& stateKey, String& defaultStateValue) override;
     void   setState(const char* key, const char* value) override;
 #if DISTRHO_PLUGIN_WANT_FULL_STATE
     String getState(const char* key) const override;
-#endif
-#endif
+#endif // DISTRHO_PLUGIN_WANT_FULL_STATE
+#endif // DISTRHO_PLUGIN_WANT_STATE
 
     void activate() override;
     void deactivate() override;
@@ -66,7 +66,7 @@ public:
                 const MidiEvent* midiEvents, uint32_t midiEventCount) override;
 #else
     void run(const float** inputs, float** outputs, uint32_t frames) override;
-#endif
+#endif // DISTRHO_PLUGIN_WANT_MIDI_INPUT
 
     WasmValueVector getTimePosition(WasmValueVector params);
     WasmValueVector writeMidiEvent(WasmValueVector params);

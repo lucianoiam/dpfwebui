@@ -26,7 +26,7 @@ WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t bac
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
 {
     if (shouldCreateWebView()) {
-        setWebView(new EdgeWebView());
+        setWebView(new EdgeWebView()); // base class owns web view
     }
 }
 

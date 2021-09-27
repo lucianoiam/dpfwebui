@@ -9,7 +9,7 @@ from the DSP core. The latter can be implemented in C++ or optionally [AssemblyS
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
-*WebGain example running on Bitwig/Linux*
+*WebGain example running on Bitwig for Linux*
 
 ****
 
@@ -21,7 +21,7 @@ from the DSP core. The latter can be implemented in C++ or optionally [AssemblyS
 * VST2 / LV2 plugin formats
 * Linux / Mac / Windows
 * Just the powerful basics
-* BSD-like license
+* Permissive license
 
 The following DSP / UI language combinations are possible:
 
@@ -32,7 +32,7 @@ AS |JS |Web view user interface, see example [jitdrum](https://github.com/lucian
 AS |C++|DPF Graphics Library (DGL), see example [astone](https://github.com/lucianoiam/hiphop/tree/master/examples/astone).
 C++|C++|Do not use this project, just use DPF instead.
 
-For behind-the-scenes information go [here](https://github.com/lucianoiam/hiphop/blob/master/doc/internals.md).
+For information on the implementation go [here](https://github.com/lucianoiam/hiphop/blob/master/doc/internals.md).
 
 ### Example JavaScript UI code
 

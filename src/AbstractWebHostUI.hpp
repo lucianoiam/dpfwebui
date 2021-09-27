@@ -63,10 +63,10 @@ protected:
     void parameterChanged(uint32_t index, float value) override;
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
     void programLoaded(uint32_t index) override;
-#endif
+#endif // DISTRHO_PLUGIN_WANT_PROGRAMS
 #if DISTRHO_PLUGIN_WANT_STATE
     void stateChanged(const char* key, const char* value) override;
-#endif
+#endif // DISTRHO_PLUGIN_WANT_STATE
 
     virtual void onWebContentReady() {}
     virtual void onWebMessageReceived(const JsValueVector& args) { (void)args; }

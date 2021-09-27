@@ -34,7 +34,7 @@ typedef struct {
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif // __cplusplus
 
 ipc_t*            ipc_init(const ipc_conf_t *conf);
 void              ipc_destroy(ipc_t *ipc);
@@ -44,6 +44,6 @@ const ipc_conf_t* ipc_get_config(const ipc_t *ipc);
 
 #ifdef __cplusplus
 }
-#endif
+#endif // __cplusplus
 
 #endif  // IPC_H

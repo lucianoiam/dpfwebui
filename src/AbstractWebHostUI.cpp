@@ -169,7 +169,7 @@ void AbstractWebHostUI::setWebView(AbstractWebView* webView)
     fWebView->setEventHandler(this);
 #ifdef HIPHOP_PRINT_TRAFFIC
     fWebView->setPrintTraffic(true);
-#endif
+#endif // HIPHOP_PRINT_TRAFFIC
     
     String js = String(
 #include "ui/distrho-ui.js.inc"

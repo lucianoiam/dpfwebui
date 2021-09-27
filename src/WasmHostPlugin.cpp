@@ -33,7 +33,7 @@ WasmHostPlugin::WasmHostPlugin(uint32_t parameterCount, uint32_t programCount, u
 {   
     if (engine != 0) {
         fEngine = engine;
-        return; // hand over initialization to the caller
+        return; // caller initializes engine
     }
 
     fEngine.reset(new WasmEngine());
@@ -263,7 +263,7 @@ void WasmHostPlugin::deactivate()
 {
     const MidiEvent* midiEvents = 0;
     uint32_t midiEventCount = 0;
-#endif
+#endif // DISTRHO_PLUGIN_WANT_MIDI_INPUT
     try {
         throwIfEngineStopped();
 
