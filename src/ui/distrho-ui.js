@@ -109,7 +109,7 @@ class UI {
         // default empty implementation
     }
    
-    // bool Application::isStandalone()
+    // bool ExternalWindow::isStandalone()
     async isStandalone() {
         return this._callAndExpectReply('isStandalone');
     }

@@ -1,0 +1,19 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    padding: 20px;
+    margin: 0;
+    background-color: #EFBDB6;
+}
+
+#main {
+    height: 100%;
+    width: 100%;
+}

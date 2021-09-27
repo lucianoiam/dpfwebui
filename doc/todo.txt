@@ -1,7 +1,7 @@
 GENERAL
 -------
 
-- Ability to open a file browser from JavaScript
+- Open file chooser from JavaScript once DPF API for ExternalWindow is ready
 - VST3 support
 - Map alert(), confirm(), prompt() to native dialogs
 - Profile WebAssembly based plugins for memory leaks
