@@ -35,7 +35,7 @@ quite young and under continued development.
 ### Web view UI
 
 - On Linux a WebKitGTK or Chromium Embedded Framework (CEF) web view instance
-  runs in a child process. CEF variant is work in progress as of Sep '21.
+  runs in a child process.
 
 - On macOS the system WKWebView is used.
 
@@ -64,21 +64,17 @@ useful for creating new hybrid features.
 
 For the UI a small JS wrapper around the C++ `DISTRHO::UI` class is provided
 for convenience. New integrations between C++ and JS code can be easily built
-leveraging the standard `postMessage()` call. For Linux and Mac a message
-handler called `host` is installed, thus providing access to a native callback
-through the function:
+around a single function `window.webviewHost.postMessage()` that wraps the
+platform specific calls:
 
+Linux CEF:
+`window.hostPostMessage()`
+
+Linux GTK, Mac:
 `window.webkit.messageHandlers.host.postMessage()`
 
-On Windows WebView2 already provides a single, fixed, built-in entry point to
-native:
-
+Windows:
 `window.chrome.webview.postMessage()`
-
-In all cases the `postMessage()` function is mapped to a custom symbol for
-hiding the differences between platforms:
-
-`window.webviewHost.postMessage()`
 
 In an attempt to keep the interface symmetrical and generic, `window.webviewHost`
 is created as a `EventTarget` instance that can listened for events named
