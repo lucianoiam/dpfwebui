@@ -26,3 +26,17 @@ WINDOWS
 
 - WINWASMBUG : WASM plugins crash on Carla and Live, work as expected on REAPER,
   Renoise and Ardour 7. See WasmEngine.cpp
+
+  Instructions on how to build libwasmer.a with debug symbols can be found here:
+  https://github.com/wasmerio/wasmer/issues/2571
+
+  RUSTFLAGS="-C target-feature=+crt-static" cargo build \
+    --manifest-path lib/c-api/Cargo.toml --no-default-features \
+    --features wat,universal,dylib,staticlib,wasi,middlewares \
+    --features cranelift
+
+  Then for debugging using Carla:
+
+  gdb --args python ~/carla/source/frontend/carla
+  set breakpoint pending on
+  break wasm_module_new

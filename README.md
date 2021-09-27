@@ -9,7 +9,7 @@ from the DSP core. The latter can be implemented in C++ or optionally [AssemblyS
 
 ![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
 
-*WebGain example running on Bitwig*
+*WebGain example running on Bitwig/Linux*
 
 ****
 

@@ -45,13 +45,6 @@ NOTES FOR WINDOWS
    mkdir -p hiphop/lib/wasmer/lib
    cp wasmer/target/release/libwasmer.a hiphop/lib/wasmer/lib
 
-   To build with debug symbols - https://github.com/wasmerio/wasmer/issues/2571
-
-   RUSTFLAGS="-C target-feature=+crt-static" cargo build \
-      --manifest-path lib/c-api/Cargo.toml --no-default-features \
-      --features wat,universal,dylib,staticlib,wasi,middlewares \
-      --features cranelift
-
 5. Node.js is required for building the plugin AssemblyScript files. There is no
    official binary package for MinGW. Makefile will try to download the regular
    Windows version if npm is absent. https://github.com/msys2/MINGW-packages
