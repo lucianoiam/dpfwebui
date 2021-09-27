@@ -262,7 +262,7 @@ HRESULT EdgeWebView::handleWebView2NavigationCompleted(ICoreWebView2 *sender,
 HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                                       ICoreWebView2WebMessageReceivedEventArgs *eventArgs)
 {
-    // Edge WebView2 does not provide access to JSCore values; resort to parsing JSON
+    // Edge WebView2 does not provide access to V8 values; resort to parsing JSON
     (void)sender;
 
     LPWSTR jsonStr;
