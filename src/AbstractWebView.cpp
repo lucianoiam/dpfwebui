@@ -24,9 +24,9 @@
 #define JS_DISABLE_CONTEXT_MENU  "window.oncontextmenu = (e) => e.preventDefault();"
 #define JS_DISABLE_PRINT         "window.onkeydown = (e) => { if ((e.key == 'p') && (e.ctrlKey || e.metaKey)) e.preventDefault(); };"
 #define JS_CREATE_CONSOLE        "window.console = {" \
-                                 "   log  : (s) => window.webviewHost.postMessage(['console', 'log',   String(s)])," \
-                                 "   info : (s) => window.webviewHost.postMessage(['console', 'info',  String(s)])," \
-                                 "   warn : (s) => window.webviewHost.postMessage(['console', 'warn',  String(s)])," \
+                                 "   log  : (s) => window.webviewHost.postMessage(['console', 'log'  , String(s)])," \
+                                 "   info : (s) => window.webviewHost.postMessage(['console', 'info' , String(s)])," \
+                                 "   warn : (s) => window.webviewHost.postMessage(['console', 'warn' , String(s)])," \
                                  "   error: (s) => window.webviewHost.postMessage(['console', 'error', String(s)])" \
                                  "};"
 #define JS_CREATE_HOST_OBJECT    "window.webviewHost = new EventTarget;" \

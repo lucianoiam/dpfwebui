@@ -1,4 +1,4 @@
-# Filename: Makefile.helper.mk
+# Filename: Makefile.gtk.mk
 # Author:   oss@lucianoiam.com
 
 # ------------------------------------------------------------------------------

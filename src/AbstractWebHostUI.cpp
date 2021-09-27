@@ -178,11 +178,11 @@ void AbstractWebHostUI::setWebView(AbstractWebView* webView)
           "UI = null;";
     fWebView->injectScript(js);
 
-    // Web views adjust their contents following the system display scale factor,
-    // adjust window size so it correctly wraps content on high density displays.
     // Cannot call virtual method createStandaloneWindow() from constructor.
     uintptr_t parent = isStandalone() ? createStandaloneWindow() : getParentWindowHandle();
 
+    // Web views adjust their contents following the system display scale factor,
+    // adjust window size so it correctly wraps content on high density displays.
     float k = getDisplayScaleFactor(parent);
     fInitWidth = k * getWidth();
     fInitHeight = k * getHeight();

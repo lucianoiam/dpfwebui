@@ -32,7 +32,7 @@ typedef LinuxWebHostUI WebHostUI;
 #ifdef DISTRHO_OS_MAC
 #include "macos/MacWebHostUI.hpp"
 
- typedef MacWebHostUI WebHostUI;
+typedef MacWebHostUI WebHostUI;
 
 #endif // DISTRHO_OS_MAC
 
