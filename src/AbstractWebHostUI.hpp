@@ -77,8 +77,9 @@ protected:
 private:
     // WebViewEventHandler
 
-    virtual void handleWebViewContentLoadFinished() override;
-    virtual void handleWebViewScriptMessageReceived(const JsValueVector& args) override;
+    virtual void handleWebViewLoadFinished() override;
+    virtual void handleWebViewScriptMessage(const JsValueVector& args) override;
+    virtual void handleWebViewConsole(const String& tag, const String& text) override;
 
     typedef std::vector<JsValueVector> InitMessageQueue;
 

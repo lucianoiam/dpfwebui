@@ -18,6 +18,8 @@
 
 #include "AbstractWebHostUI.hpp"
 
+#include <iostream>
+
 #include "Path.hpp"
 #include "macro.h"
 
@@ -268,14 +270,14 @@ void AbstractWebHostUI::stateChanged(const char* key, const char* value)
 
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
-void AbstractWebHostUI::handleWebViewContentLoadFinished()
+void AbstractWebHostUI::handleWebViewLoadFinished()
 {
     // Trigger the JavaScript sizeChanged() callback, useful for WKGTKRESIZEBUG.
     sizeChanged(fInitWidth, fInitHeight);
     onWebContentReady();
 }
 
-void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& args)
+void AbstractWebHostUI::handleWebViewScriptMessage(const JsValueVector& args)
 {
     if ((args.size() < 2) || (args[0].getString() != "UI")) {
         onWebMessageReceived(args); // passthrough
@@ -299,4 +301,17 @@ void AbstractWebHostUI::handleWebViewScriptMessageReceived(const JsValueVector& 
     }
 
     handler.second(handlerArgs);
+}
+
+void AbstractWebHostUI::handleWebViewConsole(const String& tag, const String& text)
+{
+    if (tag == "log") {
+        std::cout << text.buffer() << std::endl;
+    } else if (tag == "info") {
+        std::cout << "INFO : " << text.buffer() << std::endl;
+    } else if (tag == "warn") {
+        std::cout << "WARN : " << text.buffer() << std::endl;
+    } else if (tag == "error") {
+        std::cerr << "ERROR : " << text.buffer() << std::endl;
+    }
 }

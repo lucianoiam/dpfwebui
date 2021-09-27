@@ -1,7 +1,6 @@
 GENERAL
 -------
 
-- Native JavaScript console support for WebKitGTK, CEF, WKWebView, EdgeWebView2
 - Ability to open a file browser from JavaScript
 - Map alert(), confirm(), prompt() to native dialogs
 - Profile WebAssembly based plugins for memory leaks

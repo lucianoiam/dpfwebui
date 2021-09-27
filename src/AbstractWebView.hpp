@@ -34,8 +34,9 @@ typedef std::vector<JsValue> JsValueVector;
 class WebViewEventHandler
 {
 public:
-    virtual void handleWebViewContentLoadFinished() = 0;
-    virtual void handleWebViewScriptMessageReceived(const JsValueVector& args) = 0;
+    virtual void handleWebViewLoadFinished() = 0;
+    virtual void handleWebViewScriptMessage(const JsValueVector& args) = 0;
+    virtual void handleWebViewConsole(const String& tag, const String& text) = 0;
 
 };
 

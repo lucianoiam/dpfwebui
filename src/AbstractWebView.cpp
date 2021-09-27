@@ -23,7 +23,12 @@
 
 #define JS_DISABLE_CONTEXT_MENU  "window.oncontextmenu = (e) => e.preventDefault();"
 #define JS_DISABLE_PRINT         "window.onkeydown = (e) => { if ((e.key == 'p') && (e.ctrlKey || e.metaKey)) e.preventDefault(); };"
-#define JS_CREATE_CONSOLE        "window.console = {log: (s) => window.webviewHost.postMessage(['console.log', String(s)])};"
+#define JS_CREATE_CONSOLE        "window.console = {" \
+                                 "   log  : (s) => window.webviewHost.postMessage(['console', 'log',   String(s)])," \
+                                 "   info : (s) => window.webviewHost.postMessage(['console', 'info',  String(s)])," \
+                                 "   warn : (s) => window.webviewHost.postMessage(['console', 'warn',  String(s)])," \
+                                 "   error: (s) => window.webviewHost.postMessage(['console', 'error', String(s)])" \
+                                 "};"
 #define JS_CREATE_HOST_OBJECT    "window.webviewHost = new EventTarget;" \
                                  "window.webviewHost.addMessageListener = (lr) => {" \
                                     "window.webviewHost.addEventListener('message', (ev) => lr(ev.detail))" \
@@ -129,34 +134,34 @@ void AbstractWebView::postMessage(const JsValueVector& args)
 
 void AbstractWebView::injectDefaultScripts()
 {
-    String js = String()
-        + String(JS_DISABLE_CONTEXT_MENU)
-        + String(JS_DISABLE_PRINT)
-        + String(JS_CREATE_CONSOLE)
-        + String(JS_CREATE_HOST_OBJECT)
+    String js = String(JS_DISABLE_CONTEXT_MENU)
+              + String(JS_DISABLE_PRINT)
+              + String(JS_CREATE_CONSOLE)
+              + String(JS_CREATE_HOST_OBJECT)
     ;
     injectScript(js);
 }
 
 void AbstractWebView::handleLoadFinished()
 {
-    String css = String()
-        + String(CSS_DISABLE_IMAGE_DRAG)
-        + String(CSS_DISABLE_SELECTION)
-        + String(CSS_DISABLE_PINCH_ZOOM)
-        + String(CSS_DISABLE_OVERFLOW)
+    String css = String(CSS_DISABLE_IMAGE_DRAG)
+               + String(CSS_DISABLE_SELECTION)
+               + String(CSS_DISABLE_PINCH_ZOOM)
+               + String(CSS_DISABLE_OVERFLOW)
     ;
     addStylesheet(css);
 
     if (fHandler != 0) {
-        fHandler->handleWebViewContentLoadFinished();
+        fHandler->handleWebViewLoadFinished();
     }
 }
 
 void AbstractWebView::handleScriptMessage(const JsValueVector& args)
 {
-    if ((args.size() > 1) && (args[0].getString() == "console.log")) {
-        std::cerr << args[1].getString().buffer() << std::endl;
+    if ((args.size() == 3) && (args[0].getString() == "console")) {
+        if (fHandler != 0) {
+            fHandler->handleWebViewConsole(args[1].getString(), args[2].getString());
+        }
     } else {
         if (fPrintTraffic) {
             std::cerr << "cpp <- js : " << serializeJsValues(args).buffer()
@@ -164,7 +169,7 @@ void AbstractWebView::handleScriptMessage(const JsValueVector& args)
         }
         
         if (fHandler != 0) {
-            fHandler->handleWebViewScriptMessageReceived(args);
+            fHandler->handleWebViewScriptMessage(args);
         }
     }
 }
