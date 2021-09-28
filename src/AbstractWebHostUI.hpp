@@ -91,8 +91,8 @@ private:
     uint              fInitWidth;
     uint              fInitHeight;
     uint32_t          fBackgroundColor;
+    bool              fMessageQueueReady;
     bool              fUiBlockQueued;
-    bool              fInitMessageQueueFlushed;
     UiBlock           fUiBlock;
     InitMessageQueue  fInitMessageQueue;
     MessageHandlerMap fHandler;

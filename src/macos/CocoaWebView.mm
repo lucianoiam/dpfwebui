@@ -30,9 +30,9 @@
 #define DistrhoWebView         OBJC_INTERFACE_NAME(DistrhoWebView)
 #define DistrhoWebViewDelegate OBJC_INTERFACE_NAME(DistrhoWebViewDelegate)
 
-#define fBackgroundNs ((NSView *)fBackground)
-#define fWebViewNs    ((DistrhoWebView *)fWebView)
-#define fDelegateNs   ((DistrhoWebViewDelegate *)fDelegate)
+#define fNsBackground ((NSView *)fBackground)
+#define fNsWebView    ((DistrhoWebView *)fWebView)
+#define fNsDelegate   ((DistrhoWebViewDelegate *)fDelegate)
 
 #define JS_POST_MESSAGE_SHIM "window.webviewHost.postMessage = (args) => window.webkit.messageHandlers.host.postMessage(args);"
 
@@ -52,16 +52,16 @@ USE_NAMESPACE_DISTRHO
 CocoaWebView::CocoaWebView()
 {
     fBackground = [[NSView alloc] initWithFrame:CGRectZero];
-    fBackgroundNs.autoresizesSubviews = YES;
+    fNsBackground.autoresizesSubviews = YES;
 
     fWebView = [[DistrhoWebView alloc] initWithFrame:CGRectZero];
-    fWebViewNs.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-    [fBackgroundNs addSubview:fWebViewNs];
+    fNsWebView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    [fNsBackground addSubview:fNsWebView];
 
     fDelegate = [[DistrhoWebViewDelegate alloc] init];
-    fDelegateNs.cppView = this;
-    fWebViewNs.navigationDelegate = fDelegateNs;
-    [fWebViewNs.configuration.userContentController addScriptMessageHandler:fDelegateNs name:@"host"];
+    fNsDelegate.cppView = this;
+    fNsWebView.navigationDelegate = fNsDelegate;
+    [fNsWebView.configuration.userContentController addScriptMessageHandler:fNsDelegate name:@"host"];
 
     // EventTarget() constructor is unavailable on Safari < 14 (2020-09-16)
     // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/EventTarget
@@ -79,29 +79,29 @@ CocoaWebView::CocoaWebView()
 
 CocoaWebView::~CocoaWebView()
 {
-    [fDelegateNs release];
+    [fNsDelegate release];
 
-    [fWebViewNs removeFromSuperview];
-    [fWebViewNs release];
+    [fNsWebView removeFromSuperview];
+    [fNsWebView release];
 
-    [fBackgroundNs removeFromSuperview];
-    [fBackgroundNs release];
+    [fNsBackground removeFromSuperview];
+    [fNsBackground release];
 }
 
 void CocoaWebView::realize()
 {
-    [(NSView *)getParent() addSubview:fBackgroundNs];
+    [(NSView *)getParent() addSubview:fNsBackground];
     
     @try {
-        if ([fBackgroundNs respondsToSelector:@selector(setBackgroundColor:)]) {
+        if ([fNsBackground respondsToSelector:@selector(setBackgroundColor:)]) {
             CGFloat c[] = { DISTRHO_UNPACK_RGBA_NORM(getBackgroundColor(), CGFloat) };
             NSColor* color = [NSColor colorWithRed:c[0] green:c[1] blue:c[2] alpha:c[3]];
-            [fBackgroundNs setValue:color forKey:@"backgroundColor"];
+            [fNsBackground setValue:color forKey:@"backgroundColor"];
         }
 
-        if ([fWebViewNs respondsToSelector:@selector(_setDrawsBackground:)]) {
+        if ([fNsWebView respondsToSelector:@selector(_setDrawsBackground:)]) {
             NSNumber *no = [[NSNumber alloc] initWithBool:NO];
-            [fWebViewNs setValue:no forKey:@"drawsBackground"];
+            [fNsWebView setValue:no forKey:@"drawsBackground"];
             [no release];
         }
     } @catch (NSException *e) {
@@ -114,7 +114,7 @@ void CocoaWebView::navigate(String& url)
     NSString *urlStr = [[NSString alloc] initWithCString:url encoding:NSUTF8StringEncoding];
     NSURL *urlObj = [[NSURL alloc] initWithString:urlStr];
     NSURL *urlBase = [urlObj URLByDeletingLastPathComponent];
-    [fWebViewNs loadFileURL:urlObj allowingReadAccessToURL:urlBase];
+    [fNsWebView loadFileURL:urlObj allowingReadAccessToURL:urlBase];
     [urlObj release];
     [urlStr release];
 }
@@ -122,7 +122,7 @@ void CocoaWebView::navigate(String& url)
 void CocoaWebView::runScript(String& source)
 {
     NSString *js = [[NSString alloc] initWithCString:source encoding:NSUTF8StringEncoding];
-    [fWebViewNs evaluateJavaScript:js completionHandler: nil];
+    [fNsWebView evaluateJavaScript:js completionHandler: nil];
     [js release];
 }
 
@@ -131,7 +131,7 @@ void CocoaWebView::injectScript(String& source)
     NSString *js = [[NSString alloc] initWithCString:source encoding:NSUTF8StringEncoding];
     WKUserScript *script = [[WKUserScript alloc] initWithSource:js
         injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
-    [fWebViewNs.configuration.userContentController addUserScript:script];
+    [fNsWebView.configuration.userContentController addUserScript:script];
     [script release];
     [js release];
 }
@@ -141,9 +141,9 @@ void CocoaWebView::onSize(uint width, uint height)
     CGRect frame;
     frame.size.width = (CGFloat)width;
     frame.size.height = (CGFloat)height;
-    frame = [fBackgroundNs.window convertRectFromBacking:frame]; // convert DPF coords. to AppKit
-    frame.origin = fBackgroundNs.frame.origin; // keep position, for example REAPER sets it
-    fBackgroundNs.frame = frame;
+    frame = [fNsBackground.window convertRectFromBacking:frame]; // convert DPF coords. to AppKit
+    frame.origin = fNsBackground.frame.origin; // keep position, for example REAPER sets it
+    fNsBackground.frame = frame;
 }
 
 @implementation DistrhoWebView

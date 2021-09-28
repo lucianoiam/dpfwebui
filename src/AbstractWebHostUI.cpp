@@ -31,8 +31,8 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     , fInitWidth(0)
     , fInitHeight(0)
     , fBackgroundColor(backgroundColor)
+    , fMessageQueueReady(false)
     , fUiBlockQueued(false)
-    , fInitMessageQueueFlushed(false)
 {
     // It is not possible to implement JS synchronous calls that return values
     // without resorting to dirty hacks. Use JS async functions instead, and
@@ -206,7 +206,7 @@ void AbstractWebHostUI::setWebView(AbstractWebView* webView)
 
 void AbstractWebHostUI::webViewPostMessage(const JsValueVector& args)
 {
-    if (fInitMessageQueueFlushed) {
+    if (fMessageQueueReady) {
         fWebView->postMessage(args);
     } else {
         fInitMessageQueue.push_back(args);
@@ -215,11 +215,11 @@ void AbstractWebHostUI::webViewPostMessage(const JsValueVector& args)
 
 void AbstractWebHostUI::flushInitMessageQueue()
 {
-    if (fInitMessageQueueFlushed) {
+    if (fMessageQueueReady) {
         return;
     }
 
-    fInitMessageQueueFlushed = true;
+    fMessageQueueReady = true;
 
     for (InitMessageQueue::iterator it = fInitMessageQueue.begin(); it != fInitMessageQueue.end(); ++it) {
         fWebView->postMessage(*it);
@@ -259,21 +259,17 @@ void AbstractWebHostUI::parameterChanged(uint32_t index, float value)
 }
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-
 void AbstractWebHostUI::programLoaded(uint32_t index)
 {
     webViewPostMessage({"UI", "programLoaded", index});
 }
-
 #endif // DISTRHO_PLUGIN_WANT_PROGRAMS
 
 #if DISTRHO_PLUGIN_WANT_STATE
-
 void AbstractWebHostUI::stateChanged(const char* key, const char* value)
 {
     webViewPostMessage({"UI", "stateChanged", key, value});
 }
-
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
 void AbstractWebHostUI::handleWebViewLoadFinished()
