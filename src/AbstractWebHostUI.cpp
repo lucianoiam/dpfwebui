@@ -111,6 +111,12 @@ AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t b
     });
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
+#if DISTRHO_PLUGIN_WANT_STATEFILES
+    fHandler["requestStateFile"] = std::make_pair(1, [this](const JsValueVector& args) {
+        requestStateFile(args[0].getString());
+    });
+#endif // DISTRHO_PLUGIN_WANT_STATEFILES
+
     fHandler["isStandalone"] = std::make_pair(0, [this](const JsValueVector&) {
         webViewPostMessage({"UI", "isStandalone", isStandalone()});
     });

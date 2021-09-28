@@ -89,6 +89,11 @@ class UI {
         this._call('setState', key, value);
     }
 
+    // bool UI::requestStateFile(const char* key)
+    requestStateFile(key) {
+        this._call('requestStateFile', key);
+    }
+
     // void UI::sizeChanged(uint width, uint height)
     sizeChanged(width, height) {
         // default empty implementation

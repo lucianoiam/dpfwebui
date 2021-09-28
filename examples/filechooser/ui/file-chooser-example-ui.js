@@ -21,19 +21,17 @@ class FileChooserExampleUI extends DISTRHO.UI {
     constructor() {
         super();
 
-        this.flushInitMessageQueue();
+        document.getElementById('choose').addEventListener('click', (ev) => {
+            this.requestStateFile('file');
+        });
 
-        document.body.style.visibility = 'visible';
+        this.flushInitMessageQueue();
     }
 
     stateChanged(key, value) {
-
-        if (key == 'file') {
-            console.log(`Picked file : ${value}`);
+        if ((key == 'file') && value) {
+            document.getElementById('filename').innerText = value;
         }
-
-        // TODO
-
     }
 
 }
