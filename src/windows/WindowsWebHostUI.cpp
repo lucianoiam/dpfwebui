@@ -16,18 +16,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <functional>
+
 #include <shellscalingapi.h>
 
 #include "WindowsWebHostUI.hpp"
+
+BOOL CALLBACK FindHostWindowProc(HWND hWnd, LPARAM lParam);
 
 USE_NAMESPACE_DISTRHO
 
 WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
 {
-    if (shouldCreateWebView()) {
-        setWebView(new EdgeWebView()); // base class owns web view
+    if (!shouldCreateWebView()) {
+        return;
     }
+    
+    EdgeWebView* view = new EdgeWebView();
+
+    // Some hosts need key events delivered directly to their main window
+    EnumWindows(FindHostWindowProc, reinterpret_cast<LPARAM>(&fHostHWnd));
+
+    if (fHostHWnd != 0) {
+        view->lowLevelKeyboardHookCallback = std::bind(&WindowsWebHostUI::handleWebViewLowLevelKeyEvent,
+            this, std::placeholders::_1, std::placeholders::_2);
+    }
+
+    setWebView(view); // base class owns web view
 }
 
 WindowsWebHostUI::~WindowsWebHostUI()
@@ -93,4 +109,50 @@ uintptr_t WindowsWebHostUI::createStandaloneWindow()
 void WindowsWebHostUI::processStandaloneEvents()
 {
     // TODO - standalone support
+}
+
+void WindowsWebHostUI::handleWebViewLowLevelKeyEvent(UINT message, KBDLLHOOKSTRUCT* lpData)
+{
+    // Translate low level keyboard events into a format suitable for SendMessage()
+    WPARAM wParam = lpData->vkCode;
+    LPARAM lParam = /* scan code */ lpData->scanCode << 16 | /* repeat count */ 0x1;
+
+    switch (message) {
+        case WM_KEYDOWN:
+            // Basic logic that forwards a-z to allow playing with Live's virtual keyboard.
+            SendMessage(fHostHWnd, WM_KEYDOWN, wParam, lParam);
+
+            if ((lpData->vkCode >= 'A') && (lpData->vkCode <= 'Z')) {
+                wParam |= 0x20; // to lowercase
+                SendMessage(fHostHWnd, WM_CHAR, wParam, lParam);
+            }
+
+            break;
+        case WM_KEYUP:
+            // bit 30: The previous key state. The value is always 1 for a WM_KEYUP message.
+            // bit 31: The transition state. The value is always 1 for a WM_KEYUP message.
+            lParam |= 0xC0000000;
+            SendMessage(fHostHWnd, WM_KEYUP, wParam, lParam);
+            
+            break;
+    }
+}
+
+BOOL CALLBACK FindHostWindowProc(HWND hWnd, LPARAM lParam)
+{
+    DWORD winProcId = 0;
+    GetWindowThreadProcessId(hWnd, &winProcId);
+
+    if (winProcId == GetCurrentProcessId()) {
+        char text[256];
+        text[0] = '\0';
+        GetWindowText(hWnd, (LPSTR)text, sizeof(text));
+
+        if (strstr(text, "Ableton Live") != 0) {
+            *((HWND *)lParam) = hWnd;
+            return FALSE;
+        }
+    }
+
+    return TRUE;
 }

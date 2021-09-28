@@ -38,6 +38,10 @@ protected:
     void      processStandaloneEvents() override;
 
 private:
+    void handleWebViewLowLevelKeyEvent(UINT message, KBDLLHOOKSTRUCT* lpData);
+
+    HWND fHostHWnd;
+
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WindowsWebHostUI)
 
 };

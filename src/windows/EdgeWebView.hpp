@@ -23,6 +23,7 @@
 #define CINTERFACE
 #define COBJMACROS
 
+#include <functional>
 #include <vector>
 
 #include "WebView2.h"
@@ -69,9 +70,12 @@ public:
     HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
+    typedef std::function<void(UINT, KBDLLHOOKSTRUCT*)> LowLevelKeyboardHookCallback;
+
+    LowLevelKeyboardHookCallback lowLevelKeyboardHookCallback;
+
 protected:
     void onSize(uint width, uint height) override;
-    void onKeyboardFocus(bool focus) override;
 
 private:
     void webViewLoaderErrorMessageBox(HRESULT result);

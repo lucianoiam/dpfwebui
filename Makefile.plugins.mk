@@ -113,7 +113,6 @@ HIPHOP_FILES_UI += windows/WindowsPath.cpp \
                    windows/WindowsWebHostUI.cpp \
                    windows/EdgeWebView.cpp \
                    windows/WebView2EventHandler.cpp \
-                   windows/KeyboardRouter.cpp \
                    windows/cJSON.c
 endif
 
