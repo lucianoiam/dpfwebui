@@ -29,41 +29,28 @@
 #include "macro.h"
 #include "cJSON.h"
 
-#include "KeyboardRouter.hpp"
 #include "DistrhoPluginInfo.h"
 
 #define WSTR_CONVERTER std::wstring_convert<std::codecvt_utf8<wchar_t>>()
 #define TO_LPCWSTR(s)  WSTR_CONVERTER.from_bytes(s).c_str()
 #define TO_LPCSTR(s)   WSTR_CONVERTER.to_bytes(s).c_str()
+#define WXSTR(s)       L"" XSTR(s)
 
-#define JS_POST_MESSAGE_SHIM  "window.webviewHost.postMessage = (args) => window.chrome.webview.postMessage(args);"
+#define GWLP_BACKGROUND_COLOR GWLP_USERDATA + 0
+#define GWLP_KEYBOARD_FOCUS   GWLP_USERDATA + 1
 
 #define WEBVIEW2_DOWNLOAD_URL "https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section"
 
-LRESULT CALLBACK HelperWindowProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
-{
-    if (umsg == WM_ERASEBKGND) {
-        uint32_t rgba = (uint32_t)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+#define JS_POST_MESSAGE_SHIM  "window.webviewHost.postMessage = (args) => window.chrome.webview.postMessage(args);"
 
-        if (rgba != 0x000000ff) {
-            RECT rc;
-            GetClientRect(hwnd, &rc);
-            COLORREF bgr = ((rgba & 0xff000000) >> 24) | ((rgba & 0x00ff0000) >> 8)
-                            | ((rgba & 0x0000ff00) << 8);
-            SetBkColor((HDC)wParam, bgr);
-            ExtTextOut((HDC)wParam, 0, 0, ETO_OPAQUE, &rc, 0, 0, 0);
-        }
-
-        return 1;
-    }
-
-    return DefWindowProc(hwnd, umsg, wParam, lParam);
-}
+LRESULT CALLBACK HelperWindowProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK KeyboardFilterProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 USE_NAMESPACE_DISTRHO
 
 EdgeWebView::EdgeWebView()
     : fHelperHwnd(0)
+    , fKeyboardHook(0)
     , fHandler(0)
     , fController(0)
     , fView(0)
@@ -86,11 +73,14 @@ EdgeWebView::EdgeWebView()
     RegisterClassEx(&fHelperClass);
     fHelperHwnd = CreateWindowEx(0, fHelperClass.lpszClassName, L"EdgeWebView Helper",
                                     WS_CHILD, 0, 0, 0, 0, HWND_MESSAGE, 0, 0, 0);
-    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA, 0x000000ff);
+    SetWindowLongPtr(fHelperHwnd, GWLP_BACKGROUND_COLOR, 0x000000ff);
     ShowWindow(fHelperHwnd, SW_SHOW);
 
     setKeyboardFocus(false);
-    KeyboardRouter::getInstance().incRefCount();
+
+    // Unfortunately there is no Edge WebView2 API for disabling keyboard input
+    // https://github.com/MicrosoftEdge/WebView2Feedback/issues/112
+    fKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardFilterProc, GetModuleHandle(0), 0);
 
     fHandler = new InternalWebView2EventHandler(this);
 
@@ -129,7 +119,7 @@ EdgeWebView::~EdgeWebView()
 {
     fHandler->release();
 
-    KeyboardRouter::getInstance().decRefCount();
+    UnhookWindowsHookEx(fKeyboardHook);
 
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
@@ -144,7 +134,7 @@ EdgeWebView::~EdgeWebView()
 void EdgeWebView::realize()
 {
     SetParent(fHelperHwnd, (HWND)getParent());
-    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA, (LONG_PTR)getBackgroundColor());
+    SetWindowLongPtr(fHelperHwnd, GWLP_BACKGROUND_COLOR, (LONG_PTR)getBackgroundColor());
     RedrawWindow(fHelperHwnd, 0, 0, RDW_ERASE);
 }
 
@@ -192,8 +182,8 @@ void EdgeWebView::onSize(uint width, uint height)
 
 void EdgeWebView::onKeyboardFocus(bool focus)
 {
-    // Allow KeyboardRouter to read focus state
-    SetWindowLongPtr(fHelperHwnd, GWLP_USERDATA + 1, (LONG_PTR)focus);
+    // Allow KeyboardFilterProc to read focus state
+    SetWindowLongPtr(fHelperHwnd, GWLP_KEYBOARD_FOCUS, (LONG_PTR)focus);
 }
 
 HRESULT EdgeWebView::handleWebView2EnvironmentCompleted(HRESULT result,
@@ -318,4 +308,79 @@ void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
     if (id == IDOK) {
         ShellExecute(0, L"open", L"" WEBVIEW2_DOWNLOAD_URL, 0, 0, SW_SHOWNORMAL);
     }
+}
+
+LRESULT CALLBACK HelperWindowProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
+{
+    if (umsg == WM_ERASEBKGND) {
+        uint32_t rgba = (uint32_t)GetWindowLongPtr(hwnd, GWLP_BACKGROUND_COLOR);
+
+        if (rgba != 0x000000ff) {
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            COLORREF bgr = ((rgba & 0xff000000) >> 24) | ((rgba & 0x00ff0000) >> 8)
+                            | ((rgba & 0x0000ff00) << 8);
+            SetBkColor((HDC)wParam, bgr);
+            ExtTextOut((HDC)wParam, 0, 0, ETO_OPAQUE, &rc, 0, 0, 0);
+        }
+
+        return 1;
+    }
+
+    return DefWindowProc(hwnd, umsg, wParam, lParam);
+}
+
+#define ISALPHA_VKCODE(k)    ((k >= 'A') && (k <= 'Z'))
+#define ISNUM_VKCODE(k)      ((k >= '0') && (k <= '9'))
+#define ISALPHANUM_VKCODE(k) ISALPHA_VKCODE(k) || ISNUM_VKCODE(k)
+
+LRESULT CALLBACK KeyboardFilterProc(int nCode, WPARAM wParam, LPARAM lParam)
+{    
+    // HC_ACTION means wParam & lParam contain info about keystroke message
+    if (nCode == HC_ACTION) {
+        HWND hWnd = GetFocus();
+        HWND helperHwnd = 0;
+        WCHAR className[256];
+        int level = 0;
+
+        // Check if focused window belongs to the hierarchy of one of our plugin instances
+        // Max 3 levels is reasonable for reaching plugin window from a Chrome child window
+        while (level++ < 3) { 
+            GetClassName(hWnd, className, sizeof(className));
+
+            if ((wcswcs(className, L"EdgeWebView") != 0)
+                    && (wcswcs(className, WXSTR(HIPHOP_PROJECT_ID_HASH)) != 0)) {
+                helperHwnd = hWnd;
+                break;
+            }
+
+            hWnd = GetParent(hWnd);
+        }
+
+        if (helperHwnd != 0) {
+            // Read plugin configuration
+            bool keyboardFocus = (bool)GetWindowLongPtr(helperHwnd, GWLP_KEYBOARD_FOCUS);
+
+            if (keyboardFocus) {
+                // Let keystroke reach web view
+
+            } else {
+                // Redirect keystroke to host
+                KBDLLHOOKSTRUCT* lpData = (KBDLLHOOKSTRUCT *)lParam;
+
+                // TODO - run callback
+                //KeyboardRouter::getInstance().hostSendLowLevelKeyEvent((UINT)wParam, lpData);
+
+                // Do not allow some keystrokes to reach the web view to keep
+                // consistent behavior across all platforms, keystrokes should
+                // be consumed at a single place. Allow everything else to pass
+                // like Alt-Tab.
+                if (ISALPHANUM_VKCODE(lpData->vkCode)) {
+                    return 1;
+                }
+            }
+        }
+    }
+
+    return CallNextHookEx(0, nCode, wParam, lParam);
 }

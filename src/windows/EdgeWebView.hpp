@@ -78,6 +78,7 @@ private:
 
     WNDCLASSEX fHelperClass;
     HWND       fHelperHwnd;
+    HHOOK      fKeyboardHook;
     String     fUrl;
     
     std::vector<String> fInjectedScripts;
