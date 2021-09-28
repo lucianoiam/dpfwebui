@@ -238,7 +238,7 @@ endif
 
 # https://stackoverflow.com/questions/37038472/osx-how-to-statically-link-a-library-and-dynamically-link-the-standard-library
 $(WASMER_PATH):
-	@wget -O /tmp/$(WASMER_PKG_FILE) $(WASMER_URL)
+	@wget -4 -O /tmp/$(WASMER_PKG_FILE) $(WASMER_URL)
 	@mkdir -p $(WASMER_PATH)
 	@tar xzf /tmp/$(WASMER_PKG_FILE) -C $(WASMER_PATH)
 ifeq ($(LINUX),true)
@@ -265,7 +265,7 @@ TARGETS += /opt/node/npm
 
 /opt/node/npm:
 	@echo Downloading Node.js ...
-	@wget -P /tmp $(NPM_URL)
+	@wget -4 -P /tmp $(NPM_URL)
 	@unzip -o /tmp/$(NPM_FILENAME) -d /opt
 	@mv /opt/$(basename $(NPM_FILENAME)) /opt/node
 	@rm /tmp/$(NPM_FILENAME)
@@ -300,7 +300,7 @@ endif
 
 /usr/bin/nuget.exe:
 	@echo Downloading NuGet...
-	@wget -P /usr/bin $(NUGET_URL)
+	@wget -4 -P /usr/bin $(NUGET_URL)
 endif
 endif
 

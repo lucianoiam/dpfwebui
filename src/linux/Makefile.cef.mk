@@ -17,7 +17,7 @@ CEF_URL = https://cef-builds.spotifycdn.com/$(CEF_DISTRO_FILE)
 
 $(CEF_PATH):
 	@echo Downloading CEF...
-	@wget -O /tmp/$(CEF_DISTRO_FILE) $(CEF_URL)
+	@wget -4 -O /tmp/$(CEF_DISTRO_FILE) $(CEF_URL)
 	@mkdir -p $(HIPHOP_LIB_PATH)
 	@echo Decompressing CEF...
 	@tar xjf /tmp/$(CEF_DISTRO_FILE) -C $(HIPHOP_LIB_PATH)
