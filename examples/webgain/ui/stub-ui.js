@@ -69,6 +69,10 @@ class StubUI {
         console.log(`setState(${key}, ${value})`);
     }
 
+    requestStateFile(key) {
+        console.log(`requestStateFile(${key})`);
+    }
+
     async isStandalone() {
         return true;
     }
@@ -87,10 +91,6 @@ class StubUI {
 
     async getInitHeight() {
         return document.body.clientHeight;
-    }
-
-    flushInitMessageQueue() {
-        console.log('flushInitMessageQueue()');
     }
 
     postMessage(...args) {

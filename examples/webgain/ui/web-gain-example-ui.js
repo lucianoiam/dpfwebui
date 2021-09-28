@@ -51,12 +51,6 @@ class WebGainExampleUI extends DISTRHO.UI {
             elem('kbd-demo').focus();
         });
 
-        // Process any UI message generated while the web view was still loading.
-        // It is mandatory to call this method at some point, for example after
-        // UI becomes ready, otherwise queue grows indefinitely on the C++ side
-        // and messages (ie. callbacks and replies) never reach JavaScript.
-        this.flushInitMessageQueue();
-
         // Showtime
         document.body.style.visibility = 'visible';
     }

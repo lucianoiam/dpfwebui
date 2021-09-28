@@ -25,8 +25,6 @@ class JitDrumExampleUI extends DISTRHO.UI {
         this.addTapListener('note-2', () => this.sendNote(1, 60, 127));
         this.addTapListener('note-3', () => this.sendNote(1, 72, 127));
 
-        this.flushInitMessageQueue();
-
         document.body.style.visibility = 'visible';
     }
 

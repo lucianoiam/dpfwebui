@@ -47,8 +47,6 @@ class ExampleUI extends DISTRHO.UI {
         document.getElementById('gain').addEventListener('input', (ev) => {
             this.setParameterValue(0, parseFloat(ev.target.value));
         });
-
-        this.flushInitMessageQueue();
     }
 
     parameterChanged(index, value) {

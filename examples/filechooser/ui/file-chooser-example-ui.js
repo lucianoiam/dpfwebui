@@ -24,8 +24,6 @@ class FileChooserExampleUI extends DISTRHO.UI {
         document.getElementById('choose').addEventListener('click', (ev) => {
             this.requestStateFile('file');
         });
-
-        this.flushInitMessageQueue();
     }
 
     stateChanged(key, value) {

@@ -37,6 +37,14 @@ class UI {
                 this[method](...args); // call method
             }
         });
+
+        // Call WebHostUI::flushInitMessageQueue() to receive any UI message
+        // generated while the web view was still loading. Since this involves
+        // message passing, it will not cause any UI methods to be triggered
+        // synchronously and it is safe to indirectly call from super() in
+        // subclass constructors.
+
+        this._call('flushInitMessageQueue');
     }
 
     // uint UI::getWidth()
@@ -137,11 +145,6 @@ class UI {
     // uint WebHostUI::getInitHeight()
     async getInitHeight() {
         return this._callAndExpectReply('getInitHeight');
-    }
-
-    // void WebHostUI::flushInitMessageQueue()
-    flushInitMessageQueue() {
-        this._call('flushInitMessageQueue');
     }
 
     // void WebHostUI::webViewPostMessage(const JsValueVector& args)
