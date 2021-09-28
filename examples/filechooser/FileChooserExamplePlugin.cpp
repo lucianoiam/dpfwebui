@@ -84,10 +84,6 @@ public:
         }
     }
 
-    void  initParameter(uint32_t, Parameter&) override { /* no-op */ }
-    float getParameterValue(uint32_t) const override { /* no-op */ return 0; }
-    void  setParameterValue(uint32_t, float) override { /* no-op */ }
-
 private:
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FileChooserExamplePlugin)
 
