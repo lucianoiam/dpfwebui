@@ -70,7 +70,7 @@ public:
     HRESULT handleWebView2WebMessageReceived(ICoreWebView2 *sender,
                                     ICoreWebView2WebMessageReceivedEventArgs *eventArgs) override;
 
-    typedef std::function<void(UINT, KBDLLHOOKSTRUCT*)> LowLevelKeyboardHookCallback;
+    typedef std::function<void(UINT, KBDLLHOOKSTRUCT*, bool)> LowLevelKeyboardHookCallback;
 
     LowLevelKeyboardHookCallback lowLevelKeyboardHookCallback;
 

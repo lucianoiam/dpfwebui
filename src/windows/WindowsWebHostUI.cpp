@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <functional>
-
 #include <shellscalingapi.h>
 
 #include "WindowsWebHostUI.hpp"
@@ -43,8 +41,11 @@ WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t bac
         fHostHWnd = reinterpret_cast<HWND>(getParentWindowHandle());
     }
 
-    view->lowLevelKeyboardHookCallback = std::bind(&WindowsWebHostUI::handleWebViewLowLevelKeyEvent,
-        this, std::placeholders::_1, std::placeholders::_2);
+    view->lowLevelKeyboardHookCallback = [this](UINT message, KBDLLHOOKSTRUCT* lpData, bool focus) {
+        if (!focus) {
+            hostWindowSendKeyEvent(message, lpData);
+        }
+    };
 
     setWebView(view); // base class owns web view
 }
@@ -114,7 +115,7 @@ void WindowsWebHostUI::processStandaloneEvents()
     // TODO - standalone support
 }
 
-void WindowsWebHostUI::handleWebViewLowLevelKeyEvent(UINT message, KBDLLHOOKSTRUCT* lpData)
+void WindowsWebHostUI::hostWindowSendKeyEvent(UINT message, KBDLLHOOKSTRUCT* lpData)
 {
     // Translate low level keyboard events into a format suitable for SendMessage()
     WPARAM wParam = lpData->vkCode;

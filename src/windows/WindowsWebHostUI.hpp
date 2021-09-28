@@ -38,7 +38,7 @@ protected:
     void      processStandaloneEvents() override;
 
 private:
-    void handleWebViewLowLevelKeyEvent(UINT message, KBDLLHOOKSTRUCT* lpData);
+    void hostWindowSendKeyEvent(UINT message, KBDLLHOOKSTRUCT* lpData);
 
     HWND fHostHWnd;
 

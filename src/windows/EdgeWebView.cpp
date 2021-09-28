@@ -328,9 +328,9 @@ LRESULT CALLBACK KeyboardFilterProc(int nCode, WPARAM wParam, LPARAM lParam)
 {    
     // HC_ACTION means wParam & lParam contain info about keystroke message
     if (nCode == HC_ACTION) {
+        WCHAR className[256];
         HWND hwnd = GetFocus();
         HWND helperHwnd = 0;
-        WCHAR className[256];
         int level = 0;
 
         // Check if focused window belongs to the hierarchy of one of our plugin instances
@@ -348,14 +348,14 @@ LRESULT CALLBACK KeyboardFilterProc(int nCode, WPARAM wParam, LPARAM lParam)
         }
 
         if (helperHwnd != 0) {
-            // Read plugin configuration
             EdgeWebView* view = reinterpret_cast<EdgeWebView *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+            KBDLLHOOKSTRUCT* lpData = reinterpret_cast<KBDLLHOOKSTRUCT *>(lParam);
+            bool focus = view->getKeyboardFocus();
+            view->lowLevelKeyboardHookCallback((UINT)wParam, lpData, focus);
 
-            if (!view->getKeyboardFocus()) {
-                KBDLLHOOKSTRUCT* lpData = reinterpret_cast<KBDLLHOOKSTRUCT *>(lParam);
-
-                view->lowLevelKeyboardHookCallback((UINT)wParam, lpData);
-
+            if (focus) {
+                // Let keystroke reach web view
+            } else {
                 // Do not allow some keystrokes to reach the web view to keep
                 // consistent behavior across all platforms, keystrokes should
                 // be consumed at a single place. Still need to allow some
@@ -364,8 +364,6 @@ LRESULT CALLBACK KeyboardFilterProc(int nCode, WPARAM wParam, LPARAM lParam)
                         || ((lpData->vkCode >= '0') && (lpData->vkCode <= '9'))) {
                     return 1;
                 }
-            } else {
-                // Let keystroke reach web view
             }
         }
     }
