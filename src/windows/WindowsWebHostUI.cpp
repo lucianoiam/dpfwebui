@@ -38,10 +38,13 @@ WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t bac
     // Some hosts need key events delivered directly to their main window
     EnumWindows(FindHostWindowProc, reinterpret_cast<LPARAM>(&fHostHWnd));
 
-    if (fHostHWnd != 0) {
-        view->lowLevelKeyboardHookCallback = std::bind(&WindowsWebHostUI::handleWebViewLowLevelKeyEvent,
-            this, std::placeholders::_1, std::placeholders::_2);
+    if (fHostHWnd == 0) {
+        // Use provided window otherwise
+        fHostHWnd = reinterpret_cast<HWND>(getParentWindowHandle());
     }
+
+    view->lowLevelKeyboardHookCallback = std::bind(&WindowsWebHostUI::handleWebViewLowLevelKeyEvent,
+        this, std::placeholders::_1, std::placeholders::_2);
 
     setWebView(view); // base class owns web view
 }
