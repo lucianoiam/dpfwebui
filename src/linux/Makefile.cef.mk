@@ -25,7 +25,8 @@ $(CEF_PATH):
 	@rm /tmp/$(CEF_DISTRO_FILE)
 
 # ------------------------------------------------------------------------------
-# CEF wrapper static library. Based on libcef_dll/CMakeLists.txt
+# CEF C++ wrapper static library. Based on libcef_dll/CMakeLists.txt
+# Library saved to HIPHOP_LIB_PATH not BUILD_DIR
 
 CEF_FILES_WRAPPER = \
 	cpptoc/frame_handler_cpptoc.cc \
@@ -216,13 +217,20 @@ CEF_CXXFLAGS = -I$(CEF_PATH) -DNDEBUG -DWRAPPING_CEF_SHARED -D_FILE_OFFSET_BITS=
 
 CEF_WRAPPER_OBJ = $(CEF_FILES_WRAPPER:%.cc=$(BUILD_DIR)/libcef_dll_wrapper/%.o)
 
-$(HIPHOP_LIB_PATH)/libcef_dll_wrapper.a: $(CEF_WRAPPER_OBJ)
-	@ar qc $(HIPHOP_LIB_PATH)/libcef_dll_wrapper.a $(CEF_WRAPPER_OBJ)
+CEF_WRAPPER_LIB = $(HIPHOP_LIB_PATH)/libcef_dll_wrapper.a
+
+$(CEF_WRAPPER_LIB): $(CEF_WRAPPER_OBJ)
+	@ar qc $(CEF_WRAPPER_LIB) $(CEF_WRAPPER_OBJ)
 
 $(BUILD_DIR)/libcef_dll_wrapper/%.o: $(CEF_PATH)/libcef_dll/%.cc
 	@mkdir -p $(dir $@)
 	@echo "Compiling $<"
 	@$(CXX) $(CEF_CXXFLAGS) -c $< -o $@
+
+cef_wrapper_msg:
+	@echo Building CEF C++ wrapper library...
+
+cef_wrapper_build: cef_wrapper_msg $(CEF_WRAPPER_LIB)
 
 # ------------------------------------------------------------------------------
 # Build helper binary
@@ -242,7 +250,11 @@ LXHELPER_LDFLAGS = -ldl -lXi -lcef_dll_wrapper -L$(HIPHOP_LIB_PATH) -lcef -L$(CE
 				   -Wl,-z,now -Wl,-z,relro -m64 -Wl,-O1 -Wl,--as-needed \
 				   -Wl,--gc-sections
 
-lxhelper_bin: $(CEF_PATH) $(HIPHOP_LIB_PATH)/libcef_dll_wrapper.a $(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME)
+lxhelper_bin: $(CEF_PATH)
+ifeq ($(wildcard $(CEF_WRAPPER_LIB)),)
+lxhelper_bin: cef_wrapper_build
+endif
+lxhelper_bin: $(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME)
 
 $(LXHELPER_BUILD_DIR)/$(LXHELPER_NAME): $(LXHELPER_OBJ)
 	@echo "Compiling $<"
