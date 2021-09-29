@@ -61,10 +61,10 @@ endif
 # User defined TARGETS become available only *after* inclusion of this Makefile
 
 TEST_LV2 = test -d $(TARGET_DIR)/$(NAME).lv2
-TEST_DSSI = test -d $(TARGET_DIR)/$(NAME)-dssi
 TEST_LINUX_OR_MACOS_JACK = test -f $(TARGET_DIR)/$(NAME)
 TEST_LINUX_VST = test -f $(TARGET_DIR)/$(NAME)-vst.so
 TEST_MAC_VST = test -d $(TARGET_DIR)/$(NAME).vst
+TEST_MAC_VST3 = test -d $(TARGET_DIR)/$(NAME).vst3
 TEST_WINDOWS_JACK = test -f $(TARGET_DIR)/$(NAME).exe
 TEST_WINDOWS_VST = test -f $(TARGET_DIR)/$(NAME)-vst.dll
 TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
@@ -386,10 +386,6 @@ lxhelper_res:
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
 		&& cp -ru $(LXHELPER_FILES) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
 		) || true
-	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
-		&& cp -ru $(LXHELPER_FILES) $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR) \
-		) || true
 endif
 endif
 
@@ -445,13 +441,13 @@ lib_dsp:
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/dsp \
 		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/$(WASM_DST_PATH) \
 		) || true
-	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR)/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR)/$(WASM_DST_PATH) \
-		) || true
 	@($(TEST_MAC_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
 		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(WASM_DST_PATH) \
+		) || true
+	@($(TEST_MAC_VST3) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/$(WASM_DST_PATH) \
 		) || true
 endif
 
@@ -471,13 +467,13 @@ lib_ui:
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/ui \
 		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/ui \
 		) || true
-	@($(TEST_DSSI) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR)/ui \
-		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME)-dssi/$(TARGET_LIB_DIR)/ui \
-		) || true
 	@($(TEST_MAC_VST) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
 		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
+		) || true
+	@($(TEST_MAC_VST3) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/ui \
 		) || true
 
 clean: clean_lib

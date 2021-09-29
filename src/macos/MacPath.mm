@@ -34,6 +34,8 @@ String path::getBinaryPath()
     Dl_info dl_info;
     String path;
 
+    // dladdr() works for executables and dynamic libraries
+
     if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) != 0) {
         path = dl_info.dli_fname;
     } else {
@@ -49,16 +51,38 @@ String path::getLibraryPath()
     strcpy(binPath, getBinaryPath());
     String path = String(dirname(binPath));
 
-    void *handle = dlopen(binPath, RTLD_NOLOAD);
+    // dlopen() only works for dynamic libraries
+
+    void* handle = dlopen(binPath, RTLD_NOLOAD);
 
     if (handle != 0) {
-        void *addr = dlsym(handle, "VSTPluginMain");
-        dlclose(handle);
+        void* addr = dlsym(handle, "lv2ui_descriptor");
 
         if (addr != 0) {
-            return path + "/../Resources";
+            dlclose(handle);
+            return path + "/" + kDefaultLibrarySubdirectory; // LV2
         }
+
+        addr = dlsym(handle, "VSTPluginMain");
+
+        if (addr != 0) {
+            dlclose(handle);
+            return path + "/../Resources"; // VST2
+        }
+
+        addr = dlsym(handle, "GetPluginFactory");
+
+        if (addr != 0) {
+            dlclose(handle);
+            return path + "/../Resources"; // VST3
+        }
+
+        // Should not happen
+
+        dlclose(handle);
     }
+
+    // Standalone
 
     return path + "/" + kDefaultLibrarySubdirectory;
 }
