@@ -49,10 +49,10 @@ String path::getLibraryPath()
 {
     char binPath[PATH_MAX];
     strcpy(binPath, getBinaryPath());
-    String path = String(dirname(binPath));
+    String path(dirname(binPath));
 
     // dlopen() only works for dynamic libraries
-    void* handle = dlopen(binPath, RTLD_NOLOAD);
+    void* handle = dlopen(binPath, RTLD_LAZY | RTLD_NOLOAD);
     void* addr;
 
     if (handle != 0) {
@@ -80,7 +80,6 @@ String path::getLibraryPath()
             return path + "/../Resources"; // VST3
         }
 
-        // Should not happen
         dlclose(handle);
     }
 

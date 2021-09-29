@@ -386,6 +386,10 @@ lxhelper_res:
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
 		&& cp -ru $(LXHELPER_FILES) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
 		) || true
+	@($(TEST_VST3) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst3/Contents/Resources \
+		&& cp -ru $(LXHELPER_FILES) $(TARGET_DIR)/$(NAME).vst3/Contents/Resources \
+		) || true
 endif
 endif
 

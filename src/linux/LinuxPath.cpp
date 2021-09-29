@@ -33,43 +33,88 @@
 
 USE_NAMESPACE_DISTRHO
 
-static String getSharedLibraryPath()
+static char* getImagePath(char* buf, int sz)
 {
+    memset(buf, 0, sz);
     Dl_info dl_info;
 
     if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
         HIPHOP_LOG_STDERR(dlerror());
-        return String();
+        return buf;
     }
-    
-    return String(dl_info.dli_fname);
+
+    strncpy(buf, dl_info.dli_fname, sz - 1);
+
+    return buf;
 }
 
-static String getExecutablePath()
+static char* getExecutablePath(char* buf, int sz)
 {
-    char path[PATH_MAX];
-    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    memset(buf, 0, sz);
+    ssize_t len = readlink("/proc/self/exe", buf, sz - 1);
 
     if (len == -1) {
         HIPHOP_LOG_STDERR_ERRNO("Could not determine executable path");
-        return String();
+        return buf;
     }
 
-    return String(path);
+    return buf;
 }
 
 String path::getBinaryPath()
 {
-    String soPath = getSharedLibraryPath();
-    String exePath = getExecutablePath();
-    return soPath == exePath ? exePath : soPath;
+    char imgPath[PATH_MAX];
+    getImagePath(imgPath, sizeof(imgPath));
+    char exePath[PATH_MAX];
+    getExecutablePath(exePath, sizeof(exePath));
+    const char *path = strcmp(imgPath, exePath) == 0 ? exePath : imgPath;
+    return String(path);
 }
 
 String path::getLibraryPath()
 {
-    char path[PATH_MAX];
-    strcpy(path, getBinaryPath());
-    return String(dirname(path)) + "/" + kDefaultLibrarySubdirectory;
+    char imgPath[PATH_MAX];
+    getImagePath(imgPath, sizeof(imgPath));
+    char exePath[PATH_MAX];
+    getExecutablePath(exePath, sizeof(exePath));
+
+    if (strcmp(imgPath, exePath) != 0) {
+        void* handle = dlopen(imgPath, RTLD_LAZY | RTLD_NOLOAD);
+        void* addr;
+
+        String path(dirname(imgPath)); 
+
+        if (handle != 0) {
+            addr = dlsym(handle, "lv2ui_descriptor");
+            if (addr != 0) {
+                dlclose(handle);
+                return path + "/" + kDefaultLibrarySubdirectory; // LV2
+            }
+
+            addr = dlsym(handle, "lv2_descriptor");
+            if (addr != 0) {
+                dlclose(handle);
+                return path + "/" + kDefaultLibrarySubdirectory; // LV2
+            }
+
+            addr = dlsym(handle, "main");
+            if (addr != 0) {
+                dlclose(handle);
+                return path + "/" + kDefaultLibrarySubdirectory; // VST2
+            }
+
+            addr = dlsym(handle, "GetPluginFactory");
+            if (addr != 0) {
+                dlclose(handle);
+                return path + "/../Resources"; // VST3
+            }
+
+            dlclose(handle);
+        }
+    }
+
+    // Standalone
+    return String(dirname(exePath)) + "/" + kDefaultLibrarySubdirectory;
 }
 
 String path::getCachesPath()
