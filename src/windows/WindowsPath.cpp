@@ -44,12 +44,38 @@ String path::getBinaryPath()
 
 String path::getLibraryPath()
 {
-    char path[MAX_PATH];
-    strcpy(path, getBinaryPath());
+    char binPath[MAX_PATH];
+    strcpy(binPath, getBinaryPath());
+    PathRemoveFileSpec(binPath);
+    String path(binPath);
     
-    PathRemoveFileSpec(path);
+    // HISTANCE and HMODULE are interchangeable
+    // https://stackoverflow.com/questions/2126657/how-can-i-get-hinstance-from-a-dll
+    HMODULE hm = (HMODULE)&__ImageBase;
+    FARPROC addr;
 
-    return String(path) + "\\" + kDefaultLibrarySubdirectory;
+    addr = GetProcAddress(hm, "lv2ui_descriptor");
+    if (addr != 0) {
+        return path + "\\" + kDefaultLibrarySubdirectory; // LV2
+    }
+
+    addr = GetProcAddress(hm, "lv2_descriptor");
+    if (addr != 0) {
+        return path + "\\" + kDefaultLibrarySubdirectory; // LV2
+    }
+
+    addr = GetProcAddress(hm, "VSTPluginMain");
+    if (addr != 0) {
+        return path + "\\" + kDefaultLibrarySubdirectory; // VST2
+    }
+
+    addr = GetProcAddress(hm, "GetPluginFactory");
+    if (addr != 0) {
+        return path + "\\..\\Resources"; // VST3
+    }
+
+    // Standalone
+    return path + "\\" + kDefaultLibrarySubdirectory;
 }
 
 String path::getCachesPath()

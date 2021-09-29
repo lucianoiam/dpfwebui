@@ -61,14 +61,14 @@ endif
 # User defined TARGETS become available only *after* inclusion of this Makefile
 
 TEST_LV2 = test -d $(TARGET_DIR)/$(NAME).lv2
+TEST_VST3 = test -d $(TARGET_DIR)/$(NAME).vst3
 TEST_LINUX_OR_MACOS_JACK = test -f $(TARGET_DIR)/$(NAME)
-TEST_LINUX_VST = test -f $(TARGET_DIR)/$(NAME)-vst.so
-TEST_MAC_VST = test -d $(TARGET_DIR)/$(NAME).vst
-TEST_MAC_VST3 = test -d $(TARGET_DIR)/$(NAME).vst3
+TEST_LINUX_VST2 = test -f $(TARGET_DIR)/$(NAME)-vst.so
+TEST_MAC_VST2 = test -d $(TARGET_DIR)/$(NAME).vst
 TEST_WINDOWS_JACK = test -f $(TARGET_DIR)/$(NAME).exe
-TEST_WINDOWS_VST = test -f $(TARGET_DIR)/$(NAME)-vst.dll
-TEST_JACK_OR_WINDOWS_VST = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
-							|| $(TEST_WINDOWS_VST) 
+TEST_WINDOWS_VST2 = test -f $(TARGET_DIR)/$(NAME)-vst.dll
+TEST_JACK_OR_WINDOWS_VST2 = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
+							|| $(TEST_WINDOWS_VST2) 
 
 # ------------------------------------------------------------------------------
 # Add optional support for AssemblyScript DSP
@@ -378,7 +378,7 @@ HIPHOP_TARGET += lxhelper_res
 
 lxhelper_res:
 	@echo "Copying UI helper files..."
-	@($(TEST_LINUX_OR_MACOS_JACK) || $(TEST_LINUX_VST) \
+	@($(TEST_LINUX_OR_MACOS_JACK) || $(TEST_LINUX_VST2) \
 		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR) \
 		&& cp -ru $(LXHELPER_FILES) $(TARGET_DIR)/$(TARGET_LIB_DIR) \
 		) || true
@@ -433,21 +433,21 @@ lib_dsp:
 		|| (cd $(HIPHOP_AS_DSP_PATH) && $(NPM_ENV) && npm install)
 	@cd $(HIPHOP_AS_DSP_PATH) && $(NPM_ENV) && npm run asbuild
 	@echo "Copying WebAssembly DSP binary..."
-	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR)/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(TARGET_LIB_DIR)/$(WASM_DST_PATH) \
-		) || true
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/dsp \
 		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/$(WASM_DST_PATH) \
 		) || true
-	@($(TEST_MAC_VST) \
+	@($(TEST_VST3) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/$(WASM_DST_PATH) \
+		) || true
+	@($(TEST_MAC_VST2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
 		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(WASM_DST_PATH) \
 		) || true
-	@($(TEST_MAC_VST3) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/$(WASM_DST_PATH) \
+	@($(TEST_JACK_OR_WINDOWS_VST2) \
+		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR)/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(TARGET_LIB_DIR)/$(WASM_DST_PATH) \
 		) || true
 endif
 
@@ -459,21 +459,21 @@ HIPHOP_TARGET += lib_ui
 
 lib_ui:
 	@echo "Copying web UI files..."
-	@($(TEST_JACK_OR_WINDOWS_VST) \
-		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR)/ui \
-		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(TARGET_LIB_DIR)/ui \
-		) || true
 	@($(TEST_LV2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/ui \
 		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/ui \
 		) || true
-	@($(TEST_MAC_VST) \
+	@($(TEST_VST3) \
+		&& mkdir -p $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/ui \
+		) || true
+	@($(TEST_MAC_VST2) \
 		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
 		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
 		) || true
-	@($(TEST_MAC_VST3) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/ui \
-		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/ui \
+	@($(TEST_JACK_OR_WINDOWS_VST2) \
+		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR)/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(TARGET_LIB_DIR)/ui \
 		) || true
 
 clean: clean_lib
@@ -491,7 +491,7 @@ HIPHOP_TARGET += edge_lib
 WEBVIEW_DLL = $(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll
 
 edge_lib:
-	@($(TEST_JACK_OR_WINDOWS_VST) \
+	@($(TEST_JACK_OR_WINDOWS_VST2) \
 		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR) \
 		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(TARGET_LIB_DIR) \
 		) || true

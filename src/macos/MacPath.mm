@@ -52,46 +52,39 @@ String path::getLibraryPath()
     String path = String(dirname(binPath));
 
     // dlopen() only works for dynamic libraries
-
     void* handle = dlopen(binPath, RTLD_NOLOAD);
     void* addr;
 
     if (handle != 0) {
         addr = dlsym(handle, "lv2ui_descriptor");
-
         if (addr != 0) {
             dlclose(handle);
             return path + "/" + kDefaultLibrarySubdirectory; // LV2
         }
 
         addr = dlsym(handle, "lv2_descriptor");
-
         if (addr != 0) {
             dlclose(handle);
             return path + "/" + kDefaultLibrarySubdirectory; // LV2
         }
 
         addr = dlsym(handle, "VSTPluginMain");
-
         if (addr != 0) {
             dlclose(handle);
             return path + "/../Resources"; // VST2
         }
 
         addr = dlsym(handle, "GetPluginFactory");
-
         if (addr != 0) {
             dlclose(handle);
             return path + "/../Resources"; // VST3
         }
 
         // Should not happen
-
         dlclose(handle);
     }
 
     // Standalone
-
     return path + "/" + kDefaultLibrarySubdirectory;
 }
 
