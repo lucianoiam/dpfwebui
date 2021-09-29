@@ -45,14 +45,6 @@ TARGETS += jack
 endif
 endif
 
-ifneq ($(MACOS_OR_WINDOWS),true)
-ifeq ($(HAVE_OPENGL),true)
-ifeq ($(HAVE_LIBLO),true)
-TARGETS += dssi
-endif
-endif
-endif
-
 ifeq ($(HAVE_OPENGL),true)
 TARGETS += lv2_sep
 else

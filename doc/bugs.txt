@@ -12,7 +12,6 @@ LINUX
 - CEFKBDFOCUSBUG : Toggling keyboard focus works for the CEF based web view but
   Xlib errors are generated when calling setKeyboardFocus(true). XIGrabDevice()
   is probably called with incorrect arguments, see CefHelper.cpp.
-- DSSI plugin builds but UI does not open
 
 
 MACOS
