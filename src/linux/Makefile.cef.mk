@@ -26,7 +26,7 @@ $(CEF_PATH):
 
 # ------------------------------------------------------------------------------
 # CEF C++ wrapper static library. Based on libcef_dll/CMakeLists.txt
-# Library saved to HIPHOP_LIB_PATH not BUILD_DIR
+# Library saved to framework HIPHOP_LIB_PATH not plugin BUILD_DIR
 
 CEF_FILES_WRAPPER = \
 	cpptoc/frame_handler_cpptoc.cc \
