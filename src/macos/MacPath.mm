@@ -54,9 +54,17 @@ String path::getLibraryPath()
     // dlopen() only works for dynamic libraries
 
     void* handle = dlopen(binPath, RTLD_NOLOAD);
+    void* addr;
 
     if (handle != 0) {
-        void* addr = dlsym(handle, "lv2ui_descriptor");
+        addr = dlsym(handle, "lv2ui_descriptor");
+
+        if (addr != 0) {
+            dlclose(handle);
+            return path + "/" + kDefaultLibrarySubdirectory; // LV2
+        }
+
+        addr = dlsym(handle, "lv2_descriptor");
 
         if (addr != 0) {
             dlclose(handle);
