@@ -40,6 +40,8 @@ LinuxWebHostUI::~LinuxWebHostUI()
 float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
 {
 #if LXWEBVIEW_TYPE == cef
+    // CEF helper also reads Xft.dpi, see CefHelper::getZoomLevel()
+    
     ::Display* const display = XOpenDisplay(nullptr);
 
     XrmInitialize();
@@ -54,17 +56,18 @@ float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
                     && (std::strncmp("String", type, 6) == 0)) {
                 if (const float dpi = std::atof(ret.addr)) {
                     XCloseDisplay(display);
-                    return dpi / 96;
+                    return dpi / 96.f;
                 }
             }
         }
     }
 
     XCloseDisplay(display);
-
 #endif // LXWEBVIEW_TYPE == cef
 
 #if LXWEBVIEW_TYPE == gtk
+    // WebKitGTK reads these environment variables automatically
+
     const char* dpi;
     float k;
 

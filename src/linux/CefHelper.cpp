@@ -284,9 +284,10 @@ void CefHelper::realize(const msg_win_cfg_t* config)
     XSetWindowBackground(fDisplay, w, config->color);
 }
 
-// Match value returned by LinuxWebHostUI::getDisplayScaleFactor()
 float CefHelper::getZoomLevel()
 {
+    // 1. Replicate value of LinuxWebHostUI::getDisplayScaleFactor()
+    // 2. Convert to Chromium scale https://magpcss.org/ceforum/viewtopic.php?t=11491
     XrmInitialize();
 
     if (char* const rms = XResourceManagerString(fDisplay)) {
@@ -298,13 +299,13 @@ float CefHelper::getZoomLevel()
                     && (ret.addr != nullptr) && (type != nullptr)
                     && (std::strncmp("String", type, 6) == 0)) {
                 if (const float dpi = std::atof(ret.addr)) {
-                    return dpi / 96;
+                    return std::log(dpi / 96.f) / std::log(1.2f);
                 }
             }
         }
     }
 
-    return 1.f;
+    return 0;
 }
 
 void CefHelper::setKeyboardFocus(bool keyboardFocus)
