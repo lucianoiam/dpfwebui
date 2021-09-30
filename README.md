@@ -21,7 +21,7 @@ from the DSP core. The latter can be implemented in C++ or optionally [AssemblyS
 * VST2 / LV2 plugin formats
 * Linux / Mac / Windows
 * Just the powerful basics
-* Permissive license
+* Permissive ISC license
 
 The following DSP / UI language combinations are possible:
 

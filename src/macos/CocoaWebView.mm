@@ -80,10 +80,8 @@ CocoaWebView::CocoaWebView()
 CocoaWebView::~CocoaWebView()
 {
     [fNsDelegate release];
-
     [fNsWebView removeFromSuperview];
     [fNsWebView release];
-
     [fNsBackground removeFromSuperview];
     [fNsBackground release];
 }

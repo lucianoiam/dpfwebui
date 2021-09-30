@@ -162,7 +162,6 @@ void WasmHostPlugin::setParameterValue(uint32_t index, float value)
 }
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-
 void WasmHostPlugin::initProgramName(uint32_t index, String& programName)
 {
     try {
@@ -182,11 +181,9 @@ void WasmHostPlugin::loadProgram(uint32_t index)
         HIPHOP_LOG_STDERR_COLOR(ex.what());
     }
 }
-
 #endif // DISTRHO_PLUGIN_WANT_PROGRAMS
 
 #if DISTRHO_PLUGIN_WANT_STATE
-
 void WasmHostPlugin::initState(uint32_t index, String& stateKey, String& defaultStateValue)
 {
     try {
@@ -214,7 +211,6 @@ void WasmHostPlugin::setState(const char* key, const char* value)
 }
 
 #if DISTRHO_PLUGIN_WANT_FULL_STATE
-
 String WasmHostPlugin::getState(const char* key) const
 {
     try {
@@ -229,7 +225,6 @@ String WasmHostPlugin::getState(const char* key) const
 
     return String();
 }
-
 #endif // DISTRHO_PLUGIN_WANT_FULL_STATE
 
 #endif // DISTRHO_PLUGIN_WANT_STATE
@@ -321,7 +316,6 @@ WasmValueVector WasmHostPlugin::writeMidiEvent(WasmValueVector params)
 {
     (void)params;
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-
     MidiEvent event;
     byte_t* midiBlock = fEngine->getMemory(fEngine->getGlobal("_rw_midi_block"));
 

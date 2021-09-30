@@ -337,15 +337,14 @@ ifeq ($(WEB_UI),true)
 ifeq ($(LINUX),true)
 LXWEBVIEW_TYPE ?= gtk
 
-BASE_FLAGS += -DLXWEBVIEW_TYPE=gtk
-#$(LXWEBVIEW_TYPE)
+BASE_FLAGS += -DLXWEBVIEW_TYPE=$(LXWEBVIEW_TYPE)
 
 HIPHOP_TARGET += lxhelper_bin
 
 LXHELPER_NAME = ui-helper
 LXHELPER_BUILD_DIR = $(BUILD_DIR)/helper
 
-include $(HIPHOP_SRC_PATH)/linux//Makefile.$(LXWEBVIEW_TYPE).mk
+include $(HIPHOP_SRC_PATH)/linux/Makefile.$(LXWEBVIEW_TYPE).mk
 endif
 endif
 

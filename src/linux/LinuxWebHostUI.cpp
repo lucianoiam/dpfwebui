@@ -39,6 +39,25 @@ LinuxWebHostUI::~LinuxWebHostUI()
 
 float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
 {
+#if LXWEBVIEW_TYPE == gtk
+    // WebKitGTK reads these environment variables automatically
+
+    const char* dpi;
+    float k;
+
+    dpi = getenv("GDK_SCALE");
+
+    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
+        return k;
+    }
+
+    dpi = getenv("GDK_DPI_SCALE");
+
+    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
+        return k;
+    }
+#endif // LXWEBVIEW_TYPE == gtk
+
 #if LXWEBVIEW_TYPE == cef
     // CEF helper also reads Xft.dpi, see CefHelper::getZoomLevel()
     
@@ -64,25 +83,6 @@ float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
 
     XCloseDisplay(display);
 #endif // LXWEBVIEW_TYPE == cef
-
-#if LXWEBVIEW_TYPE == gtk
-    // WebKitGTK reads these environment variables automatically
-
-    const char* dpi;
-    float k;
-
-    dpi = getenv("GDK_SCALE");
-
-    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
-        return k;
-    }
-
-    dpi = getenv("GDK_DPI_SCALE");
-
-    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
-        return k;
-    }
-#endif // LXWEBVIEW_TYPE == gtk
 
     return 1.f;
 }

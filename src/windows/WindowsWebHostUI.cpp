@@ -26,6 +26,7 @@ USE_NAMESPACE_DISTRHO
 
 WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
+    , fHostHWnd(0)
 {
     if (!shouldCreateWebView()) {
         return;
@@ -37,15 +38,12 @@ WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t bac
     EnumWindows(FindHostWindowProc, reinterpret_cast<LPARAM>(&fHostHWnd));
 
     if (fHostHWnd == 0) {
-        // Use provided window otherwise
-        fHostHWnd = reinterpret_cast<HWND>(getParentWindowHandle());
+        view->lowLevelKeyboardHookCallback = [this](UINT message, KBDLLHOOKSTRUCT* lpData, bool focus) {
+            if (!focus) {
+                hostWindowSendKeyEvent(message, lpData);
+            }
+        };
     }
-
-    view->lowLevelKeyboardHookCallback = [this](UINT message, KBDLLHOOKSTRUCT* lpData, bool focus) {
-        if (!focus) {
-            hostWindowSendKeyEvent(message, lpData);
-        }
-    };
 
     setWebView(view); // base class owns web view
 }

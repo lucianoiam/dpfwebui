@@ -56,9 +56,11 @@ public:
                                           CefRefPtr<CefProcessMessage> message) override;
 
     // CefBrowserProcessHandler
+
     virtual void OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine) override;
 
     // CefLoadHandler
+    
     virtual void OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                              TransitionType transitionType) override;
 

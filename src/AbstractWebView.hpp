@@ -61,6 +61,7 @@ public:
 
     void setPrintTraffic(bool printTraffic);
     void setEventHandler(WebViewEventHandler* handler);
+    
     void postMessage(const JsValueVector& args);
 
     virtual void realize() = 0;

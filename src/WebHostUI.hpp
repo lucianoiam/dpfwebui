@@ -24,23 +24,17 @@
 #ifdef DISTRHO_OS_LINUX
 #include <X11/Xlib.h> // avoid X11 Window and DGL::Window clashing later on
 #include "linux/LinuxWebHostUI.hpp"
-
 typedef LinuxWebHostUI WebHostUI;
-
 #endif // DISTRHO_OS_LINUX
 
 #ifdef DISTRHO_OS_MAC
 #include "macos/MacWebHostUI.hpp"
-
 typedef MacWebHostUI WebHostUI;
-
 #endif // DISTRHO_OS_MAC
 
 #ifdef DISTRHO_OS_WINDOWS
 #include "windows/WindowsWebHostUI.hpp"
-
 typedef WindowsWebHostUI WebHostUI;
-
 #endif // DISTRHO_OS_WINDOWS
 
 #endif  // WEBHOST_UI_HPP
