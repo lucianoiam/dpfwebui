@@ -18,10 +18,12 @@ from the DSP core. The latter can be implemented in C++ or optionally [AssemblyS
 * Based on DISTRHO Plugin Framework (DPF)
 * C++ or AssemblyScript for DSP code
 * HTML / CSS / JS for UI development
-* VST2 / LV2 plugin formats
+* VST2 / VST3 (*) / LV2 plugin formats
 * Linux / Mac / Windows
 * Just the powerful basics
 * Permissive ISC license
+
+(*) Alpha as of Oct '21
 
 The following DSP / UI language combinations are possible:
 
@@ -96,6 +98,12 @@ The complete plugin interface is defined [here](https://github.com/lucianoiam/hi
 ### Plugin implementations
 
 [Castello Reverb](https://github.com/lucianoiam/castello)
+
+## Licensing
+
+This project is provided under the same permissive licensing terms as DPF. Note
+that conditions for VST2 make such format insuitable for use in closed source
+commercial projects. Find further details [here](https://github.com/DISTRHO/DPF/blob/develop/LICENSING.md).
 
 ### About DISTRHO Plugin Framework (DPF)
 
