@@ -37,7 +37,7 @@ WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t bac
     // Some hosts need key events delivered directly to their main window
     EnumWindows(FindHostWindowProc, reinterpret_cast<LPARAM>(&fHostHWnd));
 
-    if (fHostHWnd == 0) {
+    if (fHostHWnd != 0) {
         view->lowLevelKeyboardHookCallback = [this](UINT message, KBDLLHOOKSTRUCT* lpData, bool focus) {
             if (!focus) {
                 hostWindowSendKeyEvent(message, lpData);
