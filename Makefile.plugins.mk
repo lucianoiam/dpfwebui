@@ -26,8 +26,7 @@ ifneq ($(HIPHOP_WEB_UI_PATH),)
 WEB_UI = true
 endif
 
-TARGET_LIB_DIR = $(NAME)-lib
-NPM_ENV = true
+NPM_OPT_SET_PATH = true
 
 # ------------------------------------------------------------------------------
 # Determine build environment
@@ -57,18 +56,24 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
-# Utility for determining built targets
-# User defined TARGETS become available only *after* inclusion of this Makefile
+# Utility for determining plugin library path. Use the standard plugin resources
+# path when available. User defined TARGETS variable becomes available only
+# *after* inclusion of this Makefile hence the usage of the 'test' command.
 
 TEST_LV2 = test -d $(TARGET_DIR)/$(NAME).lv2
 TEST_VST3 = test -d $(TARGET_DIR)/$(NAME).vst3
-TEST_LINUX_OR_MACOS_JACK = test -f $(TARGET_DIR)/$(NAME)
-TEST_LINUX_VST2 = test -f $(TARGET_DIR)/$(NAME)-vst.so
-TEST_MAC_VST2 = test -d $(TARGET_DIR)/$(NAME).vst
-TEST_WINDOWS_JACK = test -f $(TARGET_DIR)/$(NAME).exe
-TEST_WINDOWS_VST2 = test -f $(TARGET_DIR)/$(NAME)-vst.dll
-TEST_JACK_OR_WINDOWS_VST2 = $(TEST_LINUX_OR_MACOS_JACK) || $(TEST_WINDOWS_JACK) \
-							|| $(TEST_WINDOWS_VST2) 
+TEST_VST2_LINUX = test -f $(TARGET_DIR)/$(NAME)-vst.so
+TEST_VST2_MACOS = test -d $(TARGET_DIR)/$(NAME).vst
+TEST_VST2_WINDOWS = test -f $(TARGET_DIR)/$(NAME)-vst.dll
+TEST_JACK_LINUX_OR_MACOS = test -f $(TARGET_DIR)/$(NAME)
+TEST_JACK_WINDOWS = test -f $(TARGET_DIR)/$(NAME).exe
+TEST_BUNDLELESS = $(TEST_VST2_WINDOWS) || $(TEST_VST2_LINUX) \
+                  $(TEST_JACK_LINUX_OR_MACOS) || $(TEST_JACK_WINDOWS)
+
+LIB_DIR_LV2 = $(TARGET_DIR)/$(NAME).lv2/$(NAME)-lib
+LIB_DIR_VST3 = $(TARGET_DIR)/$(NAME).vst3/Contents/Resources
+LIB_DIR_VST2_MACOS = $(TARGET_DIR)/$(NAME).vst/Contents/Resources
+LIB_DIR_BUNDLELESS = $(TARGET_DIR)/$(NAME)-lib
 
 # ------------------------------------------------------------------------------
 # Add optional support for AssemblyScript DSP
@@ -255,7 +260,7 @@ endif
 
 ifeq ($(AS_DSP),true)
 ifeq ($(MSYS_MINGW),true)
-NPM_ENV = export PATH=$$PATH:/opt/node && export NODE_SKIP_PLATFORM_CHECK=1
+NPM_OPT_SET_PATH = export PATH=$$PATH:/opt/node && export NODE_SKIP_PLATFORM_CHECK=1
 ifeq (,$(wildcard /opt/node))
 NPM_VERSION = 16.6.0
 NPM_FILENAME = node-v$(NPM_VERSION)-win-x64.zip
@@ -377,17 +382,17 @@ HIPHOP_TARGET += lxhelper_res
 
 lxhelper_res:
 	@echo "Copying UI helper files..."
-	@($(TEST_LINUX_OR_MACOS_JACK) || $(TEST_LINUX_VST2) \
-		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR) \
-		&& cp -ru $(LXHELPER_FILES) $(TARGET_DIR)/$(TARGET_LIB_DIR) \
-		) || true
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
-		&& cp -ru $(LXHELPER_FILES) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
+		&& mkdir -p $(LIB_DIR_LV2) \
+		&& cp -ru $(LXHELPER_FILES) $(LIB_DIR_LV2) \
 		) || true
 	@($(TEST_VST3) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst3/Contents/Resources \
-		&& cp -ru $(LXHELPER_FILES) $(TARGET_DIR)/$(NAME).vst3/Contents/Resources \
+		&& mkdir -p $(LIB_DIR_VST3) \
+		&& cp -ru $(LXHELPER_FILES) $(LIB_DIR_VST3) \
+		) || true
+	@($(TEST_BUNDLELESS) \
+		&& mkdir -p $(LIB_DIR_BUNDLELESS) \
+		&& cp -ru $(LXHELPER_FILES) $(LIB_DIR_BUNDLELESS) \
 		) || true
 endif
 endif
@@ -427,30 +432,30 @@ endif
 HIPHOP_TARGET += lib_dsp
 
 WASM_SRC_PATH = $(HIPHOP_AS_DSP_PATH)/build/optimized.wasm
-WASM_DST_PATH = dsp/plugin.wasm
+WASM_MODULE = plugin.wasm
 
 lib_dsp:
 	@echo "Building AssemblyScript project..."
 	@# npm --prefix fails on MinGW due to paths mixing \ and /
 	@test -d $(HIPHOP_AS_DSP_PATH)/node_modules \
-		|| (cd $(HIPHOP_AS_DSP_PATH) && $(NPM_ENV) && npm install)
-	@cd $(HIPHOP_AS_DSP_PATH) && $(NPM_ENV) && npm run asbuild
+		|| (cd $(HIPHOP_AS_DSP_PATH) && $(NPM_OPT_SET_PATH) && npm install)
+	@cd $(HIPHOP_AS_DSP_PATH) && $(NPM_OPT_SET_PATH) && npm run asbuild
 	@echo "Copying WebAssembly DSP binary..."
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/$(WASM_DST_PATH) \
+		&& mkdir -p $(LIB_DIR_LV2)/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(LIB_DIR_LV2)/dsp/$(WASM_MODULE) \
 		) || true
 	@($(TEST_VST3) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/$(WASM_DST_PATH) \
+		&& mkdir -p $(LIB_DIR_VST3)/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(LIB_DIR_VST3)/dsp/$(WASM_MODULE) \
 		) || true
-	@($(TEST_MAC_VST2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(NAME).vst/Contents/Resources/$(WASM_DST_PATH) \
+	@($(TEST_VST2_MACOS) \
+		&& mkdir -p $(LIB_DIR_VST2_MACOS)/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(LIB_DIR_VST2_MACOS)/dsp/$(WASM_MODULE) \
 		) || true
-	@($(TEST_JACK_OR_WINDOWS_VST2) \
-		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR)/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(TARGET_DIR)/$(TARGET_LIB_DIR)/$(WASM_DST_PATH) \
+	@($(TEST_BUNDLELESS) \
+		&& mkdir -p $(LIB_DIR_BUNDLELESS)/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(LIB_DIR_BUNDLELESS)/dsp/$(WASM_MODULE) \
 		) || true
 endif
 
@@ -463,26 +468,26 @@ HIPHOP_TARGET += lib_ui
 lib_ui:
 	@echo "Copying web UI files..."
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/ui \
-		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR)/ui \
+		&& mkdir -p $(LIB_DIR_LV2)/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(LIB_DIR_LV2)/ui \
 		) || true
 	@($(TEST_VST3) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/ui \
-		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/ui \
+		&& mkdir -p $(LIB_DIR_VST3)/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(LIB_DIR_VST3)/ui \
 		) || true
-	@($(TEST_MAC_VST2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
-		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(NAME).vst/Contents/Resources/ui \
+	@($(TEST_VST2_MACOS) \
+		&& mkdir -p $(LIB_DIR_VST2_MACOS)/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(LIB_DIR_VST2_MACOS)/ui \
 		) || true
-	@($(TEST_JACK_OR_WINDOWS_VST2) \
-		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR)/ui \
-		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(TARGET_DIR)/$(TARGET_LIB_DIR)/ui \
+	@($(TEST_BUNDLELESS) \
+		&& mkdir -p $(LIB_DIR_BUNDLELESS)/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(LIB_DIR_BUNDLELESS)/ui \
 		) || true
 
 clean: clean_lib
 
 clean_lib:
-	@rm -rf $(TARGET_DIR)/$(TARGET_LIB_DIR)
+	@rm -rf $(LIB_DIR_BUNDLELESS)
 endif
 
 # ------------------------------------------------------------------------------
@@ -494,13 +499,13 @@ HIPHOP_TARGET += edge_lib
 WEBVIEW_DLL = $(EDGE_WEBVIEW2_PATH)/runtimes/win-x64/native/WebView2Loader.dll
 
 edge_lib:
-	@($(TEST_JACK_OR_WINDOWS_VST2) \
-		&& mkdir -p $(TARGET_DIR)/$(TARGET_LIB_DIR) \
-		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(TARGET_LIB_DIR) \
-		) || true
 	@($(TEST_LV2) \
-		&& mkdir -p $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
-		&& cp $(WEBVIEW_DLL) $(TARGET_DIR)/$(NAME).lv2/$(TARGET_LIB_DIR) \
+		&& mkdir -p $(LIB_DIR_LV2) \
+		&& cp $(WEBVIEW_DLL) $(LIB_DIR_LV2) \
+		) || true
+	@($(TEST_BUNDLELESS) \
+		&& mkdir -p $(LIB_DIR_BUNDLELESS) \
+		&& cp $(WEBVIEW_DLL) $(LIB_DIR_BUNDLELESS) \
 		) || true
 endif
 endif
