@@ -351,7 +351,10 @@ LRESULT CALLBACK KeyboardFilterProc(int nCode, WPARAM wParam, LPARAM lParam)
             EdgeWebView* view = reinterpret_cast<EdgeWebView *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
             KBDLLHOOKSTRUCT* lpData = reinterpret_cast<KBDLLHOOKSTRUCT *>(lParam);
             bool focus = view->getKeyboardFocus();
-            view->lowLevelKeyboardHookCallback((UINT)wParam, lpData, focus);
+
+            if (view->lowLevelKeyboardHookCallback) {
+                view->lowLevelKeyboardHookCallback((UINT)wParam, lpData, focus);
+            }
 
             if (focus) {
                 // Let keystroke reach web view

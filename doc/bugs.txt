@@ -26,7 +26,7 @@ MACOS
 WINDOWS
 -------
 
-- WINWASMBUG : WASM plugins crash on Carla and Live, work as expected on REAPER,
+- WINWASMBUG : WASM plugins crash on Carla. Work as expected on REAPER, Live,
   Renoise and Ardour 7. See WasmEngine.cpp
 
   Instructions on how to build libwasmer.a with debug symbols can be found here:
