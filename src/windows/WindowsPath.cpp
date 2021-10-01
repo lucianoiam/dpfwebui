@@ -56,17 +56,17 @@ String path::getLibraryPath()
 
     addr = GetProcAddress(hm, "lv2ui_descriptor");
     if (addr != 0) {
-        return path + "\\" + kDefaultLibrarySubdirectory; // LV2
+        return path + "\\" + kBundleLibrarySubdirectory; // LV2
     }
 
     addr = GetProcAddress(hm, "lv2_descriptor");
     if (addr != 0) {
-        return path + "\\" + kDefaultLibrarySubdirectory; // LV2
+        return path + "\\" + kBundleLibrarySubdirectory; // LV2
     }
 
     addr = GetProcAddress(hm, "VSTPluginMain");
     if (addr != 0) {
-        return path + "\\" + kDefaultLibrarySubdirectory; // VST2
+        return path + "\\" + kNoBundleLibrarySubdirectory; // VST2
     }
 
     addr = GetProcAddress(hm, "GetPluginFactory");
@@ -75,7 +75,7 @@ String path::getLibraryPath()
     }
 
     // Standalone
-    return path + "\\" + kDefaultLibrarySubdirectory;
+    return path + "\\" + kNoBundleLibrarySubdirectory;
 }
 
 String path::getCachesPath()
@@ -89,7 +89,7 @@ String path::getCachesPath()
         return String();
     }
 
-    String path = String(dataPath) + "\\" XSTR(PLUGIN_BIN_BASENAME) "\\" + kDefaultCacheSubdirectory;
+    String path = String(dataPath) + "\\" XSTR(PLUGIN_BIN_BASENAME) "\\" + kCacheSubdirectory;
 
     // Append host executable name to the cache path otherwise WebView2 controller initialization
     // fails with HRESULT 0x8007139f when trying to load plugin into more than a single host

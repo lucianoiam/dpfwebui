@@ -67,13 +67,13 @@ TEST_VST2_MACOS = test -d $(TARGET_DIR)/$(NAME).vst
 TEST_VST2_WINDOWS = test -f $(TARGET_DIR)/$(NAME)-vst.dll
 TEST_JACK_LINUX_OR_MACOS = test -f $(TARGET_DIR)/$(NAME)
 TEST_JACK_WINDOWS = test -f $(TARGET_DIR)/$(NAME).exe
-TEST_BUNDLELESS = $(TEST_VST2_WINDOWS) || $(TEST_VST2_LINUX) \
-                  $(TEST_JACK_LINUX_OR_MACOS) || $(TEST_JACK_WINDOWS)
+TEST_NOBUNDLE = $(TEST_VST2_WINDOWS) || $(TEST_VST2_LINUX) \
+                || $(TEST_JACK_LINUX_OR_MACOS) || $(TEST_JACK_WINDOWS)
 
-LIB_DIR_LV2 = $(TARGET_DIR)/$(NAME).lv2/$(NAME)-lib
+LIB_DIR_LV2 = $(TARGET_DIR)/$(NAME).lv2/lib
 LIB_DIR_VST3 = $(TARGET_DIR)/$(NAME).vst3/Contents/Resources
 LIB_DIR_VST2_MACOS = $(TARGET_DIR)/$(NAME).vst/Contents/Resources
-LIB_DIR_BUNDLELESS = $(TARGET_DIR)/$(NAME)-lib
+LIB_DIR_NOBUNDLE = $(TARGET_DIR)/$(NAME)-lib
 
 # ------------------------------------------------------------------------------
 # Add optional support for AssemblyScript DSP
@@ -390,9 +390,9 @@ lxhelper_res:
 		&& mkdir -p $(LIB_DIR_VST3) \
 		&& cp -ru $(LXHELPER_FILES) $(LIB_DIR_VST3) \
 		) || true
-	@($(TEST_BUNDLELESS) \
-		&& mkdir -p $(LIB_DIR_BUNDLELESS) \
-		&& cp -ru $(LXHELPER_FILES) $(LIB_DIR_BUNDLELESS) \
+	@($(TEST_NOBUNDLE) \
+		&& mkdir -p $(LIB_DIR_NOBUNDLE) \
+		&& cp -ru $(LXHELPER_FILES) $(LIB_DIR_NOBUNDLE) \
 		) || true
 endif
 endif
@@ -453,9 +453,9 @@ lib_dsp:
 		&& mkdir -p $(LIB_DIR_VST2_MACOS)/dsp \
 		&& cp -r $(WASM_SRC_PATH) $(LIB_DIR_VST2_MACOS)/dsp/$(WASM_MODULE) \
 		) || true
-	@($(TEST_BUNDLELESS) \
-		&& mkdir -p $(LIB_DIR_BUNDLELESS)/dsp \
-		&& cp -r $(WASM_SRC_PATH) $(LIB_DIR_BUNDLELESS)/dsp/$(WASM_MODULE) \
+	@($(TEST_NOBUNDLE) \
+		&& mkdir -p $(LIB_DIR_NOBUNDLE)/dsp \
+		&& cp -r $(WASM_SRC_PATH) $(LIB_DIR_NOBUNDLE)/dsp/$(WASM_MODULE) \
 		) || true
 endif
 
@@ -479,15 +479,15 @@ lib_ui:
 		&& mkdir -p $(LIB_DIR_VST2_MACOS)/ui \
 		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(LIB_DIR_VST2_MACOS)/ui \
 		) || true
-	@($(TEST_BUNDLELESS) \
-		&& mkdir -p $(LIB_DIR_BUNDLELESS)/ui \
-		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(LIB_DIR_BUNDLELESS)/ui \
+	@($(TEST_NOBUNDLE) \
+		&& mkdir -p $(LIB_DIR_NOBUNDLE)/ui \
+		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(LIB_DIR_NOBUNDLE)/ui \
 		) || true
 
 clean: clean_lib
 
 clean_lib:
-	@rm -rf $(LIB_DIR_BUNDLELESS)
+	@rm -rf $(LIB_DIR_NOBUNDLE)
 endif
 
 # ------------------------------------------------------------------------------
@@ -503,9 +503,9 @@ edge_lib:
 		&& mkdir -p $(LIB_DIR_LV2) \
 		&& cp $(WEBVIEW_DLL) $(LIB_DIR_LV2) \
 		) || true
-	@($(TEST_BUNDLELESS) \
-		&& mkdir -p $(LIB_DIR_BUNDLELESS) \
-		&& cp $(WEBVIEW_DLL) $(LIB_DIR_BUNDLELESS) \
+	@($(TEST_NOBUNDLE) \
+		&& mkdir -p $(LIB_DIR_NOBUNDLE) \
+		&& cp $(WEBVIEW_DLL) $(LIB_DIR_NOBUNDLE) \
 		) || true
 endif
 endif

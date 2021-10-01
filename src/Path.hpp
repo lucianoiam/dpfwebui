@@ -31,8 +31,9 @@ namespace path {
     String getLibraryPath();
     String getCachesPath();
 
-    const String kDefaultLibrarySubdirectory = String(XSTR(PLUGIN_BIN_BASENAME) "-lib");
-    const String kDefaultCacheSubdirectory = String("cache");
+    const String kBundleLibrarySubdirectory = String("lib");
+    const String kNoBundleLibrarySubdirectory = String(XSTR(PLUGIN_BIN_BASENAME) "-lib");
+    const String kCacheSubdirectory = String("cache");
 
 }
 

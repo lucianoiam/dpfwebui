@@ -59,13 +59,13 @@ String path::getLibraryPath()
         addr = dlsym(handle, "lv2ui_descriptor");
         if (addr != 0) {
             dlclose(handle);
-            return path + "/" + kDefaultLibrarySubdirectory; // LV2
+            return path + "/" + kBundleLibrarySubdirectory; // LV2
         }
 
         addr = dlsym(handle, "lv2_descriptor");
         if (addr != 0) {
             dlclose(handle);
-            return path + "/" + kDefaultLibrarySubdirectory; // LV2
+            return path + "/" + kBundleLibrarySubdirectory; // LV2
         }
 
         addr = dlsym(handle, "VSTPluginMain");
@@ -84,7 +84,7 @@ String path::getLibraryPath()
     }
 
     // Standalone
-    return path + "/" + kDefaultLibrarySubdirectory;
+    return path + "/" + kNoBundleLibrarySubdirectory;
 }
 
 String path::getCachesPath()

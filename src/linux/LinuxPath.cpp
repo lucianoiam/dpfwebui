@@ -88,19 +88,19 @@ String path::getLibraryPath()
             addr = dlsym(handle, "lv2ui_descriptor");
             if (addr != 0) {
                 dlclose(handle);
-                return path + "/" + kDefaultLibrarySubdirectory; // LV2
+                return path + "/" + kBundleLibrarySubdirectory; // LV2
             }
 
             addr = dlsym(handle, "lv2_descriptor");
             if (addr != 0) {
                 dlclose(handle);
-                return path + "/" + kDefaultLibrarySubdirectory; // LV2
+                return path + "/" + kBundleLibrarySubdirectory; // LV2
             }
 
             addr = dlsym(handle, "main");
             if (addr != 0) {
                 dlclose(handle);
-                return path + "/" + kDefaultLibrarySubdirectory; // VST2
+                return path + "/" + kNoBundleLibrarySubdirectory; // VST2
             }
 
             addr = dlsym(handle, "GetPluginFactory");
@@ -114,7 +114,7 @@ String path::getLibraryPath()
     }
 
     // Standalone
-    return String(dirname(exePath)) + "/" + kDefaultLibrarySubdirectory;
+    return String(dirname(exePath)) + "/" + kNoBundleLibrarySubdirectory;
 }
 
 String path::getCachesPath()
@@ -124,7 +124,7 @@ String path::getCachesPath()
     path += pw->pw_dir;
     path += "/.config/" XSTR(PLUGIN_BIN_BASENAME);
     mkdir(path, 0777);
-    path += "/" + kDefaultCacheSubdirectory;
+    path += "/" + kCacheSubdirectory;
     mkdir(path, 0777);
     return path;
 }
