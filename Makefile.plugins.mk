@@ -432,7 +432,7 @@ endif
 HIPHOP_TARGET += lib_dsp
 
 WASM_SRC_PATH = $(HIPHOP_AS_DSP_PATH)/build/optimized.wasm
-WASM_MODULE = plugin.wasm
+WASM_MODULE = main.wasm
 
 lib_dsp:
 	@echo "Building AssemblyScript project..."
