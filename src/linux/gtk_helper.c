@@ -32,9 +32,9 @@
 // explanation in realize(). Plugins that do not change their UI size during
 // runtime might want to set these values in DistrhoPluginInfo.h to ensure CSS
 // viewport dimensions (vw/vw/vmin/vmax) are relative to some known fixed values.
-#if !defined(HIPHOP_PLUGIN_MAX_WIDTH) || !defined(HIPHOP_PLUGIN_MAX_HEIGHT)
-#define HIPHOP_PLUGIN_MAX_WIDTH 1536
-#define HIPHOP_PLUGIN_MAX_HEIGHT 1536
+#if !defined(HIPHOP_MAX_BASE_WIDTH) || !defined(HIPHOP_MAX_BASE_HEIGHT)
+#define HIPHOP_MAX_BASE_WIDTH 1536
+#define HIPHOP_MAX_BASE_HEIGHT 1536
 #endif
 
 // CSS touch-action based approach seems to be failing for WebKitGTK. Looks like a bug.
@@ -54,6 +54,7 @@ typedef struct {
     char           injectedJs[65536];
 } context_t;
 
+static float get_display_scale_factor();
 static void realize(context_t *ctx, const msg_win_cfg_t *config);
 static void set_size(const context_t *ctx, unsigned width, unsigned height);
 static void set_keyboard_focus(context_t *ctx, gboolean focus);
@@ -113,12 +114,37 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+static float get_display_scale_factor()
+{
+    // Replicate value of LinuxWebHostUI::getDisplayScaleFactor()
+    
+    const char* dpi;
+    float k;
+
+    dpi = getenv("GDK_SCALE");
+
+    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
+        return k;
+    }
+
+    dpi = getenv("GDK_DPI_SCALE");
+
+    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
+        return k;
+    }
+
+    return 1.f;
+}
+
 static void realize(context_t *ctx, const msg_win_cfg_t *config)
 {
     // Create a native container window of arbitrary maximum size
+    float scale = get_display_scale_factor();
+    int max_width = scale * HIPHOP_MAX_BASE_WIDTH;
+    int max_height = scale * HIPHOP_MAX_BASE_HEIGHT;
+
     ctx->container = XCreateSimpleWindow(ctx->display, (Window)config->parent, 0, 0,
-                                        HIPHOP_PLUGIN_MAX_WIDTH, HIPHOP_PLUGIN_MAX_HEIGHT,
-                                        0, 0, 0);
+                                        max_width, max_height, 0, 0, 0);
     XSync(ctx->display, False);
 
     // Wrap container in a GDK window. Web view text input colored focus boxes
@@ -135,7 +161,7 @@ static void realize(context_t *ctx, const msg_win_cfg_t *config)
     // window with a predetermined max size and using JavaScript to resize the
     // DOM instead of resizing the window natively. It is an ugly solution that
     // works. Note this renders viewport based units useless (vw/vh/vmin/vmax). 
-    gtk_window_resize(ctx->window, HIPHOP_PLUGIN_MAX_WIDTH, HIPHOP_PLUGIN_MAX_HEIGHT);
+    gtk_window_resize(ctx->window, max_width, max_height);
 
     ctx->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     g_signal_connect(ctx->webView, "load-changed", G_CALLBACK(web_view_load_changed_cb), ctx);

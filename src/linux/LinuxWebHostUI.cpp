@@ -40,7 +40,9 @@ LinuxWebHostUI::~LinuxWebHostUI()
 float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
 {
 #if LXWEBVIEW_TYPE == gtk
-    // WebKitGTK reads these environment variables automatically
+    // WebKitGTK reads these environment variables automatically, however the
+    // same scale value is needed for determining maximum view dimensions, see
+    // get_display_scale_factor() in gtk_helper.c
 
     const char* dpi;
     float k;
