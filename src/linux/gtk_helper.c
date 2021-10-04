@@ -24,7 +24,6 @@
 #include <webkit2/webkit2.h>
 #include <X11/Xlib.h>
 
-#include "DistrhoPluginInfo.h"
 #include "ipc.h"
 #include "ipc_message.h"
 #include "macro.h"
