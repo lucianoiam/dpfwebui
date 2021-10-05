@@ -16,10 +16,10 @@ CEF_URL = https://cef-builds.spotifycdn.com/$(CEF_DISTRO_FILE)
 # CEF distribution download
 
 $(CEF_PATH):
-	@echo Downloading CEF...
+	@echo Downloading CEF
 	@wget -4 -O /tmp/$(CEF_DISTRO_FILE) $(CEF_URL)
 	@mkdir -p $(HIPHOP_LIB_PATH)
-	@echo Decompressing CEF...
+	@echo Decompressing CEF
 	@tar xjf /tmp/$(CEF_DISTRO_FILE) -C $(HIPHOP_LIB_PATH)
 	@ln -s $(CEF_DISTRO) $(CEF_PATH)
 	@rm /tmp/$(CEF_DISTRO_FILE)
@@ -228,7 +228,7 @@ $(BUILD_DIR)/libcef_dll_wrapper/%.o: $(CEF_PATH)/libcef_dll/%.cc
 	@$(CXX) $(CEF_CXXFLAGS) -c $< -o $@
 
 cef_wrapper_msg:
-	@echo Building CEF C++ wrapper library...
+	@echo Building CEF C++ wrapper library
 
 cef_wrapper_build: cef_wrapper_msg $(CEF_WRAPPER_LIB)
 

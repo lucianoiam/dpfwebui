@@ -269,7 +269,7 @@ NPM_URL = https://nodejs.org/dist/v$(NPM_VERSION)/$(NPM_FILENAME)
 TARGETS += /opt/node/npm
 
 /opt/node/npm:
-	@echo Downloading Node.js ...
+	@echo Downloading Node.js
 	@wget -4 -P /tmp $(NPM_URL)
 	@unzip -o /tmp/$(NPM_FILENAME) -d /opt
 	@mv /opt/$(basename $(NPM_FILENAME)) /opt/node
@@ -297,14 +297,14 @@ ifeq (,$(shell which nuget 2>/dev/null))
 $(error NuGet not found, try sudo apt install nuget or the equivalent for your distro)
 endif
 endif
-	@echo Downloading Edge WebView2 SDK...
+	@echo Downloading Edge WebView2 SDK
 	@mkdir -p $(HIPHOP_LIB_PATH)
 	@eval $(MSYS_MINGW_SYMLINKS)
 	@nuget install Microsoft.Web.WebView2 -OutputDirectory $(HIPHOP_LIB_PATH)
 	@ln -rs $(EDGE_WEBVIEW2_PATH).* $(EDGE_WEBVIEW2_PATH)
 
 /usr/bin/nuget.exe:
-	@echo Downloading NuGet...
+	@echo Downloading NuGet
 	@wget -4 -P /usr/bin $(NUGET_URL)
 endif
 endif
@@ -381,7 +381,7 @@ ifeq ($(LINUX),true)
 HIPHOP_TARGET += lxhelper_res
 
 lxhelper_res:
-	@echo "Copying UI helper files..."
+	@echo "Copying UI helper files"
 	@($(TEST_LV2) \
 		&& mkdir -p $(LIB_DIR_LV2) \
 		&& cp -ru $(LXHELPER_FILES) $(LIB_DIR_LV2) \
@@ -435,12 +435,12 @@ WASM_SRC_PATH = $(HIPHOP_AS_DSP_PATH)/build/optimized.wasm
 WASM_MODULE = main.wasm
 
 lib_dsp:
-	@echo "Building AssemblyScript project..."
+	@echo "Building AssemblyScript project"
 	@# npm --prefix fails on MinGW due to paths mixing \ and /
 	@test -d $(HIPHOP_AS_DSP_PATH)/node_modules \
 		|| (cd $(HIPHOP_AS_DSP_PATH) && $(NPM_OPT_SET_PATH) && npm install)
 	@cd $(HIPHOP_AS_DSP_PATH) && $(NPM_OPT_SET_PATH) && npm run asbuild
-	@echo "Copying WebAssembly DSP binary..."
+	@echo "Copying WebAssembly DSP binary"
 	@($(TEST_LV2) \
 		&& mkdir -p $(LIB_DIR_LV2)/dsp \
 		&& cp -r $(WASM_SRC_PATH) $(LIB_DIR_LV2)/dsp/$(WASM_MODULE) \
@@ -466,7 +466,7 @@ ifeq ($(WEB_UI),true)
 HIPHOP_TARGET += lib_ui
 
 lib_ui:
-	@echo "Copying web UI files..."
+	@echo "Copying web UI files"
 	@($(TEST_LV2) \
 		&& mkdir -p $(LIB_DIR_LV2)/ui \
 		&& cp -r $(HIPHOP_WEB_UI_PATH)/* $(LIB_DIR_LV2)/ui \
