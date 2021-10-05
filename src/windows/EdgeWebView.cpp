@@ -207,7 +207,11 @@ HRESULT EdgeWebView::handleWebView2ControllerCompleted(HRESULT result,
     ICoreWebView2_add_NavigationCompleted(fView, fHandler, 0);
     ICoreWebView2_add_WebMessageReceived(fView, fHandler, 0);
 
-    // Run pending requests. Edge WebView2 currently only supports alpha=0 or alpha=1.
+    // Run pending requests
+
+    onSize(getWidth(), getHeight());
+
+    // Edge WebView2 currently only supports alpha=0 or alpha=1
 
     uint32_t rgba = getBackgroundColor();
     COREWEBVIEW2_COLOR color;
