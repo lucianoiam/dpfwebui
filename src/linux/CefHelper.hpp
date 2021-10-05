@@ -74,6 +74,7 @@ private:
     
     float getZoomLevel();
 
+    void setSize(unsigned width, unsigned height);
     void setKeyboardFocus(bool keyboardFocus);
 
     IpcChannel* fIpc;

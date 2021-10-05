@@ -181,10 +181,7 @@ void CefHelper::dispatch(const tlv_t& packet)
 
         case OP_SET_SIZE: {
             const msg_win_size_t* size = static_cast<const msg_win_size_t*>(packet.v);
-            ::Window w = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
-            XResizeWindow(fDisplay, w, size->width, size->height);
-            XResizeWindow(fDisplay, fContainer, size->width, size->height);
-            XSync(fDisplay, False);
+            setSize(size->width, size->height);
             break;
         }
 
@@ -308,8 +305,25 @@ float CefHelper::getZoomLevel()
     return 0;
 }
 
+void CefHelper::setSize(unsigned width, unsigned height)
+{
+    if (fBrowser != 0) {
+        ::Window w = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
+        XResizeWindow(fDisplay, w, width, height);
+    }
+
+    if (fContainer != 0) {
+        XResizeWindow(fDisplay, fContainer, width, height);
+        XSync(fDisplay, False);
+    }
+}
+
 void CefHelper::setKeyboardFocus(bool keyboardFocus)
 {
+    if (fBrowser == 0) {
+        return;
+    }
+    
     if (keyboardFocus) {
         // CEFKBDFOCUSBUG - This works but generates Xlib errors
         // type 0, error_code 129, request_code 131, minor_code 51 (and 52)
