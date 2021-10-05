@@ -24,8 +24,8 @@ NOTES FOR WINDOWS
    - Copy < SOLUTION_DIR >/packages/Microsoft.Web.WebView2.< VERSION > to
      < PLUGIN_DIR >/lib/Microsoft.Web.WebView2  (version suffix stripped)
 
-3. For running the plugin, the Microsoft Edge WebView2 Runtime must be installed
-   on the host machine https://developer.microsoft.com/microsoft-edge/webview2
+3. For running the plugin on Windows 10 or earlier, the Microsoft Edge WebView2
+   Runtime must be installed https://developer.microsoft.com/microsoft-edge/webview2
 
 4. The official binary distribution of Wasmer requires MSVC. To overcome this
    problem the Makefile downloads a custom build that is compatible with MinGW.

@@ -39,9 +39,9 @@ quite young and under continued development.
 
 - On macOS the system WKWebView is used.
 
-- On Windows Edge WebView2 is used. As of Aug '21 the end user needs to install
-an official runtime library from Microsoft. It is reasonable to expect it to
-become part of Windows https://developer.microsoft.com/microsoft-edge/webview2
+- On Windows Edge WebView2 is used. Windows <= 10 users must first install a
+runtime library from https://developer.microsoft.com/microsoft-edge/webview2.
+Windows 11 already ships with this library.
 
 Usage of JS frameworks is up to the developer. No web equivalent versions of the
 DPF/DGL widgets are provided. There are some options available:
