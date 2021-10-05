@@ -44,6 +44,8 @@
 
 typedef struct {
     ipc_t*         ipc;
+    unsigned       width;
+    unsigned       height;
     Display*       display;
     Window         container;
     GtkWindow*     window;
@@ -56,7 +58,8 @@ typedef struct {
 
 static float get_display_scale_factor();
 static void realize(context_t *ctx, const msg_win_cfg_t *config);
-static void set_size(const context_t *ctx, unsigned width, unsigned height);
+static void set_size(context_t *ctx, unsigned width, unsigned height);
+static void apply_size(const context_t *ctx);
 static void set_keyboard_focus(context_t *ctx, gboolean focus);
 static void* focus_watchdog_worker(void *arg);
 static gboolean release_focus(gpointer data);
@@ -117,7 +120,6 @@ int main(int argc, char* argv[])
 static float get_display_scale_factor()
 {
     // Replicate value of LinuxWebHostUI::getDisplayScaleFactor()
-    
     const char* dpi;
     float k;
 
@@ -180,12 +182,18 @@ static void realize(context_t *ctx, const msg_win_cfg_t *config)
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
 }
 
-static void set_size(const context_t *ctx, unsigned width, unsigned height)
+static void set_size(context_t *ctx, unsigned width, unsigned height)
 {
-    if (ctx->webView == NULL) {
-        return;
-    }
+    ctx->width = width;
+    ctx->height = height;
 
+    if (ctx->webView != NULL) {
+        apply_size(ctx);
+    }
+}
+
+static void apply_size(const context_t *ctx)
+{
     // WKGTKRESIZEBUG : does not result in webview contents size update
     //gtk_window_resize(ctx->window, width, height);
 
@@ -193,7 +201,7 @@ static void set_size(const context_t *ctx, unsigned width, unsigned height)
 
     sprintf(js, "document.documentElement.style.width  = '%dpx';"
                 "document.documentElement.style.height = '%dpx';",
-                width, height);
+                ctx->width, ctx->height);
     webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
 }
 
@@ -271,6 +279,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
             // Load completed. All resources are done loading or there was an error during the load operation. 
             webkit_web_view_run_javascript(ctx->webView, JS_DISABLE_PINCH_ZOOM_WORKAROUND,
                 NULL, NULL, NULL);
+            apply_size(ctx);
             gtk_widget_show_all(GTK_WIDGET(ctx->window));
             ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
             usleep(20000); // 20ms -- prevents flicker, why?

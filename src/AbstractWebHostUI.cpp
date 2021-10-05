@@ -274,8 +274,6 @@ void AbstractWebHostUI::stateChanged(const char* key, const char* value)
 
 void AbstractWebHostUI::handleWebViewLoadFinished()
 {
-    // Trigger the JavaScript sizeChanged() callback, useful for WKGTKRESIZEBUG.
-    sizeChanged(fInitWidth, fInitHeight);
     onWebContentReady();
 }
 

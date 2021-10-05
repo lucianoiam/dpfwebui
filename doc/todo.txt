@@ -1,6 +1,8 @@
 GENERAL
 -------
 
+- Incomplete VST3 compatibility (DPF)
+- Incomplete file chooser implementation (DPF)
 - Map alert(), confirm(), prompt() to native dialogs
 - Profile WebAssembly based plugins for memory leaks
 - Standalone application support
