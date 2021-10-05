@@ -194,6 +194,10 @@ static void set_size(context_t *ctx, unsigned width, unsigned height)
 
 static void apply_size(const context_t *ctx)
 {
+    if ((ctx->width == 0) || (ctx->height == 0)) {
+        return;
+    }
+    
     // WKGTKRESIZEBUG : does not result in webview contents size update
     //gtk_window_resize(ctx->window, width, height);
 

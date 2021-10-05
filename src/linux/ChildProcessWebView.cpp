@@ -179,15 +179,15 @@ void ChildProcessWebView::injectScript(String& source)
 
 void ChildProcessWebView::onSize(uint width, uint height)
 {
+    msg_win_size_t sizePkt = { width, height };
+    fIpc->write(OP_SET_SIZE, &sizePkt, sizeof(sizePkt));
+
     if (fBackground == 0) {
         return;
     }
 
     XResizeWindow(fDisplay, fBackground, width, height);
     XSync(fDisplay, False);
-
-    msg_win_size_t sizePkt = { width, height };
-    fIpc->write(OP_SET_SIZE, &sizePkt, sizeof(sizePkt));
 }
 
 void ChildProcessWebView::onKeyboardFocus(bool focus)
