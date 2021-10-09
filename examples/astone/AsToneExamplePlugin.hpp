@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+
 #ifndef ASTONE_EXAMPLE_PLUGIN_HPP
 #define ASTONE_EXAMPLE_PLUGIN_HPP
 

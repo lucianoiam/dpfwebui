@@ -98,12 +98,6 @@ The complete plugin interface is defined [here](https://github.com/lucianoiam/hi
 
 [Castello Reverb](https://github.com/lucianoiam/castello)
 
-## Licensing
-
-This project is provided under the same permissive licensing terms as DPF. Note
-that conditions for VST2 make such format insuitable for use in closed source
-commercial projects. Find further details [here](https://github.com/DISTRHO/DPF/blob/develop/LICENSING.md).
-
 ### About DISTRHO Plugin Framework (DPF)
 
 The framework sports an accurate motto: "DPF is designed to make development of
