@@ -21,7 +21,6 @@ from the DSP core. The latter can be implemented in C++ or optionally [AssemblyS
 * VST2 / VST3 (*) / LV2 plugin formats
 * Linux / Mac / Windows
 * Just the powerful basics
-* Permissive ISC license
 
 (*) Alpha as of Oct '21
 
@@ -114,7 +113,6 @@ trivial issues commonly found in the audio plugins domain.
 
 What makes it great?
 
-- It comes with a clear permissive license
 - Bloat-free: scope is limited to audio plugins
 - Makefile based, MinGW compatible
 - Extremely low learning curve
