@@ -91,6 +91,8 @@ CocoaWebView::~CocoaWebView()
 void CocoaWebView::realize()
 {
     [(NSView *)getParent() addSubview:fNsBackground];
+
+    onSize(getWidth(), getHeight());
     
     @try {
         if ([fNsBackground respondsToSelector:@selector(setBackgroundColor:)]) {
