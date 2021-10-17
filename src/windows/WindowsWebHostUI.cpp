@@ -31,6 +31,10 @@ WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t bac
     if (!shouldCreateWebView()) {
         return;
     }
+
+    // Web view looks blurry on Live 11 unless Auto-Scale Plugin Window feature
+    // is disabled (right-click plugin). Cannot control this programmatically.
+    // https://forum.juce.com/t/blurry-ui-running-vst-in-ableton-live-10/42472/5
     
     EdgeWebView* view = new EdgeWebView();
 
@@ -56,9 +60,9 @@ WindowsWebHostUI::~WindowsWebHostUI()
 float WindowsWebHostUI::getDisplayScaleFactor(uintptr_t window)
 {
     float k = 1.f;
-    const HMODULE hm = LoadLibrary("Shcore.dll");
+    const HMODULE shcore = LoadLibrary("Shcore.dll");
 
-    if (hm == 0) {
+    if (shcore == 0) {
         return k;
     }
 
@@ -70,9 +74,9 @@ float WindowsWebHostUI::getDisplayScaleFactor(uintptr_t window)
 #  pragma GCC diagnostic ignored "-Wcast-function-type"
 # endif
     const PFN_GetProcessDpiAwareness GetProcessDpiAwareness
-        = (PFN_GetProcessDpiAwareness)GetProcAddress(hm, "GetProcessDpiAwareness");
+        = (PFN_GetProcessDpiAwareness)GetProcAddress(shcore, "GetProcessDpiAwareness");
     const PFN_GetScaleFactorForMonitor GetScaleFactorForMonitor
-        = (PFN_GetScaleFactorForMonitor)GetProcAddress(hm, "GetScaleFactorForMonitor");
+        = (PFN_GetScaleFactorForMonitor)GetProcAddress(shcore, "GetScaleFactorForMonitor");
 # if defined(__GNUC__) && (__GNUC__ >= 9)
 #  pragma GCC diagnostic pop
 # endif
@@ -92,7 +96,7 @@ float WindowsWebHostUI::getDisplayScaleFactor(uintptr_t window)
         }
     }
 
-    FreeLibrary(hm);
+    FreeLibrary(shcore);
 
     return k;
 }
