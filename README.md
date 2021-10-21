@@ -22,7 +22,8 @@ from the DSP core. The latter can be implemented in C++ or optionally [AssemblyS
 * Linux / Mac / Windows
 * Just the powerful basics
 
-(*) Alpha as of Oct '21
+(*) Alpha as of Oct '21. See [bugs](https://github.com/lucianoiam/hiphop/blob/master/doc/bugs.txt)
+ and [to-do](https://github.com/lucianoiam/hiphop/blob/master/doc/todo.txt) lists.
 
 The following DSP / UI language combinations are possible:
 
