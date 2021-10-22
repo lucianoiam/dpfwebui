@@ -14,15 +14,6 @@ LINUX
   is probably called with incorrect arguments, see CefHelper.cpp.
 
 
-MACOS
------
-
-- generate-vst-bundles.sh expects hardcoded directory bin/
-- generate-vst-bundles.sh deletes all existing .vst folders, it is not safe to
-  run it on a plugin basis. DPF only calls it from the main Makefile after all
-  examples have been built.
-
-
 WINDOWS
 -------
 

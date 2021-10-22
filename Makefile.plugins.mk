@@ -398,22 +398,6 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
-# Post build - Create macOS VST bundle
-
-ifeq ($(MACOS),true)
-HIPHOP_TARGET += mac_vst
-
-mac_vst:
-	@# TODO - generate-vst-bundles.sh expects hardcoded directory bin/
-	@cd $(DPF_TARGET_DIR)/.. && $(abspath $(DPF_PATH))/utils/generate-vst-bundles.sh
-
-clean: clean_mac_vst
-
-clean_mac_vst:
-	@rm -rf $(TARGET_DIR)/$(NAME).vst
-endif
-
-# ------------------------------------------------------------------------------
 # Post build - Compile AssemblyScript project and copy Wasm binary
 
 ifneq ($(AS_DSP),)
