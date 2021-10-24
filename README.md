@@ -7,7 +7,7 @@ Main goal is to facilitate the creation of complex user interfaces leveraging
 JavaScript, HTML and related technologies. The web UI runs completely decoupled
 from the DSP core. The latter can be implemented in C++ or optionally [AssemblyScript](https://www.assemblyscript.org).
 
-![](https://user-images.githubusercontent.com/930494/124803158-0db54900-df59-11eb-8c69-4bb3369d54f2.png)
+![Screenshot_2021-10-24_18-30-37](https://user-images.githubusercontent.com/930494/138603460-e8407acb-35db-4bcb-b991-7b7cd7e74381.png)
 
 *WebGain example running on Bitwig for Linux*
 
