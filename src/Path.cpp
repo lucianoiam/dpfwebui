@@ -16,33 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#import <Foundation/Foundation.h>
-
 #include <cstring>
-#include <libgen.h>
-#include <sys/stat.h>
 
 #include "DistrhoPluginUtils.hpp"
 
-#include "macro.h"
 #include "Path.hpp"
 
-USE_NAMESPACE_DISTRHO
-
-String path::getBinaryPath()
+String path::getLibraryPath()
 {
-    char path[PATH_MAX];
-    strcpy(path, getBinaryFilename());
-    return String(dirname(path));
-}
+    String path = getBinaryPath();
+    const char* format = getPluginFormatName();
 
-String path::getCachesPath()
-{
-    NSArray* p = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    String path = String([[p lastObject] cStringUsingEncoding:NSUTF8StringEncoding])
-        + "/" XSTR(PLUGIN_BIN_BASENAME);
-    
-    mkdir(path, 0777);
+    if (strcmp(format, "LV2") == 0) {
+        return path + "/" + kBundleLibrarySubdirectory;
+    } else if (strcmp(format, "VST2") == 0) {
+        return path + "/../Resources";
+    } else if (strcmp(format, "VST3") == 0) {
+        return path + "/../Resources";
+    }
 
-    return path;
+    // Assume standalone
+    return path + "/" + kNoBundleLibrarySubdirectory;
 }
