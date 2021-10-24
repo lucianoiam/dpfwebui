@@ -39,10 +39,8 @@ String path::getLibraryPath()
 
     if (strcmp(format, "LV2") == 0) {
         return binDirPath + "/" + kBundleLibrarySubdirectory;
-    } else if (strcmp(format, "VST2") == 0) {
-        return binDirPath + "/../Resources";
-    } else if (strcmp(format, "VST3") == 0) {
-        return binDirPath + "/../Resources";
+    } else if ((strcmp(format, "VST2") == 0) || (strcmp(format, "VST3") == 0)) {
+        return binDirPath.truncate(binDirPath.rfind('/')) + "/Resources";
     }
 
     // Standalone

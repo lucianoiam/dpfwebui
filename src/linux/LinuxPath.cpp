@@ -46,7 +46,7 @@ String path::getLibraryPath()
     } else if (strcmp(format, "VST2") == 0) {
         return binDirPath + "/" + kNoBundleLibrarySubdirectory;
     } else if (strcmp(format, "VST3") == 0) {
-        return binDirPath + "/../Resources";
+        return binDirPath.truncate(binDirPath.rfind('/')) + "/Resources";
     }
 
     // Standalone
