@@ -29,29 +29,24 @@
 
 USE_NAMESPACE_DISTRHO
 
-String path::getBinaryPath()
-{
-    char path[PATH_MAX];
-    strcpy(path, getBinaryFilename());
-    return String(dirname(path));
-}
-
 String path::getLibraryPath()
 {
-    String path = getBinaryPath();
+    char binPath[PATH_MAX];
+    strcpy(binPath, getBinaryFilename());
+    String binDirPath(dirname(binPath));
+    
     const char* format = getPluginFormatName();
 
     if (strcmp(format, "LV2") == 0) {
-        return path + "/" + kBundleLibrarySubdirectory;
+        return binDirPath + "/" + kBundleLibrarySubdirectory;
     } else if (strcmp(format, "VST2") == 0) {
-        printf("%s\n", (path + "/../Resources").buffer());
-        return path + "/../Resources";
+        return binDirPath + "/../Resources";
     } else if (strcmp(format, "VST3") == 0) {
-        return path + "/../Resources";
+        return binDirPath + "/../Resources";
     }
 
     // Standalone
-    return path + "/" + kNoBundleLibrarySubdirectory;
+    return binDirPath + "/" + kNoBundleLibrarySubdirectory;
 }
 
 String path::getCachesPath()

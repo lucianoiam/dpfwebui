@@ -18,64 +18,36 @@
 
 #include <cstring>
 #include <errhandlingapi.h>
-#include <libloaderapi.h>
 #include <shlobj.h>
 #include <shlwapi.h>
 #include <shtypes.h>
 
+#include "DistrhoPluginUtils.hpp"
+
 #include "Path.hpp"
 #include "macro.h"
 
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-
 USE_NAMESPACE_DISTRHO
-
-String path::getBinaryPath()
-{
-    char path[MAX_PATH];
-    
-    if (GetModuleFileName((HINSTANCE)&__ImageBase, path, sizeof(path)) == 0) {
-        HIPHOP_LOG_STDERR_INT("Could not determine module path", GetLastError());
-        path[0] = '\0';
-    }
-
-    return String(path);
-}
 
 String path::getLibraryPath()
 {
     char binPath[MAX_PATH];
-    strcpy(binPath, getBinaryPath());
+    strcpy(binPath, getBinaryFilename());
     PathRemoveFileSpec(binPath);
-    String path(binPath);
+    String binDirPath(binPath);
     
-    // HISTANCE and HMODULE are interchangeable
-    // https://stackoverflow.com/questions/2126657/how-can-i-get-hinstance-from-a-dll
-    HMODULE hm = (HMODULE)&__ImageBase;
-    FARPROC addr;
+    const char* format = getPluginFormatName();
 
-    addr = GetProcAddress(hm, "lv2ui_descriptor");
-    if (addr != 0) {
-        return path + "\\" + kBundleLibrarySubdirectory; // LV2
-    }
-
-    addr = GetProcAddress(hm, "lv2_descriptor");
-    if (addr != 0) {
-        return path + "\\" + kBundleLibrarySubdirectory; // LV2
-    }
-
-    addr = GetProcAddress(hm, "VSTPluginMain");
-    if (addr != 0) {
-        return path + "\\" + kNoBundleLibrarySubdirectory; // VST2
-    }
-
-    addr = GetProcAddress(hm, "GetPluginFactory");
-    if (addr != 0) {
-        return path + "\\..\\Resources"; // VST3
+    if (strcmp(format, "LV2") == 0) {
+        return binDirPath + "\\" + kBundleLibrarySubdirectory;
+    } else if (strcmp(format, "VST2") == 0) {
+        return binDirPath + "\\" + kNoBundleLibrarySubdirectory;
+    } else if (strcmp(format, "VST3") == 0) {
+        return binDirPath + "\\..\\Resources";
     }
 
     // Standalone
-    return path + "\\" + kNoBundleLibrarySubdirectory;
+    return binDirPath + "\\" + kNoBundleLibrarySubdirectory;
 }
 
 String path::getCachesPath()

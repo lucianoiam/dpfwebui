@@ -27,7 +27,6 @@ START_NAMESPACE_DISTRHO
 
 namespace path {
 
-    String getBinaryPath();
     String getLibraryPath();
     String getCachesPath();
 
