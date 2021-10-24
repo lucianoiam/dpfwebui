@@ -100,8 +100,7 @@ endif
 ifeq ($(WEB_UI),true)
 HIPHOP_FILES_UI  = AbstractWebHostUI.cpp \
                    AbstractWebView.cpp \
-                   JsValue.cpp \
-                   Path.cpp
+                   JsValue.cpp
 ifeq ($(LINUX),true)
 HIPHOP_FILES_UI += linux/LinuxPath.cpp \
                    linux/LinuxWebHostUI.cpp \

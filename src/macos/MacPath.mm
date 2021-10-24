@@ -24,8 +24,8 @@
 
 #include "DistrhoPluginUtils.hpp"
 
-#include "macro.h"
 #include "Path.hpp"
+#include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
@@ -34,6 +34,24 @@ String path::getBinaryPath()
     char path[PATH_MAX];
     strcpy(path, getBinaryFilename());
     return String(dirname(path));
+}
+
+String path::getLibraryPath()
+{
+    String path = getBinaryPath();
+    const char* format = getPluginFormatName();
+
+    if (strcmp(format, "LV2") == 0) {
+        return path + "/" + kBundleLibrarySubdirectory;
+    } else if (strcmp(format, "VST2") == 0) {
+        printf("%s\n", (path + "/../Resources").buffer());
+        return path + "/../Resources";
+    } else if (strcmp(format, "VST3") == 0) {
+        return path + "/../Resources";
+    }
+
+    // Standalone
+    return path + "/" + kNoBundleLibrarySubdirectory;
 }
 
 String path::getCachesPath()

@@ -20,101 +20,41 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <dlfcn.h>
 #include <libgen.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <linux/limits.h>
 #include <sys/stat.h>
-#include <sys/types.h>
+
+#include "DistrhoPluginUtils.hpp"
 
 #include "Path.hpp"
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
-static char* getImagePath(char* buf, int sz)
-{
-    memset(buf, 0, sz);
-    Dl_info dl_info;
-
-    if (dladdr((void *)&__PRETTY_FUNCTION__, &dl_info) == 0) {
-        HIPHOP_LOG_STDERR(dlerror());
-        return buf;
-    }
-
-    strncpy(buf, dl_info.dli_fname, sz - 1);
-
-    return buf;
-}
-
-static char* getExecutablePath(char* buf, int sz)
-{
-    memset(buf, 0, sz);
-    ssize_t len = readlink("/proc/self/exe", buf, sz - 1);
-
-    if (len == -1) {
-        HIPHOP_LOG_STDERR_ERRNO("Could not determine executable path");
-        return buf;
-    }
-
-    return buf;
-}
-
 String path::getBinaryPath()
 {
-    char imgPath[PATH_MAX];
-    getImagePath(imgPath, sizeof(imgPath));
-    char exePath[PATH_MAX];
-    getExecutablePath(exePath, sizeof(exePath));
-    const char *path = strcmp(imgPath, exePath) == 0 ? exePath : imgPath;
-    return String(path);
+    char path[PATH_MAX];
+    strcpy(path, getBinaryFilename());
+    return String(dirname(path));
 }
 
 String path::getLibraryPath()
 {
-    char imgPath[PATH_MAX];
-    getImagePath(imgPath, sizeof(imgPath));
-    char exePath[PATH_MAX];
-    getExecutablePath(exePath, sizeof(exePath));
+    String path = getBinaryPath();
+    const char* format = getPluginFormatName();
 
-    if (strcmp(imgPath, exePath) != 0) {
-        void* handle = dlopen(imgPath, RTLD_LAZY | RTLD_NOLOAD);
-        void* addr;
-
-        String path(dirname(imgPath)); 
-
-        if (handle != 0) {
-            addr = dlsym(handle, "lv2ui_descriptor");
-            if (addr != 0) {
-                dlclose(handle);
-                return path + "/" + kBundleLibrarySubdirectory; // LV2
-            }
-
-            addr = dlsym(handle, "lv2_descriptor");
-            if (addr != 0) {
-                dlclose(handle);
-                return path + "/" + kBundleLibrarySubdirectory; // LV2
-            }
-
-            addr = dlsym(handle, "main");
-            if (addr != 0) {
-                dlclose(handle);
-                return path + "/" + kNoBundleLibrarySubdirectory; // VST2
-            }
-
-            addr = dlsym(handle, "GetPluginFactory");
-            if (addr != 0) {
-                dlclose(handle);
-                return path + "/../Resources"; // VST3
-            }
-
-            dlclose(handle);
-        }
+    if (strcmp(format, "LV2") == 0) {
+        return path + "/" + kBundleLibrarySubdirectory;
+    } else if (strcmp(format, "VST2") == 0) {
+        return path + "/" + kNoBundleLibrarySubdirectory;
+    } else if (strcmp(format, "VST3") == 0) {
+        return path + "/../Resources";
     }
 
     // Standalone
-    return String(dirname(exePath)) + "/" + kNoBundleLibrarySubdirectory;
+    return path + "/" + kNoBundleLibrarySubdirectory;
 }
 
 String path::getCachesPath()
