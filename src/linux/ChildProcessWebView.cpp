@@ -32,12 +32,15 @@
 extern char **environ;
 
 /*
-  Need to launch a child process hosting the web view
+    On Linux a child process hosts the web view to workaround these issues:
+  
+  - WebKitGTK needs GTK and linking plugins to UI toolkits is a bad idea
+    http://lists.lv2plug.in/pipermail/devel-lv2plug.in/2016-March/001593.html
+    https://www.mail-archive.com/gtk-list%40gnome.org/msg34952.html
 
   - CEF lifecycle and usage of globals is not compatible with plugins
     https://bitbucket.org/chromiumembedded/cef/issues/421
 
-  - WebKitGTK is a no-go because linking plugins to UI toolkits is a bad idea
 */
 
 USE_NAMESPACE_DISTRHO
