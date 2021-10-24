@@ -38,7 +38,7 @@ export default class JitDrumExamplePlugin extends DISTRHO.Plugin implements DIST
     }
 
     getLicense(): string {
-        return 'ISC'
+        return 'GPLv3'
     }
 
     getVersion(): u32 {

@@ -36,7 +36,7 @@ export default class AsToneExamplePlugin extends DISTRHO.Plugin implements DISTR
     }
 
     getLicense(): string {
-        return 'ISC'
+        return 'GPLv3'
     }
 
     getVersion(): u32 {
