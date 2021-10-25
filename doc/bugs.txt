@@ -1,6 +1,7 @@
 GENERAL
 -------
 
+- Some files are unnecessarily recompiled on every make invocation
 - generate-ttl.sh expects hardcoded directory bin/
 
 

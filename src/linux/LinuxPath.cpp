@@ -16,14 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
-
-#include <libgen.h>
 #include <pwd.h>
 #include <unistd.h>
-#include <linux/limits.h>
 #include <sys/stat.h>
 
 #include "DistrhoPluginUtils.hpp"
@@ -35,22 +30,20 @@ USE_NAMESPACE_DISTRHO
 
 String path::getLibraryPath()
 {
-    char binPath[PATH_MAX];
-    strcpy(binPath, getBinaryFilename());
-    String binDirPath(dirname(binPath));
+    String path = String(getBinaryFilename());
+    path.truncate(path.rfind('/'));
 
     const char* format = getPluginFormatName();
 
     if (strcmp(format, "LV2") == 0) {
-        return binDirPath + "/" + kBundleLibrarySubdirectory;
+        return path + "/" + kBundleLibrarySubdirectory;
     } else if (strcmp(format, "VST2") == 0) {
-        return binDirPath + "/" + kNoBundleLibrarySubdirectory;
+        return path + "/" + kNoBundleLibrarySubdirectory;
     } else if (strcmp(format, "VST3") == 0) {
-        return binDirPath.truncate(binDirPath.rfind('/')) + "/Resources";
+        return path.truncate(path.rfind('/')) + "/Resources";
     }
 
-    // Standalone
-    return binDirPath + "/" + kNoBundleLibrarySubdirectory;
+    return path + "/" + kNoBundleLibrarySubdirectory;
 }
 
 String path::getCachesPath()

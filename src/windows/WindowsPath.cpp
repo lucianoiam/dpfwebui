@@ -31,23 +31,20 @@ USE_NAMESPACE_DISTRHO
 
 String path::getLibraryPath()
 {
-    char binPath[MAX_PATH];
-    strcpy(binPath, getBinaryFilename());
-    PathRemoveFileSpec(binPath);
-    String binDirPath(binPath);
-    
+    String path = String(getBinaryFilename());
+    path.truncate(path.rfind('\\'));
+
     const char* format = getPluginFormatName();
 
     if (strcmp(format, "LV2") == 0) {
-        return binDirPath + "\\" + kBundleLibrarySubdirectory;
+        return path + "\\" + kBundleLibrarySubdirectory;
     } else if (strcmp(format, "VST2") == 0) {
-        return binDirPath + "\\" + kNoBundleLibrarySubdirectory;
+        return path + "\\" + kNoBundleLibrarySubdirectory;
     } else if (strcmp(format, "VST3") == 0) {
-        return binDirPath.truncate(binDirPath.rfind('\\')) + "\\Resources";
+        return path.truncate(path.rfind('\\')) + "\\Resources";
     }
 
-    // Standalone
-    return binDirPath + "\\" + kNoBundleLibrarySubdirectory;
+    return path + "\\" + kNoBundleLibrarySubdirectory;
 }
 
 String path::getCachesPath()
@@ -83,5 +80,5 @@ String path::getCachesPath()
     path += "\\";
     path += exeFilename;
 
-    return String(path);
+    return path;
 }
