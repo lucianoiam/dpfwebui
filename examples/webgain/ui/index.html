@@ -42,8 +42,7 @@
         be a hiphop bug as touch works as expected for every other element.
     -->
     <script>
-
-        if (/linux/i.test(window.navigator.platform)) {
+        if (DISTRHO.isHostLinuxGtk) {
             document.querySelectorAll('input[type=range]').forEach((el) => {
                 el.addEventListener('touchmove', (ev) => {
                     const minVal = parseFloat(ev.target.min);

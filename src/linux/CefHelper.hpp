@@ -71,6 +71,7 @@ private:
     void runMainLoop();
     void dispatch(const tlv_t& packet);
     void realize(const msg_win_cfg_t* config);
+    void navigate(const char* url);
     
     float getZoomLevel();
 

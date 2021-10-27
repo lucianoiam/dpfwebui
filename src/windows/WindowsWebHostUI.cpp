@@ -50,6 +50,8 @@ WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t bac
     }
 
     setWebView(view); // base class owns web view
+
+    load();
 }
 
 WindowsWebHostUI::~WindowsWebHostUI()

@@ -58,6 +58,8 @@ typedef struct {
 
 static float get_display_scale_factor();
 static void realize(context_t *ctx, const msg_win_cfg_t *config);
+static void navigate(context_t *ctx, const char *url);
+static void run_javascript(const context_t *ctx, const char *js);
 static void set_size(context_t *ctx, unsigned width, unsigned height);
 static void apply_size(const context_t *ctx);
 static void set_keyboard_focus(context_t *ctx, gboolean focus);
@@ -172,14 +174,32 @@ static void realize(context_t *ctx, const msg_win_cfg_t *config)
     g_signal_connect(manager, "script-message-received::host", G_CALLBACK(web_view_script_message_cb), ctx);
     webkit_user_content_manager_register_script_message_handler(manager, "host");
 
-    // Inject queued scripts
-    strcat(ctx->injectedJs, JS_POST_MESSAGE_SHIM);
-    WebKitUserScript *script = webkit_user_script_new(ctx->injectedJs, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
-        WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL);
-    webkit_user_content_manager_add_script(manager, script);
-    webkit_user_script_unref(script);
-
     gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
+}
+
+static void navigate(context_t *ctx, const char *url)
+{
+    // Inject queued scripts
+    if (strlen(ctx->injectedJs) > 0) {
+        strcat(ctx->injectedJs, JS_POST_MESSAGE_SHIM);
+        
+        WebKitUserScript *script = webkit_user_script_new(ctx->injectedJs, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+            WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL);
+        WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
+        webkit_user_content_manager_add_script(manager, script);
+        webkit_user_script_unref(script);
+
+        ctx->injectedJs[0] = '\0';
+    }
+
+    webkit_web_view_load_uri(ctx->webView, url);
+}
+
+static void run_javascript(const context_t *ctx, const char *js)
+{
+    if (ctx->webView != NULL) {
+        webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
+    }
 }
 
 static void set_size(context_t *ctx, unsigned width, unsigned height)
@@ -206,7 +226,7 @@ static void apply_size(const context_t *ctx)
     sprintf(js, "document.documentElement.style.width  = '%dpx';"
                 "document.documentElement.style.height = '%dpx';",
                 ctx->width, ctx->height);
-    webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
+    run_javascript(ctx, js);
 }
 
 static void set_keyboard_focus(context_t *ctx, gboolean focus)
@@ -281,8 +301,7 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
-            webkit_web_view_run_javascript(ctx->webView, JS_DISABLE_PINCH_ZOOM_WORKAROUND,
-                NULL, NULL, NULL);
+            run_javascript(ctx, JS_DISABLE_PINCH_ZOOM_WORKAROUND);
             apply_size(ctx);
             gtk_widget_show_all(GTK_WIDGET(ctx->window));
             ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
@@ -382,15 +401,11 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             break;
 
         case OP_NAVIGATE:
-            if (ctx->webView != NULL) {
-                webkit_web_view_load_uri(ctx->webView, packet.v);
-            }
+            navigate(ctx, (const char *)packet.v);
             break;
 
         case OP_RUN_SCRIPT:
-            if (ctx->webView != NULL) {
-                webkit_web_view_run_javascript(ctx->webView, packet.v, NULL, NULL, NULL);
-            }
+            run_javascript(ctx, (const char *)packet.v);
             break;
 
         case OP_INJECT_SCRIPT:

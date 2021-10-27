@@ -51,6 +51,8 @@ protected:
     AbstractWebView* getWebView();
     void setWebView(AbstractWebView* webView);
 
+    void load();
+
     void webViewPostMessage(const JsValueVector& args);
 
     void flushInitMessageQueue();

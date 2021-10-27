@@ -28,7 +28,18 @@ LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgro
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
 {
     if (shouldCreateWebView()) {
-        setWebView(new ChildProcessWebView()); // base class owns web view
+        ChildProcessWebView* webview = new ChildProcessWebView();
+        setWebView(webview); // base class owns web view
+
+#if LXWEBVIEW_TYPE == gtk
+        // Allow JavaScript code to detect the GTK webview and enable some
+        // workarounds to compensate for the broken vw/vh/vmin/vmax CSS units and
+        // non-working touch events for <input type="range"> elements.
+        String js = String("DISTRHO.isHostLinuxGtk = true;");
+        webview->injectScript(js);
+#endif // LXWEBVIEW_TYPE == gtk
+
+        load();
     }
 }
 

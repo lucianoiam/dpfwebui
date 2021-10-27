@@ -180,7 +180,7 @@ void AbstractWebHostUI::setWebView(AbstractWebView* webView)
     String js = String(
 #include "ui/distrho-ui.js.inc"
     );
-    js += "const DISTRHO = Object.freeze({ UI: UI });" \
+    js += "const DISTRHO = {UI: UI};" \
           "UI = null;";
     fWebView->injectScript(js);
 
@@ -198,11 +198,15 @@ void AbstractWebHostUI::setWebView(AbstractWebView* webView)
     fWebView->setSize(fInitWidth, fInitHeight);
     fWebView->realize();
 
-    String url = "file://" + path::getLibraryPath() + "/ui/index.html";
-    fWebView->navigate(url);
-
     setSize(fInitWidth, fInitHeight);
 };
+
+void AbstractWebHostUI::load()
+{
+    // Cannot inject scripts after navigation has started
+    String url = "file://" + path::getLibraryPath() + "/ui/index.html";
+    fWebView->navigate(url);
+}
 
 void AbstractWebHostUI::webViewPostMessage(const JsValueVector& args)
 {

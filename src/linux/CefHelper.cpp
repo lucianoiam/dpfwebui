@@ -157,12 +157,11 @@ void CefHelper::dispatch(const tlv_t& packet)
 {
     switch (static_cast<msg_opcode_t>(packet.t)) {
         case OP_REALIZE:
-            realize((const msg_win_cfg_t *)packet.v);
+            realize(static_cast<const msg_win_cfg_t*>(packet.v));
             break;
 
         case OP_NAVIGATE: {
-            const char* url = static_cast<const char*>(packet.v);
-            fBrowser->GetMainFrame()->LoadURL(url);
+            navigate(static_cast<const char*>(packet.v));
             break;
         }
 
@@ -263,6 +262,13 @@ void CefHelper::realize(const msg_win_cfg_t* config)
     fBrowser = CefBrowserHost::CreateBrowserSync(windowInfo, this, "", settings,
         nullptr, nullptr);
 
+    // Reduce artifacts when resizing
+    ::Window w = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
+    XSetWindowBackground(fDisplay, w, config->color);
+}
+
+void CefHelper::navigate(const char* url)
+{
     // Injecting a script means queuing it to run right before document starts
     // loading to ensure they run before any user script. The V8 context must
     // be already initialized in order to run scripts. V8 init callback fires in
@@ -271,14 +277,15 @@ void CefHelper::realize(const msg_win_cfg_t* config)
     // to the browser process to run scripts from the browser process does not
     // guarantee injected scripts will run before user scripts due to timing.
 
-    fInjectedScripts->SetString(fInjectedScripts->GetSize(), JS_POST_MESSAGE_SHIM);
-    CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("InjectScripts");
-    message->GetArgumentList()->SetList(0, fInjectedScripts);
-    fBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
+    if (fInjectedScripts->GetSize() > 0) {
+        fInjectedScripts->SetString(fInjectedScripts->GetSize(), JS_POST_MESSAGE_SHIM);
+        CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("InjectScripts");
+        message->GetArgumentList()->SetList(0, fInjectedScripts);
+        fBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
+        fInjectedScripts->Clear();
+    }
 
-    // Reduce artifacts when resizing
-    ::Window w = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
-    XSetWindowBackground(fDisplay, w, config->color);
+    fBrowser->GetMainFrame()->LoadURL(url);
 }
 
 float CefHelper::getZoomLevel()

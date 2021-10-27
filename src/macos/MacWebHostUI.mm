@@ -30,6 +30,7 @@ MacWebHostUI::MacWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundC
 {
     if (shouldCreateWebView()) {
         setWebView(new CocoaWebView()); // base class owns web view
+        load();
     }
 }
 
