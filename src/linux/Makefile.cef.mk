@@ -19,7 +19,7 @@ $(CEF_PATH):
 	@echo Downloading CEF
 	@wget -4 -O /tmp/$(CEF_DISTRO_FILE) $(CEF_URL)
 	@mkdir -p $(HIPHOP_LIB_PATH)
-	@echo Decompressing CEF
+	@echo Decompressing CEF, this takes a while!
 	@tar xjf /tmp/$(CEF_DISTRO_FILE) -C $(HIPHOP_LIB_PATH)
 	@ln -s $(CEF_DISTRO) $(CEF_PATH)
 	@rm /tmp/$(CEF_DISTRO_FILE)
