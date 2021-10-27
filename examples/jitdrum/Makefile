@@ -46,19 +46,11 @@ include ../../Makefile.plugins.mk
 
 ifeq ($(MACOS),true)
 ifeq ($(HAVE_JACK),true)
-ifeq ($(HAVE_OPENGL),true)
 TARGETS += jack
 endif
 endif
-endif
 
-ifeq ($(HAVE_OPENGL),true)
-TARGETS += lv2_sep
-else
-TARGETS += lv2_dsp
-endif
-
-TARGETS += vst vst3
+TARGETS += lv2_sep vst vst3
 
 all: $(TARGETS) $(HIPHOP_TARGET)
 

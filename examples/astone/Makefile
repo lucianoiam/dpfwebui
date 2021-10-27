@@ -50,8 +50,6 @@ endif
 
 ifeq ($(HAVE_OPENGL),true)
 TARGETS += lv2_sep
-else
-TARGETS += lv2_dsp
 endif
 
 TARGETS += vst vst3
