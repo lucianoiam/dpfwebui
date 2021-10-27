@@ -400,7 +400,7 @@ endif
 endif
 
 # ------------------------------------------------------------------------------
-# Post build - Compile AssemblyScript project and copy Wasm binary
+# Post build - Compile AssemblyScript project
 
 ifneq ($(AS_DSP),)
 ifneq ($(HIPHOP_AS_SKIP_FRAMEWORK_FILES),true)
@@ -415,12 +415,10 @@ framework_as:
 		|| ln -s $(abspath $(HIPHOP_SRC_PATH)/dsp/distrho-plugin.ts) $(AS_ASSEMBLY_PATH)
 endif
 
-HIPHOP_TARGET += lib_dsp
-
 WASM_SRC_PATH = $(HIPHOP_AS_DSP_PATH)/build/optimized.wasm
 WASM_MODULE = main.wasm
 
-lib_dsp: $(WASM_SRC_PATH)
+HIPHOP_TARGET += $(WASM_SRC_PATH)
 
 $(WASM_SRC_PATH): $(AS_ASSEMBLY_PATH)/plugin.ts
 	@echo "Building AssemblyScript project"
@@ -428,6 +426,15 @@ $(WASM_SRC_PATH): $(AS_ASSEMBLY_PATH)/plugin.ts
 	@test -d $(HIPHOP_AS_DSP_PATH)/node_modules \
 		|| (cd $(HIPHOP_AS_DSP_PATH) && $(NPM_OPT_SET_PATH) && npm install)
 	@cd $(HIPHOP_AS_DSP_PATH) && $(NPM_OPT_SET_PATH) && npm run asbuild
+endif
+
+# ------------------------------------------------------------------------------
+# Post build - Always copy AssemblyScript DSP binary
+
+ifneq ($(AS_DSP),)
+HIPHOP_TARGET += lib_dsp
+
+lib_dsp:
 	@echo "Copying WebAssembly DSP binary"
 	@($(TEST_LV2) \
 		&& mkdir -p $(LIB_DIR_LV2)/dsp \
