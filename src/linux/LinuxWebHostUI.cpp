@@ -31,13 +31,13 @@ LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgro
         ChildProcessWebView* webview = new ChildProcessWebView();
         setWebView(webview); // base class owns web view
 
-#if LXWEBVIEW_TYPE == gtk
+#ifdef LXWEBVIEW_GTK
         // Allow JavaScript code to detect the GTK webview and enable some
         // workarounds to compensate for the broken vw/vh/vmin/vmax CSS units and
         // non-working touch events for <input type="range"> elements.
         String js = String("DISTRHO.isHostLinuxGtk = true;");
         webview->injectScript(js);
-#endif // LXWEBVIEW_TYPE == gtk
+#endif // LXWEBVIEW_GTK
 
         load();
     }
@@ -50,7 +50,7 @@ LinuxWebHostUI::~LinuxWebHostUI()
 
 float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
 {
-#if LXWEBVIEW_TYPE == gtk
+#ifdef LXWEBVIEW_GTK
     // WebKitGTK reads these environment variables automatically, however the
     // same scale value is needed for determining maximum view dimensions, see
     // get_display_scale_factor() in gtk_helper.c
@@ -69,9 +69,9 @@ float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
     if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
         return k;
     }
-#endif // LXWEBVIEW_TYPE == gtk
+#endif // LXWEBVIEW_GTK
 
-#if LXWEBVIEW_TYPE == cef
+#ifdef LXWEBVIEW_CEF
     // CEF helper also reads Xft.dpi, see CefHelper::getZoomLevel()
     
     ::Display* const display = XOpenDisplay(nullptr);
@@ -95,7 +95,7 @@ float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
     }
 
     XCloseDisplay(display);
-#endif // LXWEBVIEW_TYPE == cef
+#endif // LXWEBVIEW_CEF
 
     return 1.f;
 }

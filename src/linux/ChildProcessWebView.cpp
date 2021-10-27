@@ -102,9 +102,9 @@ ChildProcessWebView::~ChildProcessWebView()
 {
     if (fPid != -1) {
         fIpc->write(OP_TERMINATE);
-#if LXWEBVIEW_TYPE == cef
+#ifdef LXWEBVIEW_CEF
         kill(fPid, SIGTERM); // CEF takes a while to shutdown, just kill it
-#endif // LXWEBVIEW_TYPE == cef
+#endif // LXWEBVIEW_CEF
         int stat;
         waitpid(fPid, &stat, 0);
 
