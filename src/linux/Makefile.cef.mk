@@ -242,7 +242,8 @@ LXHELPER_SRC += linux/CefHelper.cpp \
 
 LXHELPER_OBJ = $(LXHELPER_SRC:%=$(LXHELPER_BUILD_DIR)/%.o)
 
-LXHELPER_CFLAGS = -I$(HIPHOP_SRC_PATH) -I$(DPF_PATH) -I$(CEF_PATH) -DPLUGIN_BIN_BASENAME=$(NAME)
+LXHELPER_CFLAGS = -I$(HIPHOP_SRC_PATH) -I$(DPF_PATH) -I$(CEF_PATH) \
+                  -DCEF_HELPER_BINARY -DPLUGIN_BIN_BASENAME=$(NAME)
 
 LXHELPER_LDFLAGS = -ldl -lXi -lcef_dll_wrapper -L$(HIPHOP_LIB_PATH) -lcef -L$(CEF_BIN_PATH) \
 				   -lX11 -O3 -DNDEBUG -rdynamic -fPIC -pthread -Wl,--disable-new-dtags \

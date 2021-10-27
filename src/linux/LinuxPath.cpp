@@ -21,13 +21,19 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#ifndef CEF_HELPER_BINARY
+// Including this file when compiling the CEF helper would involve adding lots
+// of dependencies from DPF. Such helper only needs calling getCachesPath().
+// The GTK-based helper does not need to call functions in LinuxPath.cpp at all.
 #include "DistrhoPluginUtils.hpp"
+#endif
 
 #include "Path.hpp"
 #include "macro.h"
 
 USE_NAMESPACE_DISTRHO
 
+#ifndef CEF_HELPER_BINARY
 String path::getLibraryPath()
 {
     String path = String(getBinaryFilename());
@@ -45,6 +51,7 @@ String path::getLibraryPath()
 
     return path + "/" + kNoBundleLibrarySubdirectory;
 }
+#endif // CEF_HELPER_BINARY
 
 String path::getCachesPath()
 {
