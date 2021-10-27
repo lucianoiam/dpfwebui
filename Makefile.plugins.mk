@@ -418,7 +418,9 @@ HIPHOP_TARGET += lib_dsp
 WASM_SRC_PATH = $(HIPHOP_AS_DSP_PATH)/build/optimized.wasm
 WASM_MODULE = main.wasm
 
-lib_dsp:
+lib_dsp: $(WASM_SRC_PATH)
+
+$(WASM_SRC_PATH): $(AS_ASSEMBLY_PATH)/plugin.ts
 	@echo "Building AssemblyScript project"
 	@# npm --prefix fails on MinGW due to paths mixing \ and /
 	@test -d $(HIPHOP_AS_DSP_PATH)/node_modules \
