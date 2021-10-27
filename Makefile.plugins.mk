@@ -313,23 +313,25 @@ endif
 # Dependency - Built-in JavaScript library include and polyfills
 
 ifeq ($(WEB_UI),true)
-UI_JS_INCLUDE_PATH = $(HIPHOP_SRC_PATH)/ui/distrho-ui.js.inc
+UI_JS_PATH = $(HIPHOP_SRC_PATH)/ui/distrho-ui.js
+UI_JS_INCLUDE_PATH = $(UI_JS_PATH).inc
 
-TARGETS += js_ui_inc
+TARGETS += $(UI_JS_INCLUDE_PATH)
 
-js_ui_inc:
+$(UI_JS_INCLUDE_PATH): $(UI_JS_PATH)
 	@echo 'R"JS(' > $(UI_JS_INCLUDE_PATH)
-	@cat $(HIPHOP_SRC_PATH)/ui/distrho-ui.js >> $(UI_JS_INCLUDE_PATH)
+	@cat $(UI_JS_PATH) >> $(UI_JS_INCLUDE_PATH)
 	@echo ')JS"' >> $(UI_JS_INCLUDE_PATH)
 
 ifeq ($(MACOS),true)
-POLYFILL_JS_INCLUDE_PATH = $(HIPHOP_SRC_PATH)/ui/event-target-polyfill.js.inc
+POLYFILL_JS_PATH = $(HIPHOP_SRC_PATH)/ui/event-target-polyfill.js
+POLYFILL_JS_INCLUDE_PATH = $(POLYFILL_JS_PATH).inc
 
-TARGETS += js_polyfill_inc
+TARGETS += $(POLYFILL_JS_INCLUDE_PATH)
 
-js_polyfill_inc:
+$(POLYFILL_JS_INCLUDE_PATH): $(POLYFILL_JS_PATH)
 	@echo 'R"JS(' > $(POLYFILL_JS_INCLUDE_PATH)
-	@cat $(HIPHOP_SRC_PATH)/ui/event-target-polyfill.js >> $(POLYFILL_JS_INCLUDE_PATH)
+	@cat $(POLYFILL_JS_PATH) >> $(POLYFILL_JS_INCLUDE_PATH)
 	@echo ')JS"' >> $(POLYFILL_JS_INCLUDE_PATH)
 
 endif
