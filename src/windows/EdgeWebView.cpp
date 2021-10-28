@@ -139,9 +139,9 @@ void EdgeWebView::realize()
 
 void EdgeWebView::navigate(String& url)
 {
-    fUrl = url;
-
-    if (fView != 0) {
+    if (fView == 0) {
+        fUrl = url;
+    } else {
         ICoreWebView2_Navigate(fView, TO_LPCWSTR(url));
     }
 }
@@ -157,9 +157,9 @@ void EdgeWebView::runScript(String& source)
 
 void EdgeWebView::injectScript(String& source)
 {
-    fInjectedScripts.push_back(source);
-
-    if (fController != 0) {
+    if (fController == 0) {
+        fInjectedScripts.push_back(source);
+    } else {
         ICoreWebView2_AddScriptToExecuteOnDocumentCreated(fView, TO_LPCWSTR(source), 0);
     }
 }

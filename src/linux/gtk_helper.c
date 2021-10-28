@@ -44,8 +44,7 @@
 
 typedef struct {
     ipc_t*         ipc;
-    unsigned       width;
-    unsigned       height;
+    msg_win_size_t size;
     Display*       display;
     Window         container;
     GtkWindow*     window;
@@ -59,8 +58,9 @@ typedef struct {
 static float get_display_scale_factor();
 static void realize(context_t *ctx, const msg_win_cfg_t *config);
 static void navigate(context_t *ctx, const char *url);
-static void run_javascript(const context_t *ctx, const char *js);
-static void set_size(context_t *ctx, unsigned width, unsigned height);
+static void run_script(const context_t *ctx, const char *js);
+static void inject_script(context_t *ctx, const char *js);
+static void set_size(context_t *ctx, const msg_win_size_t *size);
 static void apply_size(const context_t *ctx);
 static void set_keyboard_focus(context_t *ctx, gboolean focus);
 static void* focus_watchdog_worker(void *arg);
@@ -189,23 +189,27 @@ static void navigate(context_t *ctx, const char *url)
         webkit_user_content_manager_add_script(manager, script);
         webkit_user_script_unref(script);
 
-        ctx->injectedJs[0] = '\0';
+        ctx->injectedJs[0] = '\0'; // already injected on next navigate() call
     }
 
     webkit_web_view_load_uri(ctx->webView, url);
 }
 
-static void run_javascript(const context_t *ctx, const char *js)
+static void run_script(const context_t *ctx, const char *js)
 {
     if (ctx->webView != NULL) {
         webkit_web_view_run_javascript(ctx->webView, js, NULL, NULL, NULL);
     }
 }
 
-static void set_size(context_t *ctx, unsigned width, unsigned height)
+static void inject_script(context_t *ctx, const char *js)
 {
-    ctx->width = width;
-    ctx->height = height;
+    strcat(ctx->injectedJs, (const char *)js);
+}
+
+static void set_size(context_t *ctx, const msg_win_size_t *size)
+{
+    ctx->size = *size;
 
     if (ctx->webView != NULL) {
         apply_size(ctx);
@@ -214,7 +218,10 @@ static void set_size(context_t *ctx, unsigned width, unsigned height)
 
 static void apply_size(const context_t *ctx)
 {
-    if ((ctx->width == 0) || (ctx->height == 0)) {
+    unsigned width = ctx->size.width;
+    unsigned height = ctx->size.height;
+
+    if ((width == 0) || (height == 0)) {
         return;
     }
     
@@ -225,8 +232,8 @@ static void apply_size(const context_t *ctx)
 
     sprintf(js, "document.documentElement.style.width  = '%dpx';"
                 "document.documentElement.style.height = '%dpx';",
-                ctx->width, ctx->height);
-    run_javascript(ctx, js);
+                width, height);
+    run_script(ctx, js);
 }
 
 static void set_keyboard_focus(context_t *ctx, gboolean focus)
@@ -301,13 +308,12 @@ static void web_view_load_changed_cb(WebKitWebView *view, WebKitLoadEvent event,
     switch (event) {
         case WEBKIT_LOAD_FINISHED:
             // Load completed. All resources are done loading or there was an error during the load operation. 
-            run_javascript(ctx, JS_DISABLE_PINCH_ZOOM_WORKAROUND);
+            run_script(ctx, JS_DISABLE_PINCH_ZOOM_WORKAROUND);
             apply_size(ctx);
             gtk_widget_show_all(GTK_WIDGET(ctx->window));
             ipc_write_simple(ctx, OP_HANDLE_LOAD_FINISHED, NULL, 0);
             usleep(20000); // 20ms -- prevents flicker, why?
             break;
-
         default:
             break;
     }
@@ -399,35 +405,24 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
         case OP_REALIZE:
             realize(ctx, (const msg_win_cfg_t *)packet.v);
             break;
-
         case OP_NAVIGATE:
             navigate(ctx, (const char *)packet.v);
             break;
-
         case OP_RUN_SCRIPT:
-            run_javascript(ctx, (const char *)packet.v);
+            run_script(ctx, (const char *)packet.v);
             break;
-
         case OP_INJECT_SCRIPT:
-            strcat(ctx->injectedJs, (const char *)packet.v);
+            inject_script(ctx, (const char *)packet.v);
             break;
-
-        case OP_SET_SIZE: {
-            const msg_win_size_t *size = (const msg_win_size_t *)packet.v;
-            set_size(ctx, size->width, size->height);
+        case OP_SET_SIZE:
+            set_size(ctx, (const msg_win_size_t *)packet.v);
             break;
-        }
-
-        case OP_SET_KEYBOARD_FOCUS: {
-            gboolean focus = *((char *)packet.v) == 1 ? TRUE : FALSE;
-            set_keyboard_focus(ctx, focus);
+        case OP_SET_KEYBOARD_FOCUS:
+            set_keyboard_focus(ctx, *((char *)packet.v) == 1 ? TRUE : FALSE);
             break;
-        }
-
         case OP_TERMINATE:
             gtk_main_quit();
             break;
-
         default:
             break;
     }

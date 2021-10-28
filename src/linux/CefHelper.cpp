@@ -159,39 +159,24 @@ void CefHelper::dispatch(const tlv_t& packet)
         case OP_REALIZE:
             realize(static_cast<const msg_win_cfg_t*>(packet.v));
             break;
-
-        case OP_NAVIGATE: {
+        case OP_NAVIGATE:
             navigate(static_cast<const char*>(packet.v));
             break;
-        }
-
-        case OP_RUN_SCRIPT: {
-            const char* js = static_cast<const char*>(packet.v);
-            CefRefPtr<CefFrame> frame = fBrowser->GetMainFrame();
-            frame->ExecuteJavaScript(js, frame->GetURL(), 0);
+        case OP_RUN_SCRIPT:
+            runScript(static_cast<const char*>(packet.v));
             break;
-        }
-
-        case OP_INJECT_SCRIPT: {
-            const char* js = static_cast<const char*>(packet.v);
-            fInjectedScripts->SetString(fInjectedScripts->GetSize(), js);
+        case OP_INJECT_SCRIPT: 
+            injectScript(static_cast<const char*>(packet.v));
             break;
-        }
-
-        case OP_SET_SIZE: {
-            const msg_win_size_t* size = static_cast<const msg_win_size_t*>(packet.v);
-            setSize(size->width, size->height);
+        case OP_SET_SIZE:
+            setSize(static_cast<const msg_win_size_t*>(packet.v));
             break;
-        }
-
         case OP_SET_KEYBOARD_FOCUS:
             setKeyboardFocus(*((char *)packet.v) == 1);
             break;
-
         case OP_TERMINATE:
             fRunMainLoop = false;
             break;
-
         default:
             break;
     }
@@ -288,32 +273,22 @@ void CefHelper::navigate(const char* url)
     fBrowser->GetMainFrame()->LoadURL(url);
 }
 
-float CefHelper::getZoomLevel()
+void CefHelper::runScript(const char* js)
 {
-    // 1. Replicate value of LinuxWebHostUI::getDisplayScaleFactor()
-    // 2. Convert to Chromium scale https://magpcss.org/ceforum/viewtopic.php?t=11491
-    XrmInitialize();
-
-    if (char* const rms = XResourceManagerString(fDisplay)) {
-        if (const XrmDatabase sdb = XrmGetStringDatabase(rms)) {
-            char* type = nullptr;
-            XrmValue ret;
-
-            if (XrmGetResource(sdb, "Xft.dpi", "String", &type, &ret)
-                    && (ret.addr != nullptr) && (type != nullptr)
-                    && (std::strncmp("String", type, 6) == 0)) {
-                if (const float dpi = std::atof(ret.addr)) {
-                    return std::log(dpi / 96.f) / std::log(1.2f);
-                }
-            }
-        }
-    }
-
-    return 0;
+    CefRefPtr<CefFrame> frame = fBrowser->GetMainFrame();
+    frame->ExecuteJavaScript(js, frame->GetURL(), 0);
 }
 
-void CefHelper::setSize(unsigned width, unsigned height)
+void CefHelper::injectScript(const char* js)
 {
+    fInjectedScripts->SetString(fInjectedScripts->GetSize(), js);
+}
+
+void CefHelper::setSize(const msg_win_size_t* size)
+{
+    unsigned width = size->width;
+    unsigned height = size->height;
+
     if (fBrowser != 0) {
         ::Window w = static_cast<::Window>(fBrowser->GetHost()->GetWindowHandle());
         XResizeWindow(fDisplay, w, width, height);
@@ -350,6 +325,30 @@ void CefHelper::setKeyboardFocus(bool keyboardFocus)
         XIUngrabDevice(fDisplay, XIAllMasterDevices, CurrentTime);
     }
 }
+    
+float CefHelper::getZoomLevel()
+{
+    // 1. Replicate value of LinuxWebHostUI::getDisplayScaleFactor()
+    // 2. Convert to Chromium scale https://magpcss.org/ceforum/viewtopic.php?t=11491
+    XrmInitialize();
+
+    if (char* const rms = XResourceManagerString(fDisplay)) {
+        if (const XrmDatabase sdb = XrmGetStringDatabase(rms)) {
+            char* type = nullptr;
+            XrmValue ret;
+
+            if (XrmGetResource(sdb, "Xft.dpi", "String", &type, &ret)
+                    && (ret.addr != nullptr) && (type != nullptr)
+                    && (std::strncmp("String", type, 6) == 0)) {
+                if (const float dpi = std::atof(ret.addr)) {
+                    return std::log(dpi / 96.f) / std::log(1.2f);
+                }
+            }
+        }
+    }
+
+    return 0;
+}
 
 CefSubprocess::CefSubprocess()
 {
@@ -362,6 +361,7 @@ bool CefSubprocess::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
                                                    CefRefPtr<CefProcessMessage> message)
 {
     if ((sourceProcess == PID_BROWSER) && (message->GetName() == "InjectScripts")) {
+        // Note fInjectedScripts belongs to CefSubprocess and never gets cleared
         fInjectedScripts = message->GetArgumentList()->GetList(0)->Copy();
         return true;
     }
@@ -372,6 +372,7 @@ bool CefSubprocess::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
 void CefSubprocess::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                                            CefRefPtr<CefV8Context> context)
 {
+    // TODO: code in OnContextCreated() will only run for the first loadURL() call
     fBrowser = browser;
 
     // V8 context is ready, first define the window.hostPostMessage function.

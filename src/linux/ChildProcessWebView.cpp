@@ -103,7 +103,7 @@ ChildProcessWebView::~ChildProcessWebView()
     if (fPid != -1) {
         fIpc->write(OP_TERMINATE);
 #ifdef LXWEBVIEW_CEF
-        kill(fPid, SIGTERM); // CEF takes a while to shutdown, just kill it
+        kill(fPid, SIGTERM); // terminate as soon as possible
 #endif // LXWEBVIEW_CEF
         int stat;
         waitpid(fPid, &stat, 0);
@@ -202,14 +202,12 @@ void ChildProcessWebView::onKeyboardFocus(bool focus)
 void ChildProcessWebView::ipcReadCallback(const tlv_t& packet)
 {
     switch (static_cast<msg_opcode_t>(packet.t)) {
-        case OP_HANDLE_LOAD_FINISHED: {
+        case OP_HANDLE_LOAD_FINISHED:
             handleLoadFinished();
             break;
-        }
         case OP_HANDLE_SCRIPT_MESSAGE:
             handleHelperScriptMessage(static_cast<const char*>(packet.v), packet.l);
             break;
-
         default:
             break;
     }
@@ -230,22 +228,18 @@ void ChildProcessWebView::handleHelperScriptMessage(const char *payload, int pay
                 offset += 1;
                 args.push_back(JsValue(false));
                 break;
-
             case ARG_TYPE_TRUE:
                 offset += 1;
                 args.push_back(JsValue(true));
                 break;
-
             case ARG_TYPE_DOUBLE:
                 offset += 1 + sizeof(double);
                 args.push_back(JsValue(*reinterpret_cast<const double *>(value)));
                 break;
-
             case ARG_TYPE_STRING:
                 offset += 1 /*type*/ + strlen(value) + 1 /*\0*/;
                 args.push_back(JsValue(String(value)));
                 break;
-
             default:
                 offset += 1;
                 args.push_back(JsValue()); // null

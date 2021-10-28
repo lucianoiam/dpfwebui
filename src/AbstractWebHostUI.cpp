@@ -180,7 +180,7 @@ void AbstractWebHostUI::setWebView(AbstractWebView* webView)
     String js = String(
 #include "ui/distrho-ui.js.inc"
     );
-    js += "const DISTRHO = {UI: UI};" \
+    js += "window.DISTRHO = {UI: UI};" \
           "UI = null;";
     fWebView->injectScript(js);
 
