@@ -35,7 +35,10 @@ LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgro
         // Allow JavaScript code to detect the GTK webview and enable some
         // workarounds to compensate for the broken vw/vh/vmin/vmax CSS units and
         // non-working touch events for <input type="range"> elements.
-        String js = String("window.DISTRHO.isHostLinuxGtk = true;");
+        String js = String(
+            "window.DISTRHO.quirks.brokenCSSViewportUnits = true;"
+            "window.DISTRHO.quirks.brokenRangeInputTouch = true;"
+        );
         webview->injectScript(js);
 #endif // LXWEBVIEW_GTK
 
