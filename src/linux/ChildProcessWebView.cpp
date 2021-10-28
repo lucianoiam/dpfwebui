@@ -41,6 +41,8 @@ extern char **environ;
   - CEF lifecycle and usage of globals is not compatible with plugins
     https://bitbucket.org/chromiumembedded/cef/issues/421
 
+    There is a lengthy relevant discussion on the topic here
+    https://gist.github.com/abique/4c1b9b40f3413f0df1591d2a7c760db4
 */
 
 USE_NAMESPACE_DISTRHO
