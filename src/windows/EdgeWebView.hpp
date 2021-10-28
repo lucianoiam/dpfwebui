@@ -78,6 +78,7 @@ protected:
     void onSize(uint width, uint height) override;
 
 private:
+    void errorMessageBox(std::wstring message);
     void webViewLoaderErrorMessageBox(HRESULT result);
 
     WNDCLASSEX fHelperClass;

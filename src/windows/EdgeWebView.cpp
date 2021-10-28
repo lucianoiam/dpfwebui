@@ -54,11 +54,13 @@ EdgeWebView::EdgeWebView()
     , fController(0)
     , fView(0)
 {
+    ZeroMemory(&fHelperClass, sizeof(fHelperClass));
+    
     SetDllDirectory(TO_LPCWSTR(path::getLibraryPath()));
     HMODULE hm = LoadLibrary(L"WebView2Loader.dll");
 
     if (hm == 0) {
-        HIPHOP_LOG_STDERR_COLOR("Could not load WebView2Loader.dll");
+        errorMessageBox(L"Could not load WebView2Loader.dll");
         return;
     }
 
@@ -66,7 +68,6 @@ EdgeWebView::EdgeWebView()
 
     WCHAR className[256];
     swprintf(className, sizeof(className), L"EdgeWebView_%s_%d", XSTR(HIPHOP_PROJECT_ID_HASH), std::rand());
-    ZeroMemory(&fHelperClass, sizeof(fHelperClass));
     fHelperClass.cbSize = sizeof(WNDCLASSEX);
     fHelperClass.cbWndExtra = 2 * sizeof(LONG_PTR);
     fHelperClass.lpszClassName = wcsdup(className);
@@ -117,18 +118,27 @@ EdgeWebView::EdgeWebView()
 
 EdgeWebView::~EdgeWebView()
 {
-    fHandler->release();
+    if (fHandler != 0) {
+        fHandler->release();
+    }
 
-    UnhookWindowsHookEx(fKeyboardHook);
+    if (fKeyboardHook != 0) {
+        UnhookWindowsHookEx(fKeyboardHook);
+    }
 
     if (fController != 0) {
         ICoreWebView2Controller2_Close(fController);
         ICoreWebView2Controller2_Release(fController);
     }
 
-    DestroyWindow(fHelperHwnd);
-    UnregisterClass(fHelperClass.lpszClassName, 0);
-    free((void*)fHelperClass.lpszClassName);
+    if (fHelperHwnd != 0) {
+        DestroyWindow(fHelperHwnd);
+    }
+
+    if (fHelperClass.lpszClassName != 0) {
+        UnregisterClass(fHelperClass.lpszClassName, 0);
+        free((void*)fHelperClass.lpszClassName);
+    }
 }
 
 void EdgeWebView::realize()
@@ -286,6 +296,11 @@ HRESULT EdgeWebView::handleWebView2WebMessageReceived(ICoreWebView2 *sender,
     handleScriptMessage(args);
     
     return S_OK;
+}
+
+void EdgeWebView::errorMessageBox(std::wstring message)
+{
+    MessageBox(0, message.c_str(), TEXT(DISTRHO_PLUGIN_NAME), MB_OK | MB_ICONEXCLAMATION);
 }
 
 void EdgeWebView::webViewLoaderErrorMessageBox(HRESULT result)
