@@ -56,56 +56,15 @@ LinuxWebHostUI::~LinuxWebHostUI()
     // TODO - standalone support
 }
 
-float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t)
+float LinuxWebHostUI::getDisplayScaleFactor(uintptr_t /*window*/)
 {
-#ifdef LXWEBVIEW_GTK
-    // WebKitGTK reads these environment variables automatically, however the
-    // same scale value is needed for determining maximum view dimensions, see
-    // get_display_scale_factor() in gtk_helper.c for more details.
+    ChildProcessWebView* webview = (ChildProcessWebView*)getWebView();
 
-    const char* dpi;
-    float k;
-
-    dpi = getenv("GDK_SCALE");
-
-    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
-        return k;
+    if (webview == 0) {
+        return 1.f;
     }
 
-    dpi = getenv("GDK_DPI_SCALE");
-
-    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
-        return k;
-    }
-#endif // LXWEBVIEW_GTK
-
-#ifdef LXWEBVIEW_CEF
-    // CEF helper also reads Xft.dpi, see CefHelper::getZoomLevel()
-    
-    ::Display* const display = XOpenDisplay(nullptr);
-
-    XrmInitialize();
-
-    if (char* const rms = XResourceManagerString(display)) {
-        if (const XrmDatabase sdb = XrmGetStringDatabase(rms)) {
-            char* type = nullptr;
-            XrmValue ret;
-
-            if (XrmGetResource(sdb, "Xft.dpi", "String", &type, &ret)
-                    && (ret.addr != nullptr) && (type != nullptr)
-                    && (std::strncmp("String", type, 6) == 0)) {
-                if (const float dpi = std::atof(ret.addr)) {
-                    XCloseDisplay(display);
-                    return dpi / 96.f;
-                }
-            }
-        }
-    }
-
-    XCloseDisplay(display);
-#endif // LXWEBVIEW_CEF
-
-    return 1.f;
+    return webview->getDisplayScaleFactor();
 }
 
 void LinuxWebHostUI::openSystemWebBrowser(String& url)

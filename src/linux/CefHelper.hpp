@@ -77,10 +77,11 @@ private:
     void setSize(const msg_win_size_t* size);
     void setKeyboardFocus(bool keyboardFocus);
 
-    float getZoomLevel();
+    float getX11ScaleFactor();
 
-    IpcChannel* fIpc;
+    float       fScaleFactor;
     bool        fRunMainLoop;
+    IpcChannel* fIpc;
     ::Display*  fDisplay;
     ::Window    fContainer;
     

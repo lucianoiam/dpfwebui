@@ -53,6 +53,8 @@ ChildProcessWebView::ChildProcessWebView()
     , fPid(-1)
     , fIpc(0)
     , fIpcThread(0)
+    , fChildInit(false)
+    , fDisplayScaleFactor(1.f)
 {
     fDisplay = XOpenDisplay(0);
 
@@ -95,6 +97,15 @@ ChildProcessWebView::ChildProcessWebView()
     if (status != 0) {
         HIPHOP_LOG_STDERR_ERRNO("Could not spawn helper child process");
         return;
+    }
+
+    // Busy-wait for init up to 5s
+    for (int i = 0; (i < 500) && !fChildInit; i++) {
+        usleep(10000L); // 10ms
+    }
+
+    if (!fChildInit) {
+        HIPHOP_LOG_STDERR_COLOR("Timeout waiting for UI helper init")
     }
 
     injectDefaultScripts(); // non-virtual, safe to call
@@ -206,6 +217,9 @@ void ChildProcessWebView::onKeyboardFocus(bool focus)
 void ChildProcessWebView::ipcReadCallback(const tlv_t& packet)
 {
     switch (static_cast<msg_opcode_t>(packet.t)) {
+        case OP_HANDLE_INIT:
+            handleInit(*static_cast<const float*>(packet.v));
+            break;
         case OP_HANDLE_LOAD_FINISHED:
             handleLoadFinished();
             break;
@@ -215,6 +229,12 @@ void ChildProcessWebView::ipcReadCallback(const tlv_t& packet)
         default:
             break;
     }
+}
+
+void ChildProcessWebView::handleInit(float displayScaleFactor)
+{
+    fDisplayScaleFactor = displayScaleFactor;
+    fChildInit = true;
 }
 
 void ChildProcessWebView::handleHelperScriptMessage(const char *payload, int payloadSize)

@@ -30,6 +30,7 @@ typedef enum {
     OP_SET_SIZE,
     OP_SET_KEYBOARD_FOCUS,
     OP_TERMINATE,
+    OP_HANDLE_INIT,
     OP_HANDLE_SCRIPT_MESSAGE,
     OP_HANDLE_LOAD_FINISHED
 } msg_opcode_t;

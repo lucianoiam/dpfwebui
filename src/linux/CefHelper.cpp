@@ -55,8 +55,9 @@ int main(int argc, char* argv[])
 }
 
 CefHelper::CefHelper()
-    : fIpc(0)
+    : fScaleFactor(1.f)
     , fRunMainLoop(false)
+    , fIpc(0)
     , fDisplay(0)
     , fContainer(0)
 {
@@ -115,6 +116,9 @@ int CefHelper::run(const CefMainArgs& args)
 
     // Initialize CEF for the browser process
     CefInitialize(args, settings, this, nullptr);
+
+    fScaleFactor = getX11ScaleFactor();
+    fIpc->write(OP_HANDLE_INIT, &fScaleFactor, sizeof(fScaleFactor));
 
     runMainLoop();
 
@@ -210,7 +214,9 @@ void CefHelper::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> commandLine
 void CefHelper::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                             TransitionType transitionType)
 {
-    browser->GetHost()->SetZoomLevel(getZoomLevel());
+    // Chromium weird scaling https://magpcss.org/ceforum/viewtopic.php?t=11491
+    float zoomLevel = std::log(fScaleFactor) / std::log(1.2f);
+    browser->GetHost()->SetZoomLevel(zoomLevel);
 }
 
 void CefHelper::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
@@ -325,11 +331,9 @@ void CefHelper::setKeyboardFocus(bool keyboardFocus)
         XIUngrabDevice(fDisplay, XIAllMasterDevices, CurrentTime);
     }
 }
-    
-float CefHelper::getZoomLevel()
+
+float CefHelper::getX11ScaleFactor()
 {
-    // 1. Replicate value of LinuxWebHostUI::getDisplayScaleFactor()
-    // 2. Convert to Chromium scale https://magpcss.org/ceforum/viewtopic.php?t=11491
     XrmInitialize();
 
     if (char* const rms = XResourceManagerString(fDisplay)) {
@@ -341,13 +345,13 @@ float CefHelper::getZoomLevel()
                     && (ret.addr != nullptr) && (type != nullptr)
                     && (std::strncmp("String", type, 6) == 0)) {
                 if (const float dpi = std::atof(ret.addr)) {
-                    return std::log(dpi / 96.f) / std::log(1.2f);
+                    return dpi / 96.f;
                 }
             }
         }
     }
 
-    return 0;
+    return 1.f;
 }
 
 CefSubprocess::CefSubprocess()

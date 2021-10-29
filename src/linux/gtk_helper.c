@@ -44,6 +44,7 @@
 
 typedef struct {
     ipc_t*         ipc;
+    float          scaleFactor;
     msg_win_size_t size;
     Display*       display;
     Window         container;
@@ -55,8 +56,7 @@ typedef struct {
     char           injectedJs[65536];
 } context_t;
 
-static float get_display_scale_factor();
-static float get_javascript_device_pixel_ratio();
+static float get_gtk_scale_factor();
 static void realize(context_t *ctx, const msg_win_cfg_t *config);
 static void navigate(context_t *ctx, const char *url);
 static void run_script(const context_t *ctx, const char *js);
@@ -105,6 +105,9 @@ int main(int argc, char* argv[])
     channel = g_io_channel_unix_new(conf.fd_r);    
     g_io_add_watch(channel, G_IO_IN|G_IO_ERR|G_IO_HUP, ipc_read_cb, &ctx);
 
+    ctx.scaleFactor = get_gtk_scale_factor();
+    ipc_write_simple(&ctx, OP_HANDLE_INIT, &ctx.scaleFactor, sizeof(ctx.scaleFactor));
+
     gtk_main();
 
     set_keyboard_focus(&ctx, FALSE);
@@ -120,38 +123,21 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-static float get_display_scale_factor()
+static float get_gtk_scale_factor()
 {
-    // Replicate value of LinuxWebHostUI::getDisplayScaleFactor()
-    const char* dpi;
-    float k;
+    // Favor system-wide setting, this is set for example by updating display
+    // scale in Gnome Shell's settings and possibly by other window managers.
+    // It can be also controlled by setting the environment variable GDK_SCALE.
+    GtkWidget *dummy = gtk_widget_new(GTK_TYPE_WINDOW, NULL);
+    float k = (float)gtk_widget_get_scale_factor(dummy);
+    gtk_widget_destroy(dummy);
 
-    // Favor GDK_SCALE which is an integer value set by Gnome Shell's display
-    // scale settings and possibly other desktop environments
-    dpi = getenv("GDK_SCALE");
-
-    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
+    if (k != 1.f) {
         return k;
     }
 
-    // GDK_DPI_SCALE can be set to non-integer values but does not seem to be
-    // widely adopted
-    dpi = getenv("GDK_DPI_SCALE");
-
-    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
-        return k;
-    }
-
-    return 1.f;
-}
-
-static float get_javascript_device_pixel_ratio()
-{
-    const char* dpi;
-    float k;
-
-    // WebKitGTK uses this value for setting window.devicePixelRatio
-    dpi = getenv("GDK_SCALE");
+    // Also check for an environment variable that allows non-fractional scaling
+    const char* dpi = getenv("GDK_DPI_SCALE");
 
     if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
         return k;
@@ -163,9 +149,8 @@ static float get_javascript_device_pixel_ratio()
 static void realize(context_t *ctx, const msg_win_cfg_t *config)
 {
     // Create a native container window of arbitrary maximum size
-    float scale = get_display_scale_factor();
-    int max_width = scale * HIPHOP_MAX_BASE_WIDTH;
-    int max_height = scale * HIPHOP_MAX_BASE_HEIGHT;
+    int max_width = ctx->scaleFactor * HIPHOP_MAX_BASE_WIDTH;
+    int max_height = ctx->scaleFactor * HIPHOP_MAX_BASE_HEIGHT;
 
     ctx->container = XCreateSimpleWindow(ctx->display, (Window)config->parent, 0, 0,
                                         max_width, max_height, 0, 0, 0);
@@ -240,7 +225,8 @@ static void apply_size(const context_t *ctx)
         return;
     }
  
-    float k = get_javascript_device_pixel_ratio();
+    // WebKitGTK uses this value for setting window.devicePixelRatio
+    gint k = gtk_widget_get_scale_factor(GTK_WIDGET(ctx->webView));
     width /= k;
     height /= k;
 
