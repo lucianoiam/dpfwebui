@@ -52,7 +52,7 @@ class WebGainExampleUI extends DISTRHO.UI {
         });
 
         // See WebGainExampleUI constructor in WebGainExampleUI.cpp
-        testHostFunction();
+        testInjectedFunction();
 
         // Showtime
         document.body.style.visibility = 'visible';

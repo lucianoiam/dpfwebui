@@ -43,8 +43,8 @@ WebGainExampleUI::WebGainExampleUI()
     // to false gives a chance to inject any needed scripts here, for example:
 
     String js = String(
-        "window.testHostFunction = () => {"
-        "   console.log('Hello world');"
+        "window.testInjectedFunction = () => {"
+        "   console.log(`The device pixel ratio is ${window.devicePixelRatio}`);"
         "};"
     );
     injectScript(js);

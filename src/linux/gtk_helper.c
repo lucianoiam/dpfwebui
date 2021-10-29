@@ -56,6 +56,7 @@ typedef struct {
 } context_t;
 
 static float get_display_scale_factor();
+static float get_javascript_device_pixel_ratio();
 static void realize(context_t *ctx, const msg_win_cfg_t *config);
 static void navigate(context_t *ctx, const char *url);
 static void run_script(const context_t *ctx, const char *js);
@@ -125,13 +126,32 @@ static float get_display_scale_factor()
     const char* dpi;
     float k;
 
+    // Favor GDK_SCALE which is an integer value set by Gnome Shell's display
+    // scale settings and possibly other desktop environments
     dpi = getenv("GDK_SCALE");
 
     if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
         return k;
     }
 
+    // GDK_DPI_SCALE can be set to non-integer values but does not seem to be
+    // widely adopted
     dpi = getenv("GDK_DPI_SCALE");
+
+    if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
+        return k;
+    }
+
+    return 1.f;
+}
+
+static float get_javascript_device_pixel_ratio()
+{
+    const char* dpi;
+    float k;
+
+    // WebKitGTK uses this value for setting window.devicePixelRatio
+    dpi = getenv("GDK_SCALE");
 
     if ((dpi != 0) && (sscanf(dpi, "%f", &k) == 1)) {
         return k;
@@ -219,7 +239,11 @@ static void apply_size(const context_t *ctx)
     if ((width == 0) || (height == 0)) {
         return;
     }
-    
+ 
+    float k = get_javascript_device_pixel_ratio();
+    width /= k;
+    height /= k;
+
     // WKGTKRESIZEBUG : does not result in webview contents size update
     //gtk_window_resize(ctx->window, width, height);
 
