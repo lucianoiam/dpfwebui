@@ -32,7 +32,8 @@ START_NAMESPACE_DISTRHO
 class AbstractWebHostUI : public UI, private WebViewEventHandler
 {
 public:
-    AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor);
+    AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor, 
+        bool startLoading = true);
     virtual ~AbstractWebHostUI();
 
     typedef std::function<void()> UiBlock;
@@ -52,6 +53,9 @@ protected:
     void setWebView(AbstractWebView* webView);
 
     void load();
+    
+    void runScript(String& source);
+    void injectScript(String& source);
 
     void webViewPostMessage(const JsValueVector& args);
 

@@ -24,7 +24,8 @@ BOOL CALLBACK FindHostWindowProc(HWND hWnd, LPARAM lParam);
 
 USE_NAMESPACE_DISTRHO
 
-WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
+WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight,
+        uint32_t backgroundColor, bool startLoading)
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
     , fHostHWnd(0)
 {
@@ -51,7 +52,9 @@ WindowsWebHostUI::WindowsWebHostUI(uint baseWidth, uint baseHeight, uint32_t bac
 
     setWebView(view); // base class owns web view
 
-    load();
+    if (startLoading) {
+        load();
+    }
 }
 
 WindowsWebHostUI::~WindowsWebHostUI()

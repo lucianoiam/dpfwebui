@@ -25,7 +25,8 @@
 
 USE_NAMESPACE_DISTRHO
 
-AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
+AbstractWebHostUI::AbstractWebHostUI(uint baseWidth, uint baseHeight, 
+        uint32_t backgroundColor, bool /*startLoading*/)
     : UI(baseWidth, baseHeight)
     , fWebView(0)
     , fInitWidth(0)
@@ -203,9 +204,25 @@ void AbstractWebHostUI::setWebView(AbstractWebView* webView)
 
 void AbstractWebHostUI::load()
 {
+    if (fWebView != 0) {
+        String url = "file://" + path::getLibraryPath() + "/ui/index.html";
+        fWebView->navigate(url);
+    }
+}
+
+void AbstractWebHostUI::runScript(String& source)
+{
+    if (fWebView != 0) {
+        fWebView->runScript(source);
+    }
+}
+
+void AbstractWebHostUI::injectScript(String& source)
+{
     // Cannot inject scripts after navigation has started
-    String url = "file://" + path::getLibraryPath() + "/ui/index.html";
-    fWebView->navigate(url);
+    if (fWebView != 0) {
+        fWebView->injectScript(source);
+    }
 }
 
 void AbstractWebHostUI::webViewPostMessage(const JsValueVector& args)

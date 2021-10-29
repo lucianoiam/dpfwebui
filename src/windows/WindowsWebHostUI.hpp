@@ -27,7 +27,8 @@ START_NAMESPACE_DISTRHO
 class WindowsWebHostUI : public AbstractWebHostUI
 {
 public:
-    WindowsWebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    WindowsWebHostUI(uint baseWidth = 0, uint baseHeight = 0,
+        uint32_t backgroundColor = 0xffffffff, bool startLoading = true);
     virtual ~WindowsWebHostUI();
 
     float getDisplayScaleFactor(uintptr_t window) override;

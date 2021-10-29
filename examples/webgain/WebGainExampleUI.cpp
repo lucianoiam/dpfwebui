@@ -34,20 +34,33 @@ UI* DISTRHO::createUI()
 }
 
 WebGainExampleUI::WebGainExampleUI()
-    : WebHostUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA)
+    : WebHostUI(BASE_WIDTH_PX, BASE_HEIGHT_PX, INIT_BACKGROUND_RGBA, false)
 {
-    // Web view not guaranteed to be ready yet. Calls to getWebView()->runScript()
-    // or any DPF methods mapped by WebHostUI are forbidden. Mapped methods are
-    // those that have their JavaScript counterparts; they rely on message
-    // passing and ultimately getWebView()->runScript(). Still it is safe to call
-    // getWebView()->injectScript() to queue scripts that will run immediately
-    // after web content finishes loading and before any referenced <script> runs.
+    // Web view not ready yet. Calls to runScript() or any DPF methods mapped by
+    // WebHostUI are forbidden. Mapped methods are those that have their
+    // counterparts in JavaScript; they rely on message passing and ultimately
+    // runScript(). Setting the parent class constructor parameter startLoading
+    // to false gives a chance to inject any needed scripts here, for example:
+
+    String js = String(
+        "window.testHostFunction = () => {"
+        "   console.log('Hello world');"
+        "};"
+    );
+    injectScript(js);
+
+    // Injected scripts are queued to run immediately after the web content
+    // finishes loading and before any referenced <script> starts executing.
+    // It is not possible to inject scripts after calling load(). If
+    // startLoading==false do not forget to call load() before returning:
+
+    load();
 }
 
 void WebGainExampleUI::onWebContentReady()
 {
     // Called when the main document finished loading and DOM is ready. It is
-    // now safe to call getWebView()->runScript() and mapped DPF methods.
+    // now safe to call runScript() and mapped DPF methods.
 }
 
 void WebGainExampleUI::onWebMessageReceived(const JsValueVector& args)

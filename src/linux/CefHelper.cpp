@@ -165,6 +165,9 @@ void CefHelper::dispatch(const tlv_t& packet)
         case OP_RUN_SCRIPT:
             runScript(static_cast<const char*>(packet.v));
             break;
+        case OP_INJECT_SHIMS:
+            injectScript(JS_POST_MESSAGE_SHIM);
+            break;
         case OP_INJECT_SCRIPT: 
             injectScript(static_cast<const char*>(packet.v));
             break;
@@ -172,7 +175,7 @@ void CefHelper::dispatch(const tlv_t& packet)
             setSize(static_cast<const msg_win_size_t*>(packet.v));
             break;
         case OP_SET_KEYBOARD_FOCUS:
-            setKeyboardFocus(*((char *)packet.v) == 1);
+            setKeyboardFocus(*static_cast<const bool*>(packet.v) == 1);
             break;
         case OP_TERMINATE:
             fRunMainLoop = false;
@@ -262,13 +265,10 @@ void CefHelper::navigate(const char* url)
     // to the browser process to run scripts from the browser process does not
     // guarantee injected scripts will run before user scripts due to timing.
 
-    if (fInjectedScripts->GetSize() > 0) {
-        fInjectedScripts->SetString(fInjectedScripts->GetSize(), JS_POST_MESSAGE_SHIM);
-        CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("InjectScripts");
-        message->GetArgumentList()->SetList(0, fInjectedScripts);
-        fBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
-        fInjectedScripts->Clear();
-    }
+    CefRefPtr<CefProcessMessage> message = CefProcessMessage::Create("InjectScripts");
+    message->GetArgumentList()->SetList(0, fInjectedScripts);
+    fBrowser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
+    fInjectedScripts->Clear();
 
     fBrowser->GetMainFrame()->LoadURL(url);
 }

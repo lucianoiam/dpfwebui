@@ -24,13 +24,17 @@
 
 USE_NAMESPACE_DISTRHO
 
-MacWebHostUI::MacWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
+MacWebHostUI::MacWebHostUI(uint baseWidth, uint baseHeight,
+        uint32_t backgroundColor, bool startLoading)
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
     , fWindow(0)
 {
     if (shouldCreateWebView()) {
         setWebView(new CocoaWebView()); // base class owns web view
-        load();
+
+        if (startLoading) {
+            load();
+        }
     }
 }
 

@@ -27,7 +27,8 @@ START_NAMESPACE_DISTRHO
 class MacWebHostUI : public AbstractWebHostUI
 {
 public:
-    MacWebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    MacWebHostUI(uint baseWidth = 0, uint baseHeight = 0,
+        uint32_t backgroundColor = 0xffffffff, bool startLoading = true);
     virtual ~MacWebHostUI();
 
     float getDisplayScaleFactor(uintptr_t window) override;

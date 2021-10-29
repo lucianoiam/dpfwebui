@@ -174,23 +174,18 @@ static void realize(context_t *ctx, const msg_win_cfg_t *config)
     g_signal_connect(manager, "script-message-received::host", G_CALLBACK(web_view_script_message_cb), ctx);
     webkit_user_content_manager_register_script_message_handler(manager, "host");
 
-    gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));
+    gtk_container_add(GTK_CONTAINER(ctx->window), GTK_WIDGET(ctx->webView));  
 }
 
 static void navigate(context_t *ctx, const char *url)
 {
     // Inject queued scripts
-    if (strlen(ctx->injectedJs) > 0) {
-        strcat(ctx->injectedJs, JS_POST_MESSAGE_SHIM);
-        
-        WebKitUserScript *script = webkit_user_script_new(ctx->injectedJs, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
-            WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL);
-        WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
-        webkit_user_content_manager_add_script(manager, script);
-        webkit_user_script_unref(script);
-
-        ctx->injectedJs[0] = '\0'; // already injected on next navigate() call
-    }
+    WebKitUserScript *script = webkit_user_script_new(ctx->injectedJs, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+        WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL);
+    WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(ctx->webView);
+    webkit_user_content_manager_add_script(manager, script);
+    webkit_user_script_unref(script);
+    ctx->injectedJs[0] = '\0'; // already injected on next navigate() call
 
     webkit_web_view_load_uri(ctx->webView, url);
 }
@@ -410,6 +405,9 @@ static gboolean ipc_read_cb(GIOChannel *source, GIOCondition condition, gpointer
             break;
         case OP_RUN_SCRIPT:
             run_script(ctx, (const char *)packet.v);
+            break;
+        case OP_INJECT_SHIMS:
+            inject_script(ctx, JS_POST_MESSAGE_SHIM);
             break;
         case OP_INJECT_SCRIPT:
             inject_script(ctx, (const char *)packet.v);

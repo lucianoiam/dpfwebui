@@ -86,7 +86,7 @@ EdgeWebView::EdgeWebView()
     fHandler = new InternalWebView2EventHandler(this);
 
     // These requests are queued until Edge WebView2 initializes itself
-    injectDefaultScripts();
+    injectDefaultScripts(); // non-virtual, safe to call
     String js = String(JS_POST_MESSAGE_SHIM);
     injectScript(js);  
 

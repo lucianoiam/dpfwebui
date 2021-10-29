@@ -51,6 +51,9 @@ class WebGainExampleUI extends DISTRHO.UI {
             elem('kbd-demo').focus();
         });
 
+        // See WebGainExampleUI constructor in WebGainExampleUI.cpp
+        testHostFunction();
+
         // Showtime
         document.body.style.visibility = 'visible';
     }

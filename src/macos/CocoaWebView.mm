@@ -73,7 +73,7 @@ CocoaWebView::CocoaWebView()
     );
     injectScript(js);
 
-    injectDefaultScripts();
+    injectDefaultScripts(); // non-virtual, safe to call
 
     js = String(JS_POST_MESSAGE_SHIM);
     injectScript(js);

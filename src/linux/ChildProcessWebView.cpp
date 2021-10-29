@@ -97,7 +97,9 @@ ChildProcessWebView::ChildProcessWebView()
         return;
     }
 
-    injectDefaultScripts();
+    injectDefaultScripts(); // non-virtual, safe to call
+
+    fIpc->write(OP_INJECT_SHIMS);
 }
 
 ChildProcessWebView::~ChildProcessWebView()

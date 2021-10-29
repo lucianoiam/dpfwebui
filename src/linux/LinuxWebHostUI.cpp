@@ -24,24 +24,29 @@
 
 USE_NAMESPACE_DISTRHO
 
-LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight, uint32_t backgroundColor)
+LinuxWebHostUI::LinuxWebHostUI(uint baseWidth, uint baseHeight,
+        uint32_t backgroundColor, bool startLoading)
     : AbstractWebHostUI(baseWidth, baseHeight, backgroundColor)
 {
-    if (shouldCreateWebView()) {
-        ChildProcessWebView* webview = new ChildProcessWebView();
-        setWebView(webview); // base class owns web view
+    if (!shouldCreateWebView()) {
+        return;
+    }
+
+    ChildProcessWebView* webview = new ChildProcessWebView();
+    setWebView(webview); // base class owns web view
 
 #ifdef LXWEBVIEW_GTK
-        // Allow JavaScript code to detect the GTK webview and enable some
-        // workarounds to compensate for the broken vw/vh/vmin/vmax CSS units and
-        // non-working touch events for <input type="range"> elements.
-        String js = String(
-            "window.DISTRHO.quirks.brokenCSSViewportUnits = true;"
-            "window.DISTRHO.quirks.brokenRangeInputTouch = true;"
-        );
-        webview->injectScript(js);
+    // Allow JavaScript code to detect the GTK webview and enable some
+    // workarounds to compensate for the broken vw/vh/vmin/vmax CSS units and
+    // non-working touch events for <input type="range"> elements.
+    String js = String(
+        "window.DISTRHO.quirks.brokenCSSViewportUnits = true;"
+        "window.DISTRHO.quirks.brokenRangeInputTouch = true;"
+    );
+    webview->injectScript(js);
 #endif // LXWEBVIEW_GTK
 
+    if (startLoading) {
         load();
     }
 }

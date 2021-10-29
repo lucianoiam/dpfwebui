@@ -27,7 +27,8 @@ START_NAMESPACE_DISTRHO
 class LinuxWebHostUI : public AbstractWebHostUI
 {
 public:
-    LinuxWebHostUI(uint baseWidth = 0, uint baseHeight = 0, uint32_t backgroundColor = 0xffffffff);
+    LinuxWebHostUI(uint baseWidth = 0, uint baseHeight = 0,
+        uint32_t backgroundColor = 0xffffffff, bool startLoading = true);
     virtual ~LinuxWebHostUI();
 
     float getDisplayScaleFactor(uintptr_t window) override;
