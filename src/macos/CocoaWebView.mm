@@ -117,7 +117,6 @@ void CocoaWebView::navigate(String& url)
     NSURL *urlObj = [NSURL URLWithString:[urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     NSURL *urlBase = [urlObj URLByDeletingLastPathComponent];
     [fNsWebView loadFileURL:urlObj allowingReadAccessToURL:urlBase];
-    [urlObj release];
     [urlStr release];
 }
 
