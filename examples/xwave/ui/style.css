@@ -1,0 +1,50 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    margin: 0;
+    background: #0B1824;
+}
+
+#overscan {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: repeating-linear-gradient(
+        -45deg,
+        #13101B,
+        #13101B 25px,
+        #211B34 25px,
+        #211B34 50px
+    );
+}
+
+#main {
+    width: 100%;
+    height: 96px;
+    background: #0B1824;
+    box-shadow: 0px 0px 25px 10px rgba(0,0,0,0.25);
+}
+
+#qr-button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+
+#qr-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 10;
+}

@@ -1,0 +1,10 @@
+- (Linux) Drag and drop not working on both WebKitGTK and CEF web views.
+
+- (Linux) Broken CSS viewport units (vw/vh/vmin/vmax) on WebKitGTK variant due
+  to workaround for https://bugs.webkit.org/show_bug.cgi?id=229227
+
+- (macOS) Possibly not a bug: the spacebar on REAPER is reserved for toggling
+  transport, therefore it is not possible to type spaces into <input> elements.
+  Also these elements do not emit events of type 'change' when pressing Return.
+  To fix enable "Send all keyboard input to plug-in" in the plugin context menu.
+  https://forum.juce.com/t/space-key-in-texteditor-and-reaper-osx-au-vst/15403/6

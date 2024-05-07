@@ -1,0 +1,8 @@
+- Profile everything for memory leaks
+
+- Support JavaScript alert(), confirm() and prompt() calls with native dialogs
+
+- Finish standalone support on Linux and Windows, namely create a native window
+  and process events. DPF already takes care of the audio backend.
+
+- CMake support

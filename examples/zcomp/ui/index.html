@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ZComp</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body style="visibility: hidden;" onload="new ZCompExampleUI">
+    <div id="overscan">
+        <div id="main">
+            <div id="top-spacer"></div>
+            <div id="knobs">
+                <div class="knob-box">
+                    <g-knob min="0.1" max="100.0" id="knob-attack"></g-knob>
+                    <label for="knob-attack">Attack</label>
+                </div>
+                <div class="knob-box">
+                    <g-knob min="1.0" max="500.0" id="knob-release"></g-knob>
+                    <label for="knob-release">Release</label>
+                </div>
+                <div class="knob-box">
+                    <g-knob min="-80.0" max="0" id="knob-threshold"></g-knob>
+                    <label for="knob-threshold">Threshold</label>
+                </div>
+                <div class="knob-box">
+                    <g-knob min="1.0" max="20.0" id="knob-ratio"></g-knob>
+                    <label for="knob-ratio">Ratio</label>
+                </div>
+                <div class="knob-box">
+                    <g-knob min="0" max="8.0" id="knob-knee"></g-knob>
+                    <label for="knob-knee">Knee</label>
+                </div>
+                <div class="knob-box">
+                    <g-knob min="1.0" max="150.0" id="knob-slew"></g-knob>
+                    <label for="knob-slew">Slew</label>
+                </div>
+            </div>
+            <div id="credits">
+                <a href="https://www.zamaudio.com/?p=976">
+                    DSP credits
+                </a>
+            </div>
+        </div>
+    </div>
+    <script src="dpf.js"></script>
+    <script src="guinda.js"></script>
+    <script src="ui.js"></script>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+--- x-waveform.ts	2023-01-31 20:52:53
++++ x-waveform-no-analyser.ts	2023-01-31 20:44:22
+@@ -36,7 +36,7 @@
+   ),
+   props(
+     class {
+-      analyser?: AnalyserNode
++      //analyser?: AnalyserNode
+       /** @private */
+       analyserData?: Float32Array
+       /** @private */
+@@ -119,10 +119,10 @@
+       }
+     )
+ 
+-    $.drawFrame = reduce(({ analyser, analyserData, background, screen: { canvas, ctx }, pixelRatio: p, draw }) =>
++    $.drawFrame = reduce(({ /*analyser,*/ analyserData, background, screen: { canvas, ctx }, pixelRatio: p, draw }) =>
+       function drawFrame() {
+         animFrame = requestAnimationFrame(drawFrame)
+-        analyser.getFloatTimeDomainData(analyserData)
++        //analyser.getFloatTimeDomainData(analyserData)
+ 
+         const data = analyserData
+         ctx.globalCompositeOperation = 'source-over'
+@@ -145,7 +145,7 @@
+       }
+     )
+ 
+-    $.analyserData = reduce(({ analyser }) => new Float32Array(analyser.frequencyBinCount))
++    //$.analyserData = reduce(({ analyser }) => new Float32Array(analyser.frequencyBinCount))
+ 
+     $.loop = reduce(({ drawFrame }) => ({
+       start() {
